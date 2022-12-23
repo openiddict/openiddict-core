@@ -165,7 +165,8 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
 
             // Attach the identity of the authorization to the returned principal to allow resolving it even if no other
             // claim was added to the principal (e.g when no id_token was returned and no userinfo endpoint is available).
-            principal.SetClaim(Claims.AuthorizationServer, context.StateTokenPrincipal?.GetClaim(Claims.AuthorizationServer));
+            principal.SetClaim(Claims.AuthorizationServer, context.StateTokenPrincipal?.GetClaim(Claims.AuthorizationServer))
+                     .SetClaim(Claims.Private.ProviderName, context.StateTokenPrincipal?.GetClaim(Claims.Private.ProviderName));
 
             // Restore or create a new authentication properties collection and populate it.
             var properties = CreateProperties(context.StateTokenPrincipal);

@@ -876,8 +876,8 @@ public static partial class OpenIddictClientHandlers
             // Restore the identity of the authorization server from the special "as" claim.
             // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09#section-2
             // for more information.
-            var value = context.StateTokenPrincipal.GetClaim(Claims.AuthorizationServer);
-            if (string.IsNullOrEmpty(value) || !Uri.TryCreate(value, UriKind.Absolute, out Uri? issuer) ||
+            var server = context.StateTokenPrincipal.GetClaim(Claims.AuthorizationServer);
+            if (string.IsNullOrEmpty(server) || !Uri.TryCreate(server, UriKind.Absolute, out Uri? issuer) ||
                 !issuer.IsWellFormedOriginalString())
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0291));
@@ -889,6 +889,15 @@ public static partial class OpenIddictClientHandlers
             context.Issuer = issuer;
             context.Registration = context.Options.Registrations.Find(registration => registration.Issuer == issuer) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+            // If an explicit provider name was also added, ensure the two values point to the same issuer.
+            var provider = context.StateTokenPrincipal.GetClaim(Claims.Private.ProviderName);
+            if (!string.IsNullOrEmpty(provider) &&
+                !string.IsNullOrEmpty(context.Registration.ProviderName) &&
+                !string.Equals(provider, context.Registration.ProviderName, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
+            }
 
             // Resolve and attach the server configuration to the context.
             context.Configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
@@ -951,7 +960,7 @@ public static partial class OpenIddictClientHandlers
 
                 // If the two values don't match, this may indicate a mix-up attack attempt.
                 if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) ||
-                    !uri.IsWellFormedOriginalString() || uri != context.Configuration.Issuer)
+                    !uri.IsWellFormedOriginalString() || uri != context.Issuer)
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -4548,7 +4557,8 @@ public static partial class OpenIddictClientHandlers
             //
             // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09
             // for more information about this special claim.
-            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri);
+            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri)
+                     .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
 
             // Store the request forgery protection in the state token so it can be later used to
             // ensure the authorization response sent to the redirection endpoint is not forged.
@@ -5123,7 +5133,8 @@ public static partial class OpenIddictClientHandlers
             //
             // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09
             // for more information about this special claim.
-            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri);
+            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri)
+                     .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
 
             // Store the request forgery protection in the state token so it can be later used to
             // ensure the logout response sent to the post-logout redirection endpoint is not forged.
