@@ -1,4 +1,4 @@
-﻿# OpenIddict
+﻿# OpenIddict :christmas_tree: :santa: :gift:
 
 ### The OpenID Connect stack you'll be addicted to.
 
@@ -32,7 +32,7 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 
 ## Compatibility matrix
 
-| Web framework version | .NET runtime version | OpenIddict 3.x                          | OpenIddict 4.x                          |
+| Web framework version | .NET runtime version | OpenIddict 3.x (no longer supported)    | OpenIddict 4.x                          |
 |-----------------------|----------------------|-----------------------------------------|-----------------------------------------|
 | ASP.NET Core 2.1      | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
 | ASP.NET Core 2.1      | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
@@ -90,6 +90,8 @@ Instead, **developers are encouraged to execute the conformance tests against th
 
 **Looking for additional resources to help you get started with OpenIddict?** Don't miss these interesting blog posts:
 
+- **[OpenIddict 4.0 general availability](https://kevinchalet.com/2022/12/23/openiddict-4-0-general-availability/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Getting started with the OpenIddict web providers](https://kevinchalet.com/2022/12/16/getting-started-with-the-openiddict-web-providers/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[OpenIddict 4.0 preview1 is out](https://kevinchalet.com/2022/06/22/openiddict-4-0-preview1-is-out/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Introducing the OpenIddict-powered providers](https://github.com/aspnet-contrib/AspNet.Security.OAuth.Providers/issues/694)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Introducing the OpenIddict client](https://kevinchalet.com/2022/02/25/introducing-the-openiddict-client/)** by [Kévin Chalet](https://github.com/kevinchalet)
