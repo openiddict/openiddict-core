@@ -1,5 +1,17 @@
 ﻿<Providers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:noNamespaceSchemaLocation="OpenIddictClientWebIntegrationProviders.xsd">
+  <!--
+    Note: for more information on how to add a new web provider integration, visit
+    https://documentation.openiddict.com/guides/contributing-a-new-web-provider.html.
+  -->
+
+  <!--
+                                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                  █ ▄▄▀██ ▄▄ ██ ▄▄ ██ █████ ▄▄▄██
+                                                  █ ▀▀ ██ ▀▀ ██ ▀▀ ██ █████ ▄▄▄██
+                                                  █ ██ ██ █████ █████ ▀▀ ██ ▀▀▀██
+                                                  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="Apple" Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
     <Environment Issuer="https://appleid.apple.com/" />
@@ -13,6 +25,14 @@
              Description="The team ID associated with the developer account" />
   </Provider>
 
+  <!--
+                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                        █ ▄▄▀██ ▄▀▄ █ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▀██ ████ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▀██ █▄ ▄█▄▄ ▄▄██ ▄▄▄ ██
+                        █ ▀▀ ██ █ █ █ ▀▀ ██▀▀▀▄▄██ ███ ██ █ █ ████ █████ ███ ██ █▀▀██ █ █ ██ ████ ████ ███ ██
+                        █ ██ ██ ███ █ ██ ██ ▀▀▀ ██ ▀▀▀ ██ ██▄ ████ ▀▀▄██ ▀▀▀ ██ ▀▀▄██ ██▄ █▀ ▀███ ████ ▀▀▀ ██
+                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="Cognito" Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
     <Environment Issuer="https://cognito-idp.{region}.amazonaws.com/{userPoolId}" />
 
@@ -22,6 +42,14 @@
     <Setting PropertyName="UserPoolId" ParameterName="identifier" Type="String" Required="true"
              Description="The User Pool ID" />
   </Provider>
+
+  <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▀██ ▄▄▄██ ▄▄▄██ ▄▄▄ ██ ▄▄▄██ ▄▄▀██
+                                              ██ ██ ██ ▄▄▄██ ▄▄▄██▀▀▀▄▄██ ▄▄▄██ ▀▀▄██
+                                              ██ ▀▀ ██ ▀▀▀██ ▀▀▀██ ▀▀▀ ██ ▀▀▀██ ██ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
  
   <Provider Name="Deezer" Documentation="https://developers.deezer.com/api/oauth">
     <!--
@@ -39,6 +67,14 @@
     </Environment>
   </Provider>
 
+  <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ██ ██ ██ ██ ▄▄▀██
+                                              ██ █▀▀██ ████ ████ ▄▄ ██ ██ ██ ▄▄▀██
+                                              ██ ▀▀▄█▀ ▀███ ████ ██ ██▄▀▀▄██ ▀▀ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
     <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
@@ -47,12 +83,28 @@
     </Environment>
   </Provider>
 
+  <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ ▄▄ ██ ▄▄▄ ██ ▄▄▄ ██ ▄▄ ██ █████ ▄▄▄██
+                                            ██ █▀▀██ ███ ██ ███ ██ █▀▀██ █████ ▄▄▄██
+                                            ██ ▀▀▄██ ▀▀▀ ██ ▀▀▀ ██ ▀▀▄██ ▀▀ ██ ▀▀▀██
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="Google" Documentation="https://developers.google.com/identity/protocols/oauth2/openid-connect">
     <Environment Issuer="https://accounts.google.com/" />
 
     <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
              Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
   </Provider>
+
+  <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ █▀▄██ ▄▄▄██ ███ ██ ▄▄▀██ █████ ▄▄▄ █ ▄▄▀██ █▀▄██
+                                      ██ ▄▀███ ▄▄▄██▄▀▀▀▄██ █████ █████ ███ █ ▀▀ ██ ▄▀███
+                                      ██ ██ ██ ▀▀▀████ ████ ▀▀▄██ ▀▀ ██ ▀▀▀ █ ██ ██ ██ ██
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="Keycloak" Documentation="https://www.keycloak.org/getting-started/getting-started-docker">
     <!--
@@ -65,6 +117,14 @@
     <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
              Description="The URI used to access the Keycloak identity provider (including the realm, if applicable)" />
   </Provider>
+
+  <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ████▄ ▄██ ▀██ ██ █▀▄██ ▄▄▄██ ▄▄▀█▄ ▄██ ▀██ ██
+                                        ██ █████ ███ █ █ ██ ▄▀███ ▄▄▄██ ██ ██ ███ █ █ ██
+                                        ██ ▀▀ █▀ ▀██ ██▄ ██ ██ ██ ▀▀▀██ ▀▀ █▀ ▀██ ██▄ ██
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="LinkedIn" Documentation="https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin">
     <Environment Issuer="https://www.linkedin.com/">
@@ -95,6 +155,14 @@
     </Setting>
   </Provider>
 
+  <!--
+              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+              ██ ▄▀▄ █▄ ▄██ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▄▄▄ ██ ▄▄▄█▄▄ ▄▄███ ▄▄▀██ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ██ ██ ▀██ █▄▄ ▄▄██
+              ██ █ █ ██ ███ █████ ▀▀▄██ ███ ██▄▄▄▀▀██ ███ ██ ▄▄████ █████ ▀▀ ██ █████ █████ ███ ██ ██ ██ █ █ ███ ████
+              ██ ███ █▀ ▀██ ▀▀▄██ ██ ██ ▀▀▀ ██ ▀▀▀ ██ ▀▀▀ ██ ██████ █████ ██ ██ ▀▀▄██ ▀▀▄██ ▀▀▀ ██▄▀▀▄██ ██▄ ███ ████
+              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="Microsoft" Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
     <!--
       Note: Microsoft is a multitenant provider that relies on virtual paths to identify instances.
@@ -109,6 +177,14 @@
              Description="The tenant used to identify the Azure AD instance (by default, the common tenant is used)" />
   </Provider>
 
+  <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ▄▀▄ █▄ ▄█▄▀█▀▄██ ▄▄▀██ █████ ▄▄▄ ██ ██ ██ ▄▄▀██
+                                      ██ █ █ ██ ████ ████ █████ █████ ███ ██ ██ ██ ██ ██
+                                      ██ ███ █▀ ▀█▀▄█▄▀██ ▀▀▄██ ▀▀ ██ ▀▀▀ ██▄▀▀▄██ ▀▀ ██
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="Mixcloud" Documentation="https://www.mixcloud.com/developers/#authorization">
     <Environment Issuer="https://www.mixcloud.com/">
       <Configuration AuthorizationEndpoint="https://www.mixcloud.com/oauth/authorize"
@@ -116,6 +192,14 @@
                      UserinfoEndpoint="https://api.mixcloud.com/me" />
     </Environment>
   </Provider>
+
+  <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ ▄▄ █ ▄▄▀██ ███ ██ ▄▄ █ ▄▄▀██ █████
+                                            ██ ▀▀ █ ▀▀ ██▄▀▀▀▄██ ▀▀ █ ▀▀ ██ █████
+                                            ██ ████ ██ ████ ████ ████ ██ ██ ▀▀ ██
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="PayPal" Documentation="https://developer.paypal.com/docs/log-in-with-paypal/">
     <!--
@@ -129,6 +213,14 @@
     <Environment Name="Production" Issuer="https://www.paypal.com/" />
     <Environment Name="Sandbox"    Issuer="https://www.paypal.com/" />
   </Provider>
+
+  <!--
+              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+              ██ ▄▄ ██ ▄▄▀██ ▄▄▄ ████ ▄▄▄ █ ▄▄▀██ ▀██ █▄▄ ▄▄██ ▄▄▄████ ▄▄▀██ ▄▄▄ ██ ▀██ ██ ▀██ ██ ▄▄▄██ ▄▄▀█▄▄ ▄▄██
+              ██ ▀▀ ██ ▀▀▄██ ███ ████▄▄▄▀▀█ ▀▀ ██ █ █ ███ ████ ▄▄▄████ █████ ███ ██ █ █ ██ █ █ ██ ▄▄▄██ ██████ ████
+              ██ █████ ██ ██ ▀▀▀ ████ ▀▀▀ █ ██ ██ ██▄ ███ ████ ▀▀▀████ ▀▀▄██ ▀▀▀ ██ ██▄ ██ ██▄ ██ ▀▀▀██ ▀▀▄███ ████
+              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="ProSantéConnect" Documentation="https://industriels.esante.gouv.fr/en/products-services/health-pro-authentication-pro-sante-connect">
     <!--
@@ -151,6 +243,14 @@
     <Setting PropertyName="ClientCertificate" ParameterName="certificate" Type="Certificate" Required="false"
              Description="The TLS client certificate that will be used with the backchannel endpoints (while not enforced yet, its use is strongly recommended)" />
   </Provider>
+
+  <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ ▄▄▀██ ▄▄▄██ ▄▄▀██ ▄▄▀█▄ ▄█▄▄ ▄▄██
+                                            ██ ▀▀▄██ ▄▄▄██ ██ ██ ██ ██ ████ ████
+                                            ██ ██ ██ ▀▀▀██ ▀▀ ██ ▀▀ █▀ ▀███ ████
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="Reddit" Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">
     <Environment Issuer="https://www.reddit.com/">
@@ -178,6 +278,14 @@
              Description="The value used as the 'duration' parameter (can be set to 'permanent' to retrieve a refresh token)" />
   </Provider>
 
+  <!--
+                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                      ██ ▄▄▄ █▄▄ ▄▄█ ▄▄▀██ ▄▄▀██ █▀▄████ ▄▄▄█▄▀█▀▄██ ▄▄▀██ ██ █ ▄▄▀██ ▀██ ██ ▄▄ ██ ▄▄▄██
+                      ██▄▄▄▀▀███ ███ ▀▀ ██ █████ ▄▀█████ ▄▄▄███ ████ █████ ▄▄ █ ▀▀ ██ █ █ ██ █▀▀██ ▄▄▄██
+                      ██ ▀▀▀ ███ ███ ██ ██ ▀▀▄██ ██ ████ ▀▀▀█▀▄█▄▀██ ▀▀▄██ ██ █ ██ ██ ██▄ ██ ▀▀▄██ ▀▀▀██
+                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="StackExchange" Documentation="https://api.stackexchange.com/docs/authentication">
     <Environment Issuer="https://api.stackexchange.com/">
       <Configuration AuthorizationEndpoint="https://stackoverflow.com/oauth"
@@ -192,6 +300,14 @@
              Description="The site specified in userinfo requests (by default, 'stackoverflow')" />
   </Provider>
 
+  <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              █▄▄ ▄▄██ ▄▄▀█ ▄▄▀██ █▀▄█▄▄ ▄▄██
+                                              ███ ████ ▀▀▄█ ▀▀ ██ ▄▀████ ████
+                                              ███ ████ ██ █ ██ ██ ██ ███ ████
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="Trakt" Documentation="https://trakt.docs.apiary.io/#reference/authentication-oauth">
     <Environment Issuer="https://trakt.tv/">
       <Configuration AuthorizationEndpoint="https://trakt.tv/oauth/authorize"
@@ -202,6 +318,14 @@
       </Configuration>
     </Environment>
   </Provider>
+
+  <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        █▄▄ ▄▄██ ███ █▄ ▄█▄▄ ▄▄█▄▄ ▄▄██ ▄▄▄██ ▄▄▀██
+                                        ███ ████ █ █ ██ ████ █████ ████ ▄▄▄██ ▀▀▄██
+                                        ███ ████▄▀▄▀▄█▀ ▀███ █████ ████ ▀▀▀██ ██ ██
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="Twitter" Documentation="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">
     <Environment Issuer="https://twitter.com/">
@@ -273,6 +397,14 @@
     </Setting>
   </Provider>
 
+  <!--
+                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                ██ ███ ██ ▄▄▄ ██ ▄▄▀██ ▄▄▀██ ▄▄ ██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ ▄▄▄ ██
+                                ██ █ █ ██ ███ ██ ▀▀▄██ ██ ██ ▀▀ ██ ▀▀▄██ ▄▄▄██▄▄▄▀▀██▄▄▄▀▀██
+                                ██▄▀▄▀▄██ ▀▀▀ ██ ██ ██ ▀▀ ██ █████ ██ ██ ▀▀▀██ ▀▀▀ ██ ▀▀▀ ██
+                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="WordPress" Documentation="https://developer.wordpress.com/docs/oauth2/">
     <Environment Issuer="https://wordpress.com/">
       <Configuration AuthorizationEndpoint="https://public-api.wordpress.com/oauth2/authorize"
@@ -287,6 +419,14 @@
       <Scope Name="auth" Default="true" Required="false" />
     </Environment>
   </Provider>
+
+  <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ ███ █ ▄▄▀██ ██ ██ ▄▄▄ ██ ▄▄▄ ██
+                                            ██▄▀▀▀▄█ ▀▀ ██ ▄▄ ██ ███ ██ ███ ██
+                                            ████ ███ ██ ██ ██ ██ ▀▀▀ ██ ▀▀▀ ██
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="Yahoo" Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
     <Environment Issuer="https://api.login.yahoo.com/" />
