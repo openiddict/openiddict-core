@@ -19,8 +19,8 @@ body:
     options:
       - 1.x (no longer supported)
       - 2.x (no longer supported)
-      - 3.x
-      - 4.x (in preview)
+      - 3.x (no longer supported)
+      - 4.x
   validations:
     required: true
 
