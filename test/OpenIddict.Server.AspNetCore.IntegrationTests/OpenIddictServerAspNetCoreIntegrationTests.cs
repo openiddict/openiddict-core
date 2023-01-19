@@ -531,12 +531,12 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
     }
 
     protected override
-#if SUPPORTS_GENERIC_HOST
+#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         async
 #endif
         ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null)
     {
-#if SUPPORTS_GENERIC_HOST
+#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         var builder = new HostBuilder();
 #else
         var builder = new WebHostBuilder();
@@ -559,7 +559,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
                 });
         });
 
-#if SUPPORTS_GENERIC_HOST
+#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         builder.ConfigureWebHost(options =>
         {
             options.UseTestServer();
@@ -569,7 +569,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         builder.Configure(ConfigurePipeline);
 #endif
 
-#if SUPPORTS_GENERIC_HOST
+#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         var host = await builder.StartAsync();
 
         return new OpenIddictServerAspNetCoreIntegrationTestServer(host);

@@ -52,7 +52,11 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
             Context.Set(typeof(OpenIddictServerTransaction).FullName, transaction);
         }
 
-        var context = new ProcessRequestContext(transaction);
+        var context = new ProcessRequestContext(transaction)
+        {
+            CancellationToken = Request.CallCancelled
+        };
+
         await _dispatcher.DispatchAsync(context);
 
         // Store the context in the transaction so that it can be retrieved from InvokeAsync().
@@ -86,6 +90,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
         {
             var notification = new ProcessErrorContext(transaction)
             {
+                CancellationToken = Request.CallCancelled,
                 Error = context.Error ?? Errors.InvalidRequest,
                 ErrorDescription = context.ErrorDescription,
                 ErrorUri = context.ErrorUri,
@@ -122,8 +127,10 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
         var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
         if (context is null)
         {
-            context = new ProcessAuthenticationContext(transaction);
-            await _dispatcher.DispatchAsync(context);
+            await _dispatcher.DispatchAsync(context = new ProcessAuthenticationContext(transaction)
+            {
+                CancellationToken = Request.CallCancelled
+            });
 
             // Store the context object in the transaction so it can be later retrieved by handlers
             // that want to access the authentication result without triggering a new authentication flow.
@@ -283,6 +290,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
 
             var context = new ProcessChallengeContext(transaction)
             {
+                CancellationToken = Request.CallCancelled,
                 Response = new OpenIddictResponse()
             };
 
@@ -297,6 +305,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
             {
                 var notification = new ProcessErrorContext(transaction)
                 {
+                    CancellationToken = Request.CallCancelled,
                     Error = context.Error ?? Errors.InvalidRequest,
                     ErrorDescription = context.ErrorDescription,
                     ErrorUri = context.ErrorUri,
@@ -324,6 +333,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
 
             var context = new ProcessSignInContext(transaction)
             {
+                CancellationToken = Request.CallCancelled,
                 Principal = signin.Principal,
                 Response = new OpenIddictResponse()
             };
@@ -339,6 +349,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
             {
                 var notification = new ProcessErrorContext(transaction)
                 {
+                    CancellationToken = Request.CallCancelled,
                     Error = context.Error ?? Errors.InvalidRequest,
                     ErrorDescription = context.ErrorDescription,
                     ErrorUri = context.ErrorUri,
@@ -366,6 +377,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
 
             var context = new ProcessSignOutContext(transaction)
             {
+                CancellationToken = Request.CallCancelled,
                 Response = new OpenIddictResponse()
             };
 
@@ -380,6 +392,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
             {
                 var notification = new ProcessErrorContext(transaction)
                 {
+                    CancellationToken = Request.CallCancelled,
                     Error = context.Error ?? Errors.InvalidRequest,
                     ErrorDescription = context.ErrorDescription,
                     ErrorUri = context.ErrorUri,

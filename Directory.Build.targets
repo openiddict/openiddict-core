@@ -29,7 +29,12 @@
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.5'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_CONSTRUCTOR_WITH_ACL</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'   And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '1.0'))) Or
                 ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7'))) Or
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '1.6'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
@@ -57,12 +62,14 @@
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.2'))) Or
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_GENERIC_HOST</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_HOST_APPLICATION_LIFETIME</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_HOST_ENVIRONMENT</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_INTEGER32_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
   </PropertyGroup>
@@ -75,10 +82,13 @@
 
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ENVIRONMENT_PROCESS_PATH</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_PEM_ENCODED_KEY_IMPORT</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_WINFORMS_TASK_DIALOG</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup

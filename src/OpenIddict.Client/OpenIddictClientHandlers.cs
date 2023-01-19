@@ -36,6 +36,7 @@ public static partial class OpenIddictClientHandlers
         ResolveValidatedStateToken.Descriptor,
         ValidateRequiredStateToken.Descriptor,
         ValidateStateToken.Descriptor,
+        ResolveNonceFromStateToken.Descriptor,
         RedeemStateTokenEntry.Descriptor,
         ValidateStateTokenEndpointType.Descriptor,
         ValidateRequestForgeryProtection.Descriptor,
@@ -265,51 +266,54 @@ public static partial class OpenIddictClientHandlers
                     break;
 
                 case OpenIddictClientEndpointType.Unknown:
-                    if (string.IsNullOrEmpty(context.GrantType))
+                    if (string.IsNullOrEmpty(context.Nonce))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0309));
-                    }
-
-                    if (context.GrantType is not (
-                        GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
-                        GrantTypes.Implicit          or GrantTypes.Password          or GrantTypes.RefreshToken))
-                    {
-                        throw new InvalidOperationException(SR.FormatID0310(context.GrantType));
-                    }
-
-                    if (!context.Options.GrantTypes.Contains(context.GrantType))
-                    {
-                        throw new InvalidOperationException(SR.FormatID0359(context.GrantType));
-                    }
-
-                    if (context.GrantType is GrantTypes.Password)
-                    {
-                        if (string.IsNullOrEmpty(context.Username))
+                        if (string.IsNullOrEmpty(context.GrantType))
                         {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0337));
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0309));
                         }
 
-                        if (string.IsNullOrEmpty(context.Password))
+                        if (context.GrantType is not (
+                            GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                            GrantTypes.Implicit or GrantTypes.Password or GrantTypes.RefreshToken))
                         {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0338));
+                            throw new InvalidOperationException(SR.FormatID0310(context.GrantType));
                         }
-                    }
 
-                    if (context.GrantType is GrantTypes.RefreshToken &&
-                        string.IsNullOrEmpty(context.RefreshToken))
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0311));
-                    }
+                        if (!context.Options.GrantTypes.Contains(context.GrantType))
+                        {
+                            throw new InvalidOperationException(SR.FormatID0359(context.GrantType));
+                        }
 
-                    // If no issuer was explicitly attached and a single client is registered, use it.
-                    // Otherwise, throw an exception to indicate that setting an explicit issuer
-                    // is required when multiple clients are registered.
-                    context.Issuer ??= context.Options.Registrations.Count switch
-                    {
-                        0 => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                        1 => context.Options.Registrations[0].Issuer,
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0355))
-                    };
+                        if (context.GrantType is GrantTypes.Password)
+                        {
+                            if (string.IsNullOrEmpty(context.Username))
+                            {
+                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0337));
+                            }
+
+                            if (string.IsNullOrEmpty(context.Password))
+                            {
+                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0338));
+                            }
+                        }
+
+                        if (context.GrantType is GrantTypes.RefreshToken &&
+                            string.IsNullOrEmpty(context.RefreshToken))
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0311));
+                        }
+
+                        // If no issuer was explicitly attached and a single client is registered, use it.
+                        // Otherwise, throw an exception to indicate that setting an explicit issuer
+                        // is required when multiple clients are registered.
+                        context.Issuer ??= context.Options.Registrations.Count switch
+                        {
+                            0 => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                            1 => context.Options.Registrations[0].Issuer,
+                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0355))
+                        };
+                    }
 
                     break;
 
@@ -347,7 +351,7 @@ public static partial class OpenIddictClientHandlers
             //
             // Client registrations/configurations that need to be resolved as part of authentication demands
             // triggered from the redirection or post-logout redirection requests are handled elsewhere.
-            if (context.EndpointType is not OpenIddictClientEndpointType.Unknown)
+            if (context.Issuer is null || context.EndpointType is not OpenIddictClientEndpointType.Unknown)
             {
                 return;
             }
@@ -563,6 +567,45 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for resolving the nonce identifying
+    /// the authentication operation from the state token principal.
+    /// </summary>
+    public sealed class ResolveNonceFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
+                .UseSingletonHandler<ResolveNonceFromStateToken>()
+                .SetOrder(ValidateStateToken.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Resolve the nonce from the state token principal and attach it to the context.
+            context.Nonce = context.StateTokenPrincipal.GetClaim(Claims.Private.Nonce) switch
+            {
+                { Length: > 0 } nonce => nonce,
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0354))
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for redeeming the token entry corresponding to the received state token.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
@@ -582,11 +625,12 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenStorageEnabled>()
                 .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseScopedHandler<RedeemStateTokenEntry>()
                 // Note: this handler is deliberately executed early in the pipeline to ensure
                 // that the state token entry is always marked as redeemed even if the authentication
                 // demand is rejected later in the pipeline (e.g because an error was returned).
-                .SetOrder(ValidateStateToken.Descriptor.Order + 1_000)
+                .SetOrder(ResolveNonceFromStateToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -634,6 +678,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ValidateStateTokenEndpointType>()
                 .SetOrder(RedeemStateTokenEntry.Descriptor.Order + 1_000)
                 .Build();
@@ -683,6 +728,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ValidateRequestForgeryProtection>()
                 .SetOrder(ValidateStateTokenEndpointType.Descriptor.Order + 1_000)
@@ -745,6 +791,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ValidateEndpointUri>()
                 .SetOrder(ValidateRequestForgeryProtection.Descriptor.Order + 1_000)
@@ -852,6 +899,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ResolveClientRegistrationFromStateToken>()
                 .SetOrder(ValidateEndpointUri.Descriptor.Order + 1_000)
                 .Build();
@@ -1087,6 +1135,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireRedirectionRequest>()
                 .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ResolveGrantTypeAndResponseTypeFromStateToken>()
                 .SetOrder(HandleFrontchannelErrorResponse.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -1609,6 +1658,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireFrontchannelIdentityTokenPrincipal>()
                 .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ValidateFrontchannelIdentityTokenNonce>()
                 .SetOrder(ValidateFrontchannelIdentityTokenPresenter.Descriptor.Order + 1_000)
                 .Build();
@@ -1658,7 +1708,7 @@ public static partial class OpenIddictClientHandlers
 
             switch ((
                 FrontchannelIdentityTokenNonce: context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Nonce),
-                StateTokenNonce: context.StateTokenPrincipal.GetClaim(Claims.Private.Nonce)))
+                StateTokenNonce: context.Nonce))
             {
                 // If no nonce is present in the state token, bypass the validation logic.
                 case { StateTokenNonce: null or { Length: not > 0 } }:
@@ -2913,6 +2963,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireBackchannelIdentityTokenPrincipal>()
                 .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ValidateBackchannelIdentityTokenNonce>()
                 .SetOrder(ValidateBackchannelIdentityTokenPresenter.Descriptor.Order + 1_000)
                 .Build();
@@ -2962,7 +3013,7 @@ public static partial class OpenIddictClientHandlers
 
             switch ((
                 BackchannelIdentityTokenNonce: context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Nonce),
-                StateTokenNonce: context.StateTokenPrincipal.GetClaim(Claims.Private.Nonce)))
+                StateTokenNonce: context.Nonce))
             {
                 // If no nonce is present in the state token, bypass the validation logic.
                 case { StateTokenNonce: null or { Length: not > 0 } }:

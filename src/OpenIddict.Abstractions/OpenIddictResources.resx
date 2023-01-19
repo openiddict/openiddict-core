@@ -547,7 +547,7 @@ To register the server services, use 'services.AddOpenIddict().AddServer()'.</va
     <value>The issuer cannot be null or empty.</value>
   </data>
   <data name="ID0127" xml:space="preserve">
-    <value>The base URI or request URI cannot be retrieved from the request context or are now valid absolute URIs.</value>
+    <value>The base URI or request URI cannot be retrieved from the request context or are not valid absolute URIs.</value>
   </data>
   <data name="ID0128" xml:space="preserve">
     <value>An OAuth 2.0/OpenID Connect server configuration or an issuer URI must be registered.
@@ -896,7 +896,7 @@ To register the validation services, use 'services.AddOpenIddict().AddValidation
     <value>One or more validation error(s) occurred while trying to create a new token:</value>
   </data>
   <data name="ID0226" xml:space="preserve">
-    <value>An error occurred while trying to create a new token</value>
+    <value>An error occurred while trying to create a new token.</value>
   </data>
   <data name="ID0227" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to update an existing token:</value>
@@ -1419,6 +1419,39 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID0373" xml:space="preserve">
     <value>Only instances of type '{0}' can be used as primary HTTP handlers for the HTTP clients managed by OpenIddict.</value>
+  </data>
+  <data name="ID0374" xml:space="preserve">
+    <value>An error occurred while authenticating the user.</value>
+  </data>
+  <data name="ID0375" xml:space="preserve">
+    <value>The protocol activation arguments cannot be resolved from the client transaction.</value>
+  </data>
+  <data name="ID0376" xml:space="preserve">
+    <value>The identifier of the application instance that initiated the authentication process cannot be resolved from the state token.</value>
+  </data>
+  <data name="ID0377" xml:space="preserve">
+    <value>Marshalling of authentication demands is not supported on ASP.NET Core and OWIN. To retrieve the authentication result, use 'IAuthenticationService.AuthenticateAsync()' or 'AuthenticationManager.AuthenticateAsync()'.</value>
+  </data>
+  <data name="ID0378" xml:space="preserve">
+    <value>An error occurred while adding the challenge operation to the list of tracked demands, which may indicate a nonce collision. Make sure nonces are unique, contain enough entropy and are generated using a crypto-secure random number generator.</value>
+  </data>
+  <data name="ID0379" xml:space="preserve">
+    <value>The specified nonce is already used to track another authentication operation.</value>
+  </data>
+  <data name="ID0380" xml:space="preserve">
+    <value>An error occurred while marking the authentication operation as completed, which may indicate a nonce collision. Make sure nonces are unique, contain enough entropy and are generated using a crypto-secure random number generator.</value>
+  </data>
+  <data name="ID0381" xml:space="preserve">
+    <value>An error occurred while removing the authentication operation from the list of tracked demands, which may indicate a nonce collision. Make sure nonces are unique, contain enough entropy and are generated using a crypto-secure random number generator.</value>
+  </data>
+  <data name="ID0382" xml:space="preserve">
+    <value>An error occurred while marking the authentication operation as failed, which may indicate a nonce collision. Make sure nonces are unique, contain enough entropy and are generated using a crypto-secure random number generator.</value>
+  </data>
+  <data name="ID0383" xml:space="preserve">
+    <value>An error occurred while waiting for the authentication operation to complete, which may indicate a nonce collision. Make sure nonces are unique, contain enough entropy and are generated using a crypto-secure random number generator.</value>
+  </data>
+  <data name="ID0384" xml:space="preserve">
+    <value>An explicit client URI must be set when using the OpenIddict client Windows integration. To set the client URI, use 'services.AddOpenIddict().AddClient().SetClientUri()'.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
@@ -1971,6 +2004,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID4018" xml:space="preserve">
     <value>The authorization identifier shouldn't be null or empty at this point.</value>
+  </data>
+  <data name="ID4019" xml:space="preserve">
+    <value>The nonce shouldn't be null or empty at this point.</value>
   </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
@@ -2571,6 +2607,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6212" xml:space="preserve">
     <value>The authorization request was rejected because the '{ResponseType}' response type is not a valid combination.</value>
+  </data>
+  <data name="ID6213" xml:space="preserve">
+    <value>An error occurred while handling an inter-process message.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

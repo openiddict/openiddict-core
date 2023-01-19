@@ -26,6 +26,40 @@ public class Worker : IHostedService
         {
             var manager = provider.GetRequiredService<IOpenIddictApplicationManager>();
 
+            if (await manager.FindByClientIdAsync("console") is null)
+            {
+                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ClientId = "console",
+                    ConsentType = ConsentTypes.Systematic,
+                    DisplayName = "Console client application",
+                    DisplayNames =
+                    {
+                        [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente console"
+                    },
+                    RedirectUris =
+                    {
+                        new Uri("openiddict-sandbox-console-client://localhost/callback/login/local")
+                    },
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.ResponseTypes.Code,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+                        Permissions.Scopes.Roles,
+                        Permissions.Prefixes.Scope + "demo_api"
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    }
+                });
+            }
+
             if (await manager.FindByClientIdAsync("mvc") is null)
             {
                 await manager.CreateAsync(new OpenIddictApplicationDescriptor
@@ -50,6 +84,74 @@ public class Worker : IHostedService
                     {
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.Logout,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.ResponseTypes.Code,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+                        Permissions.Scopes.Roles,
+                        Permissions.Prefixes.Scope + "demo_api"
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    }
+                });
+            }
+
+            if (await manager.FindByClientIdAsync("winforms") is null)
+            {
+                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ClientId = "winforms",
+                    ConsentType = ConsentTypes.Systematic,
+                    DisplayName = "WinForms client application",
+                    DisplayNames =
+                    {
+                        [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente WinForms"
+                    },
+                    RedirectUris =
+                    {
+                        new Uri("openiddict-sandbox-winforms-client://localhost/callback/login/local")
+                    },
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.ResponseTypes.Code,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+                        Permissions.Scopes.Roles,
+                        Permissions.Prefixes.Scope + "demo_api"
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    }
+                });
+            }
+
+            if (await manager.FindByClientIdAsync("wpf") is null)
+            {
+                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ClientId = "wpf",
+                    ConsentType = ConsentTypes.Systematic,
+                    DisplayName = "WPF client application",
+                    DisplayNames =
+                    {
+                        [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente WPF"
+                    },
+                    RedirectUris =
+                    {
+                        new Uri("openiddict-sandbox-wpf-client://localhost/callback/login/local")
+                    },
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,

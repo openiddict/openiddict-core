@@ -31,6 +31,21 @@ public static partial class OpenIddictClientEvents
         public OpenIddictClientTransaction Transaction { get; }
 
         /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        /// <remarks>
+        /// Note: for security reasons, this property shouldn't be used by event
+        /// handlers to abort security-sensitive operations. As such, it is
+        /// recommended to use this property only for user-dependent operations.
+        /// </remarks>
+        public CancellationToken CancellationToken
+        {
+            get => Transaction.CancellationToken;
+            set => Transaction.CancellationToken = value;
+        }
+
+        /// <summary>
         /// Gets or sets the endpoint type that handled the request, if applicable.
         /// </summary>
         public OpenIddictClientEndpointType EndpointType
@@ -307,6 +322,11 @@ public static partial class OpenIddictClientEvents
         /// Gets the user-defined authentication properties, if available.
         /// </summary>
         public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets or sets the nonce used to identify the authentication demand, if applicable.
+        /// </summary>
+        public string? Nonce { get; set; }
 
         /// <summary>
         /// Gets or sets the issuer used for the authentication demand, if applicable.

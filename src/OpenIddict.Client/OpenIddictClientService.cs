@@ -27,6 +27,233 @@ public sealed class OpenIddictClientService
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
+    /// Initiates an interactive user authentication demand.
+    /// </summary>
+    /// <param name="issuer">The issuer.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public ValueTask<string> ChallengeWithBrowserAsync(
+        Uri issuer, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (issuer is null)
+        {
+            throw new ArgumentNullException(nameof(issuer));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+        return ChallengeWithBrowserAsync(registration, scopes, parameters, properties, cancellationToken);
+    }
+
+    /// <summary>
+    /// Initiates an interactive user authentication demand.
+    /// </summary>
+    /// <param name="provider">The name of the provider (see <see cref="OpenIddictClientRegistration.ProviderName"/>).</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public ValueTask<string> ChallengeWithBrowserAsync(
+        string provider, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(provider))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => string.Equals(
+            registration.ProviderName, provider, StringComparison.Ordinal)) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+
+        return ChallengeWithBrowserAsync(registration, scopes, parameters, properties, cancellationToken);
+    }
+
+    /// <summary>
+    /// Initiates an interactive user authentication demand.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    private async ValueTask<string> ChallengeWithBrowserAsync(
+        OpenIddictClientRegistration registration, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
+        if (scopes is not null && Array.Exists(scopes, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
+        }
+
+        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessChallengeContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Issuer = registration.Issuer,
+                Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+                Registration = registration,
+                Request = parameters is not null ? new(parameters) : new(),
+            };
+
+            if (scopes is { Length: > 0 })
+            {
+                context.Scopes.UnionWith(scopes);
+            }
+
+            if (properties is { Count: > 0 })
+            {
+                foreach (var property in properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                await dispatcher.DispatchAsync(new ProcessErrorContext(transaction)
+                {
+                    Error = context.Error ?? Errors.InvalidRequest,
+                    ErrorDescription = context.ErrorDescription,
+                    ErrorUri = context.ErrorUri,
+                    Response = new OpenIddictResponse()
+                });
+            }
+
+            if (string.IsNullOrEmpty(context.Nonce))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
+            }
+
+            return context.Nonce;
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Completes the interactive authentication demand corresponding to the specified nonce.
+    /// </summary>
+    /// <param name="nonce">The nonce obtained after a challenge operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public async ValueTask<(OpenIddictResponse AuthorizationResponse, OpenIddictResponse TokenResponse, ClaimsPrincipal Principal)> AuthenticateWithBrowserAsync(
+        string nonce, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessAuthenticationContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                Nonce = nonce
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    message: SR.GetResourceString(SR.ID0374),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            else
+            {
+                var principal = OpenIddictHelpers.CreateMergedPrincipal(
+                    context.FrontchannelIdentityTokenPrincipal,
+                    context.BackchannelIdentityTokenPrincipal,
+                    context.UserinfoTokenPrincipal) ?? new ClaimsPrincipal(new ClaimsIdentity());
+
+                // Attach the identity of the authorization to the returned principal to allow resolving it even if no other
+                // claim was added to the principal (e.g when no id_token was returned and no userinfo endpoint is available).
+                principal.SetClaim(Claims.AuthorizationServer, context.StateTokenPrincipal?.GetClaim(Claims.AuthorizationServer))
+                         .SetClaim(Claims.Private.ProviderName, context.StateTokenPrincipal?.GetClaim(Claims.Private.ProviderName));
+
+                return (
+                    AuthorizationResponse: context.Request is not null ? new(context.Request.GetParameters()) : new(),
+                    TokenResponse        : context.TokenResponse ?? new(),
+                    Principal            : principal);
+            }
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
     /// Authenticates using the client credentials grant and resolves the corresponding tokens.
     /// </summary>
     /// <param name="issuer">The issuer.</param>
@@ -128,6 +355,7 @@ public sealed class OpenIddictClientService
 
             var context = new ProcessAuthenticationContext(transaction)
             {
+                CancellationToken = cancellationToken,
                 Configuration = configuration,
                 GrantType = GrantTypes.ClientCredentials,
                 Issuer = registration.Issuer,
@@ -299,6 +527,7 @@ public sealed class OpenIddictClientService
 
             var context = new ProcessAuthenticationContext(transaction)
             {
+                CancellationToken = cancellationToken,
                 Configuration = configuration,
                 GrantType = GrantTypes.Password,
                 Issuer = registration.Issuer,
@@ -464,6 +693,7 @@ public sealed class OpenIddictClientService
 
             var context = new ProcessAuthenticationContext(transaction)
             {
+                CancellationToken = cancellationToken,
                 Configuration = configuration,
                 GrantType = GrantTypes.RefreshToken,
                 Issuer = registration.Issuer,
@@ -570,6 +800,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new PrepareConfigurationRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Registration = registration,
                     Request = request
@@ -591,6 +822,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ApplyConfigurationRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Registration = registration,
                     Request = request
@@ -614,6 +846,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ExtractConfigurationResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Registration = registration,
                     Request = request
@@ -639,6 +872,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new HandleConfigurationResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Registration = registration,
                     Request = request,
@@ -725,6 +959,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new PrepareCryptographyRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Registration = registration,
                     Request = request
@@ -746,6 +981,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ApplyCryptographyRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Registration = registration,
                     Request = request
@@ -769,6 +1005,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ExtractCryptographyResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Registration = registration,
                     Request = request
@@ -794,6 +1031,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new HandleCryptographyResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Registration = registration,
                     Request = request,
@@ -888,6 +1126,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new PrepareTokenRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
@@ -910,6 +1149,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ApplyTokenRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
@@ -934,6 +1174,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ExtractTokenResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
@@ -960,6 +1201,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new HandleTokenResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
@@ -1049,6 +1291,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new PrepareUserinfoRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
@@ -1071,6 +1314,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ApplyUserinfoRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
@@ -1095,6 +1339,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ExtractUserinfoResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
@@ -1121,6 +1366,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new HandleUserinfoResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,

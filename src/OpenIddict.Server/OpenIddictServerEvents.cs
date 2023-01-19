@@ -30,6 +30,21 @@ public static partial class OpenIddictServerEvents
         public OpenIddictServerTransaction Transaction { get; }
 
         /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        /// <remarks>
+        /// Note: for security reasons, this property shouldn't be used by event
+        /// handlers to abort security-sensitive operations. As such, it is
+        /// recommended to use this property only for user-dependent operations.
+        /// </remarks>
+        public CancellationToken CancellationToken
+        {
+            get => Transaction.CancellationToken;
+            set => Transaction.CancellationToken = value;
+        }
+
+        /// <summary>
         /// Gets or sets the endpoint type that handled the request, if applicable.
         /// </summary>
         public OpenIddictServerEndpointType EndpointType

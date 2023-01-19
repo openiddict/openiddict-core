@@ -40,6 +40,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /*
          * Authentication processing:
          */
+        ValidateAuthenticationNonce.Descriptor,
         ResolveRequestForgeryProtection.Descriptor,
 
         /*
@@ -294,6 +295,40 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for rejecting authentication demands that specify an explicit nonce property.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ValidateAuthenticationNonce : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ValidateAuthenticationNonce>()
+                .SetOrder(ValidateAuthenticationDemand.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (!string.IsNullOrEmpty(context.Nonce))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0377));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the request forgery protection from the correlation cookie.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
@@ -310,6 +345,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ResolveRequestForgeryProtection>()
                 .SetOrder(ValidateRequestForgeryProtection.Descriptor.Order - 500)

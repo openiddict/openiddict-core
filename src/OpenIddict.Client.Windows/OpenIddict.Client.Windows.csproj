@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;netcoreapp3.1;net6.0-windows;net7.0-windows</TargetFrameworks>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Windows integration package for the OpenIddict client services.</Description>
+    <PackageTags>$(PackageTags);client;windows</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Client\OpenIddict.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) ">
+    <PackageReference Include="NamedPipeServerStream.NetFrameworkVersion" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\OpenIddict.Extensions\*\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Client.OpenIddictClientEvents" Static="true" />
+    <Using Include="OpenIddict.Client.OpenIddictClientHandlers" Static="true" />
+    <Using Include="OpenIddict.Client.OpenIddictClientHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Client.Windows.OpenIddictClientWindowsHandlers" Static="true" />
+    <Using Include="OpenIddict.Client.Windows.OpenIddictClientWindowsHandlerFilters" Static="true" />
+  </ItemGroup>
+
+</Project>

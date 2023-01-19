@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.TestHost;
 using OpenIddict.Validation.IntegrationTests;
 
-#if SUPPORTS_GENERIC_HOST
+#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
 using Microsoft.Extensions.Hosting;
 #endif
 
@@ -19,7 +19,7 @@ namespace OpenIddict.Validation.AspNetCore.IntegrationTests;
 /// </summary>
 public class OpenIddictValidationAspNetCoreIntegrationTestServer : OpenIddictValidationIntegrationTestServer
 {
-#if SUPPORTS_GENERIC_HOST
+#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
     public OpenIddictValidationAspNetCoreIntegrationTestServer(IHost host)
     {
         Host = host;
@@ -44,7 +44,7 @@ public class OpenIddictValidationAspNetCoreIntegrationTestServer : OpenIddictVal
         => new(new OpenIddictValidationIntegrationTestClient(Server.CreateClient()));
 
     public override
-#if SUPPORTS_GENERIC_HOST
+#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         async
 #endif
         ValueTask DisposeAsync()
@@ -52,7 +52,7 @@ public class OpenIddictValidationAspNetCoreIntegrationTestServer : OpenIddictVal
         // Dispose of the underlying test server.
         Server.Dispose();
 
-#if SUPPORTS_GENERIC_HOST
+#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         // Stop and dispose of the underlying generic host.
         await Host.StopAsync();
         Host.Dispose();
