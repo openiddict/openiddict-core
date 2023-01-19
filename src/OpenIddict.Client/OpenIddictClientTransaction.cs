@@ -16,6 +16,17 @@ namespace OpenIddict.Client;
 public sealed class OpenIddictClientTransaction
 {
     /// <summary>
+    /// Gets or sets the cancellation token that will be
+    /// used to determine if the operation was aborted.
+    /// </summary>
+    /// <remarks>
+    /// Note: for security reasons, this property shouldn't be used by event
+    /// handlers to abort security-sensitive operations. As such, it is
+    /// recommended to use this property only for user-dependent operations.
+    /// </remarks>
+    public CancellationToken CancellationToken { get; set; }
+
+    /// <summary>
     /// Gets or sets the type of the endpoint processing the current request.
     /// </summary>
     public OpenIddictClientEndpointType EndpointType { get; set; }

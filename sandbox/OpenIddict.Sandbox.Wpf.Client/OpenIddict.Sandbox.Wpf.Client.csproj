@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworks>net48;net7.0-windows</TargetFrameworks>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <UseWPF>true</UseWPF>
+    <IsShipping>false</IsShipping>
+    <SignAssembly>false</SignAssembly>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIddict.Client.SystemNetHttp\OpenIddict.Client.SystemNetHttp.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Client.WebIntegration\OpenIddict.Client.WebIntegration.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Client.Windows\OpenIddict.Client.Windows.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.AppServices" />
+    <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.Wpf" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Net.Http" />
+  </ItemGroup>
+
+</Project>

@@ -60,7 +60,11 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
             Context.Features.Set(new OpenIddictServerAspNetCoreFeature { Transaction = transaction });
         }
 
-        var context = new ProcessRequestContext(transaction);
+        var context = new ProcessRequestContext(transaction)
+        {
+            CancellationToken = Context.RequestAborted
+        };
+
         await _dispatcher.DispatchAsync(context);
 
         if (context.IsRequestHandled)
@@ -77,6 +81,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
         {
             var notification = new ProcessErrorContext(transaction)
             {
+                CancellationToken = Context.RequestAborted,
                 Error = context.Error ?? Errors.InvalidRequest,
                 ErrorDescription = context.ErrorDescription,
                 ErrorUri = context.ErrorUri,
@@ -113,8 +118,10 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
         var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
         if (context is null)
         {
-            context = new ProcessAuthenticationContext(transaction);
-            await _dispatcher.DispatchAsync(context);
+            await _dispatcher.DispatchAsync(context = new ProcessAuthenticationContext(transaction)
+            {
+                CancellationToken = Context.RequestAborted
+            });
 
             // Store the context object in the transaction so it can be later retrieved by handlers
             // that want to access the authentication result without triggering a new authentication flow.
@@ -327,6 +334,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
 
         var context = new ProcessChallengeContext(transaction)
         {
+            CancellationToken = Context.RequestAborted,
             Response = new OpenIddictResponse()
         };
 
@@ -341,6 +349,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
         {
             var notification = new ProcessErrorContext(transaction)
             {
+                CancellationToken = Context.RequestAborted,
                 Error = context.Error ?? Errors.InvalidRequest,
                 ErrorDescription = context.ErrorDescription,
                 ErrorUri = context.ErrorUri,
@@ -377,6 +386,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
 
         var context = new ProcessSignInContext(transaction)
         {
+            CancellationToken = Context.RequestAborted,
             Principal = user,
             Response = new OpenIddictResponse()
         };
@@ -417,6 +427,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
 
         var context = new ProcessSignOutContext(transaction)
         {
+            CancellationToken = Context.RequestAborted,
             Response = new OpenIddictResponse()
         };
 
@@ -433,6 +444,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
         {
             var notification = new ProcessErrorContext(transaction)
             {
+                CancellationToken = Context.RequestAborted,
                 Error = context.Error ?? Errors.InvalidRequest,
                 ErrorDescription = context.ErrorDescription,
                 ErrorUri = context.ErrorUri,

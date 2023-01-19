@@ -296,15 +296,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             (context.ExtractBackchannelIdentityToken,
              context.RequireBackchannelIdentityToken,
              context.ValidateBackchannelIdentityToken) = context.Registration.ProviderName switch
-             {
-                 // While PayPal claims the OpenID Connect flavor of the code flow is supported,
-                 // their implementation doesn't return an id_token from the token endpoint.
-                 Providers.PayPal => (false, false, false),
+            {
+                // While PayPal claims the OpenID Connect flavor of the code flow is supported,
+                // their implementation doesn't return an id_token from the token endpoint.
+                Providers.PayPal => (false, false, false),
 
-                 _ => (context.ExtractBackchannelIdentityToken,
-                       context.RequireBackchannelIdentityToken,
-                       context.ValidateBackchannelIdentityToken)
-             };
+                _ => (context.ExtractBackchannelIdentityToken,
+                      context.RequireBackchannelIdentityToken,
+                      context.ValidateBackchannelIdentityToken)
+            };
 
             return default;
         }

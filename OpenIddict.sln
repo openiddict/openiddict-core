@@ -147,6 +147,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.Owin.Inte
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.DataProtection.Tests", "test\OpenIddict.Server.DataProtection.Tests\OpenIddict.Server.DataProtection.Tests.csproj", "{C92838AB-3923-49A1-B23E-FA01306CAC9D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.Windows", "src\OpenIddict.Client.Windows\OpenIddict.Client.Windows.csproj", "{058BF159-F3DB-4BCD-99E5-2E5C62D8F588}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.Wpf.Client", "sandbox\OpenIddict.Sandbox.Wpf.Client\OpenIddict.Sandbox.Wpf.Client.csproj", "{D0C56832-6557-4CC1-91EA-7B31B18BEE7A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.WinForms.Client", "sandbox\OpenIddict.Sandbox.WinForms.Client\OpenIddict.Sandbox.WinForms.Client.csproj", "{35997586-8AAB-4EE5-A022-3E5BD12746CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.Console.Client", "sandbox\OpenIddict.Sandbox.Console.Client\OpenIddict.Sandbox.Console.Client.csproj", "{819CD7AA-01FD-4369-BABF-5DFCB7E94068}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -357,6 +365,22 @@ Global
 		{C92838AB-3923-49A1-B23E-FA01306CAC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C92838AB-3923-49A1-B23E-FA01306CAC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C92838AB-3923-49A1-B23E-FA01306CAC9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{058BF159-F3DB-4BCD-99E5-2E5C62D8F588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{058BF159-F3DB-4BCD-99E5-2E5C62D8F588}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{058BF159-F3DB-4BCD-99E5-2E5C62D8F588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{058BF159-F3DB-4BCD-99E5-2E5C62D8F588}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0C56832-6557-4CC1-91EA-7B31B18BEE7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0C56832-6557-4CC1-91EA-7B31B18BEE7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0C56832-6557-4CC1-91EA-7B31B18BEE7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0C56832-6557-4CC1-91EA-7B31B18BEE7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35997586-8AAB-4EE5-A022-3E5BD12746CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35997586-8AAB-4EE5-A022-3E5BD12746CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35997586-8AAB-4EE5-A022-3E5BD12746CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35997586-8AAB-4EE5-A022-3E5BD12746CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{819CD7AA-01FD-4369-BABF-5DFCB7E94068}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{819CD7AA-01FD-4369-BABF-5DFCB7E94068}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{819CD7AA-01FD-4369-BABF-5DFCB7E94068}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{819CD7AA-01FD-4369-BABF-5DFCB7E94068}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -413,6 +437,10 @@ Global
 		{CC731B63-4D5C-4587-8F28-B40F4EEAC735} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{2F3E9EED-446B-46C3-BC52-ED66C280E0A3} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{C92838AB-3923-49A1-B23E-FA01306CAC9D} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
+		{058BF159-F3DB-4BCD-99E5-2E5C62D8F588} = {D544447C-D701-46BB-9A5B-C76C612A596B}
+		{D0C56832-6557-4CC1-91EA-7B31B18BEE7A} = {F47D1283-0EE9-4728-8026-58405C29B786}
+		{35997586-8AAB-4EE5-A022-3E5BD12746CE} = {F47D1283-0EE9-4728-8026-58405C29B786}
+		{819CD7AA-01FD-4369-BABF-5DFCB7E94068} = {F47D1283-0EE9-4728-8026-58405C29B786}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A710059F-0466-4D48-9B3A-0EF4F840B616}
