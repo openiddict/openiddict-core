@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,6 +36,7 @@ public sealed class OpenIddictClientService
     /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    [RequiresPreviewFeatures]
     public ValueTask<string> ChallengeWithBrowserAsync(
         Uri issuer, string[]? scopes = null,
         Dictionary<string, OpenIddictParameter>? parameters = null,
@@ -61,6 +63,7 @@ public sealed class OpenIddictClientService
     /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    [RequiresPreviewFeatures]
     public ValueTask<string> ChallengeWithBrowserAsync(
         string provider, string[]? scopes = null,
         Dictionary<string, OpenIddictParameter>? parameters = null,
@@ -88,6 +91,7 @@ public sealed class OpenIddictClientService
     /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    [RequiresPreviewFeatures]
     private async ValueTask<string> ChallengeWithBrowserAsync(
         OpenIddictClientRegistration registration, string[]? scopes = null,
         Dictionary<string, OpenIddictParameter>? parameters = null,
@@ -186,6 +190,7 @@ public sealed class OpenIddictClientService
     /// <param name="nonce">The nonce obtained after a challenge operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    [RequiresPreviewFeatures]
     public async ValueTask<(OpenIddictResponse AuthorizationResponse, OpenIddictResponse TokenResponse, ClaimsPrincipal Principal)> AuthenticateWithBrowserAsync(
         string nonce, CancellationToken cancellationToken = default)
     {
