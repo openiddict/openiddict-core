@@ -217,7 +217,7 @@ public sealed class OpenIddictServerBuilder
             .OfType<X509Certificate2>()
             .ToList();
 
-        if (!certificates.Any(certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
+        if (!certificates.Exists(static certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
             using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -330,7 +330,8 @@ public sealed class OpenIddictServerBuilder
         if (certificate.Version >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
-            if (extensions.Count is not 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
+            if (extensions.Count is not 0 && !extensions.Exists(static extension =>
+                extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0060));
             }
@@ -579,7 +580,7 @@ public sealed class OpenIddictServerBuilder
             .OfType<X509Certificate2>()
             .ToList();
 
-        if (!certificates.Any(certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
+        if (!certificates.Exists(static certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
             using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -721,7 +722,8 @@ public sealed class OpenIddictServerBuilder
         if (certificate.Version >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
-            if (extensions.Count is not 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
+            if (extensions.Count is not 0 && !extensions.Exists(static extension =>
+                extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0070));
             }
@@ -1033,12 +1035,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1082,12 +1084,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1131,12 +1133,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1180,12 +1182,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1229,12 +1231,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1278,12 +1280,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1327,12 +1329,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1376,12 +1378,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1425,12 +1427,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1474,12 +1476,12 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
@@ -1600,7 +1602,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(claims));
         }
 
-        if (claims.Any(string.IsNullOrEmpty))
+        if (Array.Exists(claims, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0073), nameof(claims));
         }
@@ -1620,8 +1622,8 @@ public sealed class OpenIddictServerBuilder
         {
             throw new ArgumentNullException(nameof(scopes));
         }
-
-        if (scopes.Any(string.IsNullOrEmpty))
+        
+        if (Array.Exists(scopes, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
