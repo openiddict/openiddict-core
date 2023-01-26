@@ -1,8 +1,7 @@
 ﻿using System.Windows;
 
-namespace OpenIddict.Sandbox.Wpf.Client
+namespace OpenIddict.Sandbox.Wpf.Client;
+
+public partial class App : Application
 {
-    public partial class App : Application
-    {
-    }
 }

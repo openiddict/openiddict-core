@@ -1,27 +1,25 @@
-﻿using System.Windows;
-using Dapplo.Microsoft.Extensions.Hosting.Wpf;
-using OpenIddict.Client;
+﻿using OpenIddict.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
-namespace OpenIddict.Sandbox.Wpf.Client;
+namespace OpenIddict.Sandbox.Maui.Client;
 
-public partial class MainWindow : Window, IWpfShell
+public partial class MainPage : ContentPage
 {
     private readonly OpenIddictClientService _service;
 
-    public MainWindow(OpenIddictClientService service)
+    public MainPage(OpenIddictClientService service)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
 
         InitializeComponent();
     }
 
-    private async void LocalLoginButton_Click(object sender, RoutedEventArgs e)
+    private async void OnLocalLoginButtonClicked(object sender, EventArgs e)
         => await AuthenticateAsync("Local");
 
-    private async void TwitterLoginButton_Click(object sender, RoutedEventArgs e)
+    private async void OnTwitterLoginButtonClicked(object sender, EventArgs e)
         => await AuthenticateAsync(Providers.Twitter);
 
     private async Task AuthenticateAsync(string provider)
@@ -40,26 +38,22 @@ public partial class MainWindow : Window, IWpfShell
             var (_, _, principal) = await _service.AuthenticateWithBrowserAsync(
                 nonce, cancellationToken: source.Token);
 
-            MessageBox.Show($"Welcome, {principal.FindFirst(Claims.Name)!.Value}.",
-                "Authentication successful", MessageBoxButton.OK, MessageBoxImage.Information);
+            await DisplayAlert("Authentication successful", $"Welcome, {principal.FindFirst(Claims.Name)!.Value}.", "OK");
         }
 
         catch (OperationCanceledException)
         {
-            MessageBox.Show("The authentication process was aborted.",
-                "Authentication timed out", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await DisplayAlert("Authentication timed out", "The authentication process was aborted.", "OK");
         }
 
         catch (ProtocolException exception) when (exception.Error is Errors.AccessDenied)
         {
-            MessageBox.Show("The authorization was denied by the end user.",
-                "Authorization denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await DisplayAlert("Authorization denied", "The authorization was denied by the end user.", "OK");
         }
 
         catch
         {
-            MessageBox.Show("An error occurred while trying to authenticate the user.",
-                "Authentication failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            await DisplayAlert("Authentication failed", "An error occurred while trying to authenticate the user.", "OK");
         }
     }
 }
