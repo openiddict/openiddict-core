@@ -942,9 +942,22 @@ public static partial class OpenIddictServerHandlers
 
                     // Revoke all the token entries associated with the authorization,
                     // including the redeemed token that was used in the token request.
+
+                    // Note: the tokens are deliberately buffered before being marked
+                    // as revoked to prevent issues with providers that try to reuse the
+                    // connection opened to iterate the tokens instead of opening a new one.
+                    //
+                    // See https://github.com/openiddict/openiddict-core/issues/1658 for more information.
+                    List<object> tokens = new(capacity: 1);
+
                     await foreach (var token in _tokenManager.FindByAuthorizationIdAsync(identifier))
                     {
-                        await _tokenManager.TryRevokeAsync(token);
+                        tokens.Add(token);
+                    }
+
+                    for (var index = 0; index < tokens.Count; index++)
+                    {
+                        await _tokenManager.TryRevokeAsync(tokens[index]);
                     }
                 }
             }
