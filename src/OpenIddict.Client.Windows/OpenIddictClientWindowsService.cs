@@ -9,10 +9,6 @@ using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-#if !SUPPORTS_HOST_APPLICATION_LIFETIME
-using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
-#endif
-
 namespace OpenIddict.Client.Windows;
 
 /// <summary>
@@ -60,7 +56,7 @@ public sealed class OpenIddictClientWindowsService : IHostedService
             transaction.SetProperty(typeof(OpenIddictClientWindowsActivation).FullName!,
                 new OpenIddictClientWindowsActivation
                 {
-                    CommandLineArguments = ImmutableArray.CreateRange(Environment.GetCommandLineArgs()),
+                    ActivationArguments = GetActivationArguments(),
                     IsActivationRedirected = false
                 });
 
@@ -95,6 +91,19 @@ public sealed class OpenIddictClientWindowsService : IHostedService
             {
                 scope.Dispose();
             }
+        }
+
+        static ImmutableArray<string> GetActivationArguments()
+        {
+#if SUPPORTS_WINDOWS_RUNTIME
+            if (OpenIddictClientWindowsHelpers.IsWindowsRuntimeSupported() &&
+                OpenIddictClientWindowsHelpers.GetProtocolActivationUriWithWindowsRuntime() is Uri uri)
+            {
+                return ImmutableArray.Create(uri.AbsoluteUri);
+            }
+#endif
+
+            return ImmutableArray.CreateRange(Environment.GetCommandLineArgs());
         }
     }
 

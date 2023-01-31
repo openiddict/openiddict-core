@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.IO.Pipes;
+using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
@@ -86,6 +87,11 @@ public sealed class OpenIddictClientWindowsConfiguration : IConfigureOptions<Ope
         // and cannot communicate with applications outside the sandbox container.
         if (string.IsNullOrEmpty(options.PipeName))
         {
+            if (string.IsNullOrEmpty(_environment.ApplicationName))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0386));
+            }
+
             options.PipeName = $@"LOCAL\OpenIddict.Client.Windows\{
                 Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(
                     Encoding.UTF8.GetBytes(_environment.ApplicationName)))
@@ -94,15 +100,29 @@ public sealed class OpenIddictClientWindowsConfiguration : IConfigureOptions<Ope
 
         // If no explicit pipe security policy was specified, grant the current user
         // full control over the created pipe and allow cross-process communication
-        // between elevated and non-elevated processes.
+        // between elevated and non-elevated processes. Note: if the process executes
+        // inside an AppContainer, don't override the default OS pipe security policy
+        // to allow all applications with the same identity to access the named pipe.
         if (options.PipeSecurity is null)
         {
-            using var identity = WindowsIdentity.GetCurrent();
+            using var identity = WindowsIdentity.GetCurrent(TokenAccessLevels.Query);
 
-            options.PipeSecurity = new PipeSecurity();
-            options.PipeSecurity.SetOwner(identity.User!);
-            options.PipeSecurity.AddAccessRule(new PipeAccessRule(identity.User!,
-                PipeAccessRights.FullControl, AccessControlType.Allow));
+            if (!IsRunningInAppContainer(identity))
+            {
+                options.PipeSecurity = new PipeSecurity();
+                options.PipeSecurity.SetOwner(identity.User!);
+                options.PipeSecurity.AddAccessRule(new PipeAccessRule(identity.User!,
+                    PipeAccessRights.FullControl, AccessControlType.Allow));
+            }
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static bool IsRunningInAppContainer(WindowsIdentity identity)
+#if SUPPORTS_WINDOWS_RUNTIME
+            => OpenIddictClientWindowsHelpers.IsWindowsRuntimeSupported() &&
+               OpenIddictClientWindowsHelpers.HasAppContainerToken(identity);
+#else
+            => false;
+#endif
     }
 }

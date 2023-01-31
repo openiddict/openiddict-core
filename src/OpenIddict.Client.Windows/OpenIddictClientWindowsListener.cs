@@ -66,11 +66,12 @@ public sealed class OpenIddictClientWindowsListener : BackgroundService
                 outBufferSize             : 0,
                 pipeSecurity              : _options.CurrentValue.PipeSecurity,
                 inheritability            : HandleInheritability.None,
-                additionalAccessRights    : 0);
+                additionalAccessRights    : default);
 
-            // Wait for a writer to connect to the named pipe,
-            // copy its content to the memory stream and rewind it.
+            // Wait for a writer to connect to the named pipe.
             await stream.WaitForConnectionAsync(stoppingToken);
+
+            // Copy the content to the memory stream asynchronously and rewind it.
             await stream.CopyToAsync(buffer, bufferSize: 81_920, stoppingToken);
             buffer.Seek(0L, SeekOrigin.Begin);
 
@@ -110,7 +111,7 @@ public sealed class OpenIddictClientWindowsListener : BackgroundService
                         transaction.SetProperty(typeof(OpenIddictClientWindowsActivation).FullName!,
                             new OpenIddictClientWindowsActivation
                             {
-                                CommandLineArguments = builder.MoveToImmutable(),
+                                ActivationArguments = builder.MoveToImmutable(),
                                 IsActivationRedirected = true
                             });
 

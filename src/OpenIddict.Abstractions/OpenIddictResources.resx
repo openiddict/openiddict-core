@@ -1453,6 +1453,12 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0384" xml:space="preserve">
     <value>An explicit client URI must be set when using the OpenIddict client Windows integration. To set the client URI, use 'services.AddOpenIddict().AddClient().SetClientUri()'.</value>
   </data>
+  <data name="ID0385" xml:space="preserve">
+    <value>The default system browser couldn't be started. If the application executes inside a sandbox, make sure it is allowed to launch URIs or spawn new processes.</value>
+  </data>
+  <data name="ID0386" xml:space="preserve">
+    <value>A pipe name must be manually set in the OpenIddict Windows integration options when no application name was configured in the .NET generic host options. To set the pipe name, call 'services.AddOpenIddict().AddClient().UseWindows().SetPipeName()'.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
