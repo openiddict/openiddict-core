@@ -16,10 +16,10 @@ namespace OpenIddict.Client.Windows;
 public sealed class OpenIddictClientWindowsActivation
 {
     /// <summary>
-    /// Gets or sets the command line arguments used to
+    /// Gets or sets the activation arguments used to
     /// launch the current instance of the application.
     /// </summary>
-    public ImmutableArray<string> CommandLineArguments { get; set; }
+    public ImmutableArray<string> ActivationArguments { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether the activation

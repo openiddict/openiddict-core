@@ -23,7 +23,10 @@ public class Worker : IHostedService
         RegistryKey? root = null;
 
         // Create the registry entries necessary to handle URI protocol activations.
-        // Note: the application MUST be run once as an administrator for this to work.
+        // Note: the application MUST be run once as an administrator for this to work,
+        // so this should typically be done by a dedicated installer or a setup script.
+        // Alternatively, the application can be packaged and use windows.protocol to
+        // register the protocol handler/custom URI scheme with the operation system.
         try
         {
             root = Registry.ClassesRoot.OpenSubKey("openiddict-sandbox-winforms-client");

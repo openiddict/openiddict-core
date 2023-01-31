@@ -99,11 +99,11 @@ public static partial class OpenIddictClientWindowsHandlers
                 //
                 // For more information, see https://devblogs.microsoft.com/oldnewthing/20060515-07/?p=31203.
 
-                { CommandLineArguments: [_, string argument] } when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
+                { ActivationArguments: [_, string argument] } when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
                     !uri.IsFile && uri.IsWellFormedOriginalString()
                     => (new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute), uri),
 
-                { CommandLineArguments: [string argument] } when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
+                { ActivationArguments: [string argument] } when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
                     !uri.IsFile && uri.IsWellFormedOriginalString()
                     => (new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute), uri),
 
@@ -458,23 +458,25 @@ public static partial class OpenIddictClientWindowsHandlers
                     impersonationLevel: TokenImpersonationLevel.None,
                     inheritability    : HandleInheritability.None))
                 {
+                    // Wait for the target to accept the pipe connection.
+                    await stream.ConnectAsync(source.Token);
+
                     // Write the type of message stored in the shared memory and the
                     // version used to identify the binary serialization format.
                     writer.Write(0x01);
                     writer.Write(0x01);
 
                     // Write the number of arguments present in the activation.
-                    writer.Write(activation.CommandLineArguments.Length);
+                    writer.Write(activation.ActivationArguments.Length);
 
                     // Write all the arguments present in the activation.
-                    for (var index = 0; index < activation.CommandLineArguments.Length; index++)
+                    for (var index = 0; index < activation.ActivationArguments.Length; index++)
                     {
-                        writer.Write(activation.CommandLineArguments[index]);
+                        writer.Write(activation.ActivationArguments[index]);
                     }
 
-                    // Wait for the process to accept the pipe connection, and transfer the binary content.
+                    // Transfer the payload to the target.
                     buffer.Seek(0L, SeekOrigin.Begin);
-                    await stream.ConnectAsync(source.Token);
                     await buffer.CopyToAsync(stream, bufferSize: 81_920, source.Token);
                 }
 

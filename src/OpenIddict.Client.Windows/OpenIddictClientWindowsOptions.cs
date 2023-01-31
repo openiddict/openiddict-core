@@ -44,7 +44,8 @@ public sealed class OpenIddictClientWindowsOptions
     /// to enable inter-process communication and handle protocol activation redirections.
     /// </summary>
     /// <remarks>
-    /// If no value is explicitly set, a default policy is automatically created.
+    /// If no value is explicitly set, a default policy is automatically created
+    /// (unless the application is running inside an AppContainer sandbox).
     /// </remarks>
     public PipeSecurity PipeSecurity { get; set; } = default!;
 }
