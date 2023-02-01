@@ -78,7 +78,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
 #endif
             if (builder.PrimaryHandler is not HttpClientHandler handler)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0373));
+                throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName));
             }
 
             // OpenIddict uses IHttpClientFactory to manage the creation of the HTTP clients and

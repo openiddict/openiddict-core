@@ -87,7 +87,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
 #endif
                 if (builder.PrimaryHandler is not HttpClientHandler handler)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0373));
+                    throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName));
                 }
 
                 // If a client certificate was specified, update the HTTP handler to use it.
