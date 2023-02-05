@@ -267,80 +267,90 @@ public static partial class OpenIddictServerHandlers
 
             (context.ExtractAccessToken,
              context.RequireAccessToken,
-             context.ValidateAccessToken) = context.EndpointType switch
+             context.ValidateAccessToken,
+             context.RejectAccessToken) = context.EndpointType switch
             {
                 // The userinfo endpoint requires sending a valid access token.
-                OpenIddictServerEndpointType.Userinfo => (true, true, true),
+                OpenIddictServerEndpointType.Userinfo => (true, true, true, true),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             (context.ExtractAuthorizationCode,
              context.RequireAuthorizationCode,
-             context.ValidateAuthorizationCode) = context.EndpointType switch
+             context.ValidateAuthorizationCode,
+             context.RejectAuthorizationCode) = context.EndpointType switch
             {
                 // The authorization code grant requires sending a valid authorization code.
                 OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                    => (true, true, true),
+                    => (true, true, true, true),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             (context.ExtractDeviceCode,
              context.RequireDeviceCode,
-             context.ValidateDeviceCode) = context.EndpointType switch
+             context.ValidateDeviceCode,
+             context.RejectDeviceCode) = context.EndpointType switch
             {
                 // The device code grant requires sending a valid device code.
                 OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                    => (true, true, true),
+                    => (true, true, true, true),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             (context.ExtractGenericToken,
              context.RequireGenericToken,
-             context.ValidateGenericToken) = context.EndpointType switch
+             context.ValidateGenericToken,
+             context.RejectGenericToken) = context.EndpointType switch
             {
                 // Tokens received by the introspection and revocation endpoints can be of any type.
                 // Additional token type filtering is made by the endpoint themselves, if needed.
                 OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
-                    => (true, true, true),
+                    => (true, true, true, true),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             (context.ExtractIdentityToken,
              context.RequireIdentityToken,
-             context.ValidateIdentityToken) = context.EndpointType switch
+             context.ValidateIdentityToken,
+             context.RejectIdentityToken) = context.EndpointType switch
             {
                 // The identity token received by the authorization and logout
                 // endpoints are not required and serve as optional hints.
+                //
+                // As such, identity token hints are extracted and validated, but
+                // the authentication demand is not rejected if they are not valid.
                 OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
-                    => (true, false, true),
+                    => (true, false, true, false),
 
-                _ => (false, false, true)
+                _ => (false, false, false, false)
             };
 
             (context.ExtractRefreshToken,
              context.RequireRefreshToken,
-             context.ValidateRefreshToken) = context.EndpointType switch
+             context.ValidateRefreshToken,
+             context.RejectRefreshToken) = context.EndpointType switch
             {
                 // The refresh token grant requires sending a valid refresh token.
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                    => (true, true, true),
+                    => (true, true, true, true),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             (context.ExtractUserCode,
              context.RequireUserCode,
-             context.ValidateUserCode) = context.EndpointType switch
+             context.ValidateUserCode,
+             context.RejectUserCode) = context.EndpointType switch
             {
                 // Note: the verification endpoint can be accessed without specifying a
                 // user code (that can be later set by the user using a form, for instance).
-                OpenIddictServerEndpointType.Verification => (true, false, true),
+                OpenIddictServerEndpointType.Verification => (true, false, true, false),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             return default;
@@ -442,10 +452,10 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<EvaluateValidatedTokens>()
+                .UseSingletonHandler<ValidateRequiredTokens>()
                 // Note: this handler is registered with a high gap to allow handlers
                 // that do token extraction to be executed before this handler runs.
-                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 50_000)
+                .SetOrder(ResolveValidatedTokens.Descriptor.Order + 50_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -533,10 +543,15 @@ public static partial class OpenIddictServerHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectAccessToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -600,10 +615,15 @@ public static partial class OpenIddictServerHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectAuthorizationCode)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -667,10 +687,15 @@ public static partial class OpenIddictServerHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectDeviceCode)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -741,10 +766,15 @@ public static partial class OpenIddictServerHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectGenericToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -811,10 +841,15 @@ public static partial class OpenIddictServerHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectIdentityToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -878,10 +913,15 @@ public static partial class OpenIddictServerHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectRefreshToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -945,10 +985,15 @@ public static partial class OpenIddictServerHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectUserCode)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 

@@ -401,23 +401,24 @@ public static partial class OpenIddictClientHandlers
 
             (context.ExtractStateToken,
              context.RequireStateToken,
-             context.ValidateStateToken) = context.EndpointType switch
+             context.ValidateStateToken,
+             context.RejectStateToken) = context.EndpointType switch
             {
                 // While the OAuth 2.0/2.1 and OpenID Connect specifications don't require sending a
                 // state as part of authorization requests, the identity provider MUST return the state
                 // if one was initially specified. Since OpenIddict always sends a state (used as a way
                 // to mitigate CSRF attacks and store per-authorization values like the identity of the
                 // chosen authorization server), the state is always considered required at this point.
-                OpenIddictClientEndpointType.Redirection => (true, true, true),
+                OpenIddictClientEndpointType.Redirection => (true, true, true, true),
 
                 // While the OpenID Connect RP-initiated logout specification doesn't require sending
                 // a state as part of logout requests, the identity provider MUST return the state
                 // if one was initially specified. Since OpenIddict always sends a state (used as a
                 // way to mitigate CSRF attacks and store per-logout values like the identity of the
                 // chosen authorization server), the state is always considered required at this point.
-                OpenIddictClientEndpointType.PostLogoutRedirection => (true, true, true),
+                OpenIddictClientEndpointType.PostLogoutRedirection => (true, true, true, true),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             return default;
@@ -555,10 +556,15 @@ public static partial class OpenIddictClientHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectStateToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -1204,7 +1210,8 @@ public static partial class OpenIddictClientHandlers
 
             (context.ExtractAuthorizationCode,
              context.RequireAuthorizationCode,
-             context.ValidateAuthorizationCode) = context.GrantType switch
+             context.ValidateAuthorizationCode,
+             context.RejectAuthorizationCode) = context.GrantType switch
             {
                 // An authorization code is returned for the authorization code and implicit grants when
                 // the response type contains the "code" value, which includes the authorization code
@@ -1217,14 +1224,15 @@ public static partial class OpenIddictClientHandlers
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when
                     context.ResponseType?.Split(Separators.Space) is IList<string> types &&
                     types.Contains(ResponseTypes.Code)
-                    => (true, true, false),
+                    => (true, true, false, false),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             (context.ExtractFrontchannelAccessToken,
              context.RequireFrontchannelAccessToken,
-             context.ValidateFrontchannelAccessToken) = context.GrantType switch
+             context.ValidateFrontchannelAccessToken,
+             context.RejectFrontchannelAccessToken) = context.GrantType switch
             {
                 // An access token is returned for the authorization code and implicit grants when
                 // the response type contains the "token" value, which includes some variations of
@@ -1237,14 +1245,15 @@ public static partial class OpenIddictClientHandlers
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when
                     context.ResponseType?.Split(Separators.Space) is IList<string> types &&
                     types.Contains(ResponseTypes.Token)
-                    => (true, true, false),
+                    => (true, true, false, false),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             (context.ExtractFrontchannelIdentityToken,
              context.RequireFrontchannelIdentityToken,
-             context.ValidateFrontchannelIdentityToken) = context.GrantType switch
+             context.ValidateFrontchannelIdentityToken,
+             context.RejectFrontchannelIdentityToken) = context.GrantType switch
             {
                 // An identity token is returned for the authorization code and implicit grants when
                 // the response type contains the "id_token" value, which includes some variations
@@ -1256,9 +1265,9 @@ public static partial class OpenIddictClientHandlers
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when
                     context.ResponseType?.Split(Separators.Space) is IList<string> types &&
                     types.Contains(ResponseTypes.IdToken)
-                    => (true, true, true),
+                    => (true, true, true, true),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             return default;
@@ -1414,10 +1423,15 @@ public static partial class OpenIddictClientHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectFrontchannelIdentityToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -1932,10 +1946,15 @@ public static partial class OpenIddictClientHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectFrontchannelAccessToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -2002,10 +2021,15 @@ public static partial class OpenIddictClientHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectAuthorizationCode)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -2489,7 +2513,8 @@ public static partial class OpenIddictClientHandlers
 
             (context.ExtractBackchannelAccessToken,
              context.RequireBackchannelAccessToken,
-             context.ValidateBackchannelAccessToken) = context.GrantType switch
+             context.ValidateBackchannelAccessToken,
+             context.RejectBackchannelAccessToken) = context.GrantType switch
              {
                  // An access token is always returned as part of token responses, independently of
                  // the negotiated response types or whether the server supports OpenID Connect or not.
@@ -2501,19 +2526,20 @@ public static partial class OpenIddictClientHandlers
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit when
                      context.ResponseType?.Split(Separators.Space) is IList<string> types &&
                      types.Contains(ResponseTypes.Code)
-                     => (true, true, false),
+                     => (true, true, false, false),
 
                  // An access token is always returned as part of client credentials,
                  // resource owner password credentials and refresh token responses.
                  GrantTypes.ClientCredentials or GrantTypes.Password or GrantTypes.RefreshToken
-                    => (true, true, false),
+                    => (true, true, false, false),
 
-                 _ => (false, false, false)
+                 _ => (false, false, false, false)
              };
 
             (context.ExtractBackchannelIdentityToken,
              context.RequireBackchannelIdentityToken,
-             context.ValidateBackchannelIdentityToken) = context.GrantType switch
+             context.ValidateBackchannelIdentityToken,
+             context.RejectBackchannelIdentityToken) = context.GrantType switch
              {
                  // An identity token is always returned as part of token responses for the code and
                  // hybrid flows when the authorization server supports OpenID Connect. As such,
@@ -2523,7 +2549,7 @@ public static partial class OpenIddictClientHandlers
                      context.ResponseType?.Split(Separators.Space) is IList<string> types &&
                      types.Contains(ResponseTypes.Code) &&
                      context.StateTokenPrincipal is ClaimsPrincipal principal &&
-                     principal.HasScope(Scopes.OpenId) => (true, true, true),
+                     principal.HasScope(Scopes.OpenId) => (true, true, true, true),
 
                  // The client credentials and resource owner password credentials grants don't have
                  // an equivalent in OpenID Connect so an identity token is typically never returned
@@ -2531,20 +2557,21 @@ public static partial class OpenIddictClientHandlers
                  // allow returning it as a non-standard artifact. As such, the identity token
                  // is not considered required but will always be validated using the same routine
                  // (except nonce validation) if it is present in the token response.
-                 GrantTypes.ClientCredentials or GrantTypes.Password => (true, false, true),
+                 GrantTypes.ClientCredentials or GrantTypes.Password => (true, false, true, false),
 
                  // An identity token may or may not be returned as part of refresh token responses
                  // depending on the policy adopted by the remote authorization server. As such,
                  // the identity token is not considered required but will always be validated using
                  // the same routine (except nonce validation) if it is present in the token response.
-                 GrantTypes.RefreshToken => (true, false, true),
+                 GrantTypes.RefreshToken => (true, false, true, false),
 
-                 _ => (false, false, false)
+                 _ => (false, false, false, false)
              };
 
             (context.ExtractRefreshToken,
              context.RequireRefreshToken,
-             context.ValidateRefreshToken) = context.GrantType switch
+             context.ValidateRefreshToken,
+             context.RejectRefreshToken) = context.GrantType switch
              {
                  // A refresh token may be returned as part of token responses, depending on the
                  // policy enforced by the remote authorization server (e.g the "offline_access"
@@ -2557,16 +2584,16 @@ public static partial class OpenIddictClientHandlers
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit when
                      context.ResponseType?.Split(Separators.Space) is IList<string> types &&
                      types.Contains(ResponseTypes.Code)
-                     => (true, false, false),
+                     => (true, false, false, false),
 
                  // A refresh token may or may not be returned as part of client credentials,
                  // resource owner password credentials and refresh token responses depending
                  // on the policy adopted by the remote authorization server. As such, a
                  // refresh token is never considered required for such token responses.
                  GrantTypes.ClientCredentials or GrantTypes.Password or GrantTypes.RefreshToken
-                     => (true, false, false),
+                     => (true, false, false, false),
 
-                 _ => (false, false, false)
+                 _ => (false, false, false, false)
              };
 
             return default;
@@ -2719,10 +2746,15 @@ public static partial class OpenIddictClientHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectBackchannelIdentityToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -3201,10 +3233,15 @@ public static partial class OpenIddictClientHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectBackchannelAccessToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -3271,10 +3308,15 @@ public static partial class OpenIddictClientHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectRefreshToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 
@@ -3482,7 +3524,8 @@ public static partial class OpenIddictClientHandlers
             // or responses will be extracted and validated when a userinfo request was sent.
             (context.ExtractUserinfoToken,
              context.RequireUserinfoToken,
-             context.ValidateUserinfoToken) = (true, false, true);
+             context.ValidateUserinfoToken,
+             context.RejectUserinfoToken) = (true, false, true, true);
 
             return default;
         }
@@ -3584,10 +3627,15 @@ public static partial class OpenIddictClientHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectUserinfoToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 

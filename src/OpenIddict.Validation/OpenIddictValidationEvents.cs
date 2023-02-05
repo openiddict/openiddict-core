@@ -321,6 +321,14 @@ public static partial class OpenIddictValidationEvents
         /// recommended, except when dealing with non-standard clients.
         /// </summary>
         public bool ValidateAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid access token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectAccessToken { get; set; }
     }
 
     /// <summary>
