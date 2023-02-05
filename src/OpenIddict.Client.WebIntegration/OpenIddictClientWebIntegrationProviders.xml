@@ -13,7 +13,8 @@
                                                   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Apple" Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
+  <Provider Name="Apple" DisplayName="Sign in with Apple"
+            Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
     <Environment Issuer="https://appleid.apple.com/" />
 
     <Setting PropertyName="SigningKey" ParameterName="key" Type="SigningKey" Required="true"
@@ -33,7 +34,8 @@
                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Cognito" Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
+  <Provider Name="Cognito" DisplayName="Amazon Cognito"
+            Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
     <Environment Issuer="https://cognito-idp.{region}.amazonaws.com/{userPoolId}" />
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
@@ -163,7 +165,8 @@
               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Microsoft" Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
+  <Provider Name="Microsoft" DisplayName="Microsoft Account/Azure Active Directory"
+            Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
     <!--
       Note: Microsoft is a multitenant provider that relies on virtual paths to identify instances.
       As such, the issuer includes a {tenant} placeholder that will be dynamically replaced
@@ -222,7 +225,8 @@
               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="ProSantéConnect" Documentation="https://industriels.esante.gouv.fr/en/products-services/health-pro-authentication-pro-sante-connect">
+  <Provider Name="ProSantéConnect" DisplayName="Pro Santé Connect"
+            Documentation="https://industriels.esante.gouv.fr/en/products-services/health-pro-authentication-pro-sante-connect">
     <!--
       Note: Pro Santé Connect requires sending the "scope_all" scope (which is currently the only supported value).
     -->
@@ -286,7 +290,8 @@
                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="StackExchange" Documentation="https://api.stackexchange.com/docs/authentication">
+  <Provider Name="StackExchange" DisplayName="Stack Exchange"
+            Documentation="https://api.stackexchange.com/docs/authentication">
     <Environment Issuer="https://api.stackexchange.com/">
       <Configuration AuthorizationEndpoint="https://stackoverflow.com/oauth"
                      TokenEndpoint="https://stackoverflow.com/oauth/access_token/json"
