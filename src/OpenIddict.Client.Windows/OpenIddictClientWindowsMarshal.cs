@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace OpenIddict.Client.Windows;
@@ -12,7 +13,8 @@ namespace OpenIddict.Client.Windows;
 /// <summary>
 /// Contains the APIs needed to coordinate authentication operations that happen in a different context.
 /// </summary>
-public sealed class OpenIddictClientWindowsMarshaller
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class OpenIddictClientWindowsMarshal
 {
     private readonly ConcurrentDictionary<string, Lazy<(
         string RequestForgeryProtection,
