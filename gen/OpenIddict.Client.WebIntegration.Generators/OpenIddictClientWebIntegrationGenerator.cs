@@ -67,7 +67,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 {
     {{~ for provider in providers ~}}
     /// <summary>
-    /// Enables the {{ provider.name }} integration and registers the associated services in the DI container.
+    /// Enables the {{ provider.display_name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
     /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
     /// </summary>
@@ -89,13 +89,13 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     }
 
     /// <summary>
-    /// Enables the {{ provider.name }} integration and registers the associated services in the DI container.
+    /// Enables the {{ provider.display_name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
     /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
     /// </summary>
     {{~ end ~}}
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.name }} options.</param>
+    /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.display_name }} options.</param>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/> instance.</returns>
     public OpenIddictClientWebIntegrationBuilder Use{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
     {
@@ -112,7 +112,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
     {{~ for provider in providers ~}}
     /// <summary>
-    /// Exposes the necessary methods required to configure the {{ provider.name }} integration.
+    /// Exposes the necessary methods required to configure the {{ provider.display_name }} integration.
     /// </summary>
     public sealed partial class {{ provider.name }}
     {
@@ -130,7 +130,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         public IServiceCollection Services { get; }
 
         /// <summary>
-        /// Amends the default OpenIddict client {{ provider.name }} configuration.
+        /// Amends the default OpenIddict client {{ provider.display_name }} configuration.
         /// </summary>
         /// <param name=""configuration"">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -596,6 +596,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                         .Select(provider => new
                         {
                             Name = (string) provider.Attribute("Name"),
+                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
                             Documentation = (string?) provider.Attribute("Documentation"),
 
                             Environments = provider.Elements("Environment").Select(environment => new
@@ -701,7 +702,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 {
     {{~ for provider in providers ~}}
     /// <summary>
-    /// Contains the methods required to register the {{ provider.name }} integration in the OpenIddict client options.
+    /// Contains the methods required to register the {{ provider.display_name }} integration in the OpenIddict client options.
     /// </summary>
     public sealed class {{ provider.name }} : IConfigureOptions<OpenIddictClientOptions>,
                                               IPostConfigureOptions<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>
@@ -938,6 +939,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                         .Select(provider => new
                         {
                             Name = (string) provider.Attribute("Name"),
+                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
@@ -1058,10 +1060,10 @@ public static partial class OpenIddictClientWebIntegrationHelpers
 {
     {{~ for provider in providers ~}}
     /// <summary>
-    /// Resolves the {{ provider.name }} provider options from the specified registration.
+    /// Resolves the {{ provider.display_name }} provider options from the specified registration.
     /// </summary>
     /// <param name=""registration"">The client registration.</param>
-    /// <returns>The {{ provider.name }} provider options.</returns>
+    /// <returns>The {{ provider.display_name }} provider options.</returns>
     /// <exception cref=""InvalidOperationException"">The provider options cannot be resolved.</exception>
     public static OpenIddictClientWebIntegrationOptions.{{ provider.name }} Get{{ provider.name }}Options(this OpenIddictClientRegistration registration)
         => registration.ProviderOptions is OpenIddictClientWebIntegrationOptions.{{ provider.name }} options ? options :
@@ -1073,7 +1075,11 @@ public static partial class OpenIddictClientWebIntegrationHelpers
                 return template.Render(new
                 {
                     Providers = document.Root.Elements("Provider")
-                        .Select(provider => new { Name = (string) provider.Attribute("Name") })
+                        .Select(provider => new
+                        {
+                            Name = (string) provider.Attribute("Name"),
+                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name")
+                        })
                         .ToList()
                 });
             }
@@ -1091,7 +1097,7 @@ public sealed partial class OpenIddictClientWebIntegrationOptions
 {
     {{~ for provider in providers ~}}
     /// <summary>
-    /// Provides various options needed to configure the {{ provider.name }} integration.
+    /// Provides various options needed to configure the {{ provider.display_name }} integration.
     /// </summary>
     public sealed class {{ provider.name }}
     {
@@ -1154,6 +1160,7 @@ public sealed partial class OpenIddictClientWebIntegrationOptions
                         .Select(provider => new
                         {
                             Name = (string) provider.Attribute("Name"),
+                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {

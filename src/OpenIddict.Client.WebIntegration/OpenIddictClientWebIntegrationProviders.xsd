@@ -425,6 +425,16 @@
               </xs:simpleType>
             </xs:attribute>
 
+            <xs:attribute name="DisplayName" use="optional">
+              <xs:annotation>
+                <xs:documentation>The display name used in the documentation, if applicable.</xs:documentation>
+              </xs:annotation>
+
+              <xs:simpleType>
+                <xs:restriction base="xs:string" />
+              </xs:simpleType>
+            </xs:attribute>
+
             <xs:attribute name="Documentation" type="xs:anyURI" use="optional">
               <xs:annotation>
                 <xs:documentation>The documentation URI, if applicable.</xs:documentation>
