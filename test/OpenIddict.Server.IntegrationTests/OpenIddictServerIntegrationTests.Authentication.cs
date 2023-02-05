@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 
 namespace OpenIddict.Server.IntegrationTests;
@@ -1859,10 +1860,62 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateAuthorizationRequest_InvalidIdentityTokenHintCausesAnError()
+    public async Task ValidateAuthorizationRequest_InvalidIdentityTokenHintDoesNotCauseAnError()
     {
         // Arrange
-        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Null(context.IdentityTokenHintPrincipal);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Token
+        });
+
+        // Assert
+        Assert.Null(response.Code);
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_InvalidIdentityTokenHintCausesAnErrorWhenRejectionIsEnabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.RejectIdentityToken = true;
+
+                    return default;
+                });
+
+                builder.SetOrder(EvaluateValidatedTokens.Descriptor.Order + 500);
+            });
+        });
+
         await using var client = await server.CreateClientAsync();
 
         // Act

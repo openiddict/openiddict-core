@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 
 namespace OpenIddict.Server.IntegrationTests;
@@ -443,10 +444,60 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateLogoutRequest_InvalidIdentityTokenHintCausesAnError()
+    public async Task ValidateLogoutRequest_InvalidIdentityTokenHintDoesNotCauseAnError()
     {
         // Arrange
-        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Null(context.IdentityTokenHintPrincipal);
+
+                    context.SignOut();
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token",
+            PostLogoutRedirectUri = "http://www.fabrikam.com/path",
+            State = "af0ifjsldkj"
+        });
+
+        // Assert
+        Assert.Equal("af0ifjsldkj", response.State);
+    }
+
+    [Fact]
+    public async Task ValidateLogoutRequest_InvalidIdentityTokenHintCausesAnErrorWhenRejectionIsEnabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.RejectIdentityToken = true;
+
+                    return default;
+                });
+
+                builder.SetOrder(EvaluateValidatedTokens.Descriptor.Order + 500);
+            });
+        });
+
         await using var client = await server.CreateClientAsync();
 
         // Act

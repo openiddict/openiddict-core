@@ -90,13 +90,14 @@ public static partial class OpenIddictValidationHandlers
 
             (context.ExtractAccessToken,
              context.RequireAccessToken,
-             context.ValidateAccessToken) = context.EndpointType switch
+             context.ValidateAccessToken,
+             context.RejectAccessToken) = context.EndpointType switch
             {
                 // The validation handler is responsible for validating access tokens for endpoints
                 // it doesn't manage (typically, API endpoints using token authentication).
-                OpenIddictValidationEndpointType.Unknown => (true, true, true),
+                OpenIddictValidationEndpointType.Unknown => (true, true, true, true),
 
-                _ => (false, false, false)
+                _ => (false, false, false, false)
             };
 
             // Note: unlike the equivalent event in the server stack, authentication can be triggered for
@@ -203,10 +204,15 @@ public static partial class OpenIddictValidationHandlers
 
             else if (notification.IsRejected)
             {
-                context.Reject(
-                    error: notification.Error ?? Errors.InvalidRequest,
-                    description: notification.ErrorDescription,
-                    uri: notification.ErrorUri);
+                if (context.RejectAccessToken)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
                 return;
             }
 

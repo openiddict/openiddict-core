@@ -192,7 +192,7 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets or sets the security principal extracted from the user code.
+        /// Gets or sets the security principal extracted from the user code, if applicable.
         /// </summary>
         public ClaimsPrincipal? Principal { get; set; }
     }
@@ -219,6 +219,11 @@ public static partial class OpenIddictServerEvents
             get => Transaction.Request!;
             set => Transaction.Request = value;
         }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the user code, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? UserCodePrincipal { get; set; }
 
         /// <summary>
         /// Gets the additional parameters returned to the caller.

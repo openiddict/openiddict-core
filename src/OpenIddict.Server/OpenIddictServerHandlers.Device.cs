@@ -55,6 +55,11 @@ public static partial class OpenIddictServerHandlers
             ApplyVerificationResponse<ProcessSignInContext>.Descriptor,
 
             /*
+             * Verification request validation:
+             */
+            ValidateToken.Descriptor,
+
+            /*
              * Verification request handling:
              */
             AttachUserCodePrincipal.Descriptor);
@@ -951,6 +956,10 @@ public static partial class OpenIddictServerHandlers
                 var notification = new ValidateVerificationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
+                // Store the context object in the transaction so it can be later retrieved by handlers
+                // that want to access the context without triggering a new validation process.
+                context.Transaction.SetProperty(typeof(ValidateVerificationRequestContext).FullName!, notification);
+
                 if (notification.IsRequestHandled)
                 {
                     context.HandleRequest();
@@ -1122,40 +1131,31 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for attaching the claims principal resolved from the user code.
+        /// Contains the logic responsible for validating the token(s) present in the request.
         /// </summary>
-        public sealed class AttachUserCodePrincipal : IOpenIddictServerHandler<HandleVerificationRequestContext>
+        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateVerificationRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public AttachUserCodePrincipal(IOpenIddictServerDispatcher dispatcher)
+            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleVerificationRequestContext>()
-                    .UseScopedHandler<AttachUserCodePrincipal>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateVerificationRequestContext>()
+                    .UseScopedHandler<ValidateToken>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(HandleVerificationRequestContext context)
+            public async ValueTask HandleAsync(ValidateVerificationRequestContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                // Note: the user_code may not be present (e.g when the user typed
-                // the verification_uri manually without the user code appended).
-                // In this case, ignore the missing token so that a view can be
-                // rendered by the application to ask the user to enter the code.
-                if (string.IsNullOrEmpty(context.Request.UserCode))
-                {
-                    return;
                 }
 
                 var notification = new ProcessAuthenticationContext(context.Transaction);
@@ -1179,12 +1179,48 @@ public static partial class OpenIddictServerHandlers
 
                 else if (notification.IsRejected)
                 {
-                    // Note: authentication errors are deliberately not flowed up to the parent context.
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
                     return;
                 }
 
                 // Attach the security principal extracted from the token to the validation context.
                 context.Principal = notification.UserCodePrincipal;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching the principal extracted from the user code to the event context.
+        /// </summary>
+        public sealed class AttachUserCodePrincipal : IOpenIddictServerHandler<HandleVerificationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleVerificationRequestContext>()
+                    .UseSingletonHandler<AttachUserCodePrincipal>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleVerificationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var notification = context.Transaction.GetProperty<ValidateVerificationRequestContext>(
+                    typeof(ValidateVerificationRequestContext).FullName!) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+
+                context.UserCodePrincipal ??= notification.Principal;
+
+                return default;
             }
         }
     }

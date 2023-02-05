@@ -650,7 +650,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting introspection requests that don't specify a valid token.
+        /// Contains the logic responsible for validating the token(s) present in the request.
         /// </summary>
         public sealed class ValidateToken : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {

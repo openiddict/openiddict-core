@@ -566,6 +566,70 @@ public static partial class OpenIddictClientEvents
         public bool ValidateUserinfoToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid authorization code
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectAuthorizationCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid backchannel access token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectBackchannelAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid backchannel identity token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectBackchannelIdentityToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid frontchannel access token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectFrontchannelAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid frontchannel identity token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectFrontchannelIdentityToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid refresh token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectRefreshToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid state token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectStateToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid userinfo token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectUserinfoToken { get; set; }
+
+        /// <summary>
         /// Gets or sets the authorization code to validate, if applicable.
         /// </summary>
         public string? AuthorizationCode { get; set; }

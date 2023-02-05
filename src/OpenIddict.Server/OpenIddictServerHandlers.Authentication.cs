@@ -1636,8 +1636,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting authorization
-        /// requests that don't specify a valid id_token_hint.
+        /// Contains the logic responsible for validating the token(s) present in the request.
         /// </summary>
         public sealed class ValidateToken : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {

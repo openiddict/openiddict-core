@@ -1286,8 +1286,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting token requests that don't
-        /// specify a valid authorization code, device code or refresh token.
+        /// Contains the logic responsible for validating the token(s) present in the request.
         /// </summary>
         public sealed class ValidateToken : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
@@ -1351,8 +1350,8 @@ public static partial class OpenIddictServerHandlers
 
                 // Attach the security principal extracted from the token to the validation context.
                 context.Principal = context.Request.IsAuthorizationCodeGrantType() ? notification.AuthorizationCodePrincipal :
-                                    context.Request.IsDeviceCodeGrantType()        ? notification.DeviceCodePrincipal :
-                                    context.Request.IsRefreshTokenGrantType()      ? notification.RefreshTokenPrincipal : null;
+                                    context.Request.IsDeviceCodeGrantType()        ? notification.DeviceCodePrincipal        :
+                                    context.Request.IsRefreshTokenGrantType()      ? notification.RefreshTokenPrincipal      : null;
             }
         }
 

@@ -482,6 +482,62 @@ public static partial class OpenIddictServerEvents
         public bool ValidateUserCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid access token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid authorization code
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectAuthorizationCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid device code
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid generic token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectGenericToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid identity token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectIdentityToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid refresh token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectRefreshToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid user code
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RejectUserCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the access token to validate, if applicable.
         /// </summary>
         public string? AccessToken { get; set; }
