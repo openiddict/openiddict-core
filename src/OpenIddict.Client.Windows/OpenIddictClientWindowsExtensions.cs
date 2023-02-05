@@ -41,8 +41,8 @@ public static class OpenIddictClientWindowsExtensions
             builder.Services.Insert(0, ServiceDescriptor.Singleton<IHostedService, OpenIddictClientWindowsService>());
         }
 
-        // Register the marshaller responsible for managing authentication operations.
-        builder.Services.TryAddSingleton<OpenIddictClientWindowsMarshaller>();
+        // Register the marshal responsible for managing authentication operations.
+        builder.Services.TryAddSingleton<OpenIddictClientWindowsMarshal>();
 
         // Register the built-in filters used by the default OpenIddict Windows client event handlers.
         builder.Services.TryAddSingleton<RequireAuthenticationNonce>();
