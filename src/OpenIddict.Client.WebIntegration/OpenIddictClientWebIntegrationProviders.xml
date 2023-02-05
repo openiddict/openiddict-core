@@ -6,6 +6,27 @@
   -->
 
   <!--
+    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+    █ ▄▄▀██ ▄▄▀████ ▄▄▄██ ▄▄▄██ ▄▄▀██ ▄▄▄██ ▄▄▀█ ▄▄▀█▄▄ ▄▄█▄ ▄██ ▄▄▄ ██ ▀██ ████ ▄▄▄ ██ ▄▄▄██ ▄▄▀██ ███ █▄ ▄██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██
+    █ ▀▀ ██ ██ ████ ▄▄███ ▄▄▄██ ██ ██ ▄▄▄██ ▀▀▄█ ▀▀ ███ ████ ███ ███ ██ █ █ ████▄▄▄▀▀██ ▄▄▄██ ▀▀▄███ █ ███ ███ █████ ▄▄▄██▄▄▄▀▀██
+    █ ██ ██ ▀▀ ████ █████ ▀▀▀██ ▀▀ ██ ▀▀▀██ ██ █ ██ ███ ███▀ ▀██ ▀▀▀ ██ ██▄ ████ ▀▀▀ ██ ▀▀▀██ ██ ███▄▀▄██▀ ▀██ ▀▀▄██ ▀▀▀██ ▀▀▀ ██
+    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="ActiveDirectoryFederationServices" DisplayName="Microsoft Active Directory Federation Services"
+            Documentation="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/overview/ad-fs-openid-connect-oauth-flows-scenarios">
+    <!--
+      Note: Active Directory Federation Services (ADFS) is a self-hosted identity provider that
+      doesn't have a generic issuer URI. As such, the complete URI must always be set in the options.
+    -->
+
+    <Environment Issuer="{issuer}" />
+
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
+             Description="The URI used to access the ADFS instance, including the virtual directory (e.g https://contoso.com/adfs)" />
+  </Provider>
+
+  <!--
                                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                   █ ▄▄▀██ ▄▄ ██ ▄▄ ██ █████ ▄▄▄██
                                                   █ ▀▀ ██ ▀▀ ██ ▀▀ ██ █████ ▄▄▄██
