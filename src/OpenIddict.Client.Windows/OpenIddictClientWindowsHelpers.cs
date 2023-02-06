@@ -170,6 +170,31 @@ public static class OpenIddictClientWindowsHelpers
 #endif
 
     /// <summary>
+    /// Resolves the protocol activation from the command line arguments, if applicable.
+    /// </summary>
+    /// <returns>
+    /// The <see cref="Uri"/> if the application instance was activated
+    /// via a protocol activation, <see langword="null"/> otherwise.
+    /// </returns>
+    internal static Uri? GetProtocolActivationUriFromCommandLineArguments(string?[]? arguments) => arguments switch
+    {
+        // In most cases, the first segment present in the command line arguments contains the path of the
+        // executable, but it's technically possible to start an application in a way that the command line
+        // arguments will never include the executable path. To support both cases, the URI is extracted
+        // from the second segment when 2 segments are present. Otherwise, the first segment is used.
+        //
+        // For more information, see https://devblogs.microsoft.com/oldnewthing/20060515-07/?p=31203.
+
+        [_, string argument] when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
+            !uri.IsFile && uri.IsWellFormedOriginalString() => uri,
+
+        [string argument] when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
+            !uri.IsFile && uri.IsWellFormedOriginalString() => uri,
+
+        _ => null
+    };
+
+    /// <summary>
     /// Starts the system browser using ShellExecute.
     /// </summary>
     /// <param name="uri">The <see cref="Uri"/> to use.</param>

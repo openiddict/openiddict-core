@@ -4,10 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Client.Windows;
 
@@ -20,21 +21,26 @@ namespace OpenIddict.Client.Windows;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictClientWindowsService : IHostedService
 {
+    private readonly IOptionsMonitor<OpenIddictClientWindowsOptions> _options;
     private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientWindowsService"/> class.
     /// </summary>
+    /// <param name="options">The OpenIddict client Windows integration options.</param>
     /// <param name="provider">The service provider.</param>
     /// <exception cref="ArgumentNullException"><paramref name="provider"/> is <see langword="null"/>.</exception>
-    public OpenIddictClientWindowsService(IServiceProvider provider)
-        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+    public OpenIddictClientWindowsService(
+        IOptionsMonitor<OpenIddictClientWindowsOptions> options,
+        IServiceProvider provider)
+    {
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+    }
 
     /// <inheritdoc/>
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
         // Note: initial URI protocol activation handling is implemented as a regular IHostedService
         // rather than as a BackgroundService to allow blocking the initialization of the host until
         // the activation is fully processed by the OpenIddict pipeline. By doing that, the UI thread
@@ -43,67 +49,103 @@ public sealed class OpenIddictClientWindowsService : IHostedService
         // once a request has been handled by the OpenIddict pipeline, a dedicated handler is responsible
         // for stopping the application gracefully using the IHostApplicationLifetime.StopApplication() API.
 
-        var scope = _provider.CreateScope();
-
-        try
+        if (cancellationToken.IsCancellationRequested)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-
-            // Create a client transaction and store the command line arguments so they can be
-            // retrieved by the Windows-specific client event handlers that need to access them.
-            var transaction = await factory.CreateTransactionAsync();
-            transaction.SetProperty(typeof(OpenIddictClientWindowsActivation).FullName!,
-                new OpenIddictClientWindowsActivation
-                {
-                    ActivationArguments = GetActivationArguments(),
-                    IsActivationRedirected = false
-                });
-
-            var context = new ProcessRequestContext(transaction)
-            {
-                CancellationToken = cancellationToken
-            };
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                await dispatcher.DispatchAsync(new ProcessErrorContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Error = context.Error ?? Errors.InvalidRequest,
-                    ErrorDescription = context.ErrorDescription,
-                    ErrorUri = context.ErrorUri,
-                    Response = new OpenIddictResponse()
-                });
-            }
+            return Task.FromCanceled(cancellationToken);
         }
 
-        finally
+        // If the default activation processing logic was disabled in the options, ignore the activation.
+        if (_options.CurrentValue.DisableProtocolActivationProcessing)
         {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
-            }
+            return Task.CompletedTask;
         }
 
-        static ImmutableArray<string> GetActivationArguments()
+        // Determine whether the current instance is initialized to react to a protocol activation.
+        // If it's not, return immediately to avoid adding latency to the application startup process.
+        if (GetProtocolActivation() is not OpenIddictClientWindowsActivation activation)
+        {
+            return Task.CompletedTask;
+        }
+
+        return ExecuteAsync(_provider, activation, cancellationToken);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static OpenIddictClientWindowsActivation? GetProtocolActivation()
         {
 #if SUPPORTS_WINDOWS_RUNTIME
+            // On platforms that support WinRT, always favor the AppInstance.GetActivatedEventArgs() API.
             if (OpenIddictClientWindowsHelpers.IsWindowsRuntimeSupported() &&
                 OpenIddictClientWindowsHelpers.GetProtocolActivationUriWithWindowsRuntime() is Uri uri)
             {
-                return ImmutableArray.Create(uri.AbsoluteUri);
+                return new OpenIddictClientWindowsActivation
+                {
+                    ActivationUri = uri,
+                    IsActivationRedirected = false
+                };
             }
 #endif
+            // Otherwise, try to extract the protocol activation from the command line arguments.
+            if (OpenIddictClientWindowsHelpers.GetProtocolActivationUriFromCommandLineArguments(
+                Environment.GetCommandLineArgs()) is Uri value)
+            {
+                return new OpenIddictClientWindowsActivation
+                {
+                    ActivationUri = value,
+                    IsActivationRedirected = false
+                };
+            }
 
-            return ImmutableArray.CreateRange(Environment.GetCommandLineArgs());
+            return null;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static async Task ExecuteAsync(IServiceProvider provider,
+            OpenIddictClientWindowsActivation activation, CancellationToken cancellationToken)
+        {
+            var scope = provider.CreateScope();
+
+            try
+            {
+                var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+                var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+                // Create a client transaction and store the protocol activation details so they can be
+                // retrieved by the Windows-specific client event handlers that need to access them.
+                var transaction = await factory.CreateTransactionAsync();
+                transaction.SetProperty(typeof(OpenIddictClientWindowsActivation).FullName!, activation);
+
+                var context = new ProcessRequestContext(transaction)
+                {
+                    CancellationToken = cancellationToken
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    await dispatcher.DispatchAsync(new ProcessErrorContext(transaction)
+                    {
+                        CancellationToken = cancellationToken,
+                        Error = context.Error ?? Errors.InvalidRequest,
+                        ErrorDescription = context.ErrorDescription,
+                        ErrorUri = context.ErrorUri,
+                        Response = new OpenIddictResponse()
+                    });
+                }
+            }
+
+            finally
+            {
+                if (scope is IAsyncDisposable disposable)
+                {
+                    await disposable.DisposeAsync();
+                }
+
+                else
+                {
+                    scope.Dispose();
+                }
+            }
         }
     }
 

@@ -48,6 +48,14 @@ public sealed class OpenIddictClientWindowsBuilder
     }
 
     /// <summary>
+    /// Disables the built-in protocol activation processing logic, which
+    /// can be used to offload this task a separate dedicated executable.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientWindowsBuilder"/>.</returns>
+    public OpenIddictClientWindowsBuilder DisableProtocolActivationProcessing()
+        => Configure(options => options.DisableProtocolActivationProcessing = true);
+
+    /// <summary>
     /// Sets the timeout after which authentication demands that
     /// are not completed are automatically aborted by OpenIddict.
     /// </summary>
