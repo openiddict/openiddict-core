@@ -1459,6 +1459,12 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0386" xml:space="preserve">
     <value>A pipe name must be manually set in the OpenIddict Windows integration options when no application name was configured in the .NET generic host options. To set the pipe name, call 'services.AddOpenIddict().AddClient().UseWindows().SetPipeName()'.</value>
   </data>
+  <data name="ID0387" xml:space="preserve">
+    <value>The type extracted from the inter-process notification ({0}) is unknown or not valid, which may indicate that different versions of the OpenIddict client are used for the same application.</value>
+  </data>
+  <data name="ID0388" xml:space="preserve">
+    <value>The payload extracted from the inter-process notification is malformed, incomplete or was created by a different version of the OpenIddict client library.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
