@@ -67,7 +67,7 @@ public sealed class OpenIddictClientWindowsService : IHostedService
             return Task.CompletedTask;
         }
 
-        return ExecuteAsync(_provider, activation, cancellationToken);
+        return HandleProtocolActivationAsync(_provider, activation, cancellationToken);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         static OpenIddictClientWindowsActivation? GetProtocolActivation()
@@ -99,7 +99,7 @@ public sealed class OpenIddictClientWindowsService : IHostedService
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static async Task ExecuteAsync(IServiceProvider provider,
+        static async Task HandleProtocolActivationAsync(IServiceProvider provider,
             OpenIddictClientWindowsActivation activation, CancellationToken cancellationToken)
         {
             var scope = provider.CreateScope();
