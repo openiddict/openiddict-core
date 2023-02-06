@@ -90,25 +90,10 @@ public static partial class OpenIddictClientWindowsHandlers
 
             (context.BaseUri, context.RequestUri) = context.Transaction.GetWindowsActivation() switch
             {
-                null => throw new InvalidOperationException(SR.GetResourceString(SR.ID0375)),
-
-                // In most cases, the first segment present in the command line arguments contains the path of the
-                // executable, but it's technically possible to start an application in a way that the command line
-                // arguments will never include the executable path. To support both cases, the URI is extracted
-                // from the second segment when 2 segments are present. Otherwise, the first segment is used.
-                //
-                // For more information, see https://devblogs.microsoft.com/oldnewthing/20060515-07/?p=31203.
-
-                { ActivationArguments: [_, string argument] } when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
-                    !uri.IsFile && uri.IsWellFormedOriginalString()
+                { ActivationUri: Uri uri } when uri.IsAbsoluteUri
                     => (new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute), uri),
 
-                { ActivationArguments: [string argument] } when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
-                    !uri.IsFile && uri.IsWellFormedOriginalString()
-                    => (new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute), uri),
-
-                // If no protocol activation URI could be resolved, use fake static URIs.
-                _ => (new Uri("local://", UriKind.Absolute), new Uri("local://", UriKind.Absolute))
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0375))
             };
 
             return default;
@@ -444,9 +429,6 @@ public static partial class OpenIddictClientWindowsHandlers
             // has been received by the other instance, ask the host to stop the application.
             if (!string.Equals(identifier, _options.CurrentValue.InstanceIdentifier, StringComparison.OrdinalIgnoreCase))
             {
-                var activation = context.Transaction.GetWindowsActivation() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0375));
-
                 using (var buffer = new MemoryStream())
                 using (var writer = new BinaryWriter(buffer))
                 using (var source = new CancellationTokenSource(delay: TimeSpan.FromSeconds(10)))
@@ -466,14 +448,13 @@ public static partial class OpenIddictClientWindowsHandlers
                     writer.Write(0x01);
                     writer.Write(0x01);
 
-                    // Write the number of arguments present in the activation.
-                    writer.Write(activation.ActivationArguments.Length);
-
-                    // Write all the arguments present in the activation.
-                    for (var index = 0; index < activation.ActivationArguments.Length; index++)
+                    // Write the protocol activation URI.
+                    writer.Write(context.Transaction.GetWindowsActivation() switch
                     {
-                        writer.Write(activation.ActivationArguments[index]);
-                    }
+                        { ActivationUri: Uri uri } when uri.IsAbsoluteUri => uri.AbsoluteUri,
+
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0375))
+                    });
 
                     // Transfer the payload to the target.
                     buffer.Seek(0L, SeekOrigin.Begin);
@@ -1161,7 +1142,7 @@ public static partial class OpenIddictClientWindowsHandlers
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            // Most Windows applications (except WinRT applications) are multi-instanced. As such, any protocol activation
+            // Most Windows applications (except UWP applications) are multi-instanced. As such, any protocol activation
             // triggered by launching one of the URI schemes associated with the application will create a new instance,
             // different from the one that initially started the authentication flow. To deal with that without having to
             // share persistent state between instances, OpenIddict stores the identifier of the instance that starts the

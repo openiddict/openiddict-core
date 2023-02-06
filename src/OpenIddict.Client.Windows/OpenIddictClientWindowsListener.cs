@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO.Pipes;
 using Microsoft.Extensions.DependencyInjection;
@@ -93,16 +92,10 @@ public sealed class OpenIddictClientWindowsListener : BackgroundService
                             continue;
                         }
 
-                        var length = reader.ReadInt32();
-                        if (length is not > 0)
+                        var value = reader.ReadString();
+                        if (string.IsNullOrEmpty(value) || !Uri.TryCreate(value, UriKind.Absolute, out Uri? uri))
                         {
                             continue;
-                        }
-
-                        var builder = ImmutableArray.CreateBuilder<string>(length);
-                        for (var index = 0; index < length; index++)
-                        {
-                            builder.Add(reader.ReadString());
                         }
 
                         // Create a client transaction and store the command line arguments so they can be
@@ -111,7 +104,7 @@ public sealed class OpenIddictClientWindowsListener : BackgroundService
                         transaction.SetProperty(typeof(OpenIddictClientWindowsActivation).FullName!,
                             new OpenIddictClientWindowsActivation
                             {
-                                ActivationArguments = builder.MoveToImmutable(),
+                                ActivationUri = uri,
                                 IsActivationRedirected = true
                             });
 

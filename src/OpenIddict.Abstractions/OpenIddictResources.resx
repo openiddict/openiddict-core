@@ -1424,7 +1424,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>An error occurred while authenticating the user.</value>
   </data>
   <data name="ID0375" xml:space="preserve">
-    <value>The protocol activation arguments cannot be resolved from the client transaction.</value>
+    <value>The Windows protocol activation cannot be resolved from the client transaction or contained invalid data.</value>
   </data>
   <data name="ID0376" xml:space="preserve">
     <value>The identifier of the application instance that initiated the authentication process cannot be resolved from the state token.</value>

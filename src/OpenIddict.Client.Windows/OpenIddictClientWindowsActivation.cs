@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Immutable;
 using System.ComponentModel;
 
 namespace OpenIddict.Client.Windows;
@@ -16,10 +15,9 @@ namespace OpenIddict.Client.Windows;
 public sealed class OpenIddictClientWindowsActivation
 {
     /// <summary>
-    /// Gets or sets the activation arguments used to
-    /// launch the current instance of the application.
+    /// Gets or sets the activation URI used to activate the application.
     /// </summary>
-    public ImmutableArray<string> ActivationArguments { get; set; }
+    public Uri? ActivationUri { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether the activation

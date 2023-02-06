@@ -5,7 +5,6 @@
  */
 
 using System.IO.Pipes;
-using Microsoft.Extensions.Hosting;
 
 #if !SUPPORTS_HOST_ENVIRONMENT
 using IHostEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
@@ -23,6 +22,12 @@ public sealed class OpenIddictClientWindowsOptions
     /// that are not completed are automatically aborted by OpenIddict.
     /// </summary>
     public TimeSpan AuthenticationTimeout { get; set; } = TimeSpan.FromMinutes(10);
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether protocol activation processing should be
+    /// disabled, which can be used to offload this task to a separate dedicated executable.
+    /// </summary>
+    public bool DisableProtocolActivationProcessing { get; set; }
 
     /// <summary>
     /// Gets or sets the identifier used to represent the current application
