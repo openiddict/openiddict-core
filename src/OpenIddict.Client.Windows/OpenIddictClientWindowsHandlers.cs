@@ -90,8 +90,9 @@ public static partial class OpenIddictClientWindowsHandlers
 
             (context.BaseUri, context.RequestUri) = context.Transaction.GetWindowsActivation() switch
             {
-                { ActivationUri: Uri uri } when uri.IsAbsoluteUri
-                    => (new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute), uri),
+                { ActivationUri: Uri uri } => (
+                    BaseUri   : new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute),
+                    RequestUri: uri),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0375))
             };
@@ -451,7 +452,7 @@ public static partial class OpenIddictClientWindowsHandlers
                     // Write the protocol activation URI.
                     writer.Write(context.Transaction.GetWindowsActivation() switch
                     {
-                        { ActivationUri: Uri uri } when uri.IsAbsoluteUri => uri.AbsoluteUri,
+                        { ActivationUri: Uri uri } => uri.AbsoluteUri,
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0375))
                     });

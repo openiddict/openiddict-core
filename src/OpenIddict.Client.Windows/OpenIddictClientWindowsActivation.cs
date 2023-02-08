@@ -9,15 +9,35 @@ using System.ComponentModel;
 namespace OpenIddict.Client.Windows;
 
 /// <summary>
-/// Represents a Windows application activation.
+/// Represents a Windows protocol activation.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientWindowsActivation
 {
     /// <summary>
-    /// Gets or sets the activation URI used to activate the application.
+    /// Creates a new instance of the <see cref="OpenIddictClientWindowsActivation"/> class.
     /// </summary>
-    public Uri? ActivationUri { get; set; }
+    /// <param name="uri">The protocol activation URI.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
+    public OpenIddictClientWindowsActivation(Uri uri)
+    {
+        if (uri is null)
+        {
+            throw new ArgumentNullException(nameof(uri));
+        }
+
+        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        ActivationUri = uri;
+    }
+
+    /// <summary>
+    /// Gets the protocol activation URI.
+    /// </summary>
+    public Uri ActivationUri { get; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether the activation

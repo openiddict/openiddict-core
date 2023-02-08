@@ -6,15 +6,9 @@
 
 using System.ComponentModel;
 using System.IO.Pipes;
-using System.Runtime.CompilerServices;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
-#if !SUPPORTS_HOST_APPLICATION_LIFETIME
-using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
-#endif
 
 namespace OpenIddict.Client.Windows;
 
@@ -23,23 +17,29 @@ namespace OpenIddict.Client.Windows;
 /// are redirected by other instances using inter-process communication.
 /// </summary>
 /// <remarks>
-/// Note: initial URI protocol activations are handled by <see cref="OpenIddictClientWindowsService"/>.
+/// Note: initial URI protocol activations are handled by <see cref="OpenIddictClientWindowsHandler"/>.
 /// </remarks>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictClientWindowsListener : BackgroundService
 {
     private readonly ILogger<OpenIddictClientWindowsListener> _logger;
     private readonly IOptionsMonitor<OpenIddictClientWindowsOptions> _options;
-    private readonly IServiceProvider _provider;
+    private readonly OpenIddictClientWindowsService _service;
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictClientWindowsHandler"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="options">The OpenIddict client Windows integration options.</param>
+    /// <param name="service">The OpenIddict client Windows service.</param>
     public OpenIddictClientWindowsListener(
         ILogger<OpenIddictClientWindowsListener> logger,
         IOptionsMonitor<OpenIddictClientWindowsOptions> options,
-        IServiceProvider provider)
+        OpenIddictClientWindowsService service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? throw new ArgumentNullException(nameof(options));
-        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
     /// <inheritdoc/>
@@ -81,7 +81,7 @@ public sealed class OpenIddictClientWindowsListener : BackgroundService
                 await (reader.ReadInt32() switch
                 {
                     0x01 when GetProtocolActivation(reader) is OpenIddictClientWindowsActivation activation
-                        => HandleProtocolActivationAsync(_provider, activation, stoppingToken),
+                        => _service.HandleProtocolActivationAsync(activation, stoppingToken),
 
                     var value => throw new InvalidOperationException(SR.FormatID0387(value))
                 });
@@ -101,7 +101,7 @@ public sealed class OpenIddictClientWindowsListener : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested);
 
-        static OpenIddictClientWindowsActivation? GetProtocolActivation(BinaryReader reader)
+        static OpenIddictClientWindowsActivation GetProtocolActivation(BinaryReader reader)
         {
             // Ensure the binary serialization format is supported.
             var version = reader.ReadInt32();
@@ -116,61 +116,10 @@ public sealed class OpenIddictClientWindowsListener : BackgroundService
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0388));
             }
 
-            return new OpenIddictClientWindowsActivation
+            return new OpenIddictClientWindowsActivation(uri)
             {
-                ActivationUri = uri,
                 IsActivationRedirected = true
             };
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        static async Task HandleProtocolActivationAsync(IServiceProvider provider,
-            OpenIddictClientWindowsActivation activation, CancellationToken cancellationToken)
-        {
-            var scope = provider.CreateScope();
-
-            try
-            {
-                var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-                var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-
-                // Create a client transaction and store the protocol activation details so they can be
-                // retrieved by the Windows-specific client event handlers that need to access them.
-                var transaction = await factory.CreateTransactionAsync();
-                transaction.SetProperty(typeof(OpenIddictClientWindowsActivation).FullName!, activation);
-
-                var context = new ProcessRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    await dispatcher.DispatchAsync(new ProcessErrorContext(transaction)
-                    {
-                        CancellationToken = cancellationToken,
-                        Error = context.Error ?? Errors.InvalidRequest,
-                        ErrorDescription = context.ErrorDescription,
-                        ErrorUri = context.ErrorUri,
-                        Response = new OpenIddictResponse()
-                    });
-                }
-            }
-
-            finally
-            {
-                if (scope is IAsyncDisposable disposable)
-                {
-                    await disposable.DisposeAsync();
-                }
-
-                else
-                {
-                    scope.Dispose();
-                }
-            }
         }
     }
 }

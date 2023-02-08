@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -30,19 +31,25 @@ public static class OpenIddictClientWindowsExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
+        }
+
         // Note: the OpenIddict IHostedService implementation is deliberately registered as early as possible to
         // ensure protocol activations can be handled before another service can stop the initialization of the
         // application (e.g Dapplo.Microsoft.Extensions.Hosting.AppServices relies on an IHostedService to implement
         // single instantiation, which would prevent the OpenIddict service from handling the protocol activation
         // if the OpenIddict IHostedService implementation was not registered before the Dapplo IHostedService).
         if (!builder.Services.Any(static descriptor => descriptor.ServiceType == typeof(IHostedService) &&
-                                                       descriptor.ImplementationType == typeof(OpenIddictClientWindowsService)))
+                                                       descriptor.ImplementationType == typeof(OpenIddictClientWindowsHandler)))
         {
-            builder.Services.Insert(0, ServiceDescriptor.Singleton<IHostedService, OpenIddictClientWindowsService>());
+            builder.Services.Insert(0, ServiceDescriptor.Singleton<IHostedService, OpenIddictClientWindowsHandler>());
         }
 
-        // Register the marshal responsible for managing authentication operations.
+        // Register the services responsible for coordinating and managing authentication operations.
         builder.Services.TryAddSingleton<OpenIddictClientWindowsMarshal>();
+        builder.Services.TryAddSingleton<OpenIddictClientWindowsService>();
 
         // Register the built-in filters used by the default OpenIddict Windows client event handlers.
         builder.Services.TryAddSingleton<RequireAuthenticationNonce>();
