@@ -77,7 +77,7 @@ public static class OpenIddictClientWindowsHelpers
     /// <see langword="true"/> if the specified identity contains an
     /// AppContainer token, <see langword="false"/> otherwise.
     /// </returns>
-    [SupportedOSPlatformGuard("windows10.0.17763")]
+    [SupportedOSPlatform("windows10.0.17763")]
     internal static unsafe bool HasAppContainerToken(WindowsIdentity identity)
     {
         if (identity is null)
