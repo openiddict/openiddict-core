@@ -1424,7 +1424,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>An error occurred while authenticating the user.</value>
   </data>
   <data name="ID0375" xml:space="preserve">
-    <value>The Windows protocol activation cannot be resolved from the client transaction or contained invalid data.</value>
+    <value>The Windows protocol activation cannot be resolved from the client transaction.</value>
   </data>
   <data name="ID0376" xml:space="preserve">
     <value>The identifier of the application instance that initiated the authentication process cannot be resolved from the state token.</value>
@@ -1464,6 +1464,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID0388" xml:space="preserve">
     <value>The payload extracted from the inter-process notification is malformed, incomplete or was created by a different version of the OpenIddict client library.</value>
+  </data>
+  <data name="ID0389" xml:space="preserve">
+    <value>The OpenIddict client Windows integration is not supported on this platform.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
