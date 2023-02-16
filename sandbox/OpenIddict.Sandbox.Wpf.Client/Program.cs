@@ -3,17 +3,19 @@ using Dapplo.Microsoft.Extensions.Hosting.Wpf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenIddict.Client;
 using OpenIddict.Sandbox.Wpf.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
-var host = Host.CreateDefaultBuilder(args)
+var host = new HostBuilder()
     // Note: applications for which a single instance is preferred can reference
     // the Dapplo.Microsoft.Extensions.Hosting.AppServices package and call this
     // method to automatically close extra instances based on the specified identifier:
     //
     // .ConfigureSingleInstance(options => options.MutexId = "{C587B9EA-A870-4CF3-8B00-33DF67FCA143}")
     //
+    .ConfigureLogging(options => options.AddDebug())
     .ConfigureServices(services =>
     {
         services.AddDbContext<DbContext>(options =>
@@ -46,8 +48,8 @@ var host = Host.CreateDefaultBuilder(args)
                 options.AddDevelopmentEncryptionCertificate()
                        .AddDevelopmentSigningCertificate();
 
-                // Register the Windows host.
-                options.UseWindows();
+                // Add the operating system integration.
+                options.UseSystemIntegration();
 
                 // Set the client URI that will uniquely identify this application.
                 options.SetClientUri(new Uri("openiddict-sandbox-wpf-client://localhost/", UriKind.Absolute));

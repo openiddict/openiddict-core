@@ -4,13 +4,21 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict.Client.Windows;
+namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>
-/// Exposes common constants used by the OpenIddict Windows host.
+/// Exposes common constants used by the OpenIddict client system integration.
 /// </summary>
-public static class OpenIddictClientWindowsConstants
+public static class OpenIddictClientSystemIntegrationConstants
 {
+    public static class Headers
+    {
+        public const string CacheControl = "Cache-Control";
+        public const string ContentType = "Content-Type";
+        public const string Expires = "Expires";
+        public const string Pragma = "Pragma";
+    }
+
     public static class Tokens
     {
         public const string AuthorizationCode = "authorization_code";

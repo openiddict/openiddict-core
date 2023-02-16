@@ -62,6 +62,19 @@ public static partial class OpenIddictClientEvents
             set => Transaction.Request = value;
         }
 
+        /// <summary>
+        /// Gets or sets the nonce that is used as the unique identifier of the operation, if available.
+        /// </summary>
+        public string? Nonce { get; set; }
+
+        /// <summary>
+        /// Gets or sets the redirect URI that was selected during the challenge, if available.
+        /// </summary>
+        public string? RedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URI of the remote authorization endpoint.
+        /// </summary>
         public string AuthorizationEndpoint { get; set; } = null!;
     }
 

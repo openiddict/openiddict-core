@@ -117,7 +117,12 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ApplyAuthorizationRequestContext(context.Transaction);
+                var notification = new ApplyAuthorizationRequestContext(context.Transaction)
+                {
+                    Nonce = context.Nonce,
+                    RedirectUri = context.RedirectUri
+                };
+
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -129,6 +134,15 @@ public static partial class OpenIddictClientHandlers
                 else if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
+                    return;
+                }
+
+                else if (notification.IsRejected)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
                     return;
                 }
             }
@@ -339,7 +353,7 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0368));
+                context.Transaction.Response = new OpenIddictResponse();
             }
         }
 

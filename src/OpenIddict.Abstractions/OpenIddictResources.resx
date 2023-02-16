@@ -1424,7 +1424,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>An error occurred while authenticating the user.</value>
   </data>
   <data name="ID0375" xml:space="preserve">
-    <value>The Windows protocol activation cannot be resolved from the client transaction.</value>
+    <value>The protocol activation cannot be resolved or contains invalid data.</value>
   </data>
   <data name="ID0376" xml:space="preserve">
     <value>The identifier of the application instance that initiated the authentication process cannot be resolved from the state token.</value>
@@ -1451,13 +1451,13 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>An error occurred while waiting for the authentication operation to complete, which may indicate a nonce collision. Make sure nonces are unique, contain enough entropy and are generated using a crypto-secure random number generator.</value>
   </data>
   <data name="ID0384" xml:space="preserve">
-    <value>An explicit client URI must be set when using the OpenIddict client Windows integration. To set the client URI, use 'services.AddOpenIddict().AddClient().SetClientUri()'.</value>
+    <value>An explicit client URI must be set when using the OpenIddict client system integration. To set the client URI, use 'services.AddOpenIddict().AddClient().SetClientUri()'.</value>
   </data>
   <data name="ID0385" xml:space="preserve">
     <value>The default system browser couldn't be started. If the application executes inside a sandbox, make sure it is allowed to launch URIs or spawn new processes.</value>
   </data>
   <data name="ID0386" xml:space="preserve">
-    <value>A pipe name must be manually set in the OpenIddict Windows integration options when no application name was configured in the .NET generic host options. To set the pipe name, call 'services.AddOpenIddict().AddClient().UseWindows().SetPipeName()'.</value>
+    <value>A pipe name must be manually set in the OpenIddict client system integration options when no application name was configured in the .NET generic host options. To set the pipe name, call 'services.AddOpenIddict().AddClient().UseOperatingSystemIntegration().SetPipeName()'.</value>
   </data>
   <data name="ID0387" xml:space="preserve">
     <value>The type extracted from the inter-process notification ({0}) is unknown or not valid, which may indicate that different versions of the OpenIddict client are used for the same application.</value>
@@ -1466,7 +1466,19 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The payload extracted from the inter-process notification is malformed, incomplete or was created by a different version of the OpenIddict client library.</value>
   </data>
   <data name="ID0389" xml:space="preserve">
-    <value>The OpenIddict client Windows integration is not supported on this platform.</value>
+    <value>The OpenIddict client system integration is not supported on this platform.</value>
+  </data>
+  <data name="ID0390" xml:space="preserve">
+    <value>The HTTP listener context cannot be resolved or contains invalid data.</value>
+  </data>
+  <data name="ID0391" xml:space="preserve">
+    <value>An error occurred while instantiating the embedded web server, which may indicate a permission issue preventing the ports in the IANA dynamic ports range from being allocated.</value>
+  </data>
+  <data name="ID0392" xml:space="preserve">
+    <value>The web authentication broker is not supported on this platform.</value>
+  </data>
+  <data name="ID0393" xml:space="preserve">
+    <value>The web authentication result cannot be resolved or contains invalid data.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
@@ -1962,6 +1974,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID2165" xml:space="preserve">
     <value>The issuer returned in the server configuration doesn't match the value set in the client registration options.</value>
+  </data>
+  <data name="ID2166" xml:space="preserve">
+    <value>The received authorization response is not valid for this instance of the application.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2625,6 +2640,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6213" xml:space="preserve">
     <value>An error occurred while handling an inter-process message.</value>
+  </data>
+  <data name="ID6214" xml:space="preserve">
+    <value>An error occurred while handling an HTTP listener request.</value>
+  </data>
+  <data name="ID6215" xml:space="preserve">
+    <value>An error occurred while redirecting a protocol activation to the '{Identifier}' instance.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

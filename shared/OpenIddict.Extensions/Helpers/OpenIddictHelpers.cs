@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Data;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
@@ -77,6 +78,77 @@ internal static class OpenIddictHelpers
                 }
             }
         }
+    }
+
+#if !SUPPORTS_TASK_WAIT_ASYNC
+    /// <summary>
+    /// Waits until the specified task returns a result or the cancellation token is signaled.
+    /// </summary>
+    /// <param name="task">The task.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <exception cref="OperationCanceledException">The specified <paramref name="cancellationToken"/> is signaled.</exception>
+    public static async Task WaitAsync(this Task task, CancellationToken cancellationToken)
+    {
+        var source = new TaskCompletionSource<bool>(TaskCreationOptions.None);
+
+        using (cancellationToken.Register(static state => ((TaskCompletionSource<bool>) state!).SetResult(true), source))
+        {
+            if (await Task.WhenAny(task, source.Task) == source.Task)
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+
+            await task;
+        }
+    }
+
+    /// <summary>
+    /// Waits until the specified task returns a result or the cancellation token is signaled.
+    /// </summary>
+    /// <param name="task">The task.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <exception cref="OperationCanceledException">The specified <paramref name="cancellationToken"/> is signaled.</exception>
+    public static async Task<T> WaitAsync<T>(this Task<T> task, CancellationToken cancellationToken)
+    {
+        var source = new TaskCompletionSource<bool>(TaskCreationOptions.None);
+
+        using (cancellationToken.Register(static state => ((TaskCompletionSource<bool>) state!).SetResult(true), source))
+        {
+            if (await Task.WhenAny(task, source.Task) == source.Task)
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+
+            return await task;
+        }
+    }
+#endif
+
+    /// <summary>
+    /// Determines whether the specified <paramref name="exception"/> is considered fatal.
+    /// </summary>
+    /// <param name="exception">The exception.</param>
+    /// <returns>
+    /// <see langword="true"/> if the exception is considered fatal, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsFatal(Exception exception)
+    {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
+
+        return exception switch
+        {
+            ThreadAbortException => true,
+            OutOfMemoryException and not InsufficientMemoryException => true,
+
+            AggregateException { InnerExceptions: var exceptions } => exceptions.Any(IsFatal),
+            Exception { InnerException: Exception inner } => IsFatal(inner),
+
+            _ => false
+        };
     }
 
 #if !SUPPORTS_TOHASHSET_LINQ_EXTENSION

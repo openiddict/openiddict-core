@@ -7,14 +7,15 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using OpenIddict.Extensions;
 
-namespace OpenIddict.Client.Windows;
+namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>
 /// Contains the APIs needed to coordinate authentication operations that happen in a different context.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class OpenIddictClientWindowsMarshal
+public sealed class OpenIddictClientSystemIntegrationMarshal
 {
     private readonly ConcurrentDictionary<string, Lazy<(
         string RequestForgeryProtection,
@@ -34,8 +35,10 @@ public sealed class OpenIddictClientWindowsMarshal
     /// <param name="nonce">The nonce, used as a unique identifier.</param>
     /// <param name="protection">The request forgery protection associated with the specified authentication demand.</param>
     /// <returns><see langword="true"/> if the operation could be added, <see langword="false"/> otherwise.</returns>
-    internal bool TryAdd(string nonce, string protection)
-        => _operations.TryAdd(nonce, new(() => (protection, new SemaphoreSlim(initialCount: 1, maxCount: 1), new())));
+    internal bool TryAdd(string nonce, string protection) => _operations.TryAdd(nonce, new(() => (
+        RequestForgeryProtection: protection,
+        Semaphore: new SemaphoreSlim(initialCount: 1, maxCount: 1),
+        TaskCompletionSource: new(TaskCreationOptions.RunContinuationsAsynchronously))));
 
     /// <summary>
     /// Tries to acquire a lock on the authentication demand corresponding to the specified nonce.
@@ -83,17 +86,8 @@ public sealed class OpenIddictClientWindowsMarshal
             return false;
         }
 
-        var source = new TaskCompletionSource<bool>(TaskCreationOptions.None);
-        using (cancellationToken.Register(static state => ((TaskCompletionSource<bool>) state!).SetResult(true), source))
-        {
-            if (await Task.WhenAny(operation.Value.TaskCompletionSource.Task, source.Task) == source.Task)
-            {
-                throw new OperationCanceledException(cancellationToken);
-            }
-
-            await operation.Value.TaskCompletionSource.Task;
-            return true;
-        }
+        await operation.Value.TaskCompletionSource.Task.WaitAsync(cancellationToken);
+        return true;
     }
 
     /// <summary>

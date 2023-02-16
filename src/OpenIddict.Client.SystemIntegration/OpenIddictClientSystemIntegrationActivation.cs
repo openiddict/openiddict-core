@@ -6,20 +6,20 @@
 
 using System.ComponentModel;
 
-namespace OpenIddict.Client.Windows;
+namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>
-/// Represents a Windows protocol activation.
+/// Represents a protocol activation.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictClientWindowsActivation
+public sealed class OpenIddictClientSystemIntegrationActivation
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictClientWindowsActivation"/> class.
+    /// Creates a new instance of the <see cref="OpenIddictClientSystemIntegrationActivation"/> class.
     /// </summary>
     /// <param name="uri">The protocol activation URI.</param>
     /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
-    public OpenIddictClientWindowsActivation(Uri uri)
+    public OpenIddictClientSystemIntegrationActivation(Uri uri)
     {
         if (uri is null)
         {
