@@ -147,7 +147,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.Owin.Inte
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.DataProtection.Tests", "test\OpenIddict.Server.DataProtection.Tests\OpenIddict.Server.DataProtection.Tests.csproj", "{C92838AB-3923-49A1-B23E-FA01306CAC9D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.Windows", "src\OpenIddict.Client.Windows\OpenIddict.Client.Windows.csproj", "{058BF159-F3DB-4BCD-99E5-2E5C62D8F588}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.SystemIntegration", "src\OpenIddict.Client.SystemIntegration\OpenIddict.Client.SystemIntegration.csproj", "{058BF159-F3DB-4BCD-99E5-2E5C62D8F588}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.Wpf.Client", "sandbox\OpenIddict.Sandbox.Wpf.Client\OpenIddict.Sandbox.Wpf.Client.csproj", "{D0C56832-6557-4CC1-91EA-7B31B18BEE7A}"
 EndProject

@@ -124,6 +124,15 @@ public static partial class OpenIddictClientHandlers
                     context.SkipRequest();
                     return;
                 }
+
+                else if (notification.IsRejected)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
             }
         }
 

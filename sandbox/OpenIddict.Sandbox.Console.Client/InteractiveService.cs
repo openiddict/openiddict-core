@@ -2,9 +2,10 @@
 using OpenIddict.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
-using static System.Console;
 
 namespace OpenIddict.Sandbox.Console.Client;
+
+using Console = System.Console;
 
 public class InteractiveService : BackgroundService
 {
@@ -28,54 +29,49 @@ public class InteractiveService : BackgroundService
             await source.Task;
         }
 
-        string? provider;
-
         while (!stoppingToken.IsCancellationRequested)
         {
+            string? provider;
+
             do
             {
-                await Out.WriteLineAsync("Type '1' + ENTER to log in using the local server or '2' + ENTER to log in using Twitter");
+                Console.WriteLine("Type '1' + ENTER to log in using the local server or '2' + ENTER to log in using Twitter");
 
-                provider = await In.ReadLineAsync(stoppingToken) switch
+                provider = await Task.Run(Console.ReadLine).WaitAsync(stoppingToken) switch
                 {
                     "1" => "Local",
                     "2" => "Twitter",
-                    _ => null
+                    _   => null
                 };
             }
 
             while (string.IsNullOrEmpty(provider));
 
-            await Out.WriteLineAsync("Launching the system browser.");
+            Console.WriteLine("Launching the system browser.");
 
             try
             {
-                // Ask OpenIddict to initiate the challenge and launch the system browser
-                // to allow the user to complete the interactive authentication dance.
-                var nonce = await _service.ChallengeWithBrowserAsync(
+                // Ask OpenIddict to initiate the authentication flow (typically, by
+                // starting the system browser) and wait for the user to complete it.
+                var (_, _, principal) = await _service.AuthenticateInteractivelyAsync(
                     provider, cancellationToken: stoppingToken);
 
-                // Wait until the user approved or rejected the authorization
-                // demand and retrieve the resulting claims-based principal.
-                var (_, _, principal) = await _service.AuthenticateWithBrowserAsync(
-                    nonce, cancellationToken: stoppingToken);
-
-                await Out.WriteLineAsync($"Welcome, {principal.FindFirst(Claims.Name)!.Value}.");
+                Console.WriteLine($"Welcome, {principal.FindFirst(Claims.Name)!.Value}.");
             }
 
             catch (OperationCanceledException)
             {
-                await Error.WriteLineAsync("The authentication process was aborted.");
+                Console.WriteLine("The authentication process was aborted.");
             }
 
             catch (ProtocolException exception) when (exception.Error is Errors.AccessDenied)
             {
-                await Error.WriteLineAsync("The authorization was denied by the end user.");
+                Console.WriteLine("The authorization was denied by the end user.");
             }
 
             catch
             {
-                await Error.WriteLineAsync("An error occurred while trying to authenticate the user.");
+                Console.WriteLine("An error occurred while trying to authenticate the user.");
             }
         }
     }

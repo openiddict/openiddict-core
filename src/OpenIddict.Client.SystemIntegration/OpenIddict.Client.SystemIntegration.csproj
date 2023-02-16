@@ -4,8 +4,10 @@
     <TargetFrameworks>
       net461;
       netcoreapp3.1;
+      net6.0;
       net6.0-windows7.0;
       net6.0-windows10.0.17763;
+      net7.0;
       net7.0-windows7.0;
       net7.0-windows10.0.17763;
       netstandard2.0
@@ -16,8 +18,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Windows integration package for the OpenIddict client services.</Description>
-    <PackageTags>$(PackageTags);client;windows</PackageTags>
+    <Description>Operating system integration package for the OpenIddict client.</Description>
+    <PackageTags>$(PackageTags);client;linux;windows</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -52,8 +54,14 @@
     <Using Include="OpenIddict.Client.OpenIddictClientEvents" Static="true" />
     <Using Include="OpenIddict.Client.OpenIddictClientHandlers" Static="true" />
     <Using Include="OpenIddict.Client.OpenIddictClientHandlerFilters" Static="true" />
-    <Using Include="OpenIddict.Client.Windows.OpenIddictClientWindowsHandlers" Static="true" />
-    <Using Include="OpenIddict.Client.Windows.OpenIddictClientWindowsHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlers" Static="true" />
+    <Using Include="OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlerFilters" Static="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <SupportedPlatform Include="linux" />
+    <SupportedPlatform Include="windows" />
   </ItemGroup>
 
 </Project>

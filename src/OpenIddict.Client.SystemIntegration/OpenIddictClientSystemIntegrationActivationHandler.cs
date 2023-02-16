@@ -4,34 +4,33 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace OpenIddict.Client.Windows;
+namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>
 /// Contains the logic necessary to handle initial URI protocol activations.
 /// </summary>
 /// <remarks>
-/// Note: redirected URI protocol activations are handled by <see cref="OpenIddictClientWindowsListener"/>.
+/// Note: redirected URI protocol activations are handled by <see cref="OpenIddictClientSystemIntegrationPipeListener"/>.
 /// </remarks>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class OpenIddictClientWindowsHandler : IHostedService
+public sealed class OpenIddictClientSystemIntegrationActivationHandler : IHostedService
 {
-    private readonly IOptionsMonitor<OpenIddictClientWindowsOptions> _options;
-    private readonly OpenIddictClientWindowsService _service;
+    private readonly IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> _options;
+    private readonly OpenIddictClientSystemIntegrationService _service;
 
     /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictClientWindowsHandler"/> class.
+    /// Creates a new instance of the <see cref="OpenIddictClientSystemIntegrationActivationHandler"/> class.
     /// </summary>
-    /// <param name="options">The OpenIddict client Windows integration options.</param>
-    /// <param name="service">The OpenIddict client Windows service.</param>
-    public OpenIddictClientWindowsHandler(
-        IOptionsMonitor<OpenIddictClientWindowsOptions> options,
-        OpenIddictClientWindowsService service)
+    /// <param name="options">The OpenIddict client system integration integration options.</param>
+    /// <param name="service">The OpenIddict client system integration service.</param>
+    public OpenIddictClientSystemIntegrationActivationHandler(
+        IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> options,
+        OpenIddictClientSystemIntegrationService service)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _service = service ?? throw new ArgumentNullException(nameof(service));
@@ -53,15 +52,15 @@ public sealed class OpenIddictClientWindowsHandler : IHostedService
             return Task.FromCanceled(cancellationToken);
         }
 
-        // If the default activation processing logic was disabled in the options, ignore the activation.
-        if (_options.CurrentValue.DisableProtocolActivationProcessing)
+        // If the protocol activation processing logic was not enabled, ignore the activation.
+        if (_options.CurrentValue.EnableActivationHandling is not true)
         {
             return Task.CompletedTask;
         }
 
         // Determine whether the current instance is initialized to react to a protocol activation.
         // If it's not, return immediately to avoid adding latency to the application startup process.
-        if (GetProtocolActivation() is not OpenIddictClientWindowsActivation activation)
+        if (GetProtocolActivation() is not OpenIddictClientSystemIntegrationActivation activation)
         {
             return Task.CompletedTask;
         }
@@ -69,21 +68,21 @@ public sealed class OpenIddictClientWindowsHandler : IHostedService
         return _service.HandleProtocolActivationAsync(activation, cancellationToken);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static OpenIddictClientWindowsActivation? GetProtocolActivation()
+        static OpenIddictClientSystemIntegrationActivation? GetProtocolActivation()
         {
 #if SUPPORTS_WINDOWS_RUNTIME
             // On platforms that support WinRT, always favor the AppInstance.GetActivatedEventArgs() API.
-            if (OpenIddictClientWindowsHelpers.IsWindowsRuntimeSupported() &&
-                OpenIddictClientWindowsHelpers.GetProtocolActivationUriWithWindowsRuntime() is Uri uri)
+            if (OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported() &&
+                OpenIddictClientSystemIntegrationHelpers.GetProtocolActivationUriWithWindowsRuntime() is Uri uri)
             {
-                return new OpenIddictClientWindowsActivation(uri);
+                return new OpenIddictClientSystemIntegrationActivation(uri);
             }
 #endif
             // Otherwise, try to extract the protocol activation from the command line arguments.
-            if (OpenIddictClientWindowsHelpers.GetProtocolActivationUriFromCommandLineArguments(
+            if (OpenIddictClientSystemIntegrationHelpers.GetProtocolActivationUriFromCommandLineArguments(
                 Environment.GetCommandLineArgs()) is Uri value)
             {
-                return new OpenIddictClientWindowsActivation(value);
+                return new OpenIddictClientSystemIntegrationActivation(value);
             }
 
             return null;

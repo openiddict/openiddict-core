@@ -29,15 +29,10 @@ namespace OpenIddict.Sandbox.WinForms.Client
 
             try
             {
-                // Ask OpenIddict to initiate the challenge and launch the system browser
-                // to allow the user to complete the interactive authentication dance.
-                var nonce = await _service.ChallengeWithBrowserAsync(
+                // Ask OpenIddict to initiate the authentication flow (typically, by
+                // starting the system browser) and wait for the user to complete it.
+                var (_, _, principal) = await _service.AuthenticateInteractivelyAsync(
                     provider, cancellationToken: source.Token);
-
-                // Wait until the user approved or rejected the authorization
-                // demand and retrieve the resulting claims-based principal.
-                var (_, _, principal) = await _service.AuthenticateWithBrowserAsync(
-                    nonce, cancellationToken: source.Token);
 
 #if SUPPORTS_WINFORMS_TASK_DIALOG
                 TaskDialog.ShowDialog(new TaskDialogPage

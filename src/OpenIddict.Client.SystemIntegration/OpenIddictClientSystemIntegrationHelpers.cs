@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -15,30 +16,49 @@ using System.Security.Principal;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel;
 using Windows.Foundation.Metadata;
+using Windows.Security.Authentication.Web;
 using Windows.System;
 #endif
 
-namespace OpenIddict.Client.Windows;
+namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>
 /// Exposes companion extensions for the OpenIddict/Windows integration.
 /// </summary>
-public static class OpenIddictClientWindowsHelpers
+public static class OpenIddictClientSystemIntegrationHelpers
 {
     /// <summary>
-    /// Gets the <see cref="OpenIddictClientWindowsActivation"/> associated with the current context.
+    /// Gets the <see cref="OpenIddictClientSystemIntegrationActivation"/> associated with the current context.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
-    /// <returns>The <see cref="OpenIddictClientWindowsActivation"/> instance or <see langword="null"/> if it couldn't be found.</returns>
-    public static OpenIddictClientWindowsActivation? GetWindowsActivation(this OpenIddictClientTransaction transaction)
-        => transaction.GetProperty<OpenIddictClientWindowsActivation>(typeof(OpenIddictClientWindowsActivation).FullName!);
+    /// <returns>The <see cref="OpenIddictClientSystemIntegrationActivation"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    public static OpenIddictClientSystemIntegrationActivation? GetProtocolActivation(this OpenIddictClientTransaction transaction)
+        => transaction.GetProperty<OpenIddictClientSystemIntegrationActivation>(typeof(OpenIddictClientSystemIntegrationActivation).FullName!);
+
+    /// <summary>
+    /// Gets the <see cref="HttpListenerContext"/> associated with the current context.
+    /// </summary>
+    /// <param name="transaction">The transaction instance.</param>
+    /// <returns>The <see cref="HttpListenerContext"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    public static HttpListenerContext? GetHttpListenerContext(this OpenIddictClientTransaction transaction)
+        => transaction.GetProperty<HttpListenerContext>(typeof(HttpListenerContext).FullName!);
 
 #if SUPPORTS_WINDOWS_RUNTIME
+    /// <summary>
+    /// Gets the <see cref="WebAuthenticationResult"/> associated with the current context.
+    /// </summary>
+    /// <param name="transaction">The transaction instance.</param>
+    /// <returns>The <see cref="HttpListenerContext"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    public static WebAuthenticationResult? GetWebAuthenticationResult(this OpenIddictClientTransaction transaction)
+        => transaction.GetProperty<WebAuthenticationResult>(typeof(WebAuthenticationResult).FullName!);
+
     /// <summary>
     /// Determines whether the Windows Runtime APIs are supported on this platform.
     /// </summary>
     /// <returns><see langword="true"/> if the Windows Runtime APIs are supported, <see langword="false"/> otherwise.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), SupportedOSPlatformGuard("windows10.0.17763")]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatformGuard("windows10.0.17763")]
     internal static bool IsWindowsRuntimeSupported()
     {
         // Note: as WinRT is only supported on Windows 8 and higher, trying to call any of the
@@ -218,6 +238,39 @@ public static class OpenIddictClientWindowsHelpers
         }
 
         catch (Win32Exception exception) when (exception.NativeErrorCode is 5)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Starts the system browser using xdg-open.
+    /// </summary>
+    /// <param name="uri">The <see cref="Uri"/> to use.</param>
+    /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
+    [SupportedOSPlatform("linux")]
+    internal static async Task<bool> TryLaunchBrowserWithXdgOpenAsync(Uri uri)
+    {
+        try
+        {
+            await Task.Run(() => Process.Start(new ProcessStartInfo
+            {
+                FileName = "xdg-open",
+                Arguments = uri.AbsoluteUri,
+                UseShellExecute = false,
+
+                // Note: on some Linux distributions, xdg-open is known to propagate errors
+                // and warnings written to the standard error stream to the parent process.
+                // To avoid that, the streams are redirected to this instance and ignored.
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true
+            }));
+
+            return true;
+        }
+
+        catch (UnauthorizedAccessException)
         {
             return false;
         }

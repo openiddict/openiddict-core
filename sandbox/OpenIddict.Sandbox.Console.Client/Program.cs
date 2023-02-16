@@ -1,19 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Client;
 using OpenIddict.Sandbox.Console.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
-var host = Host.CreateDefaultBuilder(args)
+var host = new HostBuilder()
     // Note: applications for which a single instance is preferred can reference
     // the Dapplo.Microsoft.Extensions.Hosting.AppServices package and call this
     // method to automatically close extra instances based on the specified identifier:
     //
     // .ConfigureSingleInstance(options => options.MutexId = "{802A478D-00E8-4DAE-9A27-27B31A47CB39}")
     //
+    .ConfigureLogging(options => options.AddDebug())
     .ConfigureServices(services =>
     {
         services.AddDbContext<DbContext>(options =>
@@ -46,11 +46,16 @@ var host = Host.CreateDefaultBuilder(args)
                 options.AddDevelopmentEncryptionCertificate()
                        .AddDevelopmentSigningCertificate();
 
-                // Register the Windows host.
-                options.UseWindows();
+                // Add the operating system integration.
+                options.UseSystemIntegration()
+                       .DisableActivationHandling()
+                       .DisableActivationRedirection()
+                       .DisablePipeServer()
+                       .EnableEmbeddedWebServer()
+                       .UseSystemBrowser();
 
                 // Set the client URI that will uniquely identify this application.
-                options.SetClientUri(new Uri("openiddict-sandbox-console-client://localhost/", UriKind.Absolute));
+                options.SetClientUri(new Uri("http://localhost/", UriKind.Absolute));
 
                 // Register the System.Net.Http integration and use the identity of the current
                 // assembly as a more specific user agent, which can be useful when dealing with
@@ -90,8 +95,6 @@ var host = Host.CreateDefaultBuilder(args)
 
         // Register the background service responsible for handling the console interactions.
         services.AddHostedService<InteractiveService>();
-
-        services.RemoveAll<ILoggerProvider>();
     })
     .UseConsoleLifetime()
     .Build();

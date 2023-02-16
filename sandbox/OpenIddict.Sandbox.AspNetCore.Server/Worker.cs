@@ -39,7 +39,17 @@ public class Worker : IHostedService
                     },
                     RedirectUris =
                     {
-                        new Uri("openiddict-sandbox-console-client://localhost/callback/login/local")
+                        new Uri("http://localhost:49152/callback/login/local"),
+                        new Uri("http://localhost:49153/callback/login/local"),
+                        new Uri("http://localhost:49154/callback/login/local"),
+                        new Uri("http://localhost:49155/callback/login/local"),
+                        new Uri("http://localhost:49156/callback/login/local"),
+                        new Uri("http://localhost:49157/callback/login/local"),
+                        new Uri("http://localhost:49158/callback/login/local"),
+                        new Uri("http://localhost:49159/callback/login/local"),
+                        new Uri("http://localhost:49160/callback/login/local"),
+                        new Uri("http://localhost:49161/callback/login/local"),
+                        new Uri("http://localhost:49162/callback/login/local")
                     },
                     Permissions =
                     {

@@ -3964,12 +3964,12 @@ public static partial class OpenIddictClientHandlers
                     // Otherwise, always default to the response types that have been enabled globally.
                     ResponseTypes: context.Registration.ResponseTypes.Count switch
                     {
-                        0 => context.Options.ResponseTypes.Select(types => types
+                        0 => context.Options.ResponseTypes.Select(static types => types
                                 .Split(Separators.Space, StringSplitOptions.None)
                                 .ToHashSet(StringComparer.Ordinal))
                             .ToList(),
 
-                        _ => context.Options.ResponseTypes.Select(types => types
+                        _ => context.Options.ResponseTypes.Select(static types => types
                                 .Split(Separators.Space, StringSplitOptions.None)
                                 .ToHashSet(StringComparer.Ordinal))
                             .Where(types => context.Registration.ResponseTypes.Any(value => value
@@ -3983,7 +3983,7 @@ public static partial class OpenIddictClientHandlers
                     GrantTypes: context.Configuration.GrantTypesSupported,
 
                     ResponseTypes: context.Configuration.ResponseTypesSupported
-                        .Select(types => types
+                        .Select(static types => types
                             .Split(Separators.Space, StringSplitOptions.None)
                             .ToHashSet(StringComparer.Ordinal))
                         .ToList())) switch
@@ -4014,7 +4014,7 @@ public static partial class OpenIddictClientHandlers
                     client.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code)) &&
                     server.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code))
 
-                     => (GrantTypes.AuthorizationCode, ResponseTypes.Code),
+                    => (GrantTypes.AuthorizationCode, ResponseTypes.Code),
 
                 // Hybrid flow with grant_type=authorization_code/implicit and response_type=code id_token:
                 (var client, var server) when
@@ -4042,7 +4042,7 @@ public static partial class OpenIddictClientHandlers
                     client.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken)) &&
                     server.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken))
 
-                     => (GrantTypes.Implicit, ResponseTypes.IdToken),
+                    => (GrantTypes.Implicit, ResponseTypes.IdToken),
 
                 // Note: response types combinations containing "token" are always tested last as some
                 // authorization servers - like OpenIddict - are known to block authorization requests
