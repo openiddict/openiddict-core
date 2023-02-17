@@ -15,12 +15,8 @@ using OpenIddict.Extensions;
 namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>
-/// Contains the logic necessary to handle URI protocol activations that
-/// are redirected by other instances using inter-process communication.
+/// Contains the logic necessary to handle HTTP requests.
 /// </summary>
-/// <remarks>
-/// Note: initial URI protocol activations are handled by <see cref="OpenIddictClientSystemIntegrationActivationHandler"/>.
-/// </remarks>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundService
 {
@@ -58,7 +54,7 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
 
         try
         {
-            // Note: finding a free port in the IANA dynamic port range can take a bit of time on busy systems.
+            // Note: finding a free port in the IANA dynamic ports range can take a bit of time on busy systems.
             // To ensure the host initialization is not blocked, the whole process is offloaded to the thread pool.
             await Task.Run(cancellationToken: stoppingToken, function: async () =>
             {
