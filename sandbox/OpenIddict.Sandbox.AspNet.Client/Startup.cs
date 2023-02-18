@@ -96,12 +96,6 @@ namespace OpenIddict.Sandbox.AspNet.Client
                                       .SetRedirectUri("callback/login/google")
                                       .SetAccessType("offline")
                                       .AddScopes(Scopes.Profile);
-                           })
-                           .UseTwitter(options =>
-                           {
-                               options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
-                                      .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
-                                      .SetRedirectUri("callback/login/twitter");
                            });
                 });
 

@@ -2,6 +2,7 @@
 using OpenIddict.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Sandbox.Console.Client;
 
@@ -35,12 +36,12 @@ public class InteractiveService : BackgroundService
 
             do
             {
-                Console.WriteLine("Type '1' + ENTER to log in using the local server or '2' + ENTER to log in using Twitter");
+                Console.WriteLine("Type '1' + ENTER to log in using the local server or '2' + ENTER to log in using GitHub.");
 
                 provider = await WaitAsync(Task.Run(Console.ReadLine, stoppingToken), stoppingToken) switch
                 {
                     "1" => "Local",
-                    "2" => "Twitter",
+                    "2" => Providers.GitHub,
                     _   => null
                 };
             }

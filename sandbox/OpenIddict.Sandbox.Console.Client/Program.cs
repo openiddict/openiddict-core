@@ -78,10 +78,10 @@ var host = new HostBuilder()
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                 options.UseWebProviders()
-                       .UseTwitter()
-                       .SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
-                       .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
-                       .SetRedirectUri("callback/login/twitter");
+                       .UseGitHub()
+                       .SetClientId("992372d088f8676a7945")
+                       .SetClientSecret("1f18c22f766e44d7bd4ea4a6510b9e337d48ab38")
+                       .SetRedirectUri("callback/login/github");
             });
 
         // Register the worker responsible for creating the database used to store tokens

@@ -20,8 +20,8 @@ namespace OpenIddict.Sandbox.WinForms.Client
         private async void LocalLoginButton_Click(object sender, EventArgs e)
             => await AuthenticateAsync("Local");
 
-        private async void TwitterLoginButton_Click(object sender, EventArgs e)
-            => await AuthenticateAsync(Providers.Twitter);
+        private async void GitHubLoginButton_Click(object sender, EventArgs e)
+            => await AuthenticateAsync(Providers.GitHub);
 
         private async Task AuthenticateAsync(string provider)
         {

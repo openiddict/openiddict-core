@@ -82,11 +82,11 @@ var host = new HostBuilder()
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                 options.UseWebProviders()
-                       .UseTwitter()
-                       .SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
-                       .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
-                       // Note: Twitter doesn't support the recommended ":/" syntax and requires using "://".
-                       .SetRedirectUri("com.openiddict.sandbox.wpf.client://callback/login/twitter");
+                       .UseGitHub()
+                       .SetClientId("8abc54b6d5f4e39d78aa")
+                       .SetClientSecret("f37ef38bdb18a0f5f2d430a8edbed4353c012dc3")
+                       // Note: GitHub doesn't support the recommended ":/" syntax and requires using "://".
+                       .SetRedirectUri("com.openiddict.sandbox.wpf.client://callback/login/github");
             });
 
         // Register the worker responsible for creating the database used to store tokens
