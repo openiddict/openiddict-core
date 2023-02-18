@@ -1451,7 +1451,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>An error occurred while waiting for the authentication operation to complete, which may indicate a nonce collision. Make sure nonces are unique, contain enough entropy and are generated using a crypto-secure random number generator.</value>
   </data>
   <data name="ID0384" xml:space="preserve">
-    <value>An explicit client URI must be set when using the OpenIddict client system integration. To set the client URI, use 'services.AddOpenIddict().AddClient().SetClientUri()'.</value>
+    <value>An error occurred while trying to create an embedded web server on port {0}.</value>
   </data>
   <data name="ID0385" xml:space="preserve">
     <value>The default system browser couldn't be started. If the application executes inside a sandbox, make sure it is allowed to launch URIs or spawn new processes.</value>
@@ -1472,7 +1472,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The HTTP listener context cannot be resolved or contains invalid data.</value>
   </data>
   <data name="ID0391" xml:space="preserve">
-    <value>An error occurred while instantiating the embedded web server, which may indicate a permission issue preventing the ports in the IANA dynamic ports range from being allocated.</value>
+    <value>An error occurred while instantiating the embedded web server, which may indicate a permission issue.</value>
   </data>
   <data name="ID0392" xml:space="preserve">
     <value>The web authentication broker is not supported on this platform.</value>

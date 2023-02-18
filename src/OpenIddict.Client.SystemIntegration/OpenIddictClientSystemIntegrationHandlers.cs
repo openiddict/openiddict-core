@@ -37,6 +37,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         ResolveRequestUriFromHttpListenerRequest.Descriptor,
         ResolveRequestUriFromProtocolActivation.Descriptor,
         ResolveRequestUriFromWebAuthenticationResult.Descriptor,
+        InferEndpointTypeFromDynamicAddress.Descriptor,
         RejectUnknownHttpRequests.Descriptor,
 
         /*
@@ -133,7 +134,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // that don't include a Host header (e.g HTTP/1.0 requests) or specify an invalid value.
 
                 { Request.Url: { IsAbsoluteUri: true } uri } => (
-                    BaseUri: new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute),
+                    BaseUri: new UriBuilder(uri) { Path = null, Query = null, Fragment = null }.Uri,
                     RequestUri: uri),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0390))
@@ -171,7 +172,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             (context.BaseUri, context.RequestUri) = context.Transaction.GetProtocolActivation() switch
             {
                 { ActivationUri: Uri uri } => (
-                    BaseUri: new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute),
+                    BaseUri: new UriBuilder(uri) { Path = null, Query = null, Fragment = null }.Uri,
                     RequestUri: uri),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0375))
@@ -211,7 +212,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             {
                 { ResponseStatus: WebAuthenticationStatus.Success, ResponseData: string data } when
                     Uri.TryCreate(data, UriKind.Absolute, out Uri? uri) => (
-                        BaseUri: new Uri(uri.GetLeftPart(UriPartial.Authority), UriKind.Absolute),
+                        BaseUri: new UriBuilder(uri) { Path = null, Query = null, Fragment = null }.Uri,
                         RequestUri: uri),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0393))
@@ -221,6 +222,84 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 #else
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
 #endif
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for inferring the endpoint type from the request URI, ignoring
+    /// the port when comparing the request URI with the endpoint URIs configured in the options.
+    /// Note: this handler is not used when the OpenID Connect request is not handled by the embedded web server.
+    /// </summary>
+    public sealed class InferEndpointTypeFromDynamicAddress : IOpenIddictClientHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .AddFilter<RequireHttpListenerContext>()
+                .UseSingletonHandler<InferEndpointTypeFromDynamicAddress>()
+                .SetOrder(InferEndpointType.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0127));
+            }
+
+            // If an endpoint was already inferred by the generic handler, don't override it.
+            if (context.EndpointType is not OpenIddictClientEndpointType.Unknown)
+            {
+                return default;
+            }
+
+            context.EndpointType =
+                Matches(context.Options.RedirectionEndpointUris)           ? OpenIddictClientEndpointType.Redirection           :
+                Matches(context.Options.PostLogoutRedirectionEndpointUris) ? OpenIddictClientEndpointType.PostLogoutRedirection :
+                                                                             OpenIddictClientEndpointType.Unknown;
+
+            return default;
+
+            bool Matches(IReadOnlyList<Uri> uris)
+            {
+                for (var index = 0; index < uris.Count; index++)
+                {
+                    var uri = uris[index];
+                    if (uri.IsAbsoluteUri && uri.IsLoopback && uri.IsDefaultPort && Equals(uri, context.RequestUri))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            static bool Equals(Uri left, Uri right) =>
+                string.Equals(left.Scheme, right.Scheme, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(left.Host, right.Host, StringComparison.OrdinalIgnoreCase) &&
+                //
+                // Deliberately ignore the port when doing comparisons in this specialized handler.
+                //
+                // Note: paths are considered equivalent even if the casing isn't identical or if one of the two
+                // paths only differs by a trailing slash, which matches the classical behavior seen on ASP.NET,
+                // Microsoft.Owin/Katana and ASP.NET Core. Developers who prefer a different behavior can remove
+                // this handler and replace it by a custom version implementing a more strict comparison logic.
+                (string.Equals(left.AbsolutePath, right.AbsolutePath, StringComparison.OrdinalIgnoreCase) ||
+                 (left.AbsolutePath.Length == right.AbsolutePath.Length + 1 &&
+                  left.AbsolutePath.StartsWith(right.AbsolutePath, StringComparison.OrdinalIgnoreCase) &&
+                  left.AbsolutePath[^1] is '/') ||
+                 (right.AbsolutePath.Length == left.AbsolutePath.Length + 1 &&
+                  right.AbsolutePath.StartsWith(left.AbsolutePath, StringComparison.OrdinalIgnoreCase) &&
+                  right.AbsolutePath[^1] is '/'));
         }
     }
 
@@ -237,7 +316,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                 .AddFilter<RequireHttpListenerContext>()
                 .UseSingletonHandler<RejectUnknownHttpRequests>()
-                .SetOrder(InferEndpointType.Descriptor.Order + 500)
+                .SetOrder(InferEndpointTypeFromDynamicAddress.Descriptor.Order + 250)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -1417,13 +1496,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // If the redirect_uri uses "localhost" as the authority and doesn't include a non-default port,
+            // If the redirect_uri uses a loopback host/IP as the authority and doesn't include a non-default port,
             // determine whether the embedded web server is running: if so, override the port in the redirect_uri
             // by the port used by the embedded web server (guaranteed to be running if a value is returned).
             if (!string.IsNullOrEmpty(context.RedirectUri) &&
                 Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) &&
                 string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(uri.Authority, "localhost", StringComparison.OrdinalIgnoreCase) && uri.IsDefaultPort &&
+                uri.IsLoopback && uri.IsDefaultPort &&
                 await _listener.GetEmbeddedServerPortAsync(context.CancellationToken) is int port)
             {
                 var builder = new UriBuilder(context.RedirectUri)

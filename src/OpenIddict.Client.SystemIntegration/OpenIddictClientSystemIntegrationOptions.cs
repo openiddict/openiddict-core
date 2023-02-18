@@ -29,6 +29,17 @@ public sealed class OpenIddictClientSystemIntegrationOptions
     public TimeSpan AuthenticationTimeout { get; set; } = TimeSpan.FromMinutes(10);
 
     /// <summary>
+    /// Gets the list of static ports the embedded web server will be allowed to
+    /// listen on, if enabled. The first port in the list that is not already used
+    /// by another program is automatically chosen and the other ports are ignored.
+    /// </summary>
+    /// <remarks>
+    /// If this property is not explicitly set, a port in the 49152-65535
+    /// dynamic ports range is automatically chosen by OpenIddict at runtime.
+    /// </remarks>
+    public List<int> AllowedEmbeddedWebServerPorts { get; } = new();
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether protocol activation processing should be enabled.
     /// </summary>
     /// <remarks>

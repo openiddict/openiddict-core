@@ -23,18 +23,20 @@ public class Worker : IHostedService
         RegistryKey? root = null;
 
         // Create the registry entries necessary to handle URI protocol activations.
+        //
         // Note: the application MUST be run once as an administrator for this to work,
         // so this should typically be done by a dedicated installer or a setup script.
+        //
         // Alternatively, the application can be packaged and use windows.protocol to
         // register the protocol handler/custom URI scheme with the operation system.
         try
         {
-            root = Registry.ClassesRoot.OpenSubKey("openiddict-sandbox-wpf-client");
+            root = Registry.ClassesRoot.OpenSubKey("com.openiddict.sandbox.wpf.client");
 
             if (root is null)
             {
-                root = Registry.ClassesRoot.CreateSubKey("openiddict-sandbox-wpf-client");
-                root.SetValue(string.Empty, "URL:openiddict-sandbox-wpf-client");
+                root = Registry.ClassesRoot.CreateSubKey("com.openiddict.sandbox.wpf.client");
+                root.SetValue(string.Empty, "URL:com.openiddict.sandbox.wpf.client");
                 root.SetValue("URL Protocol", string.Empty);
 
                 using var command = root.CreateSubKey("shell\\open\\command");

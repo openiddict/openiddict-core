@@ -54,9 +54,6 @@ var host = new HostBuilder()
                        .EnableEmbeddedWebServer()
                        .UseSystemBrowser();
 
-                // Set the client URI that will uniquely identify this application.
-                options.SetClientUri(new Uri("http://localhost/", UriKind.Absolute));
-
                 // Register the System.Net.Http integration and use the identity of the current
                 // assembly as a more specific user agent, which can be useful when dealing with
                 // providers that use the user agent as a way to throttle requests (e.g Reddit).
@@ -84,7 +81,7 @@ var host = new HostBuilder()
                        .UseTwitter()
                        .SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
                        .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
-                       .SetRedirectUri(new Uri("callback/login/twitter", UriKind.Relative));
+                       .SetRedirectUri("callback/login/twitter");
             });
 
         // Register the worker responsible for creating the database used to store tokens

@@ -50,9 +50,6 @@ var host = new HostBuilder()
                 // Add the operating system integration.
                 options.UseSystemIntegration();
 
-                // Set the client URI that will uniquely identify this application.
-                options.SetClientUri(new Uri("openiddict-sandbox-winforms-client://localhost/", UriKind.Absolute));
-
                 // Register the System.Net.Http integration and use the identity of the current
                 // assembly as a more specific user agent, which can be useful when dealing with
                 // providers that use the user agent as a way to throttle requests (e.g Reddit).
@@ -66,7 +63,14 @@ var host = new HostBuilder()
                     ProviderName = "Local",
 
                     ClientId = "winforms",
-                    RedirectUri = new Uri("callback/login/local", UriKind.Relative),
+
+                    // This sample uses protocol activations with a custom URI scheme to handle callbacks.
+                    //
+                    // For more information on how to construct private-use URI schemes,
+                    // read https://www.rfc-editor.org/rfc/rfc8252#section-7.1 and
+                    // https://www.rfc-editor.org/rfc/rfc7595#section-3.8.
+                    RedirectUri = new Uri("com.openiddict.sandbox.winforms.client:/callback/login/local", UriKind.Absolute),
+
                     Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" }
                 });
 
@@ -80,7 +84,8 @@ var host = new HostBuilder()
                        .UseTwitter()
                        .SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
                        .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
-                       .SetRedirectUri(new Uri("callback/login/twitter", UriKind.Relative));
+                       // Note: Twitter doesn't support the recommended ":/" syntax and requires using "://".
+                       .SetRedirectUri("com.openiddict.sandbox.winforms.client://callback/login/twitter");
             });
 
         // Register the worker responsible for creating the database used to store tokens
