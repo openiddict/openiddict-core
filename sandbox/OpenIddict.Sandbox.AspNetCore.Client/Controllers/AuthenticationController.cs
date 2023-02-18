@@ -15,12 +15,11 @@ public class AuthenticationController : Controller
     {
         // Note: OpenIddict always validates the specified provider name when handling the challenge operation,
         // but the provider can also be validated earlier to return an error page or a special HTTP error code.
-        if (!string.Equals(provider, "Local",           StringComparison.Ordinal) &&
-            !string.Equals(provider, "Local+GitHub",    StringComparison.Ordinal) &&
-            !string.Equals(provider, Providers.GitHub,  StringComparison.Ordinal) &&
-            !string.Equals(provider, Providers.Google,  StringComparison.Ordinal) &&
-            !string.Equals(provider, Providers.Reddit,  StringComparison.Ordinal) &&
-            !string.Equals(provider, Providers.Twitter, StringComparison.Ordinal))
+        if (!string.Equals(provider, "Local",          StringComparison.Ordinal) &&
+            !string.Equals(provider, "Local+GitHub",   StringComparison.Ordinal) &&
+            !string.Equals(provider, Providers.GitHub, StringComparison.Ordinal) &&
+            !string.Equals(provider, Providers.Google, StringComparison.Ordinal) &&
+            !string.Equals(provider, Providers.Reddit, StringComparison.Ordinal))
         {
             return BadRequest();
         }

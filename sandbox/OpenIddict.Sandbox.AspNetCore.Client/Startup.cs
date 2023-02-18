@@ -137,13 +137,6 @@ public class Startup
                                   .SetClientSecret("Tpab28Dz0upyZLqn7AN3GFD1O-zaAw")
                                   .SetRedirectUri("callback/login/reddit")
                                   .SetDuration("permanent");
-                       })
-                       .UseTwitter(options =>
-                       {
-                           options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
-                                  .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
-                                  .SetRedirectUri("callback/login/twitter")
-                                  .AddScopes("offline.access");
                        });
             });
 

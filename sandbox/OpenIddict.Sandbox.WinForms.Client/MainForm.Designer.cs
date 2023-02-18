@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.LocalLogin = new System.Windows.Forms.Button();
-            this.TwitterLogin = new System.Windows.Forms.Button();
+            this.GitHubLogin = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // LocalLogin
@@ -42,22 +42,22 @@
             this.LocalLogin.UseVisualStyleBackColor = true;
             this.LocalLogin.Click += new System.EventHandler(this.LocalLoginButton_Click);
             // 
-            // TwitterLogin
+            // GitHubLogin
             // 
-            this.TwitterLogin.Location = new System.Drawing.Point(258, 258);
-            this.TwitterLogin.Name = "TwitterLogin";
-            this.TwitterLogin.Size = new System.Drawing.Size(283, 83);
-            this.TwitterLogin.TabIndex = 1;
-            this.TwitterLogin.Text = "Log in using Twitter";
-            this.TwitterLogin.UseVisualStyleBackColor = true;
-            this.TwitterLogin.Click += new System.EventHandler(this.TwitterLoginButton_Click);
+            this.GitHubLogin.Location = new System.Drawing.Point(258, 258);
+            this.GitHubLogin.Name = "GitHubLogin";
+            this.GitHubLogin.Size = new System.Drawing.Size(283, 83);
+            this.GitHubLogin.TabIndex = 1;
+            this.GitHubLogin.Text = "Log in using GitHub";
+            this.GitHubLogin.UseVisualStyleBackColor = true;
+            this.GitHubLogin.Click += new System.EventHandler(this.GitHubLoginButton_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.TwitterLogin);
+            this.Controls.Add(this.GitHubLogin);
             this.Controls.Add(this.LocalLogin);
             this.Name = "MainForm";
             this.Text = "OpenIddict WinForms client";
@@ -68,6 +68,6 @@
         #endregion
 
         private Button LocalLogin;
-        private Button TwitterLogin;
+        private Button GitHubLogin;
     }
 }
