@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.IO.Pipes;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using OpenIddict.Client.SystemIntegration;
@@ -65,7 +66,6 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
         }
 
-#if SUPPORTS_WINDOWS_RUNTIME
         if (!OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
@@ -73,9 +73,6 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
 
         return Configure(options => options.AuthenticationMode =
             OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker);
-#else
-        throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
-#endif
     }
 
     /// <summary>
@@ -85,6 +82,31 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     public OpenIddictClientSystemIntegrationBuilder UseSystemBrowser()
         => Configure(options => options.AuthenticationMode =
             OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser);
+
+    /// <summary>
+    /// Sets the list of static ports the embedded web server will be allowed to
+    /// listen on, if enabled. The first port in the list that is not already used
+    /// by another program is automatically chosen and the other ports are ignored.
+    /// </summary>
+    /// <remarks>
+    /// If this property is not explicitly set, a port in the 49152-65535
+    /// dynamic ports range is automatically chosen by OpenIddict at runtime.
+    /// </remarks>
+    /// <param name="ports">The static ports the embedded web server will be allowed to listen on.</param>
+    /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
+    public OpenIddictClientSystemIntegrationBuilder SetAllowedEmbeddedWebServerPorts(params int[] ports)
+    {
+        if (Array.Exists(ports, static port => port < IPEndPoint.MinPort || port > IPEndPoint.MaxPort))
+        {
+            throw new ArgumentOutOfRangeException(nameof(ports));
+        }
+
+        return Configure(options =>
+        {
+            options.AllowedEmbeddedWebServerPorts.Clear();
+            options.AllowedEmbeddedWebServerPorts.AddRange(ports);
+        });
+    }
 
     /// <summary>
     /// Sets the timeout after which authentication demands that

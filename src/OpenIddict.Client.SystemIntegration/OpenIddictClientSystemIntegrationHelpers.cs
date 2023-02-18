@@ -51,28 +51,25 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <returns>The <see cref="HttpListenerContext"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static WebAuthenticationResult? GetWebAuthenticationResult(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<WebAuthenticationResult>(typeof(WebAuthenticationResult).FullName!);
+#endif
 
     /// <summary>
-    /// Determines whether the Windows Runtime APIs are supported on this platform.
+    /// Determines whether the current Windows version
+    /// is greater than or equals to the specified version.
     /// </summary>
-    /// <returns><see langword="true"/> if the Windows Runtime APIs are supported, <see langword="false"/> otherwise.</returns>
+    /// <returns>
+    /// <see langword="true"/> if the current Windows version is greater than
+    /// or equals to the specified version, <see langword="false"/> otherwise.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatformGuard("windows10.0.17763")]
-    internal static bool IsWindowsRuntimeSupported()
+    [SupportedOSPlatformGuard("windows")]
+    internal static bool IsWindowsVersionAtLeast(int major, int minor = 0, int build = 0, int revision = 0)
     {
-        // Note: as WinRT is only supported on Windows 8 and higher, trying to call any of the
-        // WinRT APIs on previous versions of Windows will typically result in type-load or
-        // type-initialization exceptions. To prevent that, this method acts as a platform
-        // guard that will prevent the WinRT projections from being loaded by the runtime on
-        // platforms that don't support it. Since OpenIddict declares Windows 10 1809 as the
-        // oldest supported version in the package, it is also used for the runtime check.
-
 #if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
-        return OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763);
+        return OperatingSystem.IsWindowsVersionAtLeast(major, minor, build, revision);
 #else
         if (Environment.OSVersion.Platform is PlatformID.Win32NT &&
-            Environment.OSVersion.Version >= new Version(10, 0, 17763))
+            Environment.OSVersion.Version >= new Version(major, minor, build, revision))
         {
             return true;
         }
@@ -84,9 +81,23 @@ public static class OpenIddictClientSystemIntegrationHelpers
         // the hood) is made. Note: no version is returned on UWP due to the missing Win32 API.
         return RuntimeInformation.OSDescription.StartsWith("Microsoft Windows ", StringComparison.OrdinalIgnoreCase) &&
                RuntimeInformation.OSDescription["Microsoft Windows ".Length..] is string value &&
-               Version.TryParse(value, out Version? version) && version >= new Version(10, 0, 17763);
+               Version.TryParse(value, out Version? version) && version >= new Version(major, minor, build, revision);
 #endif
     }
+
+    /// <summary>
+    /// Determines whether the Windows Runtime APIs are supported on this platform.
+    /// </summary>
+    /// <returns><see langword="true"/> if the Windows Runtime APIs are supported, <see langword="false"/> otherwise.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SupportedOSPlatformGuard("windows10.0.17763")]
+    // Note: as WinRT is only supported on Windows 8 and higher, trying to call any of the
+    // WinRT APIs on previous versions of Windows will typically result in type-load or
+    // type-initialization exceptions. To prevent that, this method acts as a platform
+    // guard that will prevent the WinRT projections from being loaded by the runtime on
+    // platforms that don't support it. Since OpenIddict declares Windows 10 1809 as the
+    // oldest supported version in the package, it is also used for the runtime check.
+    internal static bool IsWindowsRuntimeSupported() => IsWindowsVersionAtLeast(10, 0, 17763);
 
     /// <summary>
     /// Determines whether the specified identity contains an AppContainer
@@ -97,7 +108,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <see langword="true"/> if the specified identity contains an
     /// AppContainer token, <see langword="false"/> otherwise.
     /// </returns>
-    [SupportedOSPlatform("windows10.0.17763")]
+    [SupportedOSPlatform("windows10.0.10240")]
     internal static unsafe bool HasAppContainerToken(WindowsIdentity identity)
     {
         if (identity is null)
@@ -129,6 +140,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
             out uint ReturnLength);
     }
 
+#if SUPPORTS_WINDOWS_RUNTIME
     /// <summary>
     /// Resolves the protocol activation using the Windows Runtime APIs, if applicable.
     /// </summary>

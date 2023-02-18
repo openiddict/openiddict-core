@@ -61,11 +61,16 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             throw new ArgumentNullException(nameof(options));
         }
 
-        // Ensure an explicit client URI was set when using the system integration.
-        if (options.ClientUri is not { IsAbsoluteUri: true })
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0384));
-        }
+        // If no explicit client URI was set, default to the static "http://localhost/" address, which is
+        // adequate for a native/mobile client and points to the embedded web server when it is enabled.
+        //
+        // Note: while the RFC8252 specification recommends using 127.0.0.1 or ::1 instead of "localhost",
+        // OpenIddict deliberately uses "localhost" to be compatible with platforms that don't allow binding
+        // on loopback addresses without administrator rights and to avoid using a hard-to-predict client URI
+        // that would be tied to a specific IP version dependent on the protocols supported/allowed by the OS.
+        //
+        // See https://www.rfc-editor.org/rfc/rfc8252#section-8.3 for more information.
+        options.ClientUri ??= new Uri("http://localhost/", UriKind.Absolute);
     }
 
     /// <inheritdoc/>
@@ -161,12 +166,8 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             [MethodImpl(MethodImplOptions.NoInlining)]
             [SupportedOSPlatform("windows")]
             static bool IsRunningInAppContainer(WindowsIdentity identity)
-#if SUPPORTS_WINDOWS_RUNTIME
-                => OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported() &&
+                => OpenIddictClientSystemIntegrationHelpers.IsWindowsVersionAtLeast(10, 0, 10240) &&
                    OpenIddictClientSystemIntegrationHelpers.HasAppContainerToken(identity);
-#else
-                => false;
-#endif
         }
     }
 }

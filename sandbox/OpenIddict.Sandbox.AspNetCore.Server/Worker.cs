@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
-using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Abstractions;
+using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server;
@@ -123,7 +123,7 @@ public class Worker : IHostedService
                     },
                     RedirectUris =
                     {
-                        new Uri("openiddict-sandbox-winforms-client://localhost/callback/login/local")
+                        new Uri("com.openiddict.sandbox.winforms.client:/callback/login/local")
                     },
                     Permissions =
                     {
@@ -157,7 +157,7 @@ public class Worker : IHostedService
                     },
                     RedirectUris =
                     {
-                        new Uri("openiddict-sandbox-wpf-client://localhost/callback/login/local")
+                        new Uri("com.openiddict.sandbox.wpf.client:/callback/login/local")
                     },
                     Permissions =
                     {

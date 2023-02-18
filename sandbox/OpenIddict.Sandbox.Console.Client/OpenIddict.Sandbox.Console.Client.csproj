@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworks>net48;net7.0</TargetFrameworks>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <IsShipping>false</IsShipping>
     <SignAssembly>false</SignAssembly>

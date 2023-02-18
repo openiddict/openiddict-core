@@ -7,6 +7,8 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Net;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -44,6 +46,14 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
     /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Note: the RFC8252 specification recommends starting the web server only when an authorization request is
+        // about to be sent and closing it when the response is received. Unfortunately, such an approach has important
+        // downsides, as it increases the delay seen by the user before the browser is launched and differs potential
+        // server initialization errors. To avoid degrading the user experience, the embedded web server is started in
+        // parallel to the host and unsollicted callback requests are always rejected (as they don't include a valid
+        // state token). Whenever possible, the HTTP listener is configured to only listen on loopback IP endpoints
+        // and rejects unknown requests with an HTTP 404, making attacks targeting the embedded web server unlikely.
+
         // If the embedded web server instantiation was not enabled, signal the task completion source with a
         // null value to inform the handlers that no HTTP listener is going to be created and return immediately.
         if (_options.CurrentValue.EnableEmbeddedWebServer is not true)
@@ -58,14 +68,14 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
             // To ensure the host initialization is not blocked, the whole process is offloaded to the thread pool.
             await Task.Run(cancellationToken: stoppingToken, function: async () =>
             {
-                var (listener, port) = CreateHttpListener(stoppingToken) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0391));
-
-                // Inform the handlers that the HTTP listener was created and can now be accessed via the specified port.
-                _source.SetResult(port);
-
+                var (listener, port) = CreateHttpListener(_options.CurrentValue.AllowedEmbeddedWebServerPorts, stoppingToken);
                 using (listener)
                 {
+                    // Inform the handlers that the HTTP listener was created and can
+                    // now be accessed via the static port configured in the options
+                    // or dynamically chosen at runtime in the IANA dynamic ports range.
+                    _source.SetResult(port);
+
                     // Note: while the received load should be minimal, 3 task workers are used
                     // to be able to process multiple requests at the same time, if necessary.
                     var tasks = new Task[3];
@@ -87,31 +97,88 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
             return;
         }
 
-        static (HttpListener Listener, int Port)? CreateHttpListener(CancellationToken cancellationToken)
+        static (HttpListener Listener, int Port) CreateHttpListener(List<int> ports, CancellationToken cancellationToken)
         {
-            // Note: HttpListener doesn't offer a native way to select a random, non-busy port.
-            // To work around this limitation, this local function tries to bind an HttpListener
-            // on the first free port in the IANA dynamic ports range (typically: 49152 to 65535).
+            // Note: HttpListener doesn't offer a native way to select a non-busy port from
+            // an arbitrary list. To work around this limitation, this local function tries
+            // to bind an HttpListener on the first free port in the specified list or in
+            // the IANA dynamic ports range if the list doesn't contain any explicit port.
             //
             // For more information, see
             // https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml.
 
-            for (var port = 49152; port < 65535; port++)
+            Stack<Exception>? exceptions = null;
+
+            for (var port = IPEndPoint.MinPort; port <= IPEndPoint.MaxPort; port++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                // If one or more explicit ports were specified, ignore ports that are not listed.
+                // Otherwise, ignore all the ports outside the IANA dynamic ports range.
+                if (ports.Count is 0)
+                {
+                    if (port < 49152)
+                    {
+                        continue;
+                    }
+                }
+
+                else if (!ports.Contains(port))
+                {
+                    continue;
+                }
 
                 var listener = new HttpListener
                 {
                     AuthenticationSchemes = AuthenticationSchemes.Anonymous,
-                    IgnoreWriteExceptions = true,
-
-                    // Note: the prefix registration is deliberately not configurable to ensure
-                    // only the "localhost" authority is used, which enforces the built-in host
-                    // validation performed by HTTP.sys (or the managed .NET implementation on
-                    // non-Windows operating systems) and doesn't require running the application
-                    // as an administrator or adding a namespace reservation/ACL rule on Windows.
-                    Prefixes = { $"http://localhost:{port.ToString(CultureInfo.InvariantCulture)}/" }
+                    IgnoreWriteExceptions = true
                 };
+
+                // Note: the prefix registration is deliberately not configurable to ensure
+                // only loopback authorities are used, which enforces the built-in host header
+                // validation performed by HTTP.sys (or the managed .NET implementation on
+                // non-Windows operating systems) and doesn't require running the application
+                // as an administrator or adding a namespace reservation/ACL rule on Windows.
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // On Windows 10 1511 and higher, listening on 127.0.0.1 and ::1 is preferred
+                    // to localhost as it allows ignoring requests that are sent by other machines
+                    // located on the same network (even if the firewall is not enabled or not
+                    // configured to reject such requests) without requiring administrator rights.
+                    //
+                    // See https://www.rfc-editor.org/rfc/rfc8252#section-8.3 for more information.
+                    if (OpenIddictClientSystemIntegrationHelpers.IsWindowsVersionAtLeast(10, 0, 10586))
+                    {
+                        if (Socket.OSSupportsIPv4)
+                        {
+                            listener.Prefixes.Add($"http://{IPAddress.Loopback}:{port.ToString(CultureInfo.InvariantCulture)}/");
+                        }
+
+                        if (Socket.OSSupportsIPv6)
+                        {
+                            listener.Prefixes.Add($"http://[{IPAddress.IPv6Loopback}]:{port.ToString(CultureInfo.InvariantCulture)}/");
+                        }
+                    }
+
+                    // On older versions, listening on 127.0.0.1 and ::1 requires administrator rights.
+                    else
+                    {
+                        listener.Prefixes.Add($"http://localhost:{port.ToString(CultureInfo.InvariantCulture)}/");
+                    }
+                }
+
+                else
+                {
+                    // Note: the managed HttpListener implementation doesn't support IPv6 and
+                    // doesn't allow sending a Host header containing the "localhost" authority
+                    // when binding on the 127.0.0.1 address. To keep using "localhost" instead of
+                    // being forced to use 127.0.0.1, the embedded web server is configured to listen
+                    // on "localhost" on platforms that use the managed HttpListener implementation.
+                    //
+                    // See https://github.com/dotnet/runtime/issues/34399 for more information.
+                    listener.Prefixes.Add($"http://localhost:{port.ToString(CultureInfo.InvariantCulture)}/");
+                }
 
                 try
                 {
@@ -120,19 +187,31 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                     return (listener, port);
                 }
 
-                catch (HttpListenerException)
+                catch (HttpListenerException exception)
                 {
                     listener.Close();
+
+                    exceptions ??= new(capacity: 3);
+                    exceptions.Push(new InvalidOperationException(SR.FormatID0384(port), exception));
+                }
+
+                catch (Exception exception)
+                {
+                    listener.Close(); 
+
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0391), exception);
                 }
             }
 
-            return null;
+            throw exceptions is { Count: > 0 } ?
+                new InvalidOperationException(SR.GetResourceString(SR.ID0391), new AggregateException(exceptions.Take(3))) :
+                new InvalidOperationException(SR.GetResourceString(SR.ID0391));
         }
 
         static async Task ProcessRequestsAsync(HttpListener listener, OpenIddictClientSystemIntegrationService service,
             ILogger<OpenIddictClientSystemIntegrationHttpListener> logger, CancellationToken cancellationToken)
         {
-            while (true)
+            while (listener.IsListening)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 

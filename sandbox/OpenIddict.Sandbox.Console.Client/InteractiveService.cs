@@ -23,8 +23,8 @@ public class InteractiveService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Wait for the host to confirm that the application has started.
-        var source = new TaskCompletionSource();
-        using (_lifetime.ApplicationStarted.Register(static state => ((TaskCompletionSource) state!).SetResult(), source))
+        var source = new TaskCompletionSource<bool>();
+        using (_lifetime.ApplicationStarted.Register(static state => ((TaskCompletionSource<bool>) state!).SetResult(true), source))
         {
             await source.Task;
         }
@@ -37,7 +37,7 @@ public class InteractiveService : BackgroundService
             {
                 Console.WriteLine("Type '1' + ENTER to log in using the local server or '2' + ENTER to log in using Twitter");
 
-                provider = await Task.Run(Console.ReadLine).WaitAsync(stoppingToken) switch
+                provider = await WaitAsync(Task.Run(Console.ReadLine, stoppingToken), stoppingToken) switch
                 {
                     "1" => "Local",
                     "2" => "Twitter",
@@ -72,6 +72,21 @@ public class InteractiveService : BackgroundService
             catch
             {
                 Console.WriteLine("An error occurred while trying to authenticate the user.");
+            }
+        }
+
+        static async Task<T> WaitAsync<T>(Task<T> task, CancellationToken cancellationToken)
+        {
+            var source = new TaskCompletionSource<bool>(TaskCreationOptions.None);
+
+            using (cancellationToken.Register(static state => ((TaskCompletionSource<bool>) state!).SetResult(true), source))
+            {
+                if (await Task.WhenAny(task, source.Task) == source.Task)
+                {
+                    throw new OperationCanceledException(cancellationToken);
+                }
+
+                return await task;
             }
         }
     }
