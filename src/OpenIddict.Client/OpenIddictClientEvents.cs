@@ -824,6 +824,11 @@ public static partial class OpenIddictClientEvents
         public string? ProviderName { get; set; }
 
         /// <summary>
+        /// Gets or sets the URI of the authorization endpoint, if applicable.
+        /// </summary>
+        public Uri? AuthorizationEndpoint { get; set; }
+
+        /// <summary>
         /// Gets the additional parameters returned to the caller.
         /// </summary>
         public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
@@ -986,6 +991,11 @@ public static partial class OpenIddictClientEvents
         /// used to resolve the issuer identity, if applicable.
         /// </summary>
         public string? ProviderName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URI of the end session endpoint, if applicable.
+        /// </summary>
+        public Uri? EndSessionEndpoint { get; set; }
 
         /// <summary>
         /// Gets or sets the client identifier that will be used for the sign-out demand.

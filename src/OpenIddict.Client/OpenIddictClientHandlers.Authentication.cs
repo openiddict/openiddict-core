@@ -119,6 +119,8 @@ public static partial class OpenIddictClientHandlers
 
                 var notification = new ApplyAuthorizationRequestContext(context.Transaction)
                 {
+                    // Note: the endpoint URI is automatically set by a specialized handler if it's not set here.
+                    AuthorizationEndpoint = context.AuthorizationEndpoint?.AbsoluteUri!,
                     Nonce = context.Nonce,
                     RedirectUri = context.RedirectUri
                 };
@@ -168,6 +170,12 @@ public static partial class OpenIddictClientHandlers
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // Don't overwrite the endpoint URI if it was already set.
+                if (!string.IsNullOrEmpty(context.AuthorizationEndpoint))
+                {
+                    return default;
                 }
 
                 // Ensure the authorization endpoint is present and is a valid absolute URI.

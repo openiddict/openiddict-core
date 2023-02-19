@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text.Json;
 using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
@@ -26,10 +27,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         AdjustRedirectUriInTokenRequest.Descriptor,
         OverrideValidatedBackchannelTokens.Descriptor,
         AttachAdditionalUserinfoRequestParameters.Descriptor,
+        PopulateUserinfoTokenPrincipalFromTokenResponse.Descriptor,
 
         /*
          * Challenge processing:
          */
+        OverrideAuthorizationEndpoint.Descriptor,
         OverrideResponseMode.Descriptor,
         FormatNonStandardScopeParameter.Descriptor,
         IncludeStateParameterInRedirectUri.Descriptor,
@@ -374,6 +377,140 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["tweet.fields"] = string.Join(",", options.TweetFields);
                 context.UserinfoRequest["user.fields"] = string.Join(",", options.UserFields);
             }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for creating a userinfo token principal from the custom
+    /// parameters returned in the token response for the providers that require it.
+    /// </summary>
+    public sealed class PopulateUserinfoTokenPrincipalFromTokenResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<PopulateUserinfoTokenPrincipalFromTokenResponse>()
+                .SetOrder(ValidateUserinfoToken.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            // Don't overwrite the userinfo token principal if one was already set.
+            if (context.UserinfoTokenPrincipal is not null)
+            {
+                return default;
+            }
+
+            // Some providers don't provide an OAuth 2.0/OpenID Connect userinfo endpoint but
+            // return the user information using custom/non-standard token response parameters.
+            // To work around that, this handler is responsible for extracting these parameters
+            // from the token response and creating a userinfo token principal containing them.
+            if (context.Registration.ProviderName is Providers.StripeConnect)
+            {
+                var identity = new ClaimsIdentity(
+                    context.Registration.TokenValidationParameters.AuthenticationType,
+                    context.Registration.TokenValidationParameters.NameClaimType,
+                    context.Registration.TokenValidationParameters.RoleClaimType);
+
+                var issuer = context.Configuration.Issuer!.AbsoluteUri;
+
+                foreach (var parameter in context.TokenResponse.GetParameters())
+                {
+                    switch (context.Registration.ProviderName)
+                    {
+                        // For Stripe, only include "livemode" and the parameters that are prefixed with "stripe_":
+                        case Providers.StripeConnect when
+                            !string.Equals(parameter.Key, "livemode", StringComparison.OrdinalIgnoreCase) &&
+                            !parameter.Key.StartsWith("stripe_", StringComparison.OrdinalIgnoreCase):
+                            continue;
+                    }
+
+                    // Note: in the typical case, the response parameters should be deserialized from a
+                    // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
+                    //
+                    // In the rare cases where the underlying value wouldn't be a JsonElement instance
+                    // (e.g when custom parameters are manually added to the response), the static
+                    // conversion operator would take care of converting the underlying value to a
+                    // JsonElement instance using the same value type as the original parameter value.
+                    switch ((JsonElement) parameter.Value)
+                    {
+                        // Top-level claims represented as arrays are split and mapped to multiple CLR claims
+                        // to match the logic implemented by IdentityModel for JWT token deserialization.
+                        case { ValueKind: JsonValueKind.Array } value:
+                            identity.AddClaims(parameter.Key, value, issuer);
+                            break;
+
+                        case { ValueKind: _ } value:
+                            identity.AddClaim(parameter.Key, value, issuer);
+                            break;
+                    }
+                }
+
+                context.UserinfoTokenPrincipal = new ClaimsPrincipal(identity);
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for overriding the address of
+    /// the authorization endpoint for the providers that require it.
+    /// </summary>
+    public sealed class OverrideAuthorizationEndpoint : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<OverrideAuthorizationEndpoint>()
+                .SetOrder(AttachChallengeParameters.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.AuthorizationEndpoint = context.Registration.ProviderName switch
+            {
+                // Stripe uses a different authorization endpoint for express accounts.
+                //
+                // The type of account can be defined globally (via the Stripe options) or
+                // per authentication demand by adding a specific authentication property.
+                // If the authentication property is present, the global option is ignored.
+                //
+                // For more information, see
+                // https://stripe.com/docs/connect/oauth-reference?locale=en-us#get-authorize.
+                Providers.StripeConnect when context.Properties.TryGetValue(".stripe_account_type", out string? type) &&
+                    string.Equals(type, "express", StringComparison.OrdinalIgnoreCase)
+                    => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
+
+                Providers.StripeConnect when context.Registration.GetStripeConnectOptions() is { AccountType: string type } &&
+                    string.Equals(type, "express", StringComparison.OrdinalIgnoreCase)
+                    => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
+
+                _ => context.AuthorizationEndpoint
+            };
 
             return default;
         }

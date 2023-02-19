@@ -110,7 +110,12 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ApplyLogoutRequestContext(context.Transaction);
+                var notification = new ApplyLogoutRequestContext(context.Transaction)
+                {
+                    // Note: the endpoint URI is automatically set by a specialized handler if it's not set here.
+                    EndSessionEndpoint = context.EndSessionEndpoint?.AbsoluteUri!,
+                };
+
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -156,6 +161,12 @@ public static partial class OpenIddictClientHandlers
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // Don't overwrite the endpoint URI if it was already set.
+                if (!string.IsNullOrEmpty(context.EndSessionEndpoint))
+                {
+                    return default;
                 }
 
                 // Ensure the end session endpoint is present and is a valid absolute URI.
