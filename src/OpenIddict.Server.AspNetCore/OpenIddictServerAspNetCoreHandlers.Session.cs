@@ -184,6 +184,11 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0127));
+                }
+
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -243,7 +248,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 // Create a new GET logout request containing only the request_id parameter.
                 var location = QueryHelpers.AddQueryString(
-                    uri: request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase + request.Path,
+                    uri: new UriBuilder(context.RequestUri) { Query = null }.Uri.AbsoluteUri,
                     name: Parameters.RequestId,
                     value: context.Request.RequestId);
 

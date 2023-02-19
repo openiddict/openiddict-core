@@ -184,6 +184,11 @@ public static partial class OpenIddictServerOwinHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0127));
+                }
+
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -240,7 +245,7 @@ public static partial class OpenIddictServerOwinHandlers
 
                 // Create a new GET logout request containing only the request_id parameter.
                 var location = WebUtilities.AddQueryString(
-                    uri: request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase + request.Path,
+                    uri: new UriBuilder(context.RequestUri) { Query = null }.Uri.AbsoluteUri,
                     name: Parameters.RequestId,
                     value: context.Request.RequestId);
 
