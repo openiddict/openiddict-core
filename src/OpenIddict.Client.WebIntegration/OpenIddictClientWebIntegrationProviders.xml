@@ -327,6 +327,37 @@
   </Provider>
 
   <!--
+                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                    ██ ▄▄▄ █▄▄ ▄▄██ ▄▄▀█▄ ▄██ ▄▄ ██ ▄▄▄████ ▄▄▀██ ▄▄▄ ██ ▀██ ██ ▀██ ██ ▄▄▄██ ▄▄▀█▄▄ ▄▄██
+                    ██▄▄▄▀▀███ ████ ▀▀▄██ ███ ▀▀ ██ ▄▄▄████ █████ ███ ██ █ █ ██ █ █ ██ ▄▄▄██ ██████ ████
+                    ██ ▀▀▀ ███ ████ ██ █▀ ▀██ █████ ▀▀▀████ ▀▀▄██ ▀▀▀ ██ ██▄ ██ ██▄ ██ ▀▀▀██ ▀▀▄███ ████
+                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="StripeConnect" DisplayName="Stripe Connect" Documentation="https://stripe.com/docs/connect/oauth-reference">
+    <Environment Issuer="https://connect.stripe.com/">
+      <!--
+        Note: Stripe doesn't provide a userinfo endpoint and returns
+        the user information via custom token response parameters.
+      -->
+
+      <Configuration AuthorizationEndpoint="https://connect.stripe.com/oauth/authorize"
+                     TokenEndpoint="https://connect.stripe.com/oauth/token" />
+
+      <!--
+        Note: while Stripe supports both "read_write" and "read_only" as valid scopes
+        (and automatically defaults to "read_only" when no scope is explicitly set),
+        it seems that new applications are only allowed to use "read_write". As such,
+        "read_write" is automatically added if no scope is explicitly configured.
+      -->
+      <Scope Name="read_write" Default="true" Required="false" />
+    </Environment>
+
+    <Setting PropertyName="AccountType" ParameterName="type" Type="String" Required="true" DefaultValue="standard"
+             Description="The type of the Stripe account (by default, 'standard', but can also be set to 'express')" />
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               █▄▄ ▄▄██ ▄▄▀█ ▄▄▀██ █▀▄█▄▄ ▄▄██
                                               ███ ████ ▀▀▄█ ▀▀ ██ ▄▀████ ████
