@@ -24,6 +24,9 @@
 
     <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
              Description="The URI used to access the ADFS instance, including the virtual directory (e.g https://contoso.com/adfs)" />
+
+    <Setting PropertyName="Resource" ParameterName="resource" Type="String" Required="false"
+             Description="The optional value used as the 'resource' parameter (e.g urn:microsoft:userinfo)" />
   </Provider>
 
   <!--
@@ -350,6 +353,7 @@
         it seems that new applications are only allowed to use "read_write". As such,
         "read_write" is automatically added if no scope is explicitly configured.
       -->
+
       <Scope Name="read_write" Default="true" Required="false" />
     </Environment>
 

@@ -673,6 +673,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Active Directory Federation Services allows sending a custom "resource"
+            // parameter to define what API resources the access token will give access to.
+            if (context.Registration.ProviderName is Providers.ActiveDirectoryFederationServices)
+            {
+                var options = context.Registration.GetActiveDirectoryFederationServicesOptions();
+
+                context.Request["resource"] = options.Resource;
+            }
+
             // By default, Google doesn't return a refresh token but allows sending an "access_type"
             // parameter to retrieve one (but it is only returned during the first authorization dance).
             if (context.Registration.ProviderName is Providers.Google)
