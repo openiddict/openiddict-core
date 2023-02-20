@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Client.SystemIntegration;
@@ -133,16 +134,21 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!context.Transaction.Properties.TryGetValue(
-                typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) ||
-                result is not OpenIddictClientSystemIntegrationAuthenticationMode mode)
+#if SUPPORTS_WINDOWS_RUNTIME
+            if (OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported())
             {
-                mode = _options.CurrentValue.AuthenticationMode.GetValueOrDefault();
-            }
+                if (!context.Transaction.Properties.TryGetValue(
+                    typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) ||
+                    result is not OpenIddictClientSystemIntegrationAuthenticationMode mode)
+                {
+                    mode = _options.CurrentValue.AuthenticationMode.GetValueOrDefault();
+                }
 
-#pragma warning disable CA1416
-            return new(mode is OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker);
-#pragma warning restore CA1416
+                return new(mode is OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker);
+            }
+#endif
+
+            return new(false);
         }
     }
 
@@ -161,10 +167,16 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
 #if SUPPORTS_WINDOWS_RUNTIME
-            return new(context.Transaction.GetWebAuthenticationResult() is not null);
-#else
-            return new(false);
+            if (OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported())
+            {
+                return new(ContainsWebAuthenticationResult(context.Transaction));
+            }
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            static bool ContainsWebAuthenticationResult(OpenIddictClientTransaction transaction)
+                => transaction.GetWebAuthenticationResult() is not null;
 #endif
+            return new(false);
         }
     }
 }
