@@ -1753,10 +1753,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for marking OpenID Connect responses
-    /// returned via protocol activations or web authentication results as processed.
+    /// Contains the logic responsible for marking OpenID Connect
+    /// responses returned via protocol activations as processed.
     /// </summary>
-    public sealed class ProcessUnactionableResponse<TContext> : IOpenIddictClientHandler<TContext>
+    public sealed class ProcessProtocolActivationResponse<TContext> : IOpenIddictClientHandler<TContext>
         where TContext : BaseRequestContext
     {
         /// <summary>
@@ -1764,7 +1764,45 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
-                .UseSingletonHandler<ProcessUnactionableResponse<TContext>>()
+                .AddFilter<RequireProtocolActivation>()
+                .UseSingletonHandler<ProcessProtocolActivationResponse<TContext>>()
+                .SetOrder(ProcessWebAuthenticationResultResponse<TContext>.Descriptor.Order - 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // For both protocol activations (initial or redirected) and web-view-like results,
+            // no proper response can be generated and eventually displayed to the user. In this
+            // case, simply stop processing the response and mark the request as fully handled.
+            //
+            // Note: this logic applies to both successful and errored responses.
+
+            context.HandleRequest();
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for marking OpenID Connect
+    /// responses returned via web authentication results as processed.
+    /// </summary>
+    public sealed class ProcessWebAuthenticationResultResponse<TContext> : IOpenIddictClientHandler<TContext>
+        where TContext : BaseRequestContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireWebAuthenticationResult>()
+                .UseSingletonHandler<ProcessWebAuthenticationResultResponse<TContext>>()
                 .SetOrder(int.MaxValue)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -1783,19 +1821,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             //
             // Note: this logic applies to both successful and errored responses.
 
-            if (context.Transaction.GetProtocolActivation() is not null)
-            {
-                context.HandleRequest();
-                return default;
-            }
-
-#if SUPPORTS_WINDOWS_RUNTIME
-            if (context.Transaction.GetWebAuthenticationResult() is not null)
-            {
-                context.HandleRequest();
-                return default;
-            }
-#endif
+            context.HandleRequest();
             return default;
         }
     }

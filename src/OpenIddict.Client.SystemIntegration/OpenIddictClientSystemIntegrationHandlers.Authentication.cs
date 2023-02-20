@@ -41,7 +41,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             AttachHttpResponseCode<ApplyRedirectionResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyRedirectionResponseContext>.Descriptor,
             ProcessEmptyHttpResponse.Descriptor,
-            ProcessUnactionableResponse<ApplyRedirectionResponseContext>.Descriptor);
+            ProcessProtocolActivationResponse<ApplyRedirectionResponseContext>.Descriptor,
+            ProcessWebAuthenticationResultResponse<ApplyRedirectionResponseContext>.Descriptor);
 
         /// <summary>
         /// Contains the logic responsible for initiating authorization requests using the web authentication broker.
