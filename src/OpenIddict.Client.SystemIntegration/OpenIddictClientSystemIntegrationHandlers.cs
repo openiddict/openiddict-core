@@ -1321,7 +1321,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAuthenticationNonce>()
                 .UseSingletonHandler<RestoreUserinfoDetailsFromMarshalledAuthentication>()
-                .SetOrder(SendUserinfoRequest.Descriptor.Order + 500)
+                .SetOrder(ValidateUserinfoTokenSubject.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
