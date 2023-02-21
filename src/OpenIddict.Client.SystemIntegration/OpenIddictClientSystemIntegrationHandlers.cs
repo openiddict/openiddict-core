@@ -53,6 +53,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         RestoreFrontchannelIdentityTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreFrontchannelAccessTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreAuthorizationCodePrincipalFromMarshalledAuthentication.Descriptor,
+        RestoreTokenResponseFromMarshalledAuthentication.Descriptor,
         RestoreBackchannelTokensFromMarshalledAuthentication.Descriptor,
         RestoreBackchannelIdentityTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreBackchannelAccessTokenPrincipalFromMarshalledAuthentication.Descriptor,
