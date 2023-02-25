@@ -19,7 +19,7 @@ public class Startup
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             // Configure the context to use Microsoft SQL Server.
-            options.UseSqlite($"Filename={Path.Combine(Path.GetTempPath(), "openiddict-sandbox-console-client.sqlite3")}");
+            options.UseSqlite($"Filename={Path.Combine(Path.GetTempPath(), "openiddict-sandbox-aspnetcore-client.sqlite3")}");
 
             // Register the entity sets needed by OpenIddict.
             // Note: use the generic overload if you need
