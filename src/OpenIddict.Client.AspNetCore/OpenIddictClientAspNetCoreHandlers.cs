@@ -277,7 +277,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     return;
                 }
 
-                context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync(request.HttpContext.RequestAborted));
+                context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync(context.CancellationToken));
             }
 
             else
@@ -1201,7 +1201,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             response.ContentType = "text/plain;charset=UTF-8";
 
             stream.Seek(offset: 0, loc: SeekOrigin.Begin);
-            await stream.CopyToAsync(response.Body, 4096, response.HttpContext.RequestAborted);
+            await stream.CopyToAsync(response.Body, 4096, context.CancellationToken);
 
             context.HandleRequest();
         }

@@ -264,7 +264,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
 
             // Resolve the access token from the standard access_token form parameter.
             // See https://tools.ietf.org/html/rfc6750#section-2.2 for more information.
-            var form = await request.ReadFormAsync(request.HttpContext.RequestAborted);
+            var form = await request.ReadFormAsync(context.CancellationToken);
             if (form.TryGetValue(Parameters.AccessToken, out StringValues token))
             {
                 context.AccessToken = token;

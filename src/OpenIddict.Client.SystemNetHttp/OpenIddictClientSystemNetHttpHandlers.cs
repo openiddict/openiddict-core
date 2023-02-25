@@ -442,7 +442,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 // response stream to be buffered so that can it can be read multiple times if needed
                 // (e.g if the JSON deserialization process fails, the stream is read as a string
                 // during a second pass a second time for logging/debuggability purposes).
-                response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
+                response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, context.CancellationToken);
             }
 
             // If an exception is thrown at this stage, this likely means a persistent network error occurred.
@@ -689,7 +689,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             {
                 // Note: ReadFromJsonAsync() automatically validates the content encoding and transparently
                 // transcodes the response stream if a non-UTF-8 response is returned by the remote server.
-                context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
+                context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>(
+                    cancellationToken: context.CancellationToken);
             }
 
             // If an exception is thrown at this stage, this likely means the returned response was not a valid
