@@ -1325,7 +1325,7 @@ public static partial class OpenIddictClientOwinHandlers
             response.ContentType = "text/plain;charset=UTF-8";
 
             stream.Seek(offset: 0, loc: SeekOrigin.Begin);
-            await stream.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
+            await stream.CopyToAsync(response.Body, 4096, context.CancellationToken);
 
             context.HandleRequest();
         }

@@ -364,7 +364,9 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
             // Resolve and attach the server configuration to the context if none has been set already.
-            context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            context.Configuration ??= await context.Registration.ConfigurationManager
+                .GetConfigurationAsync(context.CancellationToken)
+                .WaitAsync(context.CancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
             // Ensure the selected grant type, if explicitly set, is listed as supported in the configuration.
@@ -954,7 +956,9 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Resolve and attach the server configuration to the context.
-            context.Configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            context.Configuration = await context.Registration.ConfigurationManager
+                .GetConfigurationAsync(context.CancellationToken)
+                .WaitAsync(context.CancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
         }
     }
@@ -3903,7 +3907,9 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
             // Resolve and attach the server configuration to the context if none has been set already.
-            context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            context.Configuration ??= await context.Registration.ConfigurationManager
+                .GetConfigurationAsync(context.CancellationToken)
+                .WaitAsync(context.CancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
         }
     }
@@ -4977,7 +4983,9 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
             // Resolve and attach the server configuration to the context if none has been set already.
-            context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            context.Configuration ??= await context.Registration.ConfigurationManager
+                .GetConfigurationAsync(context.CancellationToken)
+                .WaitAsync(context.CancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
         }
     }

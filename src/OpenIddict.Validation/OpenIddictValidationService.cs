@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Validation;
@@ -50,7 +51,9 @@ public sealed class OpenIddictValidationService
         try
         {
             var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
-            var configuration = await options.CurrentValue.ConfigurationManager.GetConfigurationAsync(default) ??
+            var configuration = await options.CurrentValue.ConfigurationManager
+                .GetConfigurationAsync(cancellationToken)
+                .WaitAsync(cancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
             var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
@@ -416,7 +419,9 @@ public sealed class OpenIddictValidationService
         try
         {
             var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
-            var configuration = await options.CurrentValue.ConfigurationManager.GetConfigurationAsync(default) ??
+            var configuration = await options.CurrentValue.ConfigurationManager
+                .GetConfigurationAsync(cancellationToken)
+                .WaitAsync(cancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
             var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();

@@ -183,7 +183,9 @@ public sealed class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
 
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+        var configuration = await registration.ConfigurationManager
+            .GetConfigurationAsync(cancellationToken)
+            .WaitAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -333,7 +335,9 @@ public sealed class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
 
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+        var configuration = await registration.ConfigurationManager
+            .GetConfigurationAsync(cancellationToken)
+            .WaitAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
         if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } uri || !uri.IsWellFormedOriginalString())
@@ -505,7 +509,9 @@ public sealed class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
 
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+        var configuration = await registration.ConfigurationManager
+            .GetConfigurationAsync(cancellationToken)
+            .WaitAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
         if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } uri || !uri.IsWellFormedOriginalString())
@@ -671,7 +677,9 @@ public sealed class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
 
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+        var configuration = await registration.ConfigurationManager
+            .GetConfigurationAsync(cancellationToken)
+            .WaitAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
         if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } uri || !uri.IsWellFormedOriginalString())
@@ -1100,7 +1108,9 @@ public sealed class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
 
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+        var configuration = await registration.ConfigurationManager
+            .GetConfigurationAsync(cancellationToken)
+            .WaitAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -1265,7 +1275,9 @@ public sealed class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
 
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+        var configuration = await registration.ConfigurationManager
+            .GetConfigurationAsync(cancellationToken)
+            .WaitAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
         cancellationToken.ThrowIfCancellationRequested();
