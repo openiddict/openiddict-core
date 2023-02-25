@@ -70,24 +70,30 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 var request = context.Transaction.GetHttpRequestMessage() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
-                // If no client identifier was attached to the request, skip the following logic.
-                if (string.IsNullOrEmpty(context.Request.ClientId))
-                {
-                    return default;
-                }
-
                 // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                // However, this authentication method is known to have compatibility issues with the way the
-                // client credentials are encoded (they MUST be formURL-encoded before being base64-encoded).
-                // To guarantee that the OpenIddict client handler can be used with servers implementing
-                // non-standard encoding, the client_secret_post is always preferred when it's explicitly
-                // listed as a supported client authentication method for the token endpoint.
+                // However, this authentication method is known to have severe compatibility/interoperability issues:
+                //
+                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
+                //     specification, basic authentication is also sometimes required by server implementations for
+                //     public clients that don't have a client secret: in this case, an empty password is used and
+                //     the client identifier is sent alone in the Authorization header (instead of being sent using
+                //     the standard "client_id" parameter present in the request body).
+                //
+                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
+                //     before being base64-encoded, many implementations are known to implement a non-standard
+                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
+                //
+                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
+                // basic authentication is only used when a client secret is present and client_secret_post is
+                // always preferred when it's explicitly listed as a supported client authentication method.
                 // If client_secret_post is not listed or if the server returned an empty methods list,
                 // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
                 //
                 // See https://tools.ietf.org/html/rfc8414#section-2
                 // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                if (!context.Configuration.TokenEndpointAuthMethodsSupported.Contains(ClientAuthenticationMethods.ClientSecretPost))
+                if (!string.IsNullOrEmpty(context.Request.ClientId) &&
+                    !string.IsNullOrEmpty(context.Request.ClientSecret) &&
+                    UseBasicAuthentication(context.Configuration))
                 {
                     // Important: the credentials MUST be formURL-encoded before being base64-encoded.
                     var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(new StringBuilder()
@@ -105,8 +111,19 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
                 return default;
 
-                static string? EscapeDataString(string? value)
-                    => value is not null ? Uri.EscapeDataString(value).Replace("%20", "+") : null;
+                static bool UseBasicAuthentication(OpenIddictConfiguration configuration)
+                    => configuration.TokenEndpointAuthMethodsSupported switch
+                    {
+                        // If at least one authentication method was explicit added, only use basic authentication
+                        // if it's supported AND if client_secret_post is not supported or enabled by the server.
+                        { Count: > 0 } methods => methods.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
+                                                 !methods.Contains(ClientAuthenticationMethods.ClientSecretPost),
+
+                        // Otherwise, if no authentication method was explicit added, assume only basic is supported.
+                        { Count: _ } => true
+                    };
+
+                static string EscapeDataString(string value) => Uri.EscapeDataString(value).Replace("%20", "+");
             }
         }
     }
