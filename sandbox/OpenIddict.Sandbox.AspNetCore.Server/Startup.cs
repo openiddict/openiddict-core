@@ -9,11 +9,6 @@ namespace OpenIddict.Sandbox.AspNetCore.Server;
 
 public class Startup
 {
-    public Startup(IConfiguration configuration)
-        => Configuration = configuration;
-
-    public IConfiguration Configuration { get; }
-
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllersWithViews();
@@ -21,7 +16,7 @@ public class Startup
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             // Configure the context to use Microsoft SQL Server.
-            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            options.UseSqlite($"Filename={Path.Combine(Path.GetTempPath(), "openiddict-sandbox-aspnetcore-server.sqlite3")}");
 
             // Register the entity sets needed by OpenIddict.
             // Note: use the generic overload if you need
