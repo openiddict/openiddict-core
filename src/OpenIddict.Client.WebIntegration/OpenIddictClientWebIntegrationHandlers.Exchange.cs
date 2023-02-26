@@ -71,20 +71,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // These providers require using basic authentication to flow the client_id
                 // for all types of client applications, even when there's no client_secret.
-                if (context.Registration.ProviderName is Providers.Reddit)
+                //
+                // Note: only cases where the client secret is null are handled here (scenarios
+                // where the Authorization header includes a non-empty password are handled by
+                // a generic handler in the OpenIddict.Client.SystemNetHttp integration package).
+                if (context.Registration.ProviderName is Providers.Reddit &&
+                    !string.IsNullOrEmpty(context.Request.ClientId) &&
+                     string.IsNullOrEmpty(context.Request.ClientSecret))
                 {
-                    // Important: the credentials MUST be formURL-encoded before being base64-encoded.
+                    // Important: the client_id MUST be formURL-encoded before being base64-encoded.
                     var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(new StringBuilder()
                         .Append(EscapeDataString(context.Request.ClientId))
                         .Append(':')
-                        .Append(EscapeDataString(context.Request.ClientSecret))
                         .ToString()));
 
-                    // Attach the authorization header containing the client credentials to the HTTP request.
+                    // Attach the authorization header containing the client identifier to the HTTP request.
                     request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Basic, credentials);
 
-                    // Remove the client credentials from the request payload to ensure they are not sent twice.
-                    context.Request.ClientId = context.Request.ClientSecret = null;
+                    // Remove the client identifier from the request payload to ensure it's not sent twice.
+                    context.Request.ClientId = null;
                 }
 
                 return default;
