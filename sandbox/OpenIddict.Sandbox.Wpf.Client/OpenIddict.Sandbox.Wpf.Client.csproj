@@ -22,7 +22,7 @@
     <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.AppServices" />
     <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.Wpf" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" VersionOverride="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,10 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
+#if !SUPPORTS_HOST_APPLICATION_LIFETIME
+using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
+#endif
+
 namespace OpenIddict.Sandbox.Console.Client;
 
 using Console = System.Console;
@@ -38,7 +42,7 @@ public class InteractiveService : BackgroundService
             {
                 Console.WriteLine("Type '1' + ENTER to log in using the local server or '2' + ENTER to log in using GitHub.");
 
-                provider = await WaitAsync(Task.Run(Console.ReadLine, stoppingToken), stoppingToken) switch
+                provider = await ReadLineAsync(stoppingToken) switch
                 {
                     "1" => "Local",
                     "2" => Providers.GitHub,
@@ -76,8 +80,12 @@ public class InteractiveService : BackgroundService
             }
         }
 
-        static async Task<T> WaitAsync<T>(Task<T> task, CancellationToken cancellationToken)
+        static async Task<string?> ReadLineAsync(CancellationToken cancellationToken)
         {
+#if SUPPORTS_TASK_WAIT_ASYNC
+            return await Task.Run(Console.ReadLine, cancellationToken).WaitAsync(cancellationToken);
+#else
+            var task = Task.Run(Console.ReadLine, cancellationToken);
             var source = new TaskCompletionSource<bool>(TaskCreationOptions.None);
 
             using (cancellationToken.Register(static state => ((TaskCompletionSource<bool>) state!).SetResult(true), source))
@@ -89,6 +97,7 @@ public class InteractiveService : BackgroundService
 
                 return await task;
             }
+#endif
         }
     }
 }
