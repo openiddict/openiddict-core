@@ -52,7 +52,8 @@ var host = new HostBuilder()
                        .DisableActivationRedirection()
                        .DisablePipeServer()
                        .EnableEmbeddedWebServer()
-                       .UseSystemBrowser();
+                       .UseSystemBrowser()
+                       .SetApplicationDiscriminator("0XP3WQ07VVMCVBJ");
 
                 // Register the System.Net.Http integration and use the identity of the current
                 // assembly as a more specific user agent, which can be useful when dealing with
@@ -92,6 +93,9 @@ var host = new HostBuilder()
 
         // Register the background service responsible for handling the console interactions.
         services.AddHostedService<InteractiveService>();
+
+        // Prevent the console lifetime manager from writing status messages to the output stream.
+        services.Configure<ConsoleLifetimeOptions>(options => options.SuppressStatusMessages = true);
     })
     .UseConsoleLifetime()
     .Build();

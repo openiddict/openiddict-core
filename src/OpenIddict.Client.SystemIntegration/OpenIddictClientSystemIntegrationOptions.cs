@@ -78,6 +78,12 @@ public sealed class OpenIddictClientSystemIntegrationOptions
     public bool? EnablePipeServer { get; set; }
 
     /// <summary>
+    /// Gets or sets the application discriminator used to define a static
+    /// pipe name that will be shared by all the instances of the application.
+    /// </summary>
+    public string? ApplicationDiscriminator { get; set; }
+
+    /// <summary>
     /// Gets or sets the identifier used to represent the current application
     /// instance and redirect protocol activations when necessary.
     /// </summary>

@@ -176,6 +176,23 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
         => Configure(options => options.EnablePipeServer = true);
 
     /// <summary>
+    /// Sets the application discriminator used to define a static pipe
+    /// name that will be shared by all the instances of the application.
+    /// </summary>
+    /// <param name="discriminator">The application discriminator.</param>
+    /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientSystemIntegrationBuilder SetApplicationDiscriminator(string discriminator)
+    {
+        if (string.IsNullOrEmpty(discriminator))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(discriminator)), nameof(discriminator));
+        }
+
+        return Configure(options => options.ApplicationDiscriminator = discriminator);
+    }
+
+    /// <summary>
     /// Sets the identifier used to represent the current application
     /// instance and redirect protocol activations when necessary.
     /// </summary>

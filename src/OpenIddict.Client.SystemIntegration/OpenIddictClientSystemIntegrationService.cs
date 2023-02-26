@@ -49,16 +49,9 @@ public sealed class OpenIddictClientSystemIntegrationService
     /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="activation"/> is <see langword="null"/>.</exception>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public Task HandleProtocolActivationAsync(OpenIddictClientSystemIntegrationActivation activation,
-        CancellationToken cancellationToken = default)
-    {
-        if (activation is null)
-        {
-            throw new ArgumentNullException(nameof(activation));
-        }
-
-        return HandleRequestAsync(activation, cancellationToken);
-    }
+    public Task HandleProtocolActivationAsync(
+        OpenIddictClientSystemIntegrationActivation activation, CancellationToken cancellationToken = default)
+        => HandleRequestAsync(activation ?? throw new ArgumentNullException(nameof(activation)), cancellationToken);
 
     /// <summary>
     /// Handles the specified HTTP request.
@@ -68,14 +61,7 @@ public sealed class OpenIddictClientSystemIntegrationService
     /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="request"/> is <see langword="null"/>.</exception>
     internal Task HandleHttpRequestAsync(HttpListenerContext request, CancellationToken cancellationToken = default)
-    {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        return HandleRequestAsync(request, cancellationToken);
-    }
+        => HandleRequestAsync(request ?? throw new ArgumentNullException(nameof(request)), cancellationToken);
 
 #if SUPPORTS_WINDOWS_RUNTIME
     /// <summary>
@@ -86,14 +72,7 @@ public sealed class OpenIddictClientSystemIntegrationService
     /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
     internal Task HandleWebAuthenticationResultAsync(WebAuthenticationResult result, CancellationToken cancellationToken = default)
-    {
-        if (result is null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
-
-        return HandleRequestAsync(result, cancellationToken);
-    }
+        => HandleRequestAsync(result ?? throw new ArgumentNullException(nameof(result)), cancellationToken);
 #endif
 
     /// <summary>

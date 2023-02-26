@@ -63,13 +63,6 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
 
         // If no explicit client URI was set, default to the static "http://localhost/" address, which is
         // adequate for a native/mobile client and points to the embedded web server when it is enabled.
-        //
-        // Note: while the RFC8252 specification recommends using 127.0.0.1 or ::1 instead of "localhost",
-        // OpenIddict deliberately uses "localhost" to be compatible with platforms that don't allow binding
-        // on loopback addresses without administrator rights and to avoid using a hard-to-predict client URI
-        // that would be tied to a specific IP version dependent on the protocols supported/allowed by the OS.
-        //
-        // See https://www.rfc-editor.org/rfc/rfc8252#section-8.3 for more information.
         options.ClientUri ??= new Uri("http://localhost/", UriKind.Absolute);
     }
 
@@ -96,21 +89,29 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
         options.EnablePipeServer            ??= true;
         options.EnableEmbeddedWebServer     ??= HttpListener.IsSupported;
 
-        // If no explicit instance identifier was specified, use a random GUID.
-        if (string.IsNullOrEmpty(options.InstanceIdentifier))
-        {
-            options.InstanceIdentifier = Guid.NewGuid().ToString();
-        }
-
-        // If no explicit pipe name was specified, compute the SHA-256 hash of the
-        // application name resolved from the host and use it as a unique identifier.
-        if (string.IsNullOrEmpty(options.PipeName))
+        // If no explicit application discriminator was specified, compute the SHA-256 hash
+        // of the application name resolved from the host and use it as a unique identifier.
+        if (string.IsNullOrEmpty(options.ApplicationDiscriminator))
         {
             if (string.IsNullOrEmpty(_environment.ApplicationName))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0386));
             }
 
+            options.ApplicationDiscriminator = Base64UrlEncoder.Encode(
+                OpenIddictHelpers.ComputeSha256Hash(
+                    Encoding.UTF8.GetBytes(_environment.ApplicationName)));
+        }
+
+        // If no explicit instance identifier was specified, use a random GUID.
+        if (string.IsNullOrEmpty(options.InstanceIdentifier))
+        {
+            options.InstanceIdentifier = Guid.NewGuid().ToString();
+        }
+
+        // If no explicit pipe name was specified, build one using the application discriminator.
+        if (string.IsNullOrEmpty(options.PipeName))
+        {
             var builder = new StringBuilder();
 
             // Note: on Windows, the name is deliberately prefixed with "LOCAL\" to support
@@ -121,11 +122,10 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
                 builder.Append(@"LOCAL\");
             }
 
-            builder.Append(@"OpenIddict.Client.SystemIntegration-");
-            builder.Append(Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(
-                Encoding.UTF8.GetBytes(_environment.ApplicationName))));
-
-            options.PipeName = builder.ToString();
+            options.PipeName = builder.Append("OpenIddict.Client.SystemIntegration")
+                .Append('-')
+                .Append(options.ApplicationDiscriminator)
+                .ToString();
         }
 
 #if SUPPORTS_CURRENT_USER_ONLY_PIPE_OPTION
