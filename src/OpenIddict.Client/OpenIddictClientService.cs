@@ -64,7 +64,6 @@ public sealed class OpenIddictClientService
     /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    [RequiresPreviewFeatures]
     public async ValueTask<(OpenIddictResponse AuthorizationResponse, OpenIddictResponse TokenResponse, ClaimsPrincipal Principal)> AuthenticateInteractivelyAsync(
         string provider, string[]? scopes = null,
         Dictionary<string, OpenIddictParameter>? parameters = null,
@@ -90,7 +89,6 @@ public sealed class OpenIddictClientService
     /// <param name="nonce">The nonce obtained after a challenge operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    [RequiresPreviewFeatures]
     private async ValueTask<(OpenIddictResponse AuthorizationResponse, OpenIddictResponse TokenResponse, ClaimsPrincipal Principal)> AuthenticateInteractivelyAsync(
         string nonce, CancellationToken cancellationToken = default)
     {
@@ -167,7 +165,6 @@ public sealed class OpenIddictClientService
     /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    [RequiresPreviewFeatures]
     private async ValueTask<string> ChallengeInteractivelyAsync(
         OpenIddictClientRegistration registration, string[]? scopes = null,
         Dictionary<string, OpenIddictParameter>? parameters = null,
