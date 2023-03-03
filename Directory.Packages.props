@@ -202,6 +202,7 @@
     <PackageVersion Include="Microsoft.Owin.Security.OAuth"                                   Version="4.2.2"           />
     <PackageVersion Include="Microsoft.Web.Infrastructure"                                    Version="2.0.1"           />
     <PackageVersion Include="Newtonsoft.Json"                                                 Version="13.0.2"          />
+    <PackageVersion Include="Spectre.Console"                                                 Version="0.46.0"          />
     <PackageVersion Include="WebGrease"                                                       Version="1.6.0"           />
 
     <!--
@@ -355,6 +356,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting"                                    Version="7.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug"                              Version="7.0.0"           />
     <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.5.0"           />
+    <PackageVersion Include="Spectre.Console"                                                 Version="0.46.0"          />
 
     <!--
       Note: OpenIddict uses PolySharp to dynamically generate polyfills for types that are not available on

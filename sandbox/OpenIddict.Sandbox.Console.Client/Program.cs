@@ -53,7 +53,8 @@ var host = new HostBuilder()
                        .DisablePipeServer()
                        .EnableEmbeddedWebServer()
                        .UseSystemBrowser()
-                       .SetApplicationDiscriminator("0XP3WQ07VVMCVBJ");
+                       .SetApplicationDiscriminator("0XP3WQ07VVMCVBJ")
+                       .SetAllowedEmbeddedWebServerPorts(49152, 49153, 49154);
 
                 // Register the System.Net.Http integration and use the identity of the current
                 // assembly as a more specific user agent, which can be useful when dealing with
@@ -78,11 +79,17 @@ var host = new HostBuilder()
                 // address per provider, unless all the registered providers support returning an "iss"
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                options.UseWebProviders()
-                       .UseGitHub()
-                       .SetClientId("992372d088f8676a7945")
-                       .SetClientSecret("1f18c22f766e44d7bd4ea4a6510b9e337d48ab38")
-                       .SetRedirectUri("callback/login/github");
+                options.UseWebProviders(options =>
+                {
+                    options.UseGitHub()
+                           .SetClientId("992372d088f8676a7945")
+                           .SetClientSecret("1f18c22f766e44d7bd4ea4a6510b9e337d48ab38")
+                           .SetRedirectUri("callback/login/github");
+
+                    options.UseTwitter()
+                           .SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
+                           .SetRedirectUri("callback/login/twitter");
+                });
             });
 
         // Register the worker responsible for creating the database used to store tokens
