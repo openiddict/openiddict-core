@@ -1,0 +1,56 @@
+name: Report an issue affecting a web provider
+description: Report an issue or regression impacting a specific provider integration
+labels: ["bug", "client stack", "web providers"]
+
+body:
+- type: checkboxes
+  attributes:
+    label: Personal contribution
+    description: |
+      Important: issues affecting existing providers are typically reported and fixed by external contributors.
+
+      Bug/regression fixes requested by sponsors or existing contributors may be implemented by the OpenIddict team depending on the demand and difficulty.
+    options:
+    - label: "I'm not interested in submitting a pull request and understand that this provider may not be fixed in the near future without my contribution."
+      required: false
+
+- type: dropdown
+  id: version
+  attributes:
+    label: Version
+    description: What version of OpenIddict are you running?
+    options:
+      - 4.x
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Provider name
+    description: The name of the OAuth 2.0/OpenID Connect service affected by the bug/regression (in English).
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Describe the bug
+    description: A clear and concise description of what the bug is.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: To reproduce
+    description: |
+      We ❤ code! Ideally, please point us to a minimalistic repro project hosted in a GitHub repository.
+      For a repro project, create a new project and apply the minimum required code to result in the issue you're observing.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Exceptions (if any)
+    description: Include the exception you get when facing this issue.
+    render: shell
+  validations:
+    required: false
