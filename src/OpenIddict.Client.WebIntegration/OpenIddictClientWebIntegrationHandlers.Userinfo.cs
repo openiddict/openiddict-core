@@ -165,11 +165,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 response.Content.Headers.ContentType = context.Registration.ProviderName switch
                 {
-                    // Mixcloud returns JSON-formatted contents declared as "text/javascript".
-                    Providers.Mixcloud => new MediaTypeHeaderValue(MediaTypes.Json)
-                    {
-                        CharSet = Charsets.Utf8
-                    },
+                    Providers.Mixcloud or // Mixcloud returns JSON-formatted contents declared as "text/javascript".
+                    Providers.Vimeo // Vimeo returns JSON-formatted contents declared as "application/vnd.vimeo.user+json".
+                        => new MediaTypeHeaderValue(MediaTypes.Json)
+                        {
+                            CharSet = Charsets.Utf8
+                        },
 
                     _ => response.Content.Headers.ContentType
                 };
