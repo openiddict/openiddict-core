@@ -498,6 +498,22 @@
   </Provider>
 
   <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ ███ █▄ ▄██ ▄▀▄ ██ ▄▄▄██ ▄▄▄ ██
+                                            ███ █ ███ ███ █ █ ██ ▄▄▄██ ███ ██
+                                            ███▄▀▄██▀ ▀██ ███ ██ ▀▀▀██ ▀▀▀ ██
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Vimeo" Documentation="https://developer.vimeo.com/api/authentication">
+    <Environment Issuer="https://api.vimeo.com/">
+      <Configuration AuthorizationEndpoint="https://api.vimeo.com/oauth/authorize"
+                     TokenEndpoint="https://api.vimeo.com/oauth/access_token"
+                     UserinfoEndpoint="https://api.vimeo.com/me" />
+    </Environment>
+  </Provider>
+
+  <!--
                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                 ██ ███ ██ ▄▄▄ ██ ▄▄▀██ ▄▄▀██ ▄▄ ██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ ▄▄▄ ██
                                 ██ █ █ ██ ███ ██ ▀▀▄██ ██ ██ ▀▀ ██ ▀▀▄██ ▄▄▄██▄▄▄▀▀██▄▄▄▀▀██
