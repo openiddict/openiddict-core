@@ -1,4 +1,4 @@
-name: Report an issue affecting a web provider
+name: Report an issue affecting a Web provider
 description: Report an issue or regression impacting a specific provider integration
 labels: ["bug", "client stack", "web providers"]
 
