@@ -6,11 +6,11 @@
   -->
 
   <!--
-    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-    █ ▄▄▀██ ▄▄▀████ ▄▄▄██ ▄▄▄██ ▄▄▀██ ▄▄▄██ ▄▄▀█ ▄▄▀█▄▄ ▄▄█▄ ▄██ ▄▄▄ ██ ▀██ ████ ▄▄▄ ██ ▄▄▄██ ▄▄▀██ ███ █▄ ▄██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██
-    █ ▀▀ ██ ██ ████ ▄▄███ ▄▄▄██ ██ ██ ▄▄▄██ ▀▀▄█ ▀▀ ███ ████ ███ ███ ██ █ █ ████▄▄▄▀▀██ ▄▄▄██ ▀▀▄███ █ ███ ███ █████ ▄▄▄██▄▄▄▀▀██
-    █ ██ ██ ▀▀ ████ █████ ▀▀▀██ ▀▀ ██ ▀▀▀██ ██ █ ██ ███ ███▀ ▀██ ▀▀▀ ██ ██▄ ████ ▀▀▀ ██ ▀▀▀██ ██ ███▄▀▄██▀ ▀██ ▀▀▄██ ▀▀▀██ ▀▀▀ ██
-    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                      █ ▄▄▀██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██
+                                                      █ ▀▀ ██ ██ ██ ▄▄███▄▄▄▀▀██
+                                                      █ ██ ██ ▀▀ ██ █████ ▀▀▀ ██
+                                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
   <Provider Name="ActiveDirectoryFederationServices" DisplayName="Microsoft Active Directory Federation Services"
@@ -343,6 +343,26 @@
 
     <Setting PropertyName="Duration" ParameterName="duration" Type="String" Required="false"
              Description="The value used as the 'duration' parameter (can be set to 'permanent' to retrieve a refresh token)" />
+  </Provider>
+
+  <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ▄▄▄ ██ ▄▄ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄██ ███ ██
+                                      ██▄▄▄▀▀██ ▀▀ ██ ███ ███ ████ ███ ▄▄███▄▀▀▀▄██
+                                      ██ ▀▀▀ ██ █████ ▀▀▀ ███ ███▀ ▀██ ███████ ████
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Spotify" Documentation="https://developer.spotify.com/documentation/general/guides/authorization/">
+    <Environment Issuer="https://accounts.spotify.com/">
+      <Configuration AuthorizationEndpoint="https://accounts.spotify.com/authorize"
+                     TokenEndpoint="https://accounts.spotify.com/api/token"
+                     UserinfoEndpoint="https://api.spotify.com/v1/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
   </Provider>
 
   <!--
