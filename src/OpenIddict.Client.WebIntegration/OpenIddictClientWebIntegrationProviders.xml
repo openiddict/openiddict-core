@@ -51,6 +51,25 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ▄▄▀█▄ ▄█▄▄ ▄▄██ ▄▄▀██ ██ ██ ▄▄▀██ █▀▄██ ▄▄▄█▄▄ ▄▄██
+                                        ██ ▄▄▀██ ████ ████ ▄▄▀██ ██ ██ █████ ▄▀███ ▄▄▄███ ████
+                                        ██ ▀▀ █▀ ▀███ ████ ▀▀ ██▄▀▀▄██ ▀▀▄██ ██ ██ ▀▀▀███ ████
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Bitbucket" Documentation="https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/">
+    <Environment Issuer="https://bitbucket.org/">
+      <Configuration AuthorizationEndpoint="https://bitbucket.org/site/oauth2/authorize"
+                     TokenEndpoint="https://bitbucket.org/site/oauth2/access_token"
+                     UserinfoEndpoint="https://api.bitbucket.org/2.0/user">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                         █ ▄▄▀██ ▄▀▄ █ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▀██ ████ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▀██ █▄ ▄█▄▄ ▄▄██ ▄▄▄ ██
                         █ ▀▀ ██ █ █ █ ▀▀ ██▀▀▀▄▄██ ███ ██ █ █ ████ █████ ███ ██ █▀▀██ █ █ ██ ████ ████ ███ ██
