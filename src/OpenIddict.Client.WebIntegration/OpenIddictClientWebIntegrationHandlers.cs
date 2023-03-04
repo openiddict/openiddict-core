@@ -710,6 +710,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["duration"] = options.Duration;
             }
 
+            // Slack allows sending an optional "team" parameter to simplify the login process.
+            else if (context.Registration.ProviderName is Providers.Slack)
+            {
+                var options = context.Registration.GetSlackOptions();
+
+                context.Request["team"] = options.Team;
+            }
+
             return default;
         }
     }

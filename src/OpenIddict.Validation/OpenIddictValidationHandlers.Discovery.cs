@@ -511,13 +511,17 @@ public static partial class OpenIddictValidationHandlers
 
                 for (var index = 0; index < keys.Count; index++)
                 {
-                    // Note: the "use" parameter is defined as optional by the specification.
-                    // To prevent key swapping attacks, OpenIddict requires that this parameter
-                    // be present and will ignore keys that don't include a "use" parameter.
+                    // Note: the "use" parameter is defined as optional by the JWKS specification
+                    // but is required by the OpenID Connect discovery specification if both signing
+                    // and encryption keys are present in the returned list. If the "use" parameter
+                    // is not explicitly specified or has an empty value, assume it is a signing key.
+                    //
+                    // For more information, see https://www.rfc-editor.org/rfc/rfc7517#section-4.2
+                    // and https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata.
                     var use = (string?) keys[index][JsonWebKeyParameterNames.Use];
                     if (string.IsNullOrEmpty(use))
                     {
-                        continue;
+                        use = JsonWebKeyUseNames.Sig;
                     }
 
                     // Ignore security keys that are not used for signing.

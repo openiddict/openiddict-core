@@ -346,6 +346,21 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▄ ██ ████ ▄▄▀██ ▄▄▀██ █▀▄██
+                                              ██▄▄▄▀▀██ ████ ▀▀ ██ █████ ▄▀███
+                                              ██ ▀▀▀ ██ ▀▀ █ ██ ██ ▀▀▄██ ██ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Slack" Documentation="https://api.slack.com/authentication/sign-in-with-slack">
+    <Environment Issuer="https://slack.com/" />
+
+    <Setting PropertyName="Team" ParameterName="team" Type="String" Required="false"
+             Description="The value used as the 'team' parameter (allowing to bypass the login screen if the user is already authenticated in the specified workspace)" />
+  </Provider>
+
+  <!--
                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                       ██ ▄▄▄ ██ ▄▄ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄██ ███ ██
                                       ██▄▄▄▀▀██ ▀▀ ██ ███ ███ ████ ███ ▄▄███▄▀▀▀▄██

@@ -110,6 +110,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.Implicit);
                 }
 
+                else if (context.Registration.ProviderName is Providers.Slack)
+                {
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
+                }
+
                 return default;
             }
         }
