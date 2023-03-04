@@ -113,6 +113,26 @@
   </Provider>
 
   <!--
+                                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                    ██ ▄▄▀██ ▄▄▄██ ███ █▄ ▄█ ▄▄▀██ ▀██ █▄▄ ▄▄█ ▄▄▀██ ▄▄▀█▄▄ ▄▄██
+                                    ██ ██ ██ ▄▄▄███ █ ███ ██ ▀▀ ██ █ █ ███ ███ ▀▀ ██ ▀▀▄███ ████
+                                    ██ ▀▀ ██ ▀▀▀███▄▀▄██▀ ▀█ ██ ██ ██▄ ███ ███ ██ ██ ██ ███ ████
+                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="DeviantArt" Documentation="https://www.deviantart.com/developers/authentication">
+    <Environment Issuer="https://www.deviantart.com/">
+      <Configuration AuthorizationEndpoint="https://www.deviantart.com/oauth2/authorize"
+                     TokenEndpoint="https://www.deviantart.com/oauth2/token"
+                     UserinfoEndpoint="https://www.deviantart.com/api/v1/oauth2/user/whoami">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ██ ██ ██ ██ ▄▄▀██
                                               ██ █▀▀██ ████ ████ ▄▄ ██ ██ ██ ▄▄▀██
