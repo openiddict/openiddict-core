@@ -98,70 +98,57 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // doesn't return until the specified callback URI is reached or the modal closed by the user.
                 // To accomodate OpenIddict's model, successful results are processed as any other callback request.
 
-                try
+                // Note: IAsyncOperation<T>.AsTask(context.CancellationToken) is deliberately not used here as
+                // the asynchronous operation returned by the web authentication broker is not cancellable.
+                switch (await WebAuthenticationBroker.AuthenticateAsync(
+                    options    : WebAuthenticationOptions.None,
+                    requestUri : OpenIddictHelpers.AddQueryStringParameters(
+                        uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
+                        parameters: context.Transaction.Request.GetParameters().ToDictionary(
+                            parameter => parameter.Key,
+                            parameter => new StringValues((string?[]?) parameter.Value))),
+                    callbackUri: new Uri(context.RedirectUri, UriKind.Absolute)))
                 {
-                    // Note: IAsyncOperation<T>.AsTask(context.CancellationToken) is deliberately not used here as
-                    // the asynchronous operation returned by the web authentication broker is not cancellable.
-                    switch (await WebAuthenticationBroker.AuthenticateAsync(
-                        options    : WebAuthenticationOptions.None,
-                        requestUri : OpenIddictHelpers.AddQueryStringParameters(
-                            uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
-                            parameters: context.Transaction.Request.GetParameters().ToDictionary(
-                                parameter => parameter.Key,
-                                parameter => new StringValues((string?[]?) parameter.Value))),
-                        callbackUri: new Uri(context.RedirectUri, UriKind.Absolute)))
-                    {
-                        case { ResponseStatus: WebAuthenticationStatus.Success } result:
-                            await _service.HandleWebAuthenticationResultAsync(result, context.CancellationToken);
-                            context.HandleRequest();
-                            return;
+                    case { ResponseStatus: WebAuthenticationStatus.Success } result:
+                        await _service.HandleWebAuthenticationResultAsync(result, context.CancellationToken);
+                        context.HandleRequest();
+                        return;
 
-                        // Since the result of this operation is known by the time WebAuthenticationBroker.AuthenticateAsync()
-                        // returns, some errors can directly be handled and surfaced here, as part of the challenge handling.
+                    // Since the result of this operation is known by the time WebAuthenticationBroker.AuthenticateAsync()
+                    // returns, some errors can directly be handled and surfaced here, as part of the challenge handling.
 
-                        case { ResponseStatus: WebAuthenticationStatus.UserCancel }:
-                            context.Reject(
-                                error: Errors.AccessDenied,
-                                description: SR.GetResourceString(SR.ID2149),
-                                uri: SR.FormatID8000(SR.ID2149));
+                    case { ResponseStatus: WebAuthenticationStatus.UserCancel }:
+                        context.Reject(
+                            error: Errors.AccessDenied,
+                            description: SR.GetResourceString(SR.ID2149),
+                            uri: SR.FormatID8000(SR.ID2149));
 
-                            return;
+                        return;
 
-                        case { ResponseStatus: WebAuthenticationStatus.ErrorHttp } result:
-                            context.Reject(
-                                error: result.ResponseErrorDetail switch
-                                {
-                                    400 => Errors.InvalidRequest,
-                                    401 => Errors.InvalidToken,
-                                    403 => Errors.InsufficientAccess,
-                                    429 => Errors.SlowDown,
-                                    500 => Errors.ServerError,
-                                    503 => Errors.TemporarilyUnavailable,
-                                    _   => Errors.ServerError
-                                },
-                                description: SR.FormatID2161(result.ResponseErrorDetail),
-                                uri: SR.FormatID8000(SR.ID2161));
+                    case { ResponseStatus: WebAuthenticationStatus.ErrorHttp } result:
+                        context.Reject(
+                            error: result.ResponseErrorDetail switch
+                            {
+                                400 => Errors.InvalidRequest,
+                                401 => Errors.InvalidToken,
+                                403 => Errors.InsufficientAccess,
+                                429 => Errors.SlowDown,
+                                500 => Errors.ServerError,
+                                503 => Errors.TemporarilyUnavailable,
+                                _   => Errors.ServerError
+                            },
+                            description: SR.FormatID2161(result.ResponseErrorDetail),
+                            uri: SR.FormatID8000(SR.ID2161));
 
-                            return;
+                        return;
 
-                        default:
-                            context.Reject(
-                                error: Errors.ServerError,
-                                description: SR.GetResourceString(SR.ID2136),
-                                uri: SR.FormatID8000(SR.ID2136));
+                    default:
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.GetResourceString(SR.ID2136),
+                            uri: SR.FormatID8000(SR.ID2136));
 
-                            return;
-                    }
-                }
-
-                catch
-                {
-                    context.Reject(
-                        error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2136),
-                        uri: SR.FormatID8000(SR.ID2136));
-
-                    return;
+                        return;
                 }
 #else
                 throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
