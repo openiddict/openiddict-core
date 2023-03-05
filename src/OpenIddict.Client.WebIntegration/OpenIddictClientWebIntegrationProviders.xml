@@ -95,13 +95,13 @@
                                               ██ ▀▀ ██ ▀▀▀██ ▀▀▀██ ▀▀▀ ██ ▀▀▀██ ██ ██
                                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
- 
+
   <Provider Name="Deezer" Documentation="https://developers.deezer.com/api/oauth">
     <!--
       Note: the Deezer documentation describes an implementation with important deviations from the OAuth 2.0 standard,
       including the use of many non-standard and custom parameters. Luckily, while the documentation hasn't been fixed
       to reflect it, the Deezer implementation has been updated at some point to also support the standard parameters.
-      As such, the Deezer integration tries to use the standard parameters and only use the non-standard equivalents
+      As such, the Deezer integration tries to use the standard parameters and only uses the non-standard equivalents
       when no other option exists (e.g an "output" query string parameter must be sent to get JSON token responses).
     -->
     
@@ -129,6 +129,33 @@
         <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
       </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          ██ ▄▄▀█▄ ▄██ ▄▄▄ ██ ▄▄▀██ ▄▄▄ ██ ▄▄▀██ ▄▄▀██
+                                          ██ ██ ██ ███▄▄▄▀▀██ █████ ███ ██ ▀▀▄██ ██ ██
+                                          ██ ▀▀ █▀ ▀██ ▀▀▀ ██ ▀▀▄██ ▀▀▀ ██ ██ ██ ▀▀ ██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Discord" Documentation="https://discord.com/developers/docs/topics/oauth2">
+    <Environment Issuer="https://discord.com/">
+      <Configuration AuthorizationEndpoint="https://discord.com/oauth2/authorize"
+                     TokenEndpoint="https://discord.com/api/oauth2/token"
+                     UserinfoEndpoint="https://discord.com/api/oauth2/@me">
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <!--
+        Note: Discord requires sending the "identify" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="identify" Default="true" Required="true" />
     </Environment>
   </Provider>
 
