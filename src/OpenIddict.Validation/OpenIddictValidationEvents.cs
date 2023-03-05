@@ -301,33 +301,37 @@ public static partial class OpenIddictValidationEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether an access
         /// token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an access token
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the access
         /// token extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid access token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectAccessToken { get; set; }
     }
 

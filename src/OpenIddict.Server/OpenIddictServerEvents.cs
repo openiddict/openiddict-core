@@ -316,225 +316,253 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether an access
         /// token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
         /// code should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a device
         /// code should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractDeviceCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a generic
         /// token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractGenericToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an identity
         /// token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a refresh
         /// token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a user
         /// code should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractUserCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an access token
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization code
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a device code
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireDeviceCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a generic token
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireGenericToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an identity token
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a refresh token
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a user code
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireUserCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the access
         /// token extracted from the current request should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the authorization
         /// code extracted from the current request should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the device
         /// code extracted from the current request should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateDeviceCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generic
         /// token extracted from the current request should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateGenericToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the identity
         /// token extracted from the current request should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the refresh
         /// token extracted from the current request should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the user
         /// code extracted from the current request should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateUserCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid access token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid authorization code
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid device code
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectDeviceCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid generic token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectGenericToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid identity token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid refresh token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid user code
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectUserCode { get; set; }
 
         /// <summary>
@@ -699,97 +727,109 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether an access token
         /// should be generated (and optionally returned to the client).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization code
         /// should be generated (and optionally returned to the client).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a device code
         /// should be generated (and optionally returned to the client).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateDeviceCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an identity token
         /// should be generated (and optionally returned to the client).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a refresh token
         /// should be generated (and optionally returned to the client).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a user code
         /// should be generated (and optionally returned to the client).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateUserCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated access token
         /// should be returned to the client application as part of the response.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated authorization code
         /// should be returned to the client application as part of the response.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated device code
         /// should be returned to the client application as part of the response.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeDeviceCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated identity token
         /// should be returned to the client application as part of the response.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated refresh token
         /// should be returned to the client application as part of the response.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated user code
         /// should be returned to the client application as part of the response.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeUserCode { get; set; }
 
         /// <summary>

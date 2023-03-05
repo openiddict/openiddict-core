@@ -160,6 +160,25 @@
   </Provider>
 
   <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          ██ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▄▄▀██ ▄▄▄ █▄▀█▀▄██
+                                          ██ ██ ██ ▀▀▄██ ███ ██ ▀▀ ██ ▄▄▀██ ███ ███ ████
+                                          ██ ▀▀ ██ ██ ██ ▀▀▀ ██ █████ ▀▀ ██ ▀▀▀ █▀▄█▄▀██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Dropbox" Documentation="https://developers.dropbox.com/oidc-guide">
+    <Environment Issuer="https://www.dropbox.com/">
+      <!--
+        Note: Dropbox requires sending at least either the "profile" or "email" scope.
+        To simplify the logic, the "profile" scope is considered required by OpenIddict.
+      -->
+
+      <Scope Name="profile" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ██ ██ ██ ██ ▄▄▀██
                                               ██ █▀▀██ ████ ████ ▄▄ ██ ██ ██ ▄▄▀██

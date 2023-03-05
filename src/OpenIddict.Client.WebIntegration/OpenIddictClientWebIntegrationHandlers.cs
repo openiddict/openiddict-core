@@ -26,6 +26,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
         AdjustRedirectUriInTokenRequest.Descriptor,
         OverrideValidatedBackchannelTokens.Descriptor,
+        DisableBackchannelIdentityTokenNonceValidation.Descriptor,
         AttachAdditionalUserinfoRequestParameters.Descriptor,
         PopulateUserinfoTokenPrincipalFromTokenResponse.Descriptor,
 
@@ -314,6 +315,48 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for disabling the backchannel
+    /// identity token nonce validation for the providers that require it.
+    /// </summary>
+    public sealed class DisableBackchannelIdentityTokenNonceValidation : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<DisableBackchannelIdentityTokenNonceValidation>()
+                .SetOrder(ValidateBackchannelIdentityTokenNonce.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: despite implementing OpenID Connect, some providers are known to implement the
+            // specification incorrectly and either don't support the "nonce" authorization request
+            // parameter, don't include it in the issued identity tokens or flow an unexpected value.
+            //
+            // Despite being an important security feature, nonce validation is explicitly disabled
+            // for the providers that are known to cause errors when nonce validation is enforced.
+
+            context.DisableBackchannelIdentityTokenNonceValidation = context.Registration.ProviderName switch
+            {
+                Providers.Dropbox => true, // Dropbox doesn't include the nonce in the identity tokens.
+
+                _ => context.DisableBackchannelIdentityTokenNonceValidation
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching additional parameters
     /// to the userinfo request for the providers that require it.
     /// </summary>
@@ -517,7 +560,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for overriding response mode for providers that require it.
+    /// Contains the logic responsible for overriding the response mode for the providers that require it.
     /// </summary>
     public sealed class OverrideResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
     {
