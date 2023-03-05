@@ -46,6 +46,23 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if backchannel identity token nonce validation was disabled.
+    /// </summary>
+    public sealed class RequireBackchannelIdentityTokenNonceValidationEnabled : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.DisableBackchannelIdentityTokenNonceValidation);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no backchannel identity token principal is available.
     /// </summary>
     public sealed class RequireBackchannelIdentityTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
@@ -110,6 +127,23 @@ public static class OpenIddictClientHandlerFilters
             }
 
             return new(context.ValidateFrontchannelAccessToken);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if frontchannel identity token nonce validation was disabled.
+    /// </summary>
+    public sealed class RequireFrontchannelIdentityTokenNonceValidationEnabled : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.DisableFrontchannelIdentityTokenNonceValidation);
         }
     }
 

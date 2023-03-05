@@ -376,257 +376,289 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
         /// code should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a backchannel
         /// access token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractBackchannelAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a backchannel
         /// identity token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractBackchannelIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a frontchannel
         /// access token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractFrontchannelAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a frontchannel
         /// identity token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractFrontchannelIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a refresh
         /// token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a state
         /// token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractStateToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a userinfo
         /// token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ExtractUserinfoToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
         /// code must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a backchannel access
         /// token must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireBackchannelAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a backchannel identity
         /// token must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireBackchannelIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a frontchannel identity
         /// token must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireFrontchannelAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a frontchannel identity
         /// token must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireFrontchannelIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a refresh token
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a state token
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireStateToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a userinfo token
         /// must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RequireUserinfoToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the authorization
         /// code extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the backchannel access
         /// token extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateBackchannelAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the backchannel identity
         /// token extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateBackchannelIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the frontchannel access
         /// token extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateFrontchannelAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the frontchannel identity
         /// token extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateFrontchannelIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the refresh token
         /// extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the state token
         /// extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateStateToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the userinfo token
         /// extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool ValidateUserinfoToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid authorization code
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid backchannel access token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectBackchannelAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid backchannel identity token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectBackchannelIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid frontchannel access token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectFrontchannelAccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid frontchannel identity token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectFrontchannelIdentityToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid refresh token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectRefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid state token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectStateToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid userinfo token
         /// will cause the authentication demand to be rejected or will be ignored.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool RejectUserinfoToken { get; set; }
 
         /// <summary>
@@ -742,17 +774,19 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether a client assertion
         /// token should be generated (and optionally included in the request).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateClientAssertionToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated client
         /// assertion token should be included as part of the request.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeClientAssertionToken { get; set; }
 
         /// <summary>
@@ -774,6 +808,24 @@ public static partial class OpenIddictClientEvents
         /// used to create the client assertion token, if applicable.
         /// </summary>
         public ClaimsPrincipal? ClientAssertionTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether backchannel
+        /// identity token nonce validation should be disabled.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool DisableBackchannelIdentityTokenNonceValidation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether frontchannel
+        /// identity token nonce validation should be disabled.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool DisableFrontchannelIdentityTokenNonceValidation { get; set; }
     }
 
     /// <summary>
@@ -918,17 +970,19 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether a state token
         /// should be generated (and optionally included in the request).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateStateToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated
         /// state token should be included as part of the request.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeStateToken { get; set; }
 
         /// <summary>
@@ -1047,17 +1101,19 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether a state token
         /// should be generated (and optionally included in the request).
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool GenerateStateToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated
         /// state token should be included as part of the request.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
         /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
         public bool IncludeStateToken { get; set; }
 
         /// <summary>

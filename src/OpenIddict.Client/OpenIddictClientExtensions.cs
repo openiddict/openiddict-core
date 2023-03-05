@@ -38,10 +38,12 @@ public static class OpenIddictClientExtensions
         // Register the built-in filters used by the default OpenIddict client event handlers.
         builder.Services.TryAddSingleton<RequireAuthorizationCodeValidated>();
         builder.Services.TryAddSingleton<RequireBackchannelAccessTokenValidated>();
+        builder.Services.TryAddSingleton<RequireBackchannelIdentityTokenNonceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireBackchannelIdentityTokenValidated>();
         builder.Services.TryAddSingleton<RequireBackchannelIdentityTokenPrincipal>();
         builder.Services.TryAddSingleton<RequireClientAssertionTokenGenerated>();
         builder.Services.TryAddSingleton<RequireFrontchannelAccessTokenValidated>();
+        builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenNonceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenValidated>();
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenPrincipal>();
         builder.Services.TryAddSingleton<RequireInteractiveGrantType>();

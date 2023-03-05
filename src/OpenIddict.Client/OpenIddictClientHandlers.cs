@@ -1674,6 +1674,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireFrontchannelIdentityTokenNonceValidationEnabled>()
                 .AddFilter<RequireFrontchannelIdentityTokenPrincipal>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenValidated>()
@@ -2997,6 +2998,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireBackchannelIdentityTokenNonceValidationEnabled>()
                 .AddFilter<RequireBackchannelIdentityTokenPrincipal>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenValidated>()
