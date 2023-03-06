@@ -369,6 +369,40 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ▄▄ █ ▄▄▀█▄▄ ▄▄██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ ▀██ ██
+                                        ██ ▀▀ █ ▀▀ ███ ████ ▀▀▄██ ▄▄▄██ ███ ██ █ █ ██
+                                        ██ ████ ██ ███ ████ ██ ██ ▀▀▀██ ▀▀▀ ██ ██▄ ██
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Patreon" Documentation="https://docs.patreon.com/#oauth">
+    <Environment Issuer="https://www.patreon.com/">
+      <Configuration AuthorizationEndpoint="https://www.patreon.com/oauth2/authorize"
+                     TokenEndpoint="https://www.patreon.com/api/oauth2/token"
+                     UserinfoEndpoint="https://www.patreon.com/api/oauth2/v2/identity">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
+             Description="The list of user fields to expand from the userinfo endpoint (by default, all known fields are requested)">
+      <Item Value="about"              Default="true" Required="false" />
+      <Item Value="created"            Default="true" Required="false" />
+      <Item Value="email"              Default="true" Required="false" />
+      <Item Value="first_name"         Default="true" Required="false" />
+      <Item Value="full_name"          Default="true" Required="false" />
+      <Item Value="image_url"          Default="true" Required="false" />
+      <Item Value="last_name"          Default="true" Required="false" />
+      <Item Value="social_connections" Default="true" Required="false" />
+      <Item Value="thumb_url"          Default="true" Required="false" />
+      <Item Value="url"                Default="true" Required="false" />
+      <Item Value="vanity"             Default="true" Required="false" />
+    </Setting>
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             ██ ▄▄ █ ▄▄▀██ ███ ██ ▄▄ █ ▄▄▀██ █████
                                             ██ ▀▀ █ ▀▀ ██▄▀▀▀▄██ ▀▀ █ ▀▀ ██ █████
