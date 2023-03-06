@@ -595,6 +595,25 @@
   </Provider>
 
   <!--
+                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                              ██ ▄▄▄ █▄▄ ▄▄██ ▄▄▀██ ▄▄▄█ ▄▄▀██ ▄▀▄ ██ ████ ▄▄▀██ ▄▄▀██ ▄▄▄ ██
+                              ██▄▄▄▀▀███ ████ ▀▀▄██ ▄▄▄█ ▀▀ ██ █ █ ██ ████ ▀▀ ██ ▄▄▀██▄▄▄▀▀██
+                              ██ ▀▀▀ ███ ████ ██ ██ ▀▀▀█ ██ ██ ███ ██ ▀▀ █ ██ ██ ▀▀ ██ ▀▀▀ ██
+                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Streamlabs" Documentation="https://dev.streamlabs.com/docs/oauth-2">
+    <Environment Issuer="https://streamlabs.com/">
+      <Configuration AuthorizationEndpoint="https://streamlabs.com/api/v2.0/authorize"
+                     TokenEndpoint="https://streamlabs.com/api/v2.0/token"
+                     UserinfoEndpoint="https://streamlabs.com/api/v2.0/user">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               █▄▄ ▄▄██ ▄▄▀█ ▄▄▀██ █▀▄█▄▄ ▄▄██
                                               ███ ████ ▀▀▄█ ▀▀ ██ ▄▀████ ████
