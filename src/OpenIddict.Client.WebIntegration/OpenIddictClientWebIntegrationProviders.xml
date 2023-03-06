@@ -179,6 +179,33 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▄█▄ ▄█▄▄ ▄▄██ ▄▄▀█▄ ▄█▄▄ ▄▄██
+                                              ██ ▄▄███ ████ ████ ▄▄▀██ ████ ████
+                                              ██ ████▀ ▀███ ████ ▀▀ █▀ ▀███ ████
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Fitbit" Documentation="https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/">
+    <Environment Issuer="https://www.fitbit.com/">
+      <Configuration AuthorizationEndpoint="https://www.fitbit.com/oauth2/authorize"
+                     TokenEndpoint="https://api.fitbit.com/oauth2/token"
+                     UserinfoEndpoint="https://api.fitbit.com/1/user/-/profile.json">
+        <CodeChallengeMethod Value="plain" />
+        <CodeChallengeMethod Value="S256" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+
+      <!--
+        Note: Fitbit requires sending the "profile" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="profile" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ██ ██ ██ ██ ▄▄▀██
                                               ██ █▀▀██ ████ ████ ▄▄ ██ ██ ██ ▄▄▀██
