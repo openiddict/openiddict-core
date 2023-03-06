@@ -330,6 +330,22 @@
   </Provider>
 
   <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ▄▀▄ █ ▄▄▀█▄ ▄██ █████ ▄▄▀██ ██ █▄ ▄██ ▄▀▄ ██ ▄▄ ██
+                                      ██ █ █ █ ▀▀ ██ ███ █████ █████ ▄▄ ██ ███ █ █ ██ ▀▀ ██
+                                      ██ ███ █ ██ █▀ ▀██ ▀▀ ██ ▀▀▄██ ██ █▀ ▀██ ███ ██ █████
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Mailchimp" Documentation="https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#oauth-2-workflow-overview">
+    <Environment Issuer="https://login.mailchimp.com/">
+      <Configuration AuthorizationEndpoint="https://login.mailchimp.com/oauth2/authorize"
+                     TokenEndpoint="https://login.mailchimp.com/oauth2/token"
+                     UserinfoEndpoint="https://login.mailchimp.com/oauth2/metadata" />
+    </Environment>
+  </Provider>
+
+  <!--
               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
               ██ ▄▀▄ █▄ ▄██ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▄▄▄ ██ ▄▄▄█▄▄ ▄▄███ ▄▄▀██ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ██ ██ ▀██ █▄▄ ▄▄██
               ██ █ █ ██ ███ █████ ▀▀▄██ ███ ██▄▄▄▀▀██ ███ ██ ▄▄████ █████ ▀▀ ██ █████ █████ ███ ██ ██ ██ █ █ ███ ████
