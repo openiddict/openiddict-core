@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
@@ -250,24 +249,29 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Response = context.Registration.ProviderName switch
                 {
                     // Fitbit returns a nested "user" object.
-                    Providers.Fitbit => (JsonElement) context.Response["user"]
-                        is { ValueKind: JsonValueKind.Object } element ?
-                        new(element) : throw new InvalidOperationException(SR.FormatID0334("user")),
+                    Providers.Fitbit => new(context.Response["user"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("user"))),
 
                     // Patreon returns a nested "attributes" object that is itself nested in a "data" node.
-                    Providers.Patreon => (JsonElement) context.Response["data"]?["attributes"]
-                        is { ValueKind: JsonValueKind.Object } element ?
-                        new(element) : throw new InvalidOperationException(SR.FormatID0334("attributes")),
+                    Providers.Patreon => new(context.Response["data"]?["attributes"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("data/attributes"))),
 
                     // StackExchange returns an "items" array containing a single element.
-                    Providers.StackExchange => (JsonElement) context.Response["items"]
-                        is { ValueKind: JsonValueKind.Array } element && element.GetArrayLength() is 1 ?
-                        new(element[0]) : throw new InvalidOperationException(SR.FormatID0334("items")),
+                    Providers.StackExchange => new(context.Response["items"]?[0]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("items/0"))),
+
+                    // Streamlabs splits the user data into multiple service-specific nodes (e.g "twitch"/"facebook").
+                    //
+                    // To make claims easier to use, the parameters are flattened and prefixed with the service name.
+                    Providers.Streamlabs => new(
+                        from parameter in context.Response.GetParameters()
+                        from node in parameter.Value.GetNamedParameters()
+                        let name = $"{parameter.Key}_{node.Key}"
+                        select new KeyValuePair<string, OpenIddictParameter>(name, node.Value)),
 
                     // Twitter returns a nested "data" object.
-                    Providers.Twitter => (JsonElement) context.Response["data"]
-                        is { ValueKind: JsonValueKind.Object } element ?
-                        new(element) : throw new InvalidOperationException(SR.FormatID0334("data")),
+                    Providers.Twitter => new(context.Response["data"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("data"))),
 
                     _ => context.Response
                 };
