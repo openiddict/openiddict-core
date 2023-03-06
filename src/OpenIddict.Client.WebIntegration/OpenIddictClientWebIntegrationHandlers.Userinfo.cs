@@ -212,6 +212,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.Response = context.Registration.ProviderName switch
                 {
+                    // Fitbit returns a nested "user" object.
+                    Providers.Fitbit => (JsonElement) context.Response["user"]
+                        is { ValueKind: JsonValueKind.Object } element ?
+                        new(element) : throw new InvalidOperationException(SR.FormatID0334("user")),
+
                     // StackExchange returns an "items" array containing a single element.
                     Providers.StackExchange => (JsonElement) context.Response["items"]
                         is { ValueKind: JsonValueKind.Array } element && element.GetArrayLength() is 1 ?
