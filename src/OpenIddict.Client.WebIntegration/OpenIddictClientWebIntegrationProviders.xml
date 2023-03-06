@@ -540,6 +540,7 @@
       <Configuration AuthorizationEndpoint="https://twitter.com/i/oauth2/authorize"
                      TokenEndpoint="https://api.twitter.com/2/oauth2/token"
                      UserinfoEndpoint="https://api.twitter.com/2/users/me">
+        <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="authorization_code" />
