@@ -30,6 +30,30 @@
   </Provider>
 
   <!--
+                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                              █ ▄▄▀██ ▄▄▀██ ▄▄▀██ ▄▄ █▄ ▄██ ▄▄▄ ████ ▄▄▄ ██ ▀██ ██ ████▄ ▄██ ▀██ ██ ▄▄▄██
+                              █ ▀▀ ██ ▀▀▄██ █████ █▀▀██ ███▄▄▄▀▀████ ███ ██ █ █ ██ █████ ███ █ █ ██ ▄▄▄██
+                              █ ██ ██ ██ ██ ▀▀▄██ ▀▀▄█▀ ▀██ ▀▀▀ ████ ▀▀▀ ██ ██▄ ██ ▀▀ █▀ ▀██ ██▄ ██ ▀▀▀██
+                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="ArcGisOnline" DisplayName="ArcGIS Online"
+            Documentation="https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2.0/">
+    <Environment Issuer="https://www.arcgis.com/">
+      <Configuration AuthorizationEndpoint="https://www.arcgis.com/sharing/rest/oauth2/authorize"
+                     TokenEndpoint="https://www.arcgis.com/sharing/rest/oauth2/token"
+                     UserinfoEndpoint="https://www.arcgis.com/sharing/rest/community/self">
+        <CodeChallengeMethod Value="plain" />
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                   █ ▄▄▀██ ▄▄ ██ ▄▄ ██ █████ ▄▄▄██
                                                   █ ▀▀ ██ ▀▀ ██ ▀▀ ██ █████ ▄▄▄██

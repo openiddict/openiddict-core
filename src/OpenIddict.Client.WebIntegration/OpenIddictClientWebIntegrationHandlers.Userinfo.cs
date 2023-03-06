@@ -26,6 +26,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              */
             AttachRequestHeaders.Descriptor,
             AttachAccessTokenParameter.Descriptor,
+            AttachNonStandardParameters.Descriptor,
 
             /*
              * Userinfo response extraction:
@@ -120,6 +121,41 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                     _ => (context.Request.AccessToken, request.Headers.Authorization)
                 };
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching non-standard
+        /// parameters to the request for the providers that require it.
+        /// </summary>
+        public sealed class AttachNonStandardParameters : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                    .UseSingletonHandler<AttachNonStandardParameters>()
+                    .SetOrder(AttachQueryStringParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 250)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // ArcGIS Online doesn't support header-based content negotiation and requires using
+                // the non-standard "f" parameter to get back JSON responses instead of HTML pages.
+                if (context.Registration.ProviderName is Providers.ArcGisOnline)
+                {
+                    context.Request["f"] = "json";
+                }
 
                 return default;
             }
