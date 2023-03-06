@@ -202,7 +202,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 response.Content.Headers.ContentType = context.Registration.ProviderName switch
                 {
                     Providers.Mixcloud or // Mixcloud returns JSON-formatted contents declared as "text/javascript".
-                    Providers.Vimeo // Vimeo returns JSON-formatted contents declared as "application/vnd.vimeo.user+json".
+                    Providers.Patreon  or // Patreon returns JSON-formatted contents declared as "application/vnd.api+json".
+                    Providers.Vimeo       // Vimeo returns JSON-formatted contents declared as "application/vnd.vimeo.user+json".
                         => new MediaTypeHeaderValue(MediaTypes.Json)
                         {
                             CharSet = Charsets.Utf8
@@ -252,6 +253,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     Providers.Fitbit => (JsonElement) context.Response["user"]
                         is { ValueKind: JsonValueKind.Object } element ?
                         new(element) : throw new InvalidOperationException(SR.FormatID0334("user")),
+
+                    // Patreon returns a nested "attributes" object that is itself nested in a "data" node.
+                    Providers.Patreon => (JsonElement) context.Response["data"]?["attributes"]
+                        is { ValueKind: JsonValueKind.Object } element ?
+                        new(element) : throw new InvalidOperationException(SR.FormatID0334("attributes")),
 
                     // StackExchange returns an "items" array containing a single element.
                     Providers.StackExchange => (JsonElement) context.Response["items"]

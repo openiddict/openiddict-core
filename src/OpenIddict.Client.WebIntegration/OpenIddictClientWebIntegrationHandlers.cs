@@ -393,6 +393,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["projection"] = string.Concat("(", string.Join(",", options.Fields), ")");
             }
 
+            // Patreon limits the number of fields returned by the userinfo endpoint
+            // but allows returning additional information using special parameters that
+            // determine what fields will be returned as part of the userinfo response.
+            else if (context.Registration.ProviderName is Providers.Patreon)
+            {
+                var options = context.Registration.GetPatreonOptions();
+
+                context.UserinfoRequest["fields[user]"] = string.Join(",", options.UserFields);
+            }
+
             // StackOverflow requires sending an application key and a site parameter
             // containing the name of the site from which the user profile is retrieved.
             else if (context.Registration.ProviderName is Providers.StackExchange)
