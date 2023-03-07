@@ -7,8 +7,10 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using OpenIddict.Extensions;
+using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.Exchange;
@@ -25,7 +27,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              * Token request preparation:
              */
             AttachNonStandardBasicAuthenticationCredentials.Descriptor,
+            AttachNonStandardRequestHeaders.Descriptor,
             AttachNonStandardQueryStringParameters.Descriptor,
+            AttachNonStandardRequestPayload.Descriptor,
 
             /*
              * Token response extraction:
@@ -100,6 +104,50 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for attaching additional
+        /// headers to the request for the providers that require it.
+        /// </summary>
+        public sealed class AttachNonStandardRequestHeaders : IOpenIddictClientHandler<PrepareTokenRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
+                    .AddFilter<RequireHttpMetadataUri>()
+                    .UseSingletonHandler<AttachNonStandardRequestHeaders>()
+                    .SetOrder(AttachUserAgentHeader<PrepareTokenRequestContext>.Descriptor.Order + 250)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareTokenRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                // Trovo requires sending the client identifier in a non-standard "client-id" header and
+                // the client secret in the payload (formatted using JSON instead of the standard format).
+                if (context.Registration.ProviderName is Providers.Trovo)
+                {
+                    request.Headers.Add("Client-ID", context.Request.ClientId);
+
+                    // Remove the client identifier from the request payload to ensure it's not sent twice.
+                    context.Request.ClientId = null;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for attaching non-standard query string
         /// parameters to the token request for the providers that require it.
         /// </summary>
@@ -142,6 +190,54 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     request.RequestUri = OpenIddictHelpers.AddQueryStringParameter(
                         request.RequestUri, name: "output", value: "json");
                 }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching a non-standard payload for the providers that require it.
+        /// </summary>
+        public sealed class AttachNonStandardRequestPayload : IOpenIddictClientHandler<PrepareTokenRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
+                    .AddFilter<RequireHttpMetadataUri>()
+                    .UseSingletonHandler<AttachNonStandardRequestPayload>()
+                    .SetOrder(AttachFormParameters<PrepareTokenRequestContext>.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareTokenRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                request.Content = context.Registration.ProviderName switch
+                {
+                    // Trovo returns a 500 internal server error when using the standard
+                    // "application/x-www-form-urlencoded" format and requires using JSON.
+                    Providers.Trovo => JsonContent.Create(context.Transaction.Request,
+                        new MediaTypeHeaderValue(MediaTypes.Json)
+                        {
+                            CharSet = Charsets.Utf8
+                        }),
+
+                    _ => request.Content
+                };
 
                 return default;
             }

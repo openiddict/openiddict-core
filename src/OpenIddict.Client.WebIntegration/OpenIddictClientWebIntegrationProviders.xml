@@ -633,6 +633,37 @@
   </Provider>
 
   <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            █▄▄ ▄▄██ ▄▄▀██ ▄▄▄ ██ ███ ██ ▄▄▄ ██
+                                            ███ ████ ▀▀▄██ ███ ███ █ ███ ███ ██
+                                            ███ ████ ██ ██ ▀▀▀ ███▄▀▄███ ▀▀▀ ██
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Trovo" Documentation="https://developer.trovo.live/docs/APIs.html#_3-authentication">
+    <Environment Issuer="https://trovo.live/">
+      <!--
+        Note: Trovo uses a different token endpoint for the refresh token grant. To accommodate this requirement,
+        the /exchangetoken endpoint is used as the default value and a dedicated event handler is responsible for
+        dynamically replacing the token endpoint address to /refreshtoken when using the refresh token grant.
+      -->
+
+      <Configuration AuthorizationEndpoint="https://open.trovo.live/page/login.html"
+                     TokenEndpoint="https://open-api.trovo.live/openplatform/exchangetoken"
+                     UserinfoEndpoint="https://open-api.trovo.live/openplatform/getuserinfo">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <!--
+        Note: Trovo requires sending the "profile" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="user_details_self" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         █▄▄ ▄▄██ ███ █▄ ▄█▄▄ ▄▄█▄▄ ▄▄██ ▄▄▄██ ▄▄▀██
                                         ███ ████ █ █ ██ ████ █████ ████ ▄▄▄██ ▀▀▄██

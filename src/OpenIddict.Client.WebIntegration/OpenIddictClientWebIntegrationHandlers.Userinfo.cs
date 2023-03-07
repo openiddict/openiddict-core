@@ -67,10 +67,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // (which is statically set to the last version known to be supported by the OpenIddict integration).
                 if (context.Registration.ProviderName is Providers.Trakt)
                 {
-                    var options = context.Registration.GetTraktOptions();
-
-                    request.Headers.Add("trakt-api-key", options.ClientId);
+                    request.Headers.Add("trakt-api-key", context.Registration.ClientId);
                     request.Headers.Add("trakt-api-version", "2");
+                }
+
+                // Trovo requires sending the client identifier as a separate, non-standard header.
+                else if (context.Registration.ProviderName is Providers.Trovo)
+                {
+                    request.Headers.Add("Client-ID", context.Registration.ClientId);
                 }
 
                 return default;
@@ -109,14 +113,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // By default, OpenIddict sends the access token as part of the Authorization header
                 // using the Bearer authentication scheme. Some providers don't support this method
-                // and require sending the access token as part of the userinfo request payload.
+                // and require sending the access token as part of the userinfo request payload
+                // or using a non-standard authentication scheme (e.g OAuth instead of Bearer).
 
                 (context.Request.AccessToken, request.Headers.Authorization) = context.Registration.ProviderName switch
                 {
+                    // These providers require sending the access token as part of the request payload.
                     Providers.Deezer   or
                     Providers.Mixcloud or
                     Providers.StackExchange
                         => (request.Headers.Authorization?.Parameter, null),
+
+                    // Trovo requires using the "OAuth" scheme instead of the standard "Bearer" value.
+                    Providers.Trovo
+                        => (null, new AuthenticationHeaderValue("OAuth", request.Headers.Authorization?.Parameter)),
 
                     _ => (context.Request.AccessToken, request.Headers.Authorization)
                 };
