@@ -22,6 +22,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
          * Authentication processing:
          */
         HandleNonStandardFrontchannelErrorResponse.Descriptor,
+        OverrideTokenEndpoint.Descriptor,
         AttachNonStandardClientAssertionTokenClaims.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
         AdjustRedirectUriInTokenRequest.Descriptor,
@@ -120,6 +121,46 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     return default;
                 }
             }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for overriding the address
+    /// of the token endpoint for the providers that require it.
+    /// </summary>
+    public sealed class OverrideTokenEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<OverrideTokenEndpoint>()
+                .SetOrder(ResolveTokenEndpoint.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.TokenEndpoint = context.Registration.ProviderName switch
+            {
+                // Trovo uses a different token endpoint for the refresh token grant.
+                //
+                // For more information, see
+                // https://developer.trovo.live/docs/APIs.html#_4-3-refresh-access-token.
+                Providers.Trovo when context.GrantType is GrantTypes.RefreshToken
+                    => new Uri("https://open-api.trovo.live/openplatform/refreshtoken", UriKind.Absolute),
+
+                _ => context.TokenEndpoint
+            };
 
             return default;
         }
@@ -638,6 +679,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
                 Providers.Deezer => string.Join(",", context.Scopes),
+
+                // The following providers are known to use plus-separated scopes instead of
+                // the standard format (that requires using a space as the scope separator):
+                Providers.Trovo => string.Join("+", context.Scopes),
 
                 _ => context.Request.Scope
             };
