@@ -388,7 +388,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.DisableBackchannelIdentityTokenNonceValidation = context.Registration.ProviderName switch
             {
-                Providers.Dropbox => true, // Dropbox doesn't include the nonce in the identity tokens.
+                // These providers don't include the nonce in their identity tokens:
+                Providers.Asana or Providers.Dropbox => true,
 
                 _ => context.DisableBackchannelIdentityTokenNonceValidation
             };
