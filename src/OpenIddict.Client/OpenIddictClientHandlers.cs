@@ -3404,6 +3404,12 @@ public static partial class OpenIddictClientHandlers
                 _ => false
             };
 
+            // The OpenIddict client is expected to be used with standard OpenID Connect userinfo endpoints
+            // but must also support non-standard implementations, that are common with OAuth 2.0-only servers.
+            //
+            // As such, protocol requirements are only enforced if the server supports OpenID Connect.
+            context.DisableUserinfoValidation = !context.Configuration.ScopesSupported.Contains(Scopes.OpenId);
+
             return default;
         }
     }
@@ -3659,6 +3665,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserinfoValidationEnabled>()
                 .AddFilter<RequireUserinfoTokenPrincipal>()
                 .UseSingletonHandler<ValidateUserinfoTokenWellknownClaims>()
                 .SetOrder(ValidateUserinfoToken.Descriptor.Order + 1_000)
@@ -3675,28 +3682,21 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.UserinfoTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            // The OpenIddict client is expected to be used with standard OpenID Connect userinfo endpoints
-            // but must also support non-standard implementations, that are common with OAuth 2.0-only servers.
-            //
-            // As such, protocol requirements are only enforced if the server supports OpenID Connect.
-            if (context.Configuration.ScopesSupported.Contains(Scopes.OpenId))
+            foreach (var group in context.UserinfoTokenPrincipal.Claims
+                .GroupBy(claim => claim.Type)
+                .ToDictionary(group => group.Key, group => group.ToList()))
             {
-                foreach (var group in context.UserinfoTokenPrincipal.Claims
-                    .GroupBy(claim => claim.Type)
-                    .ToDictionary(group => group.Key, group => group.ToList()))
+                if (ValidateClaimGroup(group))
                 {
-                    if (ValidateClaimGroup(group))
-                    {
-                        continue;
-                    }
-
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2131(group.Key),
-                        uri: SR.FormatID8000(SR.ID2131));
-
-                    return default;
+                    continue;
                 }
+
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2131(group.Key),
+                    uri: SR.FormatID8000(SR.ID2131));
+
+                return default;
             }
 
             return default;
@@ -3725,6 +3725,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserinfoValidationEnabled>()
                 .AddFilter<RequireUserinfoTokenPrincipal>()
                 .UseSingletonHandler<ValidateUserinfoTokenSubject>()
                 .SetOrder(ValidateUserinfoTokenWellknownClaims.Descriptor.Order + 1_000)
@@ -3741,53 +3742,46 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.UserinfoTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            // The OpenIddict client is expected to be used with standard OpenID Connect userinfo endpoints
-            // but must also support non-standard implementations, that are common with OAuth 2.0-only servers.
-            //
-            // As such, protocol requirements are only enforced if the server supports OpenID Connect.
-            if (context.Configuration.ScopesSupported.Contains(Scopes.OpenId))
+            // Standard OpenID Connect userinfo responses/tokens MUST contain a "sub" claim. For more
+            // information, see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
+            if (!context.UserinfoTokenPrincipal.HasClaim(Claims.Subject))
             {
-                // Standard OpenID Connect userinfo responses/tokens MUST contain a "sub" claim. For more
-                // information, see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
-                if (!context.UserinfoTokenPrincipal.HasClaim(Claims.Subject))
-                {
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2132(Claims.Subject),
-                        uri: SR.FormatID8000(SR.ID2132));
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2132(Claims.Subject),
+                    uri: SR.FormatID8000(SR.ID2132));
 
-                    return default;
-                }
+                return default;
+            }
 
-                // The "sub" claim returned as part of the userinfo response/token MUST exactly match the value
-                // returned in the frontchannel identity token, if one was returned. For more information,
-                // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
-                if (context.FrontchannelIdentityTokenPrincipal is not null && !string.Equals(
-                    context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
-                    context.UserinfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
-                {
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2133(Claims.Subject),
-                        uri: SR.FormatID8000(SR.ID2133));
+            // The "sub" claim returned as part of the userinfo response/token MUST exactly match the value
+            // returned in the frontchannel identity token, if one was returned. For more information,
+            // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
+            if (context.FrontchannelIdentityTokenPrincipal is not null && !string.Equals(
+                context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
+                context.UserinfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2133(Claims.Subject),
+                    uri: SR.FormatID8000(SR.ID2133));
 
-                    return default;
-                }
+                return default;
+            }
 
-                // The "sub" claim returned as part of the userinfo response/token MUST exactly match the value
-                // returned in the frontchannel identity token, if one was returned. For more information,
-                // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
-                if (context.BackchannelIdentityTokenPrincipal is not null && !string.Equals(
-                    context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
-                    context.UserinfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
-                {
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2133(Claims.Subject),
-                        uri: SR.FormatID8000(SR.ID2133));
+            // The "sub" claim returned as part of the userinfo response/token MUST exactly match the value
+            // returned in the frontchannel identity token, if one was returned. For more information,
+            // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
+            if (context.BackchannelIdentityTokenPrincipal is not null && !string.Equals(
+                context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
+                context.UserinfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2133(Claims.Subject),
+                    uri: SR.FormatID8000(SR.ID2133));
 
-                    return default;
-                }
+                return default;
             }
 
             return default;

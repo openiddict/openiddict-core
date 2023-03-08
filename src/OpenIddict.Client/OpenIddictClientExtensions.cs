@@ -63,6 +63,7 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireUserinfoRequest>();
         builder.Services.TryAddSingleton<RequireUserinfoTokenExtracted>();
         builder.Services.TryAddSingleton<RequireUserinfoTokenPrincipal>();
+        builder.Services.TryAddSingleton<RequireUserinfoValidationEnabled>();
 
         // Register the built-in client event handlers used by the OpenIddict client components.
         // Note: the order used here is not important, as the actual order is set in the options.

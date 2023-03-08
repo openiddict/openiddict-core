@@ -475,4 +475,21 @@ public static class OpenIddictClientHandlerFilters
             return new(context.UserinfoTokenPrincipal is not null);
         }
     }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if userinfo validation was disabled.
+    /// </summary>
+    public sealed class RequireUserinfoValidationEnabled : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.DisableUserinfoValidation);
+        }
+    }
 }
