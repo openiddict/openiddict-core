@@ -28,6 +28,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         AdjustRedirectUriInTokenRequest.Descriptor,
         OverrideValidatedBackchannelTokens.Descriptor,
         DisableBackchannelIdentityTokenNonceValidation.Descriptor,
+        OverrideUserinfoEndpoint.Descriptor,
+        DisableUserinfoValidation.Descriptor,
         AttachAdditionalUserinfoRequestParameters.Descriptor,
         PopulateUserinfoTokenPrincipalFromTokenResponse.Descriptor,
 
@@ -392,6 +394,87 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 Providers.Asana or Providers.Dropbox => true,
 
                 _ => context.DisableBackchannelIdentityTokenNonceValidation
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for overriding the address
+    /// of the userinfo endpoint for the providers that require it.
+    /// </summary>
+    public sealed class OverrideUserinfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<OverrideUserinfoEndpoint>()
+                .SetOrder(ResolveUserinfoEndpoint.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.UserinfoEndpoint = context.Registration.ProviderName switch
+            {
+                // SuperOffice doesn't expose a static OpenID Connect userinfo endpoint but offers an API whose
+                // absolute URI needs to be computed based on a special claim returned in the identity token.
+                Providers.SuperOffice when
+                    (context.BackchannelIdentityTokenPrincipal ?? // Always prefer the backchannel identity token when available.
+                     context.FrontchannelIdentityTokenPrincipal) is ClaimsPrincipal principal &&
+                    Uri.TryCreate(principal.GetClaim("http://schemes.superoffice.net/identity/webapi_url"), UriKind.Absolute, out Uri? uri)
+                    => OpenIddictHelpers.CreateAbsoluteUri(uri, new Uri("v1/user/currentPrincipal", UriKind.Relative)),
+
+                _ => context.UserinfoEndpoint
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for disabling the userinfo validation for the providers that require it.
+    /// </summary>
+    public sealed class DisableUserinfoValidation : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<DisableUserinfoValidation>()
+                .SetOrder(EvaluateUserinfoRequest.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: despite implementing OpenID Connect, some providers are known to implement completely custom
+            // userinfo endpoints or semi-standard endpoints that don't fully conform to the core specification.
+            //
+            // To ensure OpenIddict can be used with these providers, validation is disabled when necessary.
+
+            context.DisableUserinfoValidation = context.Registration.ProviderName switch
+            {
+                // SuperOffice doesn't offer a standard OpenID Connect userinfo endpoint.
+                Providers.SuperOffice => true,
+
+                _ => context.DisableUserinfoValidation
             };
 
             return default;
