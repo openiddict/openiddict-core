@@ -626,6 +626,20 @@
   </Provider>
 
   <!--
+                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                            ██ ▄▄▄ ██ ██ ██ ▄▄ ██ ▄▄▄██ ▄▄▀██ ▄▄▄ ██ ▄▄▄██ ▄▄▄█▄ ▄██ ▄▄▀██ ▄▄▄██
+                            ██▄▄▄▀▀██ ██ ██ ▀▀ ██ ▄▄▄██ ▀▀▄██ ███ ██ ▄▄███ ▄▄███ ███ █████ ▄▄▄██
+                            ██ ▀▀▀ ██▄▀▀▄██ █████ ▀▀▀██ ██ ██ ▀▀▀ ██ █████ ████▀ ▀██ ▀▀▄██ ▀▀▀██
+                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="SuperOffice" Documentation="https://docs.superoffice.com/en/authentication/online/api.html">
+    <Environment Name="Production"  Issuer="https://online.superoffice.com/" />
+    <Environment Name="Development" Issuer="https://sod.superoffice.com/" />
+    <Environment Name="Staging"     Issuer="https://qaonline.superoffice.com/" />
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               █▄▄ ▄▄██ ▄▄▀█ ▄▄▀██ █▀▄█▄▄ ▄▄██
                                               ███ ████ ▀▀▄█ ▀▀ ██ ▄▀████ ████
