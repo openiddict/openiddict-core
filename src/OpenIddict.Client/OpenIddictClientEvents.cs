@@ -826,6 +826,14 @@ public static partial class OpenIddictClientEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool DisableFrontchannelIdentityTokenNonceValidation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo validation should be disabled.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool DisableUserinfoValidation { get; set; }
     }
 
     /// <summary>
