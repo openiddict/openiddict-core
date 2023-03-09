@@ -825,6 +825,18 @@
   </Provider>
 
   <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                █▄▀█▀▄██ ▄▄▄██ ▄▄▀██ ▄▄▄ ██
+                                                ███ ████ ▄▄▄██ ▀▀▄██ ███ ██
+                                                █▀▄█▄▀██ ▀▀▀██ ██ ██ ▀▀▀ ██
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Xero" Documentation="https://developer.xero.com/documentation/xero-app-store/app-partner-guides/sign-in/">
+    <Environment Issuer="https://identity.xero.com/" />
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             ██ ███ █ ▄▄▀██ ██ ██ ▄▄▄ ██ ▄▄▄ ██
                                             ██▄▀▀▀▄█ ▀▀ ██ ▄▄ ██ ███ ██ ███ ██
