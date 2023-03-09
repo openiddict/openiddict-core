@@ -597,49 +597,60 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // return the user information using custom/non-standard token response parameters.
             // To work around that, this handler is responsible for extracting these parameters
             // from the token response and creating a userinfo token principal containing them.
-            if (context.Registration.ProviderName is Providers.StripeConnect)
+
+            var parameters = context.Registration.ProviderName switch
             {
-                var identity = new ClaimsIdentity(
-                    context.Registration.TokenValidationParameters.AuthenticationType,
-                    context.Registration.TokenValidationParameters.NameClaimType,
-                    context.Registration.TokenValidationParameters.RoleClaimType);
+                // For Strava, include all the parameters contained in the "athlete" object.
+                //
+                // Note: the "athlete" node is not returned for grant_type=refresh_token requests.
+                Providers.Strava => context.TokenResponse["athlete"]?.GetNamedParameters(),
 
-                var issuer = context.Configuration.Issuer!.AbsoluteUri;
+                // For Stripe, only include "livemode" and the parameters that are prefixed with "stripe_":
+                Providers.StripeConnect =>
+                    from parameter in context.TokenResponse.GetParameters()
+                    where string.Equals(parameter.Key, "livemode", StringComparison.OrdinalIgnoreCase) ||
+                        parameter.Key.StartsWith("stripe_", StringComparison.OrdinalIgnoreCase)
+                    select parameter,
 
-                foreach (var parameter in context.TokenResponse.GetParameters())
-                {
-                    switch (context.Registration.ProviderName)
-                    {
-                        // For Stripe, only include "livemode" and the parameters that are prefixed with "stripe_":
-                        case Providers.StripeConnect when
-                            !string.Equals(parameter.Key, "livemode", StringComparison.OrdinalIgnoreCase) &&
-                            !parameter.Key.StartsWith("stripe_", StringComparison.OrdinalIgnoreCase):
-                            continue;
-                    }
+                _ => null
+            };
 
-                    // Note: in the typical case, the response parameters should be deserialized from a
-                    // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
-                    //
-                    // In the rare cases where the underlying value wouldn't be a JsonElement instance
-                    // (e.g when custom parameters are manually added to the response), the static
-                    // conversion operator would take care of converting the underlying value to a
-                    // JsonElement instance using the same value type as the original parameter value.
-                    switch ((JsonElement) parameter.Value)
-                    {
-                        // Top-level claims represented as arrays are split and mapped to multiple CLR claims
-                        // to match the logic implemented by IdentityModel for JWT token deserialization.
-                        case { ValueKind: JsonValueKind.Array } value:
-                            identity.AddClaims(parameter.Key, value, issuer);
-                            break;
-
-                        case { ValueKind: _ } value:
-                            identity.AddClaim(parameter.Key, value, issuer);
-                            break;
-                    }
-                }
-
-                context.UserinfoTokenPrincipal = new ClaimsPrincipal(identity);
+            if (parameters is null)
+            {
+                return default;
             }
+
+            var identity = new ClaimsIdentity(
+                context.Registration.TokenValidationParameters.AuthenticationType,
+                context.Registration.TokenValidationParameters.NameClaimType,
+                context.Registration.TokenValidationParameters.RoleClaimType);
+
+            var issuer = context.Configuration.Issuer!.AbsoluteUri;
+
+            foreach (var parameter in parameters)
+            {
+                // Note: in the typical case, the response parameters should be deserialized from a
+                // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
+                //
+                // In the rare cases where the underlying value wouldn't be a JsonElement instance
+                // (e.g when custom parameters are manually added to the response), the static
+                // conversion operator would take care of converting the underlying value to a
+                // JsonElement instance using the same value type as the original parameter value.
+                switch ((JsonElement) parameter.Value)
+                {
+                    // Top-level claims represented as arrays are split and mapped to multiple CLR claims
+                    // to match the logic implemented by IdentityModel for JWT token deserialization.
+                    case { ValueKind: JsonValueKind.Array } value:
+                        identity.AddClaims(parameter.Key, value, issuer);
+                        break;
+
+                    case { ValueKind: _ } value:
+                        identity.AddClaim(parameter.Key, value, issuer);
+                        break;
+                }
+            }
+
+            context.UserinfoTokenPrincipal = new ClaimsPrincipal(identity);
 
             return default;
         }
@@ -762,7 +773,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                Providers.Deezer => string.Join(",", context.Scopes),
+                Providers.Deezer or Providers.Strava => string.Join(",", context.Scopes),
 
                 // The following providers are known to use plus-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):

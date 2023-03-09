@@ -592,6 +592,29 @@
   </Provider>
 
   <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          ██ ▄▄▄ █▄▄ ▄▄██ ▄▄▀█ ▄▄▀██ ███ █ ▄▄▀██
+                                          ██▄▄▄▀▀███ ████ ▀▀▄█ ▀▀ ███ █ ██ ▀▀ ██
+                                          ██ ▀▀▀ ███ ████ ██ █ ██ ███▄▀▄██ ██ ██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Strava" Documentation="https://developers.strava.com/docs/authentication/">
+    <Environment Issuer="http://www.strava.com/">
+      <!--
+        Note: Strava doesn't provide a userinfo endpoint and returns
+        the user information via custom token response parameters.
+      -->
+
+      <Configuration AuthorizationEndpoint="http://www.strava.com/oauth/authorize"
+                     TokenEndpoint="https://www.strava.com/api/v3/oauth/token">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                     ██ ▄▄▄ █▄▄ ▄▄██ ▄▄▀█▄ ▄██ ▄▄ ██ ▄▄▄████ ▄▄▀██ ▄▄▄ ██ ▀██ ██ ▀██ ██ ▄▄▄██ ▄▄▀█▄▄ ▄▄██
                     ██▄▄▄▀▀███ ████ ▀▀▄██ ███ ▀▀ ██ ▄▄▄████ █████ ███ ██ █ █ ██ █ █ ██ ▄▄▄██ ██████ ████
