@@ -116,20 +116,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // and require sending the access token as part of the userinfo request payload
                 // or using a non-standard authentication scheme (e.g OAuth instead of Bearer).
 
-                (context.Request.AccessToken, request.Headers.Authorization) = context.Registration.ProviderName switch
+                // These providers require sending the access token as part of the request payload.
+                if (context.Registration.ProviderName is Providers.Deezer or Providers.Mixcloud or Providers.StackExchange)
                 {
-                    // These providers require sending the access token as part of the request payload.
-                    Providers.Deezer   or
-                    Providers.Mixcloud or
-                    Providers.StackExchange
-                        => (request.Headers.Authorization?.Parameter, null),
+                    context.Request.AccessToken = request.Headers.Authorization?.Parameter;
 
-                    // Trovo requires using the "OAuth" scheme instead of the standard "Bearer" value.
-                    Providers.Trovo
-                        => (null, new AuthenticationHeaderValue("OAuth", request.Headers.Authorization?.Parameter)),
+                    // Remove the access token from the request headers to ensure it's not sent twice.
+                    request.Headers.Authorization = null;
+                }
 
-                    _ => (context.Request.AccessToken, request.Headers.Authorization)
-                };
+                // Trovo requires using the "OAuth" scheme instead of the standard "Bearer" value.
+                else if (context.Registration.ProviderName is Providers.Trovo)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("OAuth",
+                        request.Headers.Authorization?.Parameter);
+                }
 
                 return default;
             }

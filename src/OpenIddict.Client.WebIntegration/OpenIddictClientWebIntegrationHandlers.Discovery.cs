@@ -92,7 +92,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // authorization code or implicit flows). To work around that, the list of supported grant
                 // types is amended to include the known supported types for the providers that require it.
 
-                if (context.Registration.ProviderName is Providers.Apple)
+                if (context.Registration.ProviderName is Providers.Apple or Providers.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
