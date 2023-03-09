@@ -483,6 +483,23 @@
   </Provider>
 
   <!--
+              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+              ██ ▄▄ ██ ██ █▄ ▄██ ▄▄▀██ █▀▄██ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ █▀▄██ ▄▄▄ ████ ▄▄▄ ██ ▀██ ██ ████▄ ▄██ ▀██ ██ ▄▄▄██
+              ██ ██ ██ ██ ██ ███ █████ ▄▀███ ▄▄▀██ ███ ██ ███ ██ ▄▀███▄▄▄▀▀████ ███ ██ █ █ ██ █████ ███ █ █ ██ ▄▄▄██
+              ██▄▄ ▀██▄▀▀▄█▀ ▀██ ▀▀▄██ ██ ██ ▀▀ ██ ▀▀▀ ██ ▀▀▀ ██ ██ ██ ▀▀▀ ████ ▀▀▀ ██ ██▄ ██ ▀▀ █▀ ▀██ ██▄ ██ ▀▀▀██
+              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="QuickBooksOnline" DisplayName="QuickBooks Online"
+            Documentation="https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/openid-connect">
+    <Environment Name="Production" Issuer="https://oauth.platform.intuit.com/op/v1"
+                 ConfigurationEndpoint="https://developer.api.intuit.com/.well-known/openid_configuration" />
+
+    <Environment Name="Sandbox" Issuer="https://oauth.platform.intuit.com/op/v1"
+                 ConfigurationEndpoint="https://developer.api.intuit.com/.well-known/openid_sandbox_configuration" />
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             ██ ▄▄▀██ ▄▄▄██ ▄▄▀██ ▄▄▀█▄ ▄█▄▄ ▄▄██
                                             ██ ▀▀▄██ ▄▄▄██ ██ ██ ██ ██ ████ ████
