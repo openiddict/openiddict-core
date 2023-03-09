@@ -549,6 +549,25 @@
   </Provider>
 
   <!--
+                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                ██ ▄▄▄ ██ ▄▀▄ █ ▄▄▀██ ▄▄▀█▄▄ ▄▄██ ▄▄▄ ██ ██ ██ ▄▄▄██ ▄▄▄█▄▄ ▄▄██
+                                ██▄▄▄▀▀██ █ █ █ ▀▀ ██ ▀▀▄███ ████▄▄▄▀▀██ ▄▄ ██ ▄▄▄██ ▄▄▄███ ████
+                                ██ ▀▀▀ ██ ███ █ ██ ██ ██ ███ ████ ▀▀▀ ██ ██ ██ ▀▀▀██ ▀▀▀███ ████
+                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Smartsheet" Documentation="https://smartsheet.redoc.ly/#section/OAuth-Walkthrough">
+    <Environment Issuer="https://www.smartsheet.com/">
+      <Configuration AuthorizationEndpoint="https://app.smartsheet.com/b/authorize"
+                     TokenEndpoint="https://api.smartsheet.com/2.0/token"
+                     UserinfoEndpoint="https://api.smartsheet.com/2.0/users/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                       ██ ▄▄▄ ██ ▄▄ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄██ ███ ██
                                       ██▄▄▄▀▀██ ▀▀ ██ ███ ███ ████ ███ ▄▄███▄▀▀▀▄██
