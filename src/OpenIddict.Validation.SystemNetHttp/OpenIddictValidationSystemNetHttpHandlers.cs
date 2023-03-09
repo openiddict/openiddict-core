@@ -679,7 +679,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // If the returned Content-Type doesn't indicate the response has a JSON payload,
             // ignore it and allow other handlers in the pipeline to process the HTTP response.
             if (!string.Equals(response.Content.Headers.ContentType?.MediaType,
-                MediaTypes.Json, StringComparison.OrdinalIgnoreCase))
+                MediaTypes.Json, StringComparison.OrdinalIgnoreCase) &&
+                !HasJsonStructuredSyntaxSuffix(response.Content.Headers.ContentType))
             {
                 return;
             }
@@ -707,6 +708,15 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
                 return;
             }
+
+            static bool HasJsonStructuredSyntaxSuffix(MediaTypeHeaderValue? type) =>
+                // If the length of the media type is less than the expected number of characters needed
+                // to compose a JSON-derived type (i.e application/*+json), assume the content is not JSON.
+                type?.MediaType is { Length: >= 18 } &&
+                // JSON media types MUST always start with "application/".
+                type.MediaType.AsSpan(0, 12).Equals("application/".AsSpan(), StringComparison.OrdinalIgnoreCase) &&
+                // JSON media types MUST always end with "+json".
+                type.MediaType.AsSpan()[^5..].Equals("+json".AsSpan(), StringComparison.OrdinalIgnoreCase);
         }
     }
 

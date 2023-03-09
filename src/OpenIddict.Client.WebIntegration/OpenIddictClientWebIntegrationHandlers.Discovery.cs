@@ -20,8 +20,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              */
             AmendIssuer.Descriptor,
             AmendGrantTypes.Descriptor,
-            AmendTokenEndpointClientAuthenticationMethods.Descriptor,
             AmendCodeChallengeMethods.Descriptor,
+            AmendScopes.Descriptor,
+            AmendTokenEndpointClientAuthenticationMethods.Descriptor,
             AmendEndpoints.Descriptor);
 
         /// <summary>
@@ -120,6 +121,80 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for amending the supported
+        /// code challenge methods for the providers that require it.
+        /// </summary>
+        public sealed class AmendCodeChallengeMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendCodeChallengeMethods>()
+                    .SetOrder(ExtractCodeChallengeMethods.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Microsoft Account supports both the "plain" and "S256" code challenge methods but
+                // doesn't list them in the server configuration metadata. To ensure the OpenIddict
+                // client uses Proof Key for Code Exchange for the Microsoft provider, the 2 methods
+                // are manually added to the list of supported code challenge methods by this handler.
+                if (context.Registration.ProviderName is Providers.Microsoft)
+                {
+                    context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
+                    context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for amending the supported scopes for the providers that require it.
+        /// </summary>
+        public sealed class AmendScopes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendScopes>()
+                    .SetOrder(ExtractScopes.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // While it is a recommended node, Xero doesn't include "scopes_supported" in its server
+                // configuration and thus is treated as an OAuth 2.0-only provider by the OpenIddict client.
+                //
+                // To avoid that, the "openid" scope is manually added to indicate OpenID Connect is supported.
+                if (context.Registration.ProviderName is Providers.Xero)
+                {
+                    context.Configuration.ScopesSupported.Add(Scopes.OpenId);
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for amending the client authentication
         /// methods supported by the token endpoint for the providers that require it.
         /// </summary>
@@ -154,44 +229,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Configuration.TokenEndpointAuthMethodsSupported.Add(
                         ClientAuthenticationMethods.PrivateKeyJwt);
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for amending the supported
-        /// code challenge methods for the providers that require it.
-        /// </summary>
-        public sealed class AmendCodeChallengeMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<AmendCodeChallengeMethods>()
-                    .SetOrder(ExtractCodeChallengeMethods.Descriptor.Order + 500)
-                    .SetType(OpenIddictClientHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // Microsoft Account supports both the "plain" and "S256" code challenge methods but
-                // doesn't list them in the server configuration metadata. To ensure the OpenIddict
-                // client uses Proof Key for Code Exchange for the Microsoft provider, the 2 methods
-                // are manually added to the list of supported code challenge methods by this handler.
-                if (context.Registration.ProviderName is Providers.Microsoft)
-                {
-                    context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
-                    context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
                 }
 
                 return default;
