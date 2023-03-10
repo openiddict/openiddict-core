@@ -20,7 +20,7 @@
       doesn't have a generic issuer URI. As such, the complete URI must always be set in the options.
     -->
 
-    <Environment Issuer="{issuer}" />
+    <Environment Issuer="{settings.Issuer}" />
 
     <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
              Description="The URI used to access the ADFS instance, including the virtual directory (e.g https://contoso.com/adfs)" />
@@ -87,6 +87,30 @@
   </Provider>
 
   <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ▄▄▀█ ▄▄▀█▄▄ ▄▄█▄▄ ▄▄██ █████ ▄▄▄█████ ▀██ ██ ▄▄▄█▄▄ ▄▄██
+                                      ██ ▄▄▀█ ▀▀ ███ █████ ████ █████ ▄▄▄█▀▀██ █ █ ██ ▄▄▄███ ████
+                                      ██ ▀▀ █ ██ ███ █████ ████ ▀▀ ██ ▀▀▀█▄▄██ ██▄ ██ ▀▀▀███ ████
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="BattleNet" DisplayName="Battle.net"
+            Documentation="https://develop.battle.net/documentation/guides/using-oauth">
+    <!--
+      Note: most Battle.net regions use the same issuer URI but a different domain is required for China.
+    -->
+
+    <Environment Issuer="https://oauth.{settings.Region switch {
+        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
+            => 'battlenet.com.cn',
+
+        _ => 'battle.net' }}/" />
+
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="US"
+             Description="The preferred Battle.net region (by default, 'US')" />
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ▄▄▀█▄ ▄█▄▄ ▄▄██ ▄▄▀██ ██ ██ ▄▄▀██ █▀▄██ ▄▄▄█▄▄ ▄▄██
                                         ██ ▄▄▀██ ████ ████ ▄▄▀██ ██ ██ █████ ▄▀███ ▄▄▄███ ████
@@ -115,7 +139,7 @@
 
   <Provider Name="Cognito" DisplayName="Amazon Cognito"
             Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
-    <Environment Issuer="https://cognito-idp.{region}.amazonaws.com/{userPoolId}" />
+    <Environment Issuer="https://cognito-idp.{settings.Region}.amazonaws.com/{settings.UserPoolId}" />
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
              Description="The AWS region" />
@@ -298,7 +322,7 @@
       As such, the complete URI must always be set in the options and include the realm, if applicable.
     -->
 
-    <Environment Issuer="{issuer}" />
+    <Environment Issuer="{settings.Issuer}" />
 
     <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
              Description="The URI used to access the Keycloak identity provider (including the realm, if applicable)" />
@@ -369,12 +393,12 @@
             Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
     <!--
       Note: Microsoft is a multitenant provider that relies on virtual paths to identify instances.
-      As such, the issuer includes a {tenant} placeholder that will be dynamically replaced
+      As such, the issuer includes a tenant placeholder that will be dynamically replaced
       by OpenIddict at runtime by the tenant configured in the Microsoft Account settings.
       If no tenant is explicitly configured, the "common" tenant will be automatically used.
     -->
 
-    <Environment Issuer="https://login.microsoftonline.com/{tenant}/v2.0" />
+    <Environment Issuer="https://login.microsoftonline.com/{settings.Tenant}/v2.0" />
 
     <Setting PropertyName="Tenant" ParameterName="tenant" Type="String" Required="false" DefaultValue="common"
              Description="The tenant used to identify the Azure AD instance (by default, the common tenant is used)" />
@@ -676,11 +700,15 @@
   <Provider Name="StripeConnect" DisplayName="Stripe Connect" Documentation="https://stripe.com/docs/connect/oauth-reference">
     <Environment Issuer="https://connect.stripe.com/">
       <!--
-        Note: Stripe doesn't provide a userinfo endpoint and returns
-        the user information via custom token response parameters.
+        Note: Stripe uses a different authorization endpoint for Express accounts. It also doesn't provide
+        a userinfo endpoint and returns the user information via custom token response parameters.
       -->
 
-      <Configuration AuthorizationEndpoint="https://connect.stripe.com/oauth/authorize"
+      <Configuration AuthorizationEndpoint="{settings.AccountType switch {
+          string type when string.Equals(type, 'express', StringComparison.OrdinalIgnoreCase)
+              => 'https://connect.stripe.com/express/oauth/authorize',
+
+          _ => 'https://connect.stripe.com/oauth/authorize' }}"
                      TokenEndpoint="https://connect.stripe.com/oauth/token" />
 
       <!--

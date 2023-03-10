@@ -692,8 +692,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
-using SmartFormat;
-using SmartFormat.Core.Settings;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -798,11 +796,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             // Resolve the provider options from the service provider and create a registration based on the specified settings.
             var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>>().CurrentValue;
 
-            var formatter = Smart.CreateDefaultSmartFormat(new SmartSettings
-            {
-                CaseSensitivity = CaseSensitivityType.CaseInsensitive
-            });
-
             var registration = new OpenIddictClientRegistration
             {
                 ProviderName = Providers.{{ provider.name }},
@@ -812,7 +805,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     {{~ for environment in provider.environments ~}}
                     OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
-                        => new Uri(formatter.Format(""{{ environment.issuer }}"", settings), UriKind.Absolute),
+                        => new Uri($""{{ environment.issuer | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
@@ -823,7 +816,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     {{~ for environment in provider.environments ~}}
                     OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
                     {{~ if environment.configuration_endpoint ~}}
-                        => new Uri(formatter.Format(""{{ environment.configuration_endpoint }}"", settings), UriKind.Absolute),
+                        => new Uri($""{{ environment.configuration_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ else ~}}
                         => null,
                     {{~ end ~}}
@@ -845,15 +838,15 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} => new OpenIddictConfiguration
                     {
                         {{~ if environment.configuration.authorization_endpoint ~}}
-                        AuthorizationEndpoint = new Uri(formatter.Format(""{{ environment.configuration.authorization_endpoint }}"", settings), UriKind.Absolute),
+                        AuthorizationEndpoint = new Uri($""{{ environment.configuration.authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                         {{~ end ~}}
 
                         {{~ if environment.configuration.token_endpoint ~}}
-                        TokenEndpoint = new Uri(formatter.Format(""{{ environment.configuration.token_endpoint }}"", settings), UriKind.Absolute),
+                        TokenEndpoint = new Uri($""{{ environment.configuration.token_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                         {{~ end ~}}
 
                         {{~ if environment.configuration.userinfo_endpoint ~}}
-                        UserinfoEndpoint = new Uri(formatter.Format(""{{ environment.configuration.userinfo_endpoint }}"", settings), UriKind.Absolute),
+                        UserinfoEndpoint = new Uri($""{{ environment.configuration.userinfo_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                         {{~ end ~}}
 
                         CodeChallengeMethodsSupported =
@@ -1050,8 +1043,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
-using SmartFormat;
-using SmartFormat.Core.Settings;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
