@@ -686,17 +686,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 //
                 // The type of account can be defined globally (via the Stripe options) or
                 // per authentication demand by adding a specific authentication property.
-                // If the authentication property is present, the global option is ignored.
                 //
                 // For more information, see
                 // https://stripe.com/docs/connect/oauth-reference?locale=en-us#get-authorize.
-                Providers.StripeConnect when context.Properties.TryGetValue(".stripe_account_type", out string? type) &&
-                    string.Equals(type, "express", StringComparison.OrdinalIgnoreCase)
-                    => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
-
-                Providers.StripeConnect when context.Registration.GetStripeConnectOptions() is { AccountType: string type } &&
-                    string.Equals(type, "express", StringComparison.OrdinalIgnoreCase)
-                    => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
+                Providers.StripeConnect when context.Properties.TryGetValue(".stripe_account_type", out string? type) =>
+                    string.Equals(type, "express", StringComparison.OrdinalIgnoreCase) ?
+                        new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute) :
+                        new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
 
                 _ => context.AuthorizationEndpoint
             };

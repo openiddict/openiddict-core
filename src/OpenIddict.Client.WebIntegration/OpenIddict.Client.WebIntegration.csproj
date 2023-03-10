@@ -27,10 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SmartFormat" />
-  </ItemGroup>
-
-  <ItemGroup>
     <AdditionalFiles Include="**\*.xml" />
   </ItemGroup>
 
