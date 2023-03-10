@@ -534,6 +534,38 @@
   </Provider>
 
   <!--
+                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                    ██ ▄▄▄ ██ ▄▄▄██ ▄▄▀██ ███ █▄ ▄██ ▄▄▀██ ▄▄▄██ ▄▄▀██ ██ █ ▄▄▀██ ▀██ ██ ▀██ ██ ▄▄▄██ █████
+                    ██▄▄▄▀▀██ ▄▄▄██ ▀▀▄███ █ ███ ███ █████ ▄▄▄██ █████ ▄▄ █ ▀▀ ██ █ █ ██ █ █ ██ ▄▄▄██ █████
+                    ██ ▀▀▀ ██ ▀▀▀██ ██ ███▄▀▄██▀ ▀██ ▀▀▄██ ▀▀▀██ ▀▀▄██ ██ █ ██ ██ ██▄ ██ ██▄ ██ ▀▀▀██ ▀▀ ██
+                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="ServiceChannel" Documentation="https://developer.servicechannel.com/basics/general/authentication/">
+    <Environment Name="Production" Issuer="https://servicechannel.com/">
+      <Configuration AuthorizationEndpoint="https://login.servicechannel.com/oauth/authorize"
+                     TokenEndpoint="https://login.servicechannel.com/oauth/token"
+                     UserinfoEndpoint="https://api.servicechannel.com/v3/users/current/profile">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+    </Environment>
+
+    <Environment Name="Sandbox" Issuer="https://servicechannel.com/">
+      <Configuration AuthorizationEndpoint="https://sb2login.servicechannel.com/oauth/authorize"
+                     TokenEndpoint="https://sb2login.servicechannel.com/oauth/token"
+                     UserinfoEndpoint="https://sb2api.servicechannel.com/v3/users/current/profile">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄▄ ██ ████ ▄▄▀██ ▄▄▀██ █▀▄██
                                               ██▄▄▄▀▀██ ████ ▀▀ ██ █████ ▄▀███

@@ -265,6 +265,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     Providers.Patreon => new(context.Response["data"]?["attributes"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data/attributes"))),
 
+                    // ServiceChannel returns a nested "UserProfile" object.
+                    Providers.ServiceChannel => new(context.Response["UserProfile"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("UserProfile"))),
+
                     // StackExchange returns an "items" array containing a single element.
                     Providers.StackExchange => new(context.Response["items"]?[0]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("items/0"))),
