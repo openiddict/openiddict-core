@@ -309,6 +309,31 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ██ ██ ██ ██ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▄▄▄ █▄▄ ▄▄██
+                                        ██ ▄▄ ██ ██ ██ ▄▄▀██▄▄▄▀▀██ ▀▀ ██ ███ ███ ████
+                                        ██ ██ ██▄▀▀▄██ ▀▀ ██ ▀▀▀ ██ █████ ▀▀▀ ███ ████
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="HubSpot" Documentation="https://developers.hubspot.com/docs/api/oauth-quickstart-guide">
+    <Environment Issuer="https://www.hubspot.com/">
+      <Configuration AuthorizationEndpoint="https://app.hubspot.com/oauth/authorize"
+                     TokenEndpoint="https://api.hubapi.com/oauth/v1/token">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <!--
+        Note: HubSpot requires sending the "profile" scope to
+        be able to use the dynamic access token info endpoint.
+      -->
+
+      <Scope Name="oauth" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                       ██ █▀▄██ ▄▄▄██ ███ ██ ▄▄▀██ █████ ▄▄▄ █ ▄▄▀██ █▀▄██
                                       ██ ▄▀███ ▄▄▄██▄▀▀▀▄██ █████ █████ ███ █ ▀▀ ██ ▄▀███
