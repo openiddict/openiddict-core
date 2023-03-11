@@ -426,6 +426,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.UserinfoEndpoint = context.Registration.ProviderName switch
             {
+                // HubSpot doesn't have a static userinfo endpoint but allows retrieving basic information
+                // by using an access token info endpoint that requires sending the token in the URI path.
+                Providers.HubSpot when
+                    (context.BackchannelAccessToken ?? context.FrontchannelAccessToken) is { Length: > 0 } token
+                    => OpenIddictHelpers.CreateAbsoluteUri(
+                        left : new Uri("https://api.hubapi.com/oauth/v1/access-tokens", UriKind.Absolute),
+                        right: new Uri(token, UriKind.Relative)),
+
                 // SuperOffice doesn't expose a static OpenID Connect userinfo endpoint but offers an API whose
                 // absolute URI needs to be computed based on a special claim returned in the identity token.
                 Providers.SuperOffice when
