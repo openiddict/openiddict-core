@@ -99,7 +99,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                else if (context.Registration.ProviderName is Providers.Cognito or Providers.Microsoft)
+                else if (context.Registration.ProviderName is Providers.Cognito or Providers.EpicGames or Providers.Microsoft)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
@@ -181,11 +181,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // While it is a recommended node, Xero doesn't include "scopes_supported" in its server
-                // configuration and thus is treated as an OAuth 2.0-only provider by the OpenIddict client.
-                //
+                // While it is a recommended node, some providers don't include "scopes_supported" in their
+                // configuration and thus are treated as OAuth 2.0-only providers by the OpenIddict client.
                 // To avoid that, the "openid" scope is manually added to indicate OpenID Connect is supported.
-                if (context.Registration.ProviderName is Providers.Xero)
+                if (context.Registration.ProviderName is Providers.EpicGames or Providers.Xero)
                 {
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
                 }

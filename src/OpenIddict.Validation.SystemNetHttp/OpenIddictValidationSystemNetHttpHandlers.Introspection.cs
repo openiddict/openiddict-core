@@ -91,7 +91,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 //
                 // See https://tools.ietf.org/html/rfc8414#section-2
                 // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                if (!string.IsNullOrEmpty(context.Request.ClientId) &&
+                if (request.Headers.Authorization is null &&
+                    !string.IsNullOrEmpty(context.Request.ClientId) &&
                     !string.IsNullOrEmpty(context.Request.ClientSecret) &&
                     UseBasicAuthentication(context.Configuration))
                 {
