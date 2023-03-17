@@ -70,8 +70,8 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     /// Enables the {{ provider.display_name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
     /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
-    /// </summary>
     {{~ end ~}}
+    /// </summary>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
     public OpenIddictClientWebIntegrationBuilder.{{ provider.name }} Use{{ provider.name }}()
@@ -92,8 +92,8 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     /// Enables the {{ provider.display_name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
     /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
-    /// </summary>
     {{~ end ~}}
+    /// </summary>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.display_name }} options.</param>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/> instance.</returns>

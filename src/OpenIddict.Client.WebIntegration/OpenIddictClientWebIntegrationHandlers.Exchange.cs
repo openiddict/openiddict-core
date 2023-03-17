@@ -49,7 +49,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
                     .AddFilter<RequireHttpMetadataUri>()
                     .UseSingletonHandler<AttachNonStandardBasicAuthenticationCredentials>()
-                    .SetOrder(AttachBasicAuthenticationCredentials.Descriptor.Order + 500)
+                    .SetOrder(AttachBasicAuthenticationCredentials.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -75,25 +75,40 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // These providers require using basic authentication to flow the client_id
                 // for all types of client applications, even when there's no client_secret.
-                //
-                // Note: only cases where the client secret is null are handled here (scenarios
-                // where the Authorization header includes a non-empty password are handled by
-                // a generic handler in the OpenIddict.Client.SystemNetHttp integration package).
                 if (context.Registration.ProviderName is Providers.Reddit &&
-                    !string.IsNullOrEmpty(context.Request.ClientId) &&
-                     string.IsNullOrEmpty(context.Request.ClientSecret))
+                    !string.IsNullOrEmpty(context.Request.ClientId))
                 {
-                    // Important: the client_id MUST be formURL-encoded before being base64-encoded.
+                    // Important: the credentials MUST be formURL-encoded before being base64-encoded.
                     var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(new StringBuilder()
                         .Append(EscapeDataString(context.Request.ClientId))
                         .Append(':')
+                        .Append(EscapeDataString(context.Request.ClientSecret))
                         .ToString()));
 
                     // Attach the authorization header containing the client identifier to the HTTP request.
                     request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Basic, credentials);
 
-                    // Remove the client identifier from the request payload to ensure it's not sent twice.
-                    context.Request.ClientId = null;
+                    // Remove the client credentials from the request payload to ensure they are not sent twice.
+                    context.Request.ClientId = context.Request.ClientSecret = null;
+                }
+
+                // These providers don't implement the standard version of the client_secret_basic
+                // authentication method as they don't support formURL-encoding the client credentials.
+                else if (context.Registration.ProviderName is Providers.EpicGames &&
+                    !string.IsNullOrEmpty(context.Request.ClientId) &&
+                    !string.IsNullOrEmpty(context.Request.ClientSecret))
+                {
+                    var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(new StringBuilder()
+                        .Append(context.Request.ClientId)
+                        .Append(':')
+                        .Append(context.Request.ClientSecret)
+                        .ToString()));
+
+                    // Attach the authorization header containing the client identifier to the HTTP request.
+                    request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Basic, credentials);
+
+                    // Remove the client credentials from the request payload to ensure they are not sent twice.
+                    context.Request.ClientId = context.Request.ClientSecret = null;
                 }
 
                 return default;
