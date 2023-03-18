@@ -41,6 +41,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         FormatNonStandardScopeParameter.Descriptor,
         IncludeStateParameterInRedirectUri.Descriptor,
         AttachAdditionalChallengeParameters.Descriptor)
+        .AddRange(Authentication.DefaultHandlers)
         .AddRange(Discovery.DefaultHandlers)
         .AddRange(Exchange.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)
@@ -881,7 +882,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             // By default, Google doesn't return a refresh token but allows sending an "access_type"
             // parameter to retrieve one (but it is only returned during the first authorization dance).
-            if (context.Registration.ProviderName is Providers.Google)
+            else if (context.Registration.ProviderName is Providers.Google)
             {
                 var options = context.Registration.GetGoogleOptions();
 
