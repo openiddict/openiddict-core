@@ -306,18 +306,6 @@
   </Provider>
 
   <!--
-                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                              ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ████ ▄▄▀██ ▄▄▀██
-                                              ██ █▀▀██ ████ ████ ████ ▀▀ ██ ▄▄▀██
-                                              ██ ▀▀▄█▀ ▀███ ████ ▀▀ █ ██ ██ ▀▀ ██
-                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-  -->
-
-  <Provider Name="GitLab" Documentation="https://docs.gitlab.com/ee/integration/openid_connect_provider.html">
-    <Environment Issuer="https://gitlab.com/" />
-  </Provider>
-
-  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ██ ██ ██ ██ ▄▄▀██
                                               ██ █▀▀██ ████ ████ ▄▄ ██ ██ ██ ▄▄▀██
@@ -334,6 +322,18 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ████ ▄▄▀██ ▄▄▀██
+                                              ██ █▀▀██ ████ ████ ████ ▀▀ ██ ▄▄▀██
+                                              ██ ▀▀▄█▀ ▀███ ████ ▀▀ █ ██ ██ ▀▀ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="GitLab" Documentation="https://docs.gitlab.com/ee/integration/openid_connect_provider.html">
+    <Environment Issuer="https://gitlab.com/" />
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             ██ ▄▄ ██ ▄▄▄ ██ ▄▄▄ ██ ▄▄ ██ █████ ▄▄▄██
                                             ██ █▀▀██ ███ ██ ███ ██ █▀▀██ █████ ▄▄▄██
@@ -346,6 +346,25 @@
 
     <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
              Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
+  </Provider>
+
+  <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ██ █ ▄▄▀██ ▄▄▀██ ███ ██ ▄▄▄██ ▄▄▄ █▄▄ ▄▄██
+                                        ██ ▄▄ █ ▀▀ ██ ▀▀▄███ █ ███ ▄▄▄██▄▄▄▀▀███ ████
+                                        ██ ██ █ ██ ██ ██ ███▄▀▄███ ▀▀▀██ ▀▀▀ ███ ████
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Harvest" Documentation="https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/">
+    <Environment Issuer="https://id.getharvest.com/">
+      <Configuration AuthorizationEndpoint="https://id.getharvest.com/oauth2/authorize"
+                     TokenEndpoint="https://id.getharvest.com/api/v2/oauth2/token"
+                     UserinfoEndpoint="https://id.getharvest.com/api/v2/accounts">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
   </Provider>
 
   <!--

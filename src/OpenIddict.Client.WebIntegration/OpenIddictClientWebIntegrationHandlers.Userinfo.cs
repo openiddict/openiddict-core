@@ -268,6 +268,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     Providers.Fitbit => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
 
+                    // Harvest returns a nested "user" object and a collection of "accounts".
+                    Providers.Harvest => new(context.Response["user"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("user")))
+                    {
+                        ["accounts"] = context.Response["accounts"]
+                    },
+
                     // Patreon returns a nested "attributes" object that is itself nested in a "data" node.
                     Providers.Patreon => new(context.Response["data"]?["attributes"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data/attributes"))),
