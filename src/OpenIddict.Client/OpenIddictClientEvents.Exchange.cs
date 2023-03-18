@@ -36,12 +36,20 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the grant type sent to the token endpoint.
         /// </summary>
-        public string? GrantType { get; set; }
+        public string? GrantType
+        {
+            get => Request.GrantType;
+            set => Request.GrantType = value;
+        }
 
         /// <summary>
         /// Gets or sets the authorization code sent to the token endpoint, if applicable.
         /// </summary>
-        public string? AuthorizationCode { get; set; }
+        public string? AuthorizationCode
+        {
+            get => Request.Code;
+            set => Request.Code = value;
+        }
     }
 
     /// <summary>

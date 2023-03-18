@@ -26,6 +26,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Token request preparation:
              */
+            MapNonStandardRequestParameters.Descriptor,
             AttachNonStandardBasicAuthenticationCredentials.Descriptor,
             AttachNonStandardRequestHeaders.Descriptor,
             AttachNonStandardQueryStringParameters.Descriptor,
@@ -35,6 +36,51 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              * Token response extraction:
              */
             MapNonStandardResponseParameters.Descriptor);
+
+        /// <summary>
+        /// Contains the logic responsible for mapping non-standard request parameters
+        /// to their standard equivalent for the providers that require it.
+        /// </summary>
+        public sealed class MapNonStandardRequestParameters : IOpenIddictClientHandler<PrepareTokenRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
+                    .UseSingletonHandler<MapNonStandardRequestParameters>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareTokenRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Some providers implement old drafts of the OAuth 2.0 specification that
+                // didn't support the "response_type" parameter but relied on a "type"
+                // parameter to determine the type of request (web server or refresh).
+
+                if (context.Registration.ProviderName is Providers.Basecamp)
+                {
+                    context.Request["type"] = context.Request.GrantType switch
+                    {
+                        GrantTypes.AuthorizationCode => "web_server",
+                        GrantTypes.RefreshToken => "refresh",
+
+                        _ => null
+                    };
+
+                    context.Request.GrantType = null;
+                }
+
+                return default;
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization
@@ -259,8 +305,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for attaching non-standard query string
-        /// parameters to the token request for the providers that require it.
+        /// Contains the logic responsible for mapping non-standard response parameters
+        /// to their standard equivalent for the providers that require it.
         /// </summary>
         public sealed class MapNonStandardResponseParameters : IOpenIddictClientHandler<ExtractTokenResponseContext>
         {

@@ -87,6 +87,33 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ▄▄▀█ ▄▄▀██ ▄▄▄ ██ ▄▄▄██ ▄▄▀█ ▄▄▀██ ▄▀▄ ██ ▄▄ ██
+                                        ██ ▄▄▀█ ▀▀ ██▄▄▄▀▀██ ▄▄▄██ ████ ▀▀ ██ █ █ ██ ▀▀ ██
+                                        ██ ▀▀ █ ██ ██ ▀▀▀ ██ ▀▀▀██ ▀▀▄█ ██ ██ ███ ██ █████
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Basecamp" Documentation="https://github.com/basecamp/api/blob/master/sections/authentication.md">
+    <!--
+      Note: Basecamp implements an old draft of the OAuth 2.0 specification and doesn't support the
+      "response_type" and "grant_type" parameters adopted in the final version of the standard.
+
+      To work around that, these parameters are dynamically mapped to "type=web_server" or "type=refresh"
+      depending on the desired flow (and whether the request is an authorization or token request).
+    -->
+
+    <Environment Issuer="https://launchpad.37signals.com/">
+      <Configuration AuthorizationEndpoint="https://launchpad.37signals.com/authorization/new"
+                     TokenEndpoint="https://launchpad.37signals.com/authorization/token"
+                     UserinfoEndpoint="https://launchpad.37signals.com/authorization.json">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                       ██ ▄▄▀█ ▄▄▀█▄▄ ▄▄█▄▄ ▄▄██ █████ ▄▄▄█████ ▀██ ██ ▄▄▄█▄▄ ▄▄██
                                       ██ ▄▄▀█ ▀▀ ███ █████ ████ █████ ▄▄▄█▀▀██ █ █ ██ ▄▄▄███ ████

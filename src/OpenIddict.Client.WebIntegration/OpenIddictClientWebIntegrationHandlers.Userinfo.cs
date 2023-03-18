@@ -257,6 +257,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.Response = context.Registration.ProviderName switch
                 {
+                    // Basecamp returns a nested "identity" object and a collection of "accounts".
+                    Providers.Basecamp => new(context.Response["identity"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("identity")))
+                    {
+                        ["accounts"] = context.Response["accounts"]
+                    },
+
                     // Fitbit returns a nested "user" object.
                     Providers.Fitbit => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
