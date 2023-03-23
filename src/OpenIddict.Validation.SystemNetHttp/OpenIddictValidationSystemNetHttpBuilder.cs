@@ -75,7 +75,7 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     {
         if (string.IsNullOrEmpty(address))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0366), nameof(address));
+            throw new ArgumentException(SR.FormatID0366(nameof(address)), nameof(address));
         }
 
         return SetContactAddress(new MailAddress(address));

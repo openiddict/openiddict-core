@@ -4483,7 +4483,7 @@ public static partial class OpenIddictClientHandlers
             // If the request is an OpenID Connect request, the nonce will also be hashed and
             // attached to the authorization request so that the identity provider can bind
             // the issued identity tokens to the generated value, which helps detect token
-            // replay (and authorization code injection attacks when PKCE is not available).
+            // replays (and authorization code injection attacks when PKCE is not available).
             context.Nonce = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
             return default;

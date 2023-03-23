@@ -36,9 +36,10 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
 
         // Note: the issuer may be null. In this case, it will be usually provided by
         // a validation handler registered by the host (e.g ASP.NET Core or OWIN/Katana).
+        options.Issuer = _options.CurrentValue.Issuer;
         options.Configuration = new OpenIddictConfiguration
         {
-            Issuer = _options.CurrentValue.Issuer
+            Issuer = options.Issuer
         };
 
         // Import the signing keys from the server configuration.
