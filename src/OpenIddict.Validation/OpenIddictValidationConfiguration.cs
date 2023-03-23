@@ -95,7 +95,15 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
         {
             if (options.Configuration is not null)
             {
-                options.Configuration.Issuer = options.Issuer;
+                if (options.Configuration.Issuer is not null &&
+                    options.Configuration.Issuer != options.Issuer)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0394));
+                }
+
+                // Note: the issuer may be null. In this case, it will be usually provided by
+                // a validation handler registered by the host (e.g ASP.NET Core or OWIN/Katana).
+                options.Configuration.Issuer ??= options.Issuer;
                 options.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(options.Configuration);
             }
 

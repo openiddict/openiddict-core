@@ -1808,9 +1808,25 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIssuer(null!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIssuer((Uri?) null!));
 
         Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void SetIssuer_ThrowsAnExceptionForNullOrEmptyIssuer(string? uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetIssuer(uri!));
+
+        Assert.Equal("uri", exception.ParamName);
+        Assert.StartsWith(SR.FormatID0366("uri"), exception.Message);
     }
 
     [Fact]
@@ -1821,7 +1837,7 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetIssuer(new Uri("http://www.fabrikam.com/"));
+        builder.SetIssuer("http://www.fabrikam.com/");
 
         var options = GetOptions(services);
 

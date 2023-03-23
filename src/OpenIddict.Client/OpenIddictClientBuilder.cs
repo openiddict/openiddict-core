@@ -1141,6 +1141,27 @@ public sealed class OpenIddictClientBuilder
         return Configure(options => options.ClientUri = uri);
     }
 
+    /// <summary>
+    /// Sets the client URI, which is used as the value of the "issuer" claim.
+    /// </summary>
+    /// <param name="uri">The client URI.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientBuilder SetClientUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
+    {
+        if (string.IsNullOrEmpty(uri))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(uri)), nameof(uri));
+        }
+
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        return SetClientUri(value);
+    }
+
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => base.Equals(obj);

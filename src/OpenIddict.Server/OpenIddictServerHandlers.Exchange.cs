@@ -1559,7 +1559,7 @@ public static partial class OpenIddictServerHandlers
                 if (string.IsNullOrEmpty(challenge))
                 {
                     // Validate that the token request does not include a code_verifier parameter
-                    // when code_challenge private claim was attached to the authorization code.
+                    // when no code_challenge private claim was attached to the authorization code.
                     if (!string.IsNullOrEmpty(context.Request.CodeVerifier))
                     {
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6093), Parameters.CodeVerifier);

@@ -1480,6 +1480,12 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0393" xml:space="preserve">
     <value>The web authentication result cannot be resolved or contains invalid data.</value>
   </data>
+  <data name="ID0394" xml:space="preserve">
+    <value>The issuer attached to the static configuration must be the same as the one configured in the validation options.</value>
+  </data>
+  <data name="ID0395" xml:space="preserve">
+    <value>The issuer attached to the static configuration must be the same as the one configured in the client registration.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

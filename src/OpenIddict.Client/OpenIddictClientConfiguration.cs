@@ -57,7 +57,13 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             {
                 if (registration.Configuration is not null)
                 {
-                    registration.Configuration.Issuer = registration.Issuer;
+                    if (registration.Configuration.Issuer is not null &&
+                        registration.Configuration.Issuer != registration.Issuer)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0395));
+                    }
+
+                    registration.Configuration.Issuer ??= registration.Issuer;
                     registration.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(registration.Configuration);
                 }
 

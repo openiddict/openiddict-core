@@ -1732,6 +1732,27 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
+    /// Sets the issuer URI, which is used as the value of the "issuer" claim and
+    /// is returned from the discovery endpoint to identify the authorization server.
+    /// </summary>
+    /// <param name="uri">The issuer uri.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetIssuer([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
+    {
+        if (string.IsNullOrEmpty(uri))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(uri)), nameof(uri));
+        }
+
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        return SetIssuer(value);
+    }
+
+    /// <summary>
     /// Configures OpenIddict to use reference tokens, so that the access token payloads
     /// are stored in the database (only an identifier is returned to the client application).
     /// Enabling this option is useful when storing a very large number of claims in the tokens,
