@@ -77,7 +77,8 @@ public static partial class OpenIddictClientHandlers
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as numeric dates:
-                    Parameters.ExpiresIn => ((JsonElement) value).ValueKind is JsonValueKind.Number,
+                    Parameters.ExpiresIn => (JsonElement) value is { ValueKind: JsonValueKind.Number } element &&
+                        element.TryGetDecimal(out decimal result) && result is >= 0,
 
                     // Parameters that are not in the well-known list can be of any type.
                     _ => true
@@ -116,10 +117,14 @@ public static partial class OpenIddictClientHandlers
                     context.Reject(
                         error: context.Response.Error switch
                         {
-                            Errors.InvalidClient        => Errors.InvalidRequest,
+                            Errors.AccessDenied         => Errors.AccessDenied,
+                            Errors.AuthorizationPending => Errors.AuthorizationPending,
+                            Errors.ExpiredToken         => Errors.ExpiredToken,
+                            Errors.InvalidClient        => Errors.InvalidClient,
                             Errors.InvalidGrant         => Errors.InvalidGrant,
                             Errors.InvalidScope         => Errors.InvalidScope,
                             Errors.InvalidRequest       => Errors.InvalidRequest,
+                            Errors.SlowDown             => Errors.SlowDown,
                             Errors.UnauthorizedClient   => Errors.UnauthorizedClient,
                             Errors.UnsupportedGrantType => Errors.UnsupportedGrantType,
                             _                           => Errors.ServerError

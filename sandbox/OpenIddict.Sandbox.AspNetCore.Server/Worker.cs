@@ -54,8 +54,10 @@ public class Worker : IHostedService
                     Permissions =
                     {
                         Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Device,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.DeviceCode,
                         Permissions.GrantTypes.RefreshToken,
                         Permissions.ResponseTypes.Code,
                         Permissions.Scopes.Email,

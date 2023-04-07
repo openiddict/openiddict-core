@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -147,6 +148,8 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
 
         else
         {
+            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
             // A single main claims-based principal instance can be attached to an authentication ticket.
             // To return the most appropriate one, the principal is selected based on the endpoint type.
             // Independently of the selected main principal, all principals resolved from validated tokens
@@ -170,10 +173,10 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 return AuthenticateResult.NoResult();
             }
 
-            // Attach the identity of the authorization to the returned principal to allow resolving it even if no other
+            // Attach the identity of the authorization server to the returned principal to allow resolving it even if no other
             // claim was added to the principal (e.g when no id_token was returned and no userinfo endpoint is available).
-            principal.SetClaim(Claims.AuthorizationServer, context.StateTokenPrincipal?.GetClaim(Claims.AuthorizationServer))
-                     .SetClaim(Claims.Private.ProviderName, context.StateTokenPrincipal?.GetClaim(Claims.Private.ProviderName));
+            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri)
+                     .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
 
             // Restore or create a new authentication properties collection and populate it.
             var properties = CreateProperties(context.StateTokenPrincipal);

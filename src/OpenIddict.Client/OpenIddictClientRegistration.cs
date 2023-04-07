@@ -148,7 +148,8 @@ public sealed class OpenIddictClientRegistration
     };
 
     /// <summary>
-    /// Gets the list of scopes sent by default as part of authorization requests.
+    /// Gets the list of scopes sent by default as part of
+    /// authorization requests and device authorization requests.
     /// </summary>
     public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
 

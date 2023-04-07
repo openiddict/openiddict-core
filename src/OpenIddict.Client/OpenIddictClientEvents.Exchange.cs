@@ -143,21 +143,34 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the access token resolved from the token response.
         /// </summary>
-        public string? AccessToken { get; set; }
+        public string? AccessToken
+        {
+            get => Response.AccessToken;
+            set => Response.AccessToken = value;
+        }
 
         /// <summary>
         /// Gets or sets the identity token resolved from the token response.
         /// </summary>
-        public string? IdentityToken { get; set; }
+        public string? IdentityToken
+        {
+            get => Response.IdToken;
+            set => Response.IdToken = value;
+        }
 
         /// <summary>
         /// Gets or sets the refresh token resolved from the token response.
         /// </summary>
-        public string? RefreshToken { get; set; }
+        public string? RefreshToken
+        {
+            get => Response.RefreshToken;
+            set => Response.RefreshToken = value;
+        }
 
         /// <summary>
         /// Gets or sets the principal containing the claims resolved from the token response.
         /// </summary>
+        [Obsolete]
         public ClaimsPrincipal? Principal { get; set; }
     }
 }

@@ -143,6 +143,12 @@ public static partial class OpenIddictServerEvents
         public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets a list of client authentication methods supported by
+        /// the device endpoint provided by the authorization server.
+        /// </summary>
+        public HashSet<string> DeviceEndpointAuthenticationMethods { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the list of grant types
         /// supported by the authorization server.
         /// </summary>

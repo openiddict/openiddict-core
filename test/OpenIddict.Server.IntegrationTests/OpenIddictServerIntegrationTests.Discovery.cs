@@ -492,6 +492,42 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task HandleConfigurationRequest_NoClientAuthenticationMethodIsIncludedWhenDeviceEndpointIsDisabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
+            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+
+        // Assert
+        Assert.False(response.HasParameter(Metadata.DeviceAuthorizationEndpointAuthMethodsSupported));
+    }
+
+    [Fact]
+    public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenDeviceEndpointIsEnabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync();
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+        var methods = (string[]?) response[Metadata.DeviceAuthorizationEndpointAuthMethodsSupported];
+
+        // Assert
+        Assert.NotNull(methods);
+        Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
+        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
+    }
+
+    [Fact]
     public async Task HandleConfigurationRequest_ConfiguredGrantTypesAreReturned()
     {
         // Arrange

@@ -24,6 +24,7 @@ public static partial class OpenIddictClientHandlers
             ValidateIssuer.Descriptor,
             ExtractAuthorizationEndpoint.Descriptor,
             ExtractCryptographyEndpoint.Descriptor,
+            ExtractDeviceAuthorizationEndpoint.Descriptor,
             ExtractLogoutEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
             ExtractUserinfoEndpoint.Descriptor,
@@ -33,6 +34,7 @@ public static partial class OpenIddictClientHandlers
             ExtractCodeChallengeMethods.Descriptor,
             ExtractScopes.Descriptor,
             ExtractIssuerParameterRequirement.Descriptor,
+            ExtractDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor,
             ExtractTokenEndpointClientAuthenticationMethods.Descriptor,
 
             /*
@@ -94,20 +96,22 @@ public static partial class OpenIddictClientHandlers
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as unique strings:
-                    Metadata.AuthorizationEndpoint or
-                    Metadata.EndSessionEndpoint    or
-                    Metadata.Issuer                or
-                    Metadata.JwksUri               or
-                    Metadata.TokenEndpoint         or
+                    Metadata.AuthorizationEndpoint       or
+                    Metadata.DeviceAuthorizationEndpoint or
+                    Metadata.EndSessionEndpoint          or
+                    Metadata.Issuer                      or
+                    Metadata.JwksUri                     or
+                    Metadata.TokenEndpoint               or
                     Metadata.UserinfoEndpoint
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as arrays of strings:
-                    Metadata.CodeChallengeMethodsSupported or
-                    Metadata.GrantTypesSupported           or
-                    Metadata.ResponseModesSupported        or
-                    Metadata.ResponseTypesSupported        or
-                    Metadata.ScopesSupported               or
+                    Metadata.CodeChallengeMethodsSupported                   or
+                    Metadata.DeviceAuthorizationEndpointAuthMethodsSupported or
+                    Metadata.GrantTypesSupported                             or
+                    Metadata.ResponseModesSupported                          or
+                    Metadata.ResponseTypesSupported                          or
+                    Metadata.ScopesSupported                                 or
                     Metadata.TokenEndpointAuthMethodsSupported
                         => ((JsonElement) value) is JsonElement element &&
                             element.ValueKind is JsonValueKind.Array && ValidateStringArray(element),
@@ -347,6 +351,49 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for extracting the device authorization endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractDeviceAuthorizationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractDeviceAuthorizationEndpoint>()
+                    .SetOrder(ExtractCryptographyEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var endpoint = (string?) context.Response[Metadata.DeviceAuthorizationEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
+                {
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2100(Metadata.DeviceAuthorizationEndpoint),
+                            uri: SR.FormatID8000(SR.ID2100));
+
+                        return default;
+                    }
+
+                    context.Configuration.DeviceAuthorizationEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the logout endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractLogoutEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -357,7 +404,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractLogoutEndpoint>()
-                    .SetOrder(ExtractCryptographyEndpoint.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractDeviceAuthorizationEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -718,6 +765,52 @@ public static partial class OpenIddictClientHandlers
 
         /// <summary>
         /// Contains the logic responsible for extracting the authentication methods
+        /// supported by the device authorization endpoint from the discovery document.
+        /// </summary>
+        public sealed class ExtractDeviceAuthorizationEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractDeviceAuthorizationEndpointClientAuthenticationMethods>()
+                    .SetOrder(ExtractIssuerParameterRequirement.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Resolve the client authentication methods supported by the device authorization endpoint, if available.
+                //
+                // Note: "device_authorization_endpoint_auth_methods_supported" is not a standard parameter
+                // but is supported by OpenIddict 4.3.0 and higher for consistency with the other endpoints.
+                var methods = context.Response[Metadata.DeviceAuthorizationEndpointAuthMethodsSupported]?.GetUnnamedParameters();
+                if (methods is { Count: > 0 })
+                {
+                    for (var index = 0; index < methods.Count; index++)
+                    {
+                        // Note: custom values are allowed in this case.
+                        var method = (string?) methods[index];
+                        if (!string.IsNullOrEmpty(method))
+                        {
+                            context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Add(method);
+                        }
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the authentication methods
         /// supported by the token endpoint from the discovery document.
         /// </summary>
         public sealed class ExtractTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -728,7 +821,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractTokenEndpointClientAuthenticationMethods>()
-                    .SetOrder(ExtractIssuerParameterRequirement.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
