@@ -39,36 +39,6 @@ public static partial class OpenIddictValidationHandlers
         .AddRange(Protection.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible for resolving the server configuration.
-    /// </summary>
-    public sealed class ResolveServerConfiguration : IOpenIddictValidationHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<ResolveServerConfiguration>()
-                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 1_000)
-                .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            context.Configuration = await context.Options.ConfigurationManager
-                .GetConfigurationAsync(context.CancellationToken)
-                .WaitAsync(context.CancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for selecting the token types that should be validated.
     /// </summary>
     public sealed class EvaluateValidatedTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -148,6 +118,36 @@ public static partial class OpenIddictValidationHandlers
             }
 
             return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the server configuration.
+    /// </summary>
+    public sealed class ResolveServerConfiguration : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<ResolveServerConfiguration>()
+                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.Configuration = await context.Options.ConfigurationManager
+                .GetConfigurationAsync(context.CancellationToken)
+                .WaitAsync(context.CancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
         }
     }
 
