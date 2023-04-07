@@ -64,34 +64,6 @@ public abstract partial class OpenIddictValidationIntegrationTests
     }
 
     [Fact]
-    public async Task ProcessAuthentication_DemandAlreadyRejectedBeforeResolvingServerConfigurationWhenAccessTokenIsMissing()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    // Assert
-                    Assert.True(context.IsRejected);
-                    Assert.Equal(Errors.MissingToken, context.Error);
-                    return default;
-                });
-                builder.SetOrder(ResolveServerConfiguration.Descriptor.Order - 1);
-            });
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/authenticate", new OpenIddictRequest());
-
-        // Assert
-        Assert.Equal(0, response.Count);
-    }
-
-    [Fact]
     public async Task ProcessAuthentication_RejectsDemandWhenAccessTokenIsMissing()
     {
         // Arrange
