@@ -35,12 +35,14 @@ public static partial class OpenIddictClientOwinHandlers
         /*
          * Authentication processing:
          */
+        ValidateAuthenticationType.Descriptor,
         ValidateAuthenticationNonce.Descriptor,
         ResolveRequestForgeryProtection.Descriptor,
 
         /*
          * Challenge processing:
          */
+        ValidateChallengeType.Descriptor,
         ResolveHostChallengeProperties.Descriptor,
         ValidateTransportSecurityRequirementForChallenge.Descriptor,
         GenerateLoginCorrelationCookie.Descriptor,
@@ -296,6 +298,40 @@ public static partial class OpenIddictClientOwinHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for rejecting authentication demands that specify an unsupported type.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public sealed class ValidateAuthenticationType : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<ValidateAuthenticationType>()
+                .SetOrder(ValidateAuthenticationNonce.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.GrantType is GrantTypes.DeviceCode)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0402));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for rejecting authentication demands that specify an explicit nonce property.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
@@ -457,6 +493,40 @@ public static partial class OpenIddictClientOwinHandlers
                 SameSite = options.SameSite,
                 Secure = options.Secure
             });
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for rejecting challenge demands that specify an unsupported type.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public sealed class ValidateChallengeType : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<ValidateChallengeType>()
+                .SetOrder(ResolveHostChallengeProperties.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.GrantType is GrantTypes.DeviceCode)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0402));
+            }
 
             return default;
         }

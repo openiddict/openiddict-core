@@ -222,4 +222,22 @@ public class OpenIddictResponse : OpenIddictMessage
         get => (string?) GetParameter(OpenIddictConstants.Parameters.UserCode);
         set => SetParameter(OpenIddictConstants.Parameters.UserCode, value);
     }
+
+    /// <summary>
+    /// Gets or sets the "verification_uri" parameter.
+    /// </summary>
+    public string? VerificationUri
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.VerificationUri);
+        set => SetParameter(OpenIddictConstants.Parameters.VerificationUri, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "verification_uri_complete" parameter.
+    /// </summary>
+    public string? VerificationUriComplete
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.VerificationUriComplete);
+        set => SetParameter(OpenIddictConstants.Parameters.VerificationUriComplete, value);
+    }
 }

@@ -40,12 +40,14 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /*
          * Authentication processing:
          */
+        ValidateAuthenticationType.Descriptor,
         ValidateAuthenticationNonce.Descriptor,
         ResolveRequestForgeryProtection.Descriptor,
 
         /*
          * Challenge processing:
          */
+        ValidateChallengeType.Descriptor,
         ResolveHostChallengeProperties.Descriptor,
         ValidateTransportSecurityRequirementForChallenge.Descriptor,
         GenerateLoginCorrelationCookie.Descriptor,
@@ -295,6 +297,40 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for rejecting authentication demands that specify an unsupported type.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ValidateAuthenticationType : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ValidateAuthenticationType>()
+                .SetOrder(ValidateAuthenticationNonce.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.GrantType is GrantTypes.DeviceCode)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0402));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for rejecting authentication demands that specify an explicit nonce property.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
@@ -447,6 +483,40 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             //
             // Note: when deleting a cookie, the same options used when creating it MUST be specified.
             request.HttpContext.Response.Cookies.Delete(name, builder.Build(request.HttpContext));
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for rejecting challenge demands that specify an unsupported type.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ValidateChallengeType : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ValidateChallengeType>()
+                .SetOrder(ResolveHostChallengeProperties.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.GrantType is GrantTypes.DeviceCode)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0402));
+            }
 
             return default;
         }

@@ -97,6 +97,23 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no challenge client assertion token is generated.
+    /// </summary>
+    public sealed class RequireChallengeClientAssertionTokenGenerated : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateClientAssertionToken);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no client assertion token is generated.
     /// </summary>
     public sealed class RequireClientAssertionTokenGenerated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
@@ -110,6 +127,41 @@ public static class OpenIddictClientHandlerFilters
             }
 
             return new(context.GenerateClientAssertionToken);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the challenge
+    /// doesn't correspond to a device authorization code grant operation.
+    /// </summary>
+    public sealed class RequireDeviceAuthorizationGrantType : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GrantType is GrantTypes.DeviceCode);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no device authorization request is expected to be sent.
+    /// </summary>
+    public sealed class RequireDeviceAuthorizationRequest : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.SendDeviceAuthorizationRequest);
         }
     }
 

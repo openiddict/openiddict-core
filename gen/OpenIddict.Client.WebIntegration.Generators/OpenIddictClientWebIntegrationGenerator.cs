@@ -841,6 +841,10 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                         AuthorizationEndpoint = new Uri($""{{ environment.configuration.authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                         {{~ end ~}}
 
+                        {{~ if environment.configuration.device_authorization_endpoint ~}}
+                        DeviceAuthorizationEndpoint = new Uri($""{{ environment.configuration.device_authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                        {{~ end ~}}
+
                         {{~ if environment.configuration.token_endpoint ~}}
                         TokenEndpoint = new Uri($""{{ environment.configuration.token_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                         {{~ end ~}}
@@ -881,6 +885,13 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                         {
                             {{~ for scope in environment.configuration.scopes_supported ~}}
                             ""{{ scope }}"",
+                            {{~ end ~}}
+                        },
+
+                        DeviceAuthorizationEndpointAuthMethodsSupported =
+                        {
+                            {{~ for method in environment.configuration.device_authorization_endpoint_auth_methods_supported ~}}
+                            ""{{ method }}"",
                             {{~ end ~}}
                         },
 
@@ -946,6 +957,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                     XElement configuration => new
                                     {
                                         AuthorizationEndpoint = (string?) configuration.Attribute("AuthorizationEndpoint"),
+                                        DeviceAuthorizationEndpoint = (string?) configuration.Attribute("DeviceAuthorizationEndpoint"),
                                         TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
                                         UserinfoEndpoint = (string?) configuration.Attribute("UserinfoEndpoint"),
 
@@ -987,12 +999,21 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                             _ => (IList<string>) Array.Empty<string>()
                                         },
 
+                                        DeviceAuthorizationEndpointAuthMethodsSupported = configuration.Elements("DeviceAuthorizationEndpointAuthMethodsSupported").ToList() switch
+                                        {
+                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                            // If no explicit client authentication method was set, assume the provider only supports
+                                            // flowing the client credentials as part of the device authorization request payload.
+                                            _ => (IList<string>) new[] { ClientAuthenticationMethods.ClientSecretPost }
+                                        },
+
                                         TokenEndpointAuthMethodsSupported = configuration.Elements("TokenEndpointAuthMethod").ToList() switch
                                         {
                                             { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
 
-                                            // If no explicit response type was set, assume the provider only supports
-                                            // flowing the client credentials as part of the token request payload.
+                                            // If no explicit client authentication method was set, assume the provider only
+                                            // supports flowing the client credentials as part of the token request payload.
                                             _ => (IList<string>) new[] { ClientAuthenticationMethods.ClientSecretPost }
                                         }
                                     },

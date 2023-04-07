@@ -112,6 +112,20 @@ public class OpenIddictResponseTests
                 /* name: */ Parameters.UserCode,
                 /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
             };
+
+            yield return new object[]
+            {
+                /* property: */ nameof(OpenIddictResponse.VerificationUri),
+                /* name: */ Parameters.VerificationUri,
+                /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
+            };
+
+            yield return new object[]
+            {
+                /* property: */ nameof(OpenIddictResponse.VerificationUriComplete),
+                /* name: */ Parameters.VerificationUriComplete,
+                /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
+            };
         }
     }
 

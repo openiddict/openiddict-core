@@ -261,6 +261,7 @@ public static class OpenIddictConstants
         public const string ClaimTypesSupported = "claim_types_supported";
         public const string CodeChallengeMethodsSupported = "code_challenge_methods_supported";
         public const string DeviceAuthorizationEndpoint = "device_authorization_endpoint";
+        public const string DeviceAuthorizationEndpointAuthMethodsSupported = "device_authorization_endpoint_auth_methods_supported";
         public const string DisplayValuesSupported = "display_values_supported";
         public const string EndSessionEndpoint = "end_session_endpoint";
         public const string GrantTypesSupported = "grant_types_supported";
@@ -325,6 +326,7 @@ public static class OpenIddictConstants
         public const string IdentityProvider = "identity_provider";
         public const string IdToken = "id_token";
         public const string IdTokenHint = "id_token_hint";
+        public const string Interval = "interval";
         public const string Iss = "iss";
         public const string LoginHint = "login_hint";
         public const string Keys = "keys";

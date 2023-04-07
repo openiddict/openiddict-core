@@ -50,6 +50,27 @@
                             </xs:complexType>
                           </xs:element>
 
+                          <xs:element name="DeviceAuthorizationEndpointAuthMethod" minOccurs="0" maxOccurs="10">
+                            <xs:annotation>
+                              <xs:documentation>The device authorization endpoint authentication methods supported by the environment.</xs:documentation>
+                            </xs:annotation>
+
+                            <xs:complexType>
+                              <xs:attribute name="Value" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>The device authorization endpoint authentication method name (e.g client_secret_basic).</xs:documentation>
+                                </xs:annotation>
+
+                                <xs:simpleType>
+                                  <xs:restriction base="xs:string">
+                                    <xs:enumeration value="client_secret_basic" />
+                                    <xs:enumeration value="client_secret_post" />
+                                  </xs:restriction>
+                                </xs:simpleType>
+                              </xs:attribute>
+                            </xs:complexType>
+                          </xs:element>
+
                           <xs:element name="GrantType" minOccurs="0" maxOccurs="10">
                             <xs:annotation>
                               <xs:documentation>The grant types supported by the environment.</xs:documentation>
@@ -67,6 +88,7 @@
                                     <xs:enumeration value="client_credentials" />
                                     <xs:enumeration value="implicit" />
                                     <xs:enumeration value="refresh_token" />
+                                    <xs:enumeration value="urn:ietf:params:oauth:grant-type:device_code" />
                                   </xs:restriction>
                                 </xs:simpleType>
                               </xs:attribute>
@@ -159,6 +181,12 @@
                         <xs:attribute name="AuthorizationEndpoint" type="xs:string" use="optional">
                           <xs:annotation>
                             <xs:documentation>The authorization endpoint offered by the environment.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+
+                        <xs:attribute name="DeviceAuthorizationEndpoint" type="xs:string" use="optional">
+                          <xs:annotation>
+                            <xs:documentation>The device authorization endpoint offered by the environment.</xs:documentation>
                           </xs:annotation>
                         </xs:attribute>
 

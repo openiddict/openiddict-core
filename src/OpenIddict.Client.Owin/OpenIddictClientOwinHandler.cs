@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Owin.Security.Infrastructure;
@@ -165,6 +166,8 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
 
         else
         {
+            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
             // A single main claims-based principal instance can be attached to an authentication ticket.
             var principal = context.EndpointType switch
             {
@@ -185,10 +188,10 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                 return null;
             }
 
-            // Attach the identity of the authorization to the returned principal to allow resolving it even if no other
+            // Attach the identity of the authorization server to the returned principal to allow resolving it even if no other
             // claim was added to the principal (e.g when no id_token was returned and no userinfo endpoint is available).
-            principal.SetClaim(Claims.AuthorizationServer, context.StateTokenPrincipal?.GetClaim(Claims.AuthorizationServer))
-                     .SetClaim(Claims.Private.ProviderName, context.StateTokenPrincipal?.GetClaim(Claims.Private.ProviderName));
+            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri)
+                     .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
 
             // Restore or create a new authentication properties collection and populate it.
             var properties = CreateProperties(context.StateTokenPrincipal);

@@ -1484,6 +1484,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireInteractiveSession>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachDynamicPortToRedirectUri>()
                 .SetOrder(AttachRedirectUri.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)

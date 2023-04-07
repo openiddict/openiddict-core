@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using System.Security.Claims;
+using Microsoft.Extensions.Hosting;
 using OpenIddict.Client;
 using Spectre.Console;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -37,16 +38,67 @@ public class InteractiveService : BackgroundService
         {
             var provider = await GetSelectedProviderAsync(stoppingToken);
 
-            AnsiConsole.MarkupLine("[cyan]Launching the system browser.[/]");
-
             try
             {
-                // Ask OpenIddict to initiate the authentication flow (typically, by
-                // starting the system browser) and wait for the user to complete it.
-                var (_, _, principal) = await _service.AuthenticateInteractivelyAsync(
-                    provider, cancellationToken: stoppingToken);
+                ClaimsPrincipal principal;
 
-                AnsiConsole.MarkupLineInterpolated($"[green]Welcome, {principal.FindFirst(Claims.Name)!.Value}.[/]");
+                // Resolve the server configuration and determine the type of flow
+                // to use depending on the supported grants and the user selection.
+                var configuration = await _service.GetServerConfigurationAsync(provider, cancellationToken: stoppingToken);
+                if (configuration.GrantTypesSupported.Contains(GrantTypes.DeviceCode) &&
+                    configuration.DeviceAuthorizationEndpoint is not null &&
+                    await UseDeviceAuthorizationGrantAsync(stoppingToken))
+                {
+                    // Ask OpenIddict to send a device authorization request and write
+                    // the complete verification endpoint URI to the console output.
+                    var response = await _service.ChallengeUsingDeviceAsync(provider, cancellationToken: stoppingToken);
+                    if (response.VerificationUriComplete is not null)
+                    {
+                        AnsiConsole.MarkupLineInterpolated(
+                            $"[yellow]Please visit [link]{response.VerificationUriComplete}[/] and confirm the displayed code is '{response.UserCode}' to complete the authentication demand.[/]");
+                    }
+
+                    else
+                    {
+                        AnsiConsole.MarkupLineInterpolated(
+                            $"[yellow]Please visit [link]{response.VerificationUri}[/] and enter '{response.UserCode}' to complete the authentication demand.[/]");
+                    }
+
+                    using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                    cancellationTokenSource.CancelAfter(response.ExpiresIn < TimeSpan.FromMinutes(5) ?
+                        response.ExpiresIn : TimeSpan.FromMinutes(5));
+
+                    // Wait for the user to complete the demand on the other device.
+                    (_, principal) = await _service.AuthenticateWithDeviceAsync(provider,
+                        response.DeviceCode, cancellationToken: cancellationTokenSource.Token);
+                }
+
+                else
+                {
+                    AnsiConsole.MarkupLine("[cyan]Launching the system browser.[/]");
+
+                    // Ask OpenIddict to initiate the authentication flow (typically, by
+                    // starting the system browser) and wait for the user to complete it.
+                    (_, _, principal) = await _service.AuthenticateInteractivelyAsync(
+                        provider, cancellationToken: stoppingToken);
+                }
+
+                AnsiConsole.MarkupLine("[green]Authentication successful:[/]");
+
+                var table = new Table()
+                    .AddColumn(new TableColumn("Claim type").Centered())
+                    .AddColumn(new TableColumn("Claim value type").Centered())
+                    .AddColumn(new TableColumn("Claim value").Centered());
+
+                foreach (var claim in principal.Claims)
+                {
+                    table.AddRow(
+                        claim.Type.EscapeMarkup(),
+                        claim.ValueType.EscapeMarkup(),
+                        claim.Value.EscapeMarkup());
+                }
+
+                AnsiConsole.Write(table);
             }
 
             catch (OperationCanceledException)
@@ -65,16 +117,32 @@ public class InteractiveService : BackgroundService
             }
         }
 
-        static async Task<string> GetSelectedProviderAsync(CancellationToken cancellationToken)
+        static Task<bool> UseDeviceAuthorizationGrantAsync(CancellationToken cancellationToken)
+        {
+            static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
+                "Would you like to authenticate using the device authorization grant?")
+            {
+                DefaultValue = false,
+                ShowDefaultValue = true
+            });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        static Task<string> GetSelectedProviderAsync(CancellationToken cancellationToken)
         {
             static string Prompt() => AnsiConsole.Prompt(new SelectionPrompt<string>()
                 .Title("Select the authentication provider you'd like to log in with.")
                 .AddChoices("Local", Providers.GitHub, Providers.Twitter));
 
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        static async Task<T> WaitAsync<T>(Task<T> task, CancellationToken cancellationToken)
+        {
 #if SUPPORTS_TASK_WAIT_ASYNC
-            return await Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
+            return await task.WaitAsync(cancellationToken);
 #else
-            var task = Task.Run(Prompt, cancellationToken);
             var source = new TaskCompletionSource<bool>(TaskCreationOptions.None);
 
             using (cancellationToken.Register(static state => ((TaskCompletionSource<bool>) state!).SetResult(true), source))

@@ -316,8 +316,12 @@
   <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
     <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
+                     DeviceAuthorizationEndpoint="https://github.com/login/device/code"
                      TokenEndpoint="https://github.com/login/oauth/access_token"
-                     UserinfoEndpoint="https://api.github.com/user" />
+                     UserinfoEndpoint="https://api.github.com/user">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="urn:ietf:params:oauth:grant-type:device_code" />
+      </Configuration>
     </Environment>
   </Provider>
 
@@ -557,6 +561,26 @@
 
     <Environment Name="Production" Issuer="https://www.paypal.com/" />
     <Environment Name="Sandbox"    Issuer="https://www.paypal.com/" />
+  </Provider>
+
+  <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ▄▄ █▄ ▄██ ▀██ ██ ▄▄ ██ ▄▄▄ ██ ▀██ ██ ▄▄▄██
+                                        ██ ▀▀ ██ ███ █ █ ██ █▀▀██ ███ ██ █ █ ██ ▄▄▄██
+                                        ██ ████▀ ▀██ ██▄ ██ ▀▀▄██ ▀▀▀ ██ ██▄ ██ ▀▀▀██
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="PingOne" Documentation="https://docs.pingidentity.com/r/en-us/pingoneforenterprise/p14e_connect_oidc">
+    <!--
+      Note: PingOne is a multitenant identity provider that doesn't have a generic issuer URI.
+      As such, the complete URI must always be set in the options (and include the environment ID).
+    -->
+
+    <Environment Issuer="{settings.Issuer}" />
+
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
+             Description="The URI used to access the PingOne instance (e.g 'https://auth.pingone.eu/3bedc164-22f1-4f8f-9f51-227975033cbd/as')" />
   </Provider>
 
   <!--
