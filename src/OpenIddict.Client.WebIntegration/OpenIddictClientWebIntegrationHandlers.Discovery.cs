@@ -22,6 +22,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             AmendGrantTypes.Descriptor,
             AmendCodeChallengeMethods.Descriptor,
             AmendScopes.Descriptor,
+            AmendDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor,
             AmendTokenEndpointClientAuthenticationMethods.Descriptor,
             AmendEndpoints.Descriptor);
 
@@ -194,6 +195,46 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for amending the client authentication methods
+        /// supported by the device authorization endpoint for the providers that require it.
+        /// </summary>
+        public sealed class AmendDeviceAuthorizationEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendDeviceAuthorizationEndpointClientAuthenticationMethods>()
+                    .SetOrder(ExtractTokenEndpointClientAuthenticationMethods.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Google doesn't properly implement the device authorization grant, doesn't support
+                // client authentication method for the device authorization endpoint and returns a
+                // generic "invalid_request" request when using "client_secret_basic" instead of
+                // sending the client identifier in the request form. To work around this limitation,
+                // "client_secret_post" is listed as the only supported client authentication method.
+                if (context.Registration.ProviderName is Providers.Google)
+                {
+                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Clear();
+                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretPost);
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for amending the client authentication
         /// methods supported by the token endpoint for the providers that require it.
         /// </summary>
@@ -205,7 +246,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<AmendTokenEndpointClientAuthenticationMethods>()
-                    .SetOrder(ExtractTokenEndpointClientAuthenticationMethods.Descriptor.Order + 500)
+                    .SetOrder(AmendDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

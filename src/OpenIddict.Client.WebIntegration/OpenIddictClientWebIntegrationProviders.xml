@@ -316,8 +316,12 @@
   <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
     <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
+                     DeviceAuthorizationEndpoint="https://github.com/login/device/code"
                      TokenEndpoint="https://github.com/login/oauth/access_token"
-                     UserinfoEndpoint="https://api.github.com/user" />
+                     UserinfoEndpoint="https://api.github.com/user">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="urn:ietf:params:oauth:grant-type:device_code" />
+      </Configuration>
     </Environment>
   </Provider>
 

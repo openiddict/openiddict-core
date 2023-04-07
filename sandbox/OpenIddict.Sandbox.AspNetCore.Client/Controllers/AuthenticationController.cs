@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using OpenIddict.Client;
 using OpenIddict.Client.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
@@ -10,6 +11,11 @@ namespace OpenIddict.Sandbox.AspNetCore.Client.Controllers;
 
 public class AuthenticationController : Controller
 {
+    private readonly OpenIddictClientService _service;
+
+    public AuthenticationController(OpenIddictClientService service)
+        => _service = service;
+
     [HttpPost("~/login"), ValidateAntiForgeryToken]
     public ActionResult LogIn(string provider, string returnUrl)
     {
@@ -83,16 +89,16 @@ public class AuthenticationController : Controller
         // Remove the local authentication cookie before triggering a redirection to the remote server.
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-        // Resolve the issuer of the user identifier claim stored in the local authentication cookie.
-        // If the issuer is known to support remote sign-out, ask OpenIddict to initiate a logout request.
-        var issuer = identity.Claims.Select(claim => claim.Issuer).First();
-        if (issuer is "https://localhost:44395/")
+        // Resolve the provider of the user identifier claim stored in the local authentication cookie.
+        // If the provider is known to support remote sign-out, ask OpenIddict to initiate a logout request.
+        if (Uri.TryCreate(identity.FindFirst(Claims.AuthorizationServer)?.Value, UriKind.Absolute, out Uri issuer) &&
+            await _service.GetServerConfigurationAsync(issuer) is { EndSessionEndpoint: Uri })
         {
             var properties = new AuthenticationProperties(new Dictionary<string, string>
             {
                 // Note: when only one client is registered in the client options,
                 // setting the issuer property is not required and can be omitted.
-                [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = issuer,
+                [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = issuer.AbsoluteUri,
 
                 // While not required, the specification encourages sending an id_token_hint
                 // parameter containing an identity token returned by the server for this user.
@@ -176,6 +182,9 @@ public class AuthenticationController : Controller
             {
                 // Preserve the basic claims that are necessary for the application to work correctly.
                 { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
+
+                // Preserve the identity of the authorization server as a dedicated claim.
+                { Type: Claims.AuthorizationServer } => true,
 
                 // Applications that use multiple client registrations can filter claims based on the issuer.
                 { Type: "bio", Issuer: "https://github.com/" } => true,

@@ -32,6 +32,16 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> CodeChallengeMethodsSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets or sets the URI of the device authorization endpoint.
+    /// </summary>
+    public Uri? DeviceAuthorizationEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets the client authentication methods supported by the device authorization endpoint.
+    /// </summary>
+    public HashSet<string> DeviceAuthorizationEndpointAuthMethodsSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets or sets the URI of the end session endpoint.
     /// </summary>
     public Uri? EndSessionEndpoint { get; set; }

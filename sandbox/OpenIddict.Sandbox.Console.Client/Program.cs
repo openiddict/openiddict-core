@@ -36,9 +36,10 @@ var host = new HostBuilder()
             // Register the OpenIddict client components.
             .AddClient(options =>
             {
-                // Note: this sample uses the authorization code and refresh token
-                // flows, but you can enable the other flows if necessary.
+                // Note: this sample uses the authorization code, device authorization code
+                // and refresh token flows, but you can enable the other flows if necessary.
                 options.AllowAuthorizationCodeFlow()
+                       .AllowDeviceCodeFlow()
                        .AllowRefreshTokenFlow();
 
                 // Register the signing and encryption credentials used to protect

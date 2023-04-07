@@ -677,6 +677,11 @@ public static partial class OpenIddictClientEvents
         public string? BackchannelIdentityToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the device code to validate, if applicable.
+        /// </summary>
+        public string? DeviceCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the frontchannel access token to validate, if applicable.
         /// </summary>
         public string? FrontchannelAccessToken { get; set; }
@@ -976,6 +981,11 @@ public static partial class OpenIddictClientEvents
         public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets the URI of the device authorization endpoint, if applicable.
+        /// </summary>
+        public Uri? DeviceAuthorizationEndpoint { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a state token
         /// should be generated (and optionally included in the request).
         /// </summary>
@@ -1001,10 +1011,145 @@ public static partial class OpenIddictClientEvents
         public string? StateToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a device authorization request should be sent.
+        /// </summary>
+        public bool SendDeviceAuthorizationRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a client assertion
+        /// token should be generated (and optionally included in the request).
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool GenerateClientAssertionToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the generated client
+        /// assertion token should be included as part of the request.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool IncludeClientAssertionToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generated client assertion token, if applicable.
+        /// The client assertion token will only be returned if
+        /// <see cref="IncludeClientAssertionToken"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? ClientAssertionToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets type of the generated client assertion token, if applicable.
+        /// The client assertion token type will only be returned if
+        /// <see cref="IncludeClientAssertionToken"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? ClientAssertionTokenType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal containing the claims that will be
+        /// used to create the client assertion token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? ClientAssertionTokenPrincipal { get; set; }
+
+        /// <summary>
         /// Gets or sets the principal containing the claims that
         /// will be used to create the state token, if applicable.
         /// </summary>
         public ClaimsPrincipal? StateTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request sent to the device authorization endpoint, if applicable.
+        /// </summary>
+        public OpenIddictRequest? DeviceAuthorizationRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response returned by the device authorization endpoint, if applicable.
+        /// </summary>
+        public OpenIddictResponse? DeviceAuthorizationResponse { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a device
+        /// code should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a user
+        /// code should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractUserCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a device code must
+        /// be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a user code must
+        /// be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireUserCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the device code
+        /// extracted from the current context should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the user code
+        /// extracted from the current context should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateUserCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid device code will
+        /// cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid user code will
+        /// cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectUserCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device code to validate, if applicable.
+        /// </summary>
+        public string? DeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user code to validate, if applicable.
+        /// </summary>
+        public string? UserCode { get; set; }
     }
 
     /// <summary>

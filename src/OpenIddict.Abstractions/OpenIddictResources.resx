@@ -1486,6 +1486,39 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0395" xml:space="preserve">
     <value>The issuer attached to the static configuration must be the same as the one configured in the client registration.</value>
   </data>
+  <data name="ID0396" xml:space="preserve">
+    <value>A device code must be specified when using the device authorization code grant.</value>
+  </data>
+  <data name="ID0397" xml:space="preserve">
+    <value>The client registration corresponding to the specified provider name cannot be found in the client options.</value>
+  </data>
+  <data name="ID0398" xml:space="preserve">
+    <value>An error occurred while preparing the device authorization request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0399" xml:space="preserve">
+    <value>An error occurred while sending the device authorization request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0400" xml:space="preserve">
+    <value>An error occurred while extracting the device authorization response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0401" xml:space="preserve">
+    <value>An error occurred while handling the device authorization response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0402" xml:space="preserve">
+    <value>The grant type '{0}' is not supported by the ASP.NET Core and OWIN integrations.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1983,6 +2016,15 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID2166" xml:space="preserve">
     <value>The received authorization response is not valid for this instance of the application.</value>
+  </data>
+  <data name="ID2167" xml:space="preserve">
+    <value>The device authorization request was rejected by the remote server.</value>
+  </data>
+  <data name="ID2168" xml:space="preserve">
+    <value>The mandatory '{0}' parameter couldn't be found in the device authorization response.</value>
+  </data>
+  <data name="ID2169" xml:space="preserve">
+    <value>The '{0}' parameter returned in the device authorization response is not valid absolute URI.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2652,6 +2694,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6215" xml:space="preserve">
     <value>An error occurred while redirecting a protocol activation to the '{Identifier}' instance.</value>
+  </data>
+  <data name="ID6216" xml:space="preserve">
+    <value>The device authorization request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6217" xml:space="preserve">
+    <value>The device authorization request was successfully sent to {Uri}: {Request}.</value>
+  </data>
+  <data name="ID6218" xml:space="preserve">
+    <value>The device authorization response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

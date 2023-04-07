@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -915,6 +916,15 @@ public sealed class OpenIddictClientBuilder
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AllowClientCredentialsFlow()
         => Configure(options => options.GrantTypes.Add(GrantTypes.ClientCredentials));
+
+    /// <summary>
+    /// Enables device code flow support. For more information about this
+    /// specific OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc8628.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [RequiresPreviewFeatures] 
+    public OpenIddictClientBuilder AllowDeviceCodeFlow()
+        => Configure(options => options.GrantTypes.Add(GrantTypes.DeviceCode));
 
     /// <summary>
     /// Enables hybrid flow support. For more information

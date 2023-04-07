@@ -3079,16 +3079,17 @@ public static partial class OpenIddictServerHandlers
                 if (context.AccessTokenPrincipal is not null)
                 {
                     // If an expiration date was set on the access token principal, return it to the client application.
-                    var date = context.AccessTokenPrincipal.GetExpirationDate();
-                    if (date.HasValue && date.Value > DateTimeOffset.UtcNow)
+                    if (context.AccessTokenPrincipal.GetExpirationDate()
+                        is DateTimeOffset date && date > DateTimeOffset.UtcNow)
                     {
-                        context.Response.ExpiresIn = (long) ((date.Value - DateTimeOffset.UtcNow).TotalSeconds + .5);
+                        context.Response.ExpiresIn = (long) ((date - DateTimeOffset.UtcNow).TotalSeconds + .5);
                     }
 
                     // If the granted access token scopes differ from the requested scopes, return the granted scopes
                     // list as a parameter to inform the client application of the fact the scopes set will be reduced.
                     var scopes = context.AccessTokenPrincipal.GetScopes().ToHashSet(StringComparer.Ordinal);
-                    if ((context.EndpointType is OpenIddictServerEndpointType.Token && context.Request.IsAuthorizationCodeGrantType()) ||
+                    if ((context.EndpointType is OpenIddictServerEndpointType.Token &&
+                         context.Request.IsAuthorizationCodeGrantType()) ||
                         !scopes.SetEquals(context.Request.GetScopes()))
                     {
                         context.Response.Scope = string.Join(" ", scopes);
@@ -3104,17 +3105,6 @@ public static partial class OpenIddictServerHandlers
             if (context.IncludeDeviceCode)
             {
                 context.Response.DeviceCode = context.DeviceCode;
-
-                // If the principal is available, attach additional metadata.
-                if (context.DeviceCodePrincipal is not null)
-                {
-                    // If an expiration date was set on the device code principal, return it to the client application.
-                    var date = context.DeviceCodePrincipal.GetExpirationDate();
-                    if (date.HasValue && date.Value > DateTimeOffset.UtcNow)
-                    {
-                        context.Response.ExpiresIn = (long) ((date.Value - DateTimeOffset.UtcNow).TotalSeconds + .5);
-                    }
-                }
             }
 
             if (context.IncludeIdentityToken)
@@ -3130,18 +3120,37 @@ public static partial class OpenIddictServerHandlers
             if (context.IncludeUserCode)
             {
                 context.Response.UserCode = context.UserCode;
+            }
 
-                if (OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri,
-                    context.Options.VerificationEndpointUris.FirstOrDefault()) is Uri uri)
+            if (context.EndpointType is OpenIddictServerEndpointType.Device)
+            {
+                var uri = OpenIddictHelpers.CreateAbsoluteUri(
+                    left : context.BaseUri ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0127)),
+                    right: context.Options.VerificationEndpointUris.First());
+
+                context.Response.VerificationUri = uri.AbsoluteUri;
+
+                if (!string.IsNullOrEmpty(context.UserCode))
                 {
-                    var builder = new UriBuilder(uri)
-                    {
-                        Query = string.Concat(Parameters.UserCode, "=", context.UserCode)
-                    };
-
-                    context.Response[Parameters.VerificationUri] = uri.AbsoluteUri;
-                    context.Response[Parameters.VerificationUriComplete] = builder.Uri.AbsoluteUri;
+                    // Build the "verification_uri_complete" parameter using the verification endpoint URI
+                    // with the generated user code appended to the query string as a unique parameter.
+                    context.Response.VerificationUriComplete = OpenIddictHelpers.AddQueryStringParameter(
+                        uri, Parameters.UserCode, context.UserCode).AbsoluteUri;
                 }
+
+                context.Response.ExpiresIn = (
+                    context.DeviceCodePrincipal?.GetExpirationDate() ??
+                    context.UserCodePrincipal?.GetExpirationDate()) switch
+                {
+                    // If an expiration date was set on the device code or user
+                    // code principal, return it to the client application.
+                    DateTimeOffset date when date > DateTimeOffset.UtcNow
+                        => (long) ((date - DateTimeOffset.UtcNow).TotalSeconds + .5),
+
+                    // Otherwise, return an arbitrary value, as the "expires_in"
+                    // parameter is required in device authorization responses.
+                    _ => 5 * 60 // 5 minutes, in seconds.
+                };
             }
 
             return default;

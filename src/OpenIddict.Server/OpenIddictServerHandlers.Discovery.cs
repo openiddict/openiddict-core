@@ -251,7 +251,8 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.SubjectTypesSupported] = notification.SubjectTypes.ToArray(),
                     [Metadata.TokenEndpointAuthMethodsSupported] = notification.TokenEndpointAuthenticationMethods.ToArray(),
                     [Metadata.IntrospectionEndpointAuthMethodsSupported] = notification.IntrospectionEndpointAuthenticationMethods.ToArray(),
-                    [Metadata.RevocationEndpointAuthMethodsSupported] = notification.RevocationEndpointAuthenticationMethods.ToArray()
+                    [Metadata.RevocationEndpointAuthMethodsSupported] = notification.RevocationEndpointAuthenticationMethods.ToArray(),
+                    [Metadata.DeviceAuthorizationEndpointAuthMethodsSupported] = notification.DeviceEndpointAuthenticationMethods.ToArray()
                 };
 
                 foreach (var metadata in notification.Metadata)
@@ -503,6 +504,14 @@ public static partial class OpenIddictServerHandlers
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: "device_authorization_endpoint_auth_methods_supported" is not a standard parameter
+                // but is supported by OpenIddict 4.3.0 and higher for consistency with the other endpoints.
+                if (context.DeviceEndpoint is not null)
+                {
+                    context.DeviceEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
+                    context.DeviceEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
                 }
 
                 if (context.IntrospectionEndpoint is not null)

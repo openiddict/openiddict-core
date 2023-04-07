@@ -159,7 +159,8 @@ public static partial class OpenIddictValidationHandlers
 
                     // The following claims MUST be formatted as numeric dates:
                     Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
-                        => ((JsonElement) value).ValueKind is JsonValueKind.Number,
+                        => (JsonElement) value is { ValueKind: JsonValueKind.Number } element &&
+                        element.TryGetDecimal(out decimal result) && result is >= 0,
 
                     // Claims that are not in the well-known list can be of any type.
                     _ => true

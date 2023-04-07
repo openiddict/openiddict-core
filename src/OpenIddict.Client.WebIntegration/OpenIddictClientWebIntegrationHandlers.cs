@@ -42,6 +42,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         IncludeStateParameterInRedirectUri.Descriptor,
         AttachAdditionalChallengeParameters.Descriptor)
         .AddRange(Authentication.DefaultHandlers)
+        .AddRange(Device.DefaultHandlers)
         .AddRange(Discovery.DefaultHandlers)
         .AddRange(Exchange.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)

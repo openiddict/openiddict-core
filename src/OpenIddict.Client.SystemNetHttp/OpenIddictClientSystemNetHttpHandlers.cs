@@ -22,6 +22,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; }
         = ImmutableArray.Create<OpenIddictClientHandlerDescriptor>()
+            .AddRange(Device.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
             .AddRange(Userinfo.DefaultHandlers);
