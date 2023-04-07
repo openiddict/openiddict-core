@@ -144,7 +144,7 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.Configuration = await context.Options.ConfigurationManager
+            context.Configuration ??= await context.Options.ConfigurationManager
                 .GetConfigurationAsync(context.CancellationToken)
                 .WaitAsync(context.CancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
