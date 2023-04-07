@@ -49,7 +49,7 @@ public static partial class OpenIddictValidationHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<ResolveServerConfiguration>()
-                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 5_000)
+                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -79,7 +79,7 @@ public static partial class OpenIddictValidationHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateValidatedTokens>()
-                .SetOrder(int.MinValue + 80_000)
+                .SetOrder(int.MinValue + 100_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -125,7 +125,7 @@ public static partial class OpenIddictValidationHandlers
                 .UseSingletonHandler<ValidateRequiredTokens>()
                 // Note: this handler is registered with a high gap to allow handlers
                 // that do token extraction to be executed before this handler runs.
-                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 5_000)
+                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 50_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
