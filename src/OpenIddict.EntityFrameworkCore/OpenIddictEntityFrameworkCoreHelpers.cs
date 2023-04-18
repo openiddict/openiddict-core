@@ -37,7 +37,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     public static DbContextOptionsBuilder<TContext> UseOpenIddict<TContext>(this DbContextOptionsBuilder<TContext> builder)
         where TContext : DbContext
     {
-        ((DbContextOptionsBuilder)builder).UseOpenIddict();
+        ((DbContextOptionsBuilder) builder).UseOpenIddict();
         return builder;
     }
 
