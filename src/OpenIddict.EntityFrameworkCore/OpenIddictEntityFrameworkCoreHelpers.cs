@@ -69,7 +69,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// <param name="builder">The builder used to configure the Entity Framework context.</param>
     /// <returns>The Entity Framework context builder.</returns>
     public static DbContextOptionsBuilder<TContext> UseOpenIddict<TKey, TContext>(this DbContextOptionsBuilder<TContext> builder)
-        where TKey : notnull, IEquatable<TKey> where TContext : DbContext
+        where TKey : notnull, IEquatable<TKey>
+        where TContext : DbContext
     {
         builder.UseOpenIddict<TKey>();
         return builder;
