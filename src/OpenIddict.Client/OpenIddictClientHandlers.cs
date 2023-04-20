@@ -1579,7 +1579,8 @@ public static partial class OpenIddictClientHandlers
             {
                 // The following JWT claims MUST be represented as unique strings.
                 {
-                    Key: Claims.AuthenticationContextReference or Claims.AuthorizedParty or Claims.Issuer or Claims.Nonce,
+                    Key: Claims.AuthenticationContextReference or Claims.AuthorizedParty or
+                         Claims.Issuer or Claims.Nonce or Claims.Subject,
                     Value: List<Claim> values
                 } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.String,
 
@@ -2903,7 +2904,8 @@ public static partial class OpenIddictClientHandlers
             {
                 // The following JWT claims MUST be represented as unique strings.
                 {
-                    Key: Claims.AuthenticationContextReference or Claims.AuthorizedParty or Claims.Issuer or Claims.Nonce,
+                    Key: Claims.AuthenticationContextReference or Claims.AuthorizedParty or
+                         Claims.Issuer or Claims.Nonce or Claims.Subject,
                     Value: List<Claim> values
                 } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.String,
 
