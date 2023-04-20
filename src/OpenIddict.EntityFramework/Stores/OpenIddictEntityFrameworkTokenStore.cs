@@ -14,6 +14,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFramework.Models;
+using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFramework;
@@ -591,7 +592,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
                 return Context.Database.BeginTransaction(IsolationLevel.RepeatableRead);
             }
 
-            catch
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 return null;
             }
@@ -637,7 +638,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
                 transaction?.Commit();
             }
 
-            catch (Exception exception)
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);

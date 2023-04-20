@@ -386,11 +386,27 @@ public static partial class OpenIddictClientHandlers
             // be used to authenticate users. In this case, throw an exception to abort the flow.
             context.Registration ??= await _service.GetClientRegistrationAsync(context.Issuer, context.CancellationToken);
 
-            // Resolve and attach the server configuration to the context if none has been set already.
-            context.Configuration ??= await context.Registration.ConfigurationManager
-                .GetConfigurationAsync(context.CancellationToken)
-                .WaitAsync(context.CancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            try
+            {
+                // Resolve and attach the server configuration to the context if none has been set already.
+                context.Configuration ??= await context.Registration.ConfigurationManager
+                    .GetConfigurationAsync(context.CancellationToken)
+                    .WaitAsync(context.CancellationToken) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
+                exception is not OperationCanceledException)
+            {
+                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID2170),
+                    uri: SR.FormatID8000(SR.ID2170));
+
+                return;
+            }
 
             // Ensure the selected grant type, if explicitly set, is listed as supported in the configuration.
             if (!string.IsNullOrEmpty(context.GrantType) &&
@@ -982,11 +998,27 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
             }
 
-            // Resolve and attach the server configuration to the context.
-            context.Configuration = await context.Registration.ConfigurationManager
-                .GetConfigurationAsync(context.CancellationToken)
-                .WaitAsync(context.CancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            try
+            {
+                // Resolve and attach the server configuration to the context.
+                context.Configuration = await context.Registration.ConfigurationManager
+                    .GetConfigurationAsync(context.CancellationToken)
+                    .WaitAsync(context.CancellationToken) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
+                exception is not OperationCanceledException)
+            {
+                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID2170),
+                    uri: SR.FormatID8000(SR.ID2170));
+
+                return;
+            }
         }
     }
 
@@ -3944,11 +3976,27 @@ public static partial class OpenIddictClientHandlers
             // be used to authenticate users. In this case, throw an exception to abort the flow.
             context.Registration ??= await _service.GetClientRegistrationAsync(context.Issuer, context.CancellationToken);
 
-            // Resolve and attach the server configuration to the context if none has been set already.
-            context.Configuration ??= await context.Registration.ConfigurationManager
-                .GetConfigurationAsync(context.CancellationToken)
-                .WaitAsync(context.CancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            try
+            {
+                // Resolve and attach the server configuration to the context if none has been set already.
+                context.Configuration ??= await context.Registration.ConfigurationManager
+                    .GetConfigurationAsync(context.CancellationToken)
+                    .WaitAsync(context.CancellationToken) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
+                exception is not OperationCanceledException)
+            {
+                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID2170),
+                    uri: SR.FormatID8000(SR.ID2170));
+
+                return;
+            }
         }
     }
 
@@ -5532,11 +5580,27 @@ public static partial class OpenIddictClientHandlers
             // be used to authenticate users. In this case, throw an exception to abort the flow.
             context.Registration ??= await _service.GetClientRegistrationAsync(context.Issuer, context.CancellationToken);
 
-            // Resolve and attach the server configuration to the context if none has been set already.
-            context.Configuration ??= await context.Registration.ConfigurationManager
-                .GetConfigurationAsync(context.CancellationToken)
-                .WaitAsync(context.CancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            try
+            {
+                // Resolve and attach the server configuration to the context if none has been set already.
+                context.Configuration ??= await context.Registration.ConfigurationManager
+                    .GetConfigurationAsync(context.CancellationToken)
+                    .WaitAsync(context.CancellationToken) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
+                exception is not OperationCanceledException)
+            {
+                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID2170),
+                    uri: SR.FormatID8000(SR.ID2170));
+
+                return;
+            }
         }
     }
 

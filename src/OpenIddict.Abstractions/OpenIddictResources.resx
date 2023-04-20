@@ -2026,6 +2026,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID2169" xml:space="preserve">
     <value>The '{0}' parameter returned in the device authorization response is not valid absolute URI.</value>
   </data>
+  <data name="ID2170" xml:space="preserve">
+    <value>The remote authorization server is currently unavailable or returned an invalid configuration.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -2703,6 +2706,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6218" xml:space="preserve">
     <value>The device authorization response returned by {Uri} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6219" xml:space="preserve">
+    <value>An error occurred while retrieving the configuration of the remote authorization server.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

@@ -164,7 +164,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
                     return await Context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
                 }
 
-                catch
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
                     return null;
                 }
@@ -684,7 +684,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
                     return await Context.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
                 }
 
-                catch
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
                     return null;
                 }
@@ -736,7 +736,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
                 transaction?.Commit();
             }
 
-            catch (Exception exception)
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);

@@ -1063,7 +1063,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
             return false;
         }
 
-        catch (Exception exception)
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             Logger.LogWarning(exception, SR.GetResourceString(SR.ID6166), await Store.GetIdAsync(authorization, cancellationToken));
 

@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -48,7 +49,7 @@ public sealed class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
                 await handler.HandleAsync(context);
             }
 
-            catch (Exception exception) when (_logger.IsEnabled(LogLevel.Debug))
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) && _logger.IsEnabled(LogLevel.Debug))
             {
                 _logger.LogDebug(exception, SR.GetResourceString(SR.ID6132), handler.GetType().FullName, typeof(TContext).FullName);
 

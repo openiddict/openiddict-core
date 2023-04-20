@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants;
 using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.Properties;
@@ -605,7 +606,7 @@ public static partial class OpenIddictValidationOwinHandlers
                         context.Response.SuppressFormsAuthenticationRedirect = true;
                     }
 
-                    catch
+                    catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                     {
                     }
                 }

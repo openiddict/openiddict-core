@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using OpenIddict.Extensions;
 using Properties = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
 
 #if SUPPORTS_JSON_NODES
@@ -718,7 +719,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 return default;
             }
 
-            catch
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,

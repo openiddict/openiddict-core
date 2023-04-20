@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 using OpenIddict.Extensions;
 
 namespace OpenIddict.Validation;
@@ -144,10 +145,27 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.Configuration ??= await context.Options.ConfigurationManager
-                .GetConfigurationAsync(context.CancellationToken)
-                .WaitAsync(context.CancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            try
+            {
+                // Resolve and attach the server configuration to the context if none has been set already.
+                context.Configuration ??= await context.Options.ConfigurationManager
+                    .GetConfigurationAsync(context.CancellationToken)
+                    .WaitAsync(context.CancellationToken) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
+                exception is not OperationCanceledException)
+            {
+                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID2170),
+                    uri: SR.FormatID8000(SR.ID2170));
+
+                return;
+            }
         }
     }
 

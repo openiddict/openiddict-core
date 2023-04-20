@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using OpenIddict.Extensions;
 using Properties = OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants.Properties;
 
 #if SUPPORTS_JSON_NODES
@@ -469,7 +470,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 context.RequestForgeryProtection = Encoding.UTF8.GetString(payload, index: 5, length);
             }
 
-            catch
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,

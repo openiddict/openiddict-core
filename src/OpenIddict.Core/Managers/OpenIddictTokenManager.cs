@@ -1094,7 +1094,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             return false;
         }
 
-        catch (Exception exception)
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             Logger.LogWarning(exception, SR.GetResourceString(SR.ID6170), await Store.GetIdAsync(token, cancellationToken));
 
@@ -1133,7 +1133,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             return false;
         }
 
-        catch (Exception exception)
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             Logger.LogWarning(exception, SR.GetResourceString(SR.ID6173), await Store.GetIdAsync(token, cancellationToken));
 
@@ -1172,7 +1172,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             return false;
         }
 
-        catch (Exception exception)
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             Logger.LogWarning(exception, SR.GetResourceString(SR.ID6176), await Store.GetIdAsync(token, cancellationToken));
 
