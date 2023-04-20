@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Principal;
+using OpenIddict.Extensions;
 
 #if SUPPORTS_WINDOWS_RUNTIME
 using Windows.ApplicationModel.Activation;
@@ -163,7 +164,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
                 ProtocolActivatedEventArgs args ? args.Uri : null;
         }
 
-        catch
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             return null;
         }

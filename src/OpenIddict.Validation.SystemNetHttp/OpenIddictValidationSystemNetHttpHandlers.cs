@@ -446,7 +446,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
             // If an exception is thrown at this stage, this likely means a persistent network error occurred.
             // In this case, log the error details and return a generic error to stop processing the event.
-            catch (Exception exception)
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 context.Logger.LogError(exception, SR.GetResourceString(SR.ID6182));
 
@@ -696,7 +696,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // If an exception is thrown at this stage, this likely means the returned response was not a valid
             // JSON response or was not correctly formatted as a JSON object. This typically happens when
             // a server error occurs while the JSON response is being generated and returned to the client.
-            catch (Exception exception)
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 context.Logger.LogError(exception, SR.GetResourceString(SR.ID6183),
                     await response.Content.ReadAsStringAsync());

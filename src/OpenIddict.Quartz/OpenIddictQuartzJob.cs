@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Quartz;
 
@@ -86,16 +87,10 @@ public sealed class OpenIddictQuartzJob : IJob
                     await manager.PruneAsync(threshold, context.CancellationToken);
                 }
 
-                // OutOfMemoryExceptions are treated as fatal errors and are always re-thrown as-is.
-                catch (OutOfMemoryException)
-                {
-                    throw;
-                }
-
                 // OperationCanceledExceptions are typically thrown when the host is about to shut down.
                 // To allow the host to shut down as fast as possible, this exception type is special-cased
                 // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
-                catch (OperationCanceledException exception) when (exception.CancellationToken == context.CancellationToken)
+                catch (OperationCanceledException exception) when (context.CancellationToken.IsCancellationRequested)
                 {
                     throw new JobExecutionException(exception)
                     {
@@ -105,15 +100,15 @@ public sealed class OpenIddictQuartzJob : IJob
 
                 // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
                 // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
-                catch (AggregateException exception)
+                catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
                     exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
                     exceptions.AddRange(exception.InnerExceptions);
                 }
 
-                // Other exceptions are assumed to be transient and are added to the exceptions collection
+                // Other non-fatal exceptions are assumed to be transient and are added to the exceptions collection
                 // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
-                catch (Exception exception)
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
                     exceptions ??= new List<Exception>(capacity: 1);
                     exceptions.Add(exception);
@@ -143,16 +138,10 @@ public sealed class OpenIddictQuartzJob : IJob
                     await manager.PruneAsync(threshold, context.CancellationToken);
                 }
 
-                // OutOfMemoryExceptions are treated as fatal errors and are always re-thrown as-is.
-                catch (OutOfMemoryException)
-                {
-                    throw;
-                }
-
                 // OperationCanceledExceptions are typically thrown when the host is about to shut down.
                 // To allow the host to shut down as fast as possible, this exception type is special-cased
                 // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
-                catch (OperationCanceledException exception) when (exception.CancellationToken == context.CancellationToken)
+                catch (OperationCanceledException exception) when (context.CancellationToken.IsCancellationRequested)
                 {
                     throw new JobExecutionException(exception)
                     {
@@ -162,15 +151,15 @@ public sealed class OpenIddictQuartzJob : IJob
 
                 // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
                 // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
-                catch (AggregateException exception)
+                catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
                     exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
                     exceptions.AddRange(exception.InnerExceptions);
                 }
 
-                // Other exceptions are assumed to be transient and are added to the exceptions collection
+                // Other non-fatal exceptions are assumed to be transient and are added to the exceptions collection
                 // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
-                catch (Exception exception)
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
                     exceptions ??= new List<Exception>(capacity: 1);
                     exceptions.Add(exception);

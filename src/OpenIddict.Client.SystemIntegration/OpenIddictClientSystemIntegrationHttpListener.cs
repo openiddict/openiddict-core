@@ -195,7 +195,7 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                     exceptions.Push(new InvalidOperationException(SR.FormatID0384(port), exception));
                 }
 
-                catch (Exception exception)
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
                     listener.Close(); 
 

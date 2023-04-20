@@ -137,7 +137,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
                 return Context.Database.BeginTransaction(IsolationLevel.Serializable);
             }
 
-            catch
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 return null;
             }
@@ -609,7 +609,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
                 return Context.Database.BeginTransaction(IsolationLevel.RepeatableRead);
             }
 
-            catch
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 return null;
             }
@@ -658,7 +658,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
                 transaction?.Commit();
             }
 
-            catch (Exception exception)
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);

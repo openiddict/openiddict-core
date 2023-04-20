@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.DataProtection.OpenIddictClientDataProtectionConstants.Purposes;
 using static OpenIddict.Client.OpenIddictClientHandlers.Protection;
 using Schemes = OpenIddict.Client.DataProtection.OpenIddictClientDataProtectionConstants.Purposes.Schemes;
@@ -124,7 +125,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
                         return _options.CurrentValue.Formatter.ReadToken(reader)?.SetTokenType(type);
                     }
 
-                    catch (Exception exception)
+                    catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                     {
                         context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), context.Token);
 

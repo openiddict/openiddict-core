@@ -67,22 +67,25 @@ public abstract partial class OpenIddictValidationIntegrationTests
     public async Task ProcessAuthentication_RejectsDemandWhenAccessTokenIsMissing()
     {
         // Arrange
+        await using var server = await CreateServerAsync();
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/authenticate", new OpenIddictRequest());
+
+        // Assert
+        Assert.Equal(0, response.Count);
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_RejectsDemandWithoutResolvingServerConfigurationWhenNoTokenWasResolved()
+    {
+        // Arrange
+        var manager = Mock.Of<IConfigurationManager<OpenIddictConfiguration>>();
+
         await using var server = await CreateServerAsync(options =>
         {
-            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    // Assert
-                    Assert.True(context.IsRejected);
-                    Assert.Equal(Errors.MissingToken, context.Error);
-                    Assert.Equal(SR.GetResourceString(SR.ID2000), context.ErrorDescription);
-
-                    return default;
-                });
-
-                builder.SetOrder(ValidateRequiredTokens.Descriptor.Order + 1);
-            });
+            options.Configure(options => options.ConfigurationManager = manager);
         });
 
         await using var client = await server.CreateClientAsync();
@@ -92,6 +95,32 @@ public abstract partial class OpenIddictValidationIntegrationTests
 
         // Assert
         Assert.Equal(0, response.Count);
+        Mock.Get(manager).Verify(manager => manager.GetConfigurationAsync(It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_RejectsDemandWhenConfigurationCannotBeResolved()
+    {
+        // Arrange
+        var manager = Mock.Of<IConfigurationManager<OpenIddictConfiguration>>(manager =>
+            manager.GetConfigurationAsync(It.IsAny<CancellationToken>()) == Task.FromException(new Exception()));
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.ConfigurationManager = manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/authenticate", new OpenIddictRequest
+        {
+            AccessToken = "SlAV32hkKG"
+        });
+
+        // Assert
+        Assert.Equal(Errors.ServerError, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2170), response.ErrorDescription);
     }
 
     [Fact]

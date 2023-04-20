@@ -1452,7 +1452,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             return new(VerifyHashedSecret(comparand, secret));
         }
 
-        catch (Exception exception)
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             Logger.LogWarning(exception, SR.GetResourceString(SR.ID6163));
 

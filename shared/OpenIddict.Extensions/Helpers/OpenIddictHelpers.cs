@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.ObjectModel;
+using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -144,11 +145,24 @@ internal static class OpenIddictHelpers
             ThreadAbortException => true,
             OutOfMemoryException and not InsufficientMemoryException => true,
 
-            AggregateException { InnerExceptions: var exceptions } => exceptions.Any(IsFatal),
+            AggregateException { InnerExceptions: var exceptions } => IsAnyFatal(exceptions),
             Exception { InnerException: Exception inner } => IsFatal(inner),
 
             _ => false
         };
+
+        static bool IsAnyFatal(ReadOnlyCollection<Exception> exceptions)
+        {
+            for (var index = 0; index < exceptions.Count; index++)
+            {
+                if (IsFatal(exceptions[index]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
 #if !SUPPORTS_TOHASHSET_LINQ_EXTENSION

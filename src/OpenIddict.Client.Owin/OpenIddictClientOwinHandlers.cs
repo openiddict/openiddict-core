@@ -15,6 +15,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 using Properties = OpenIddict.Client.Owin.OpenIddictClientOwinConstants.Properties;
@@ -472,7 +473,7 @@ public static partial class OpenIddictClientOwinHandlers
                 context.RequestForgeryProtection = Encoding.UTF8.GetString(payload, index: 5, length);
             }
 
-            catch
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -1237,7 +1238,7 @@ public static partial class OpenIddictClientOwinHandlers
                         context.Response.SuppressFormsAuthenticationRedirect = true;
                     }
 
-                    catch
+                    catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                     {
                     }
                 }
