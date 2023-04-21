@@ -1221,9 +1221,8 @@ public static partial class OpenIddictClientHandlers
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Resolve the negotiated flow from the state token.
-            (context.GrantType, context.ResponseType) = (
-                context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType),
-                context.StateTokenPrincipal.GetClaim(Claims.Private.ResponseType));
+            context.GrantType = context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType);
+            context.ResponseType = context.StateTokenPrincipal.GetClaim(Claims.Private.ResponseType);
 
             switch ((context.EndpointType, context.GrantType, context.ResponseType))
             {
