@@ -36,4 +36,16 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// attached to the backchannel HTTP requests sent to the authorization server.
     /// </summary>
     public ProductInfoHeaderValue? ProductInformation { get; set; }
+
+    /// <summary>
+    /// Gets the user-defined actions used to amend the <see cref="HttpClient"/>
+    /// instances created by the OpenIddict client/System.Net.Http integration.
+    /// </summary>
+    public Dictionary<string, List<Action<HttpClient>>> HttpClientActions { get; } = new();
+
+    /// <summary>
+    /// Gets the user-defined actions used to amend the <see cref="HttpClientHandler"/>
+    /// instances created by the OpenIddict client/System.Net.Http integration.
+    /// </summary>
+    public Dictionary<string, List<Action<HttpClientHandler>>> HttpClientHandlerActions { get; } = new();
 }

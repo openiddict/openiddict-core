@@ -19,7 +19,6 @@ namespace OpenIddict.Validation.SystemNetHttp;
 public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
                                                                      IConfigureNamedOptions<HttpClientFactoryOptions>
 {
-#if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
     private readonly IServiceProvider _provider;
     
     /// <summary>
@@ -28,7 +27,6 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
     /// <param name="provider">The service provider.</param>
     public OpenIddictValidationSystemNetHttpConfiguration(IServiceProvider provider)
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-#endif
 
     /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
@@ -60,14 +58,22 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
             return;
         }
 
-        options.HttpClientActions.Add(options =>
+        var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>().CurrentValue;
+
+        options.HttpClientActions.Add(client =>
         {
             // By default, HttpClient uses a default timeout of 100 seconds and allows payloads of up to 2GB.
             // To help reduce the effects of malicious responses (e.g responses returned at a very slow pace
             // or containing an infine amount of data), the default values are amended to use lower values.
-            options.MaxResponseContentBufferSize = 10 * 1024 * 1024;
-            options.Timeout = TimeSpan.FromMinutes(1);
+            client.MaxResponseContentBufferSize = 10 * 1024 * 1024;
+            client.Timeout = TimeSpan.FromMinutes(1);
         });
+
+        // Register the user-defined HTTP client actions.
+        foreach (var action in settings.HttpClientActions)
+        {
+            options.HttpClientActions.Add(action);
+        }
 
         options.HttpMessageHandlerBuilderActions.Add(builder =>
         {
@@ -98,5 +104,12 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
                 builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
             }
         });
+
+        // Register the user-defined HTTP client handler actions.
+        foreach (var action in settings.HttpClientHandlerActions)
+        {
+            options.HttpMessageHandlerBuilderActions.Add(builder => action(builder.PrimaryHandler as HttpClientHandler ??
+                throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
+        }
     }
 }

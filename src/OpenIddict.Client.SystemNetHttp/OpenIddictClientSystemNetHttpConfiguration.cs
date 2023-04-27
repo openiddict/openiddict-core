@@ -19,7 +19,6 @@ namespace OpenIddict.Client.SystemNetHttp;
 public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<OpenIddictClientOptions>,
                                                                  IConfigureNamedOptions<HttpClientFactoryOptions>
 {
-#if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
     private readonly IServiceProvider _provider;
 
     /// <summary>
@@ -28,7 +27,6 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
     /// <param name="provider">The service provider.</param>
     public OpenIddictClientSystemNetHttpConfiguration(IServiceProvider provider)
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-#endif
 
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
@@ -60,14 +58,25 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
             return;
         }
 
-        options.HttpClientActions.Add(options =>
+        var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientSystemNetHttpOptions>>().CurrentValue;
+
+        options.HttpClientActions.Add(client =>
         {
             // By default, HttpClient uses a default timeout of 100 seconds and allows payloads of up to 2GB.
             // To help reduce the effects of malicious responses (e.g responses returned at a very slow pace
             // or containing an infine amount of data), the default values are amended to use lower values.
-            options.MaxResponseContentBufferSize = 10 * 1024 * 1024;
-            options.Timeout = TimeSpan.FromMinutes(1);
+            client.MaxResponseContentBufferSize = 10 * 1024 * 1024;
+            client.Timeout = TimeSpan.FromMinutes(1);
         });
+
+        // Register the user-defined HTTP client actions.
+        foreach (var action in settings.HttpClientActions
+            .Where(action => string.IsNullOrEmpty(action.Key) || // Note: actions that have an empty key apply to all providers.
+                             action.Key.AsSpan().Equals(name.AsSpan(assembly.Name!.Length + 1), StringComparison.Ordinal))
+            .SelectMany(action => action.Value))
+        {
+            options.HttpClientActions.Add(action);
+        }
 
         options.HttpMessageHandlerBuilderActions.Add(builder =>
         {
@@ -98,5 +107,15 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
                 builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
             }
         });
+
+        // Register the user-defined HTTP client handler actions.
+        foreach (var action in settings.HttpClientHandlerActions
+            .Where(action => string.IsNullOrEmpty(action.Key) || // Note: actions that have an empty key apply to all providers.
+                             action.Key.AsSpan().Equals(name.AsSpan(assembly.Name!.Length + 1), StringComparison.Ordinal))
+            .SelectMany(action => action.Value))
+        {
+            options.HttpMessageHandlerBuilderActions.Add(builder => action(builder.PrimaryHandler as HttpClientHandler ??
+                throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
+        }
     }
 }
