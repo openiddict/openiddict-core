@@ -32,7 +32,7 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
-    /// Amends the default OpenIddict validation/server integration configuration.
+    /// Amends the default OpenIddict validation/System.Net.Http configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -47,6 +47,38 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
         Services.Configure(configuration);
 
         return this;
+    }
+
+    /// <summary>
+    /// Configures the <see cref="HttpClient"/> used by the OpenIddict validation/System.Net.Http integration.
+    /// </summary>
+    /// <param name="configuration">The delegate used to configure the <see cref="HttpClient"/>.</param>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictValidationSystemNetHttpBuilder ConfigureHttpClient(Action<HttpClient> configuration)
+    {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        return Configure(options => options.HttpClientActions.Add(configuration));
+    }
+
+    /// <summary>
+    /// Configures the <see cref="HttpClientHandler"/> used by the OpenIddict client/System.Net.Http integration.
+    /// </summary>
+    /// <param name="configuration">The delegate used to configure the <see cref="HttpClientHandler"/>.</param>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictValidationSystemNetHttpBuilder ConfigureHttpClientHandler(Action<HttpClientHandler> configuration)
+    {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        return Configure(options => options.HttpClientHandlerActions.Add(configuration));
     }
 
     /// <summary>
