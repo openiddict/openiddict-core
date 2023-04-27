@@ -21,7 +21,6 @@
     <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.AppServices" />
     <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.WinForms" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" VersionOverride="7.0.0" />
   </ItemGroup>
 
 </Project>
