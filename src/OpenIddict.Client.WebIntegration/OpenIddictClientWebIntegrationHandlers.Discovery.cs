@@ -49,18 +49,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: the server configuration metadata returned by the Microsoft Account "common" tenant
-                // uses "https://login.microsoftonline.com/{tenantid}/v2.0" as the issuer to indicate that
-                // the issued identity tokens will have a dynamic issuer claim whose value will be resolved
-                // based on the client identity. As required by RFC8414, OpenIddict would automatically reject
-                // such responses as the issuer wouldn't match the expected value. To work around that, the issuer
-                // is replaced by this handler to always use "https://login.microsoftonline.com/common/v2.0".
-                if (context.Registration.ProviderName is Providers.Microsoft &&
-                    context.Registration.GetMicrosoftOptions() is { Tenant: string tenant } &&
-                    string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase))
+                context.Response[Metadata.Issuer] = context.Registration.ProviderName switch
                 {
-                    context.Response[Metadata.Issuer] = "https://login.microsoftonline.com/common/v2.0";
-                }
+                    // Note: the server configuration metadata returned by the Microsoft Account special tenants
+                    // uses "https://login.microsoftonline.com/{tenantid}/v2.0" as the issuer to indicate that
+                    // the issued identity tokens will have a dynamic issuer claim whose value will be resolved
+                    // based on the client identity. As required by RFC8414, OpenIddict would automatically reject
+                    // such responses as the issuer wouldn't match the expected value. To work around that, the
+                    // issuer is replaced by this handler to always use a static value (e.g "common" or "consumers").
+                    //
+                    // For more information about the special tenants supported by Microsoft Account/Azure AD, see
+                    // https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc#find-your-apps-openid-configuration-document-uri.
+                    Providers.Microsoft when context.Registration.GetMicrosoftOptions() is { Tenant: string tenant } =>
+                        string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase)        ? "https://login.microsoftonline.com/common/v2.0" :
+                        string.Equals(tenant, "consumers", StringComparison.OrdinalIgnoreCase)     ? "https://login.microsoftonline.com/consumers/v2.0" :
+                        string.Equals(tenant, "organizations", StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/organizations/v2.0" :
+                        context.Response[Metadata.Issuer],
+
+                    _ => context.Response[Metadata.Issuer]
+                };
 
                 return default;
             }
