@@ -566,6 +566,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["user.fields"] = string.Join(",", options.UserFields);
             }
 
+            // Facebook limits the number of fields returned by the userinfo endpoint
+            // but allows returning additional information using special parameters that
+            // determine what fields will be returned as part of the userinfo response.
+            else if (context.Registration.ProviderName is Providers.Facebook)
+            {
+                var options = context.Registration.GetFacebookOptions();
+
+                context.UserinfoRequest["fields"] = string.Join(",", options.Fields);
+            }
             return default;
         }
     }

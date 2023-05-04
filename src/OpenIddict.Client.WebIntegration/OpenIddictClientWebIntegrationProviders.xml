@@ -191,7 +191,7 @@
       As such, the Deezer integration tries to use the standard parameters and only uses the non-standard equivalents
       when no other option exists (e.g an "output" query string parameter must be sent to get JSON token responses).
     -->
-    
+
     <Environment Issuer="https://deezer.com/">
       <Configuration AuthorizationEndpoint="https://connect.deezer.com/oauth/auth.php"
                      TokenEndpoint="https://connect.deezer.com/oauth/access_token.php"
@@ -277,6 +277,31 @@
             Documentation="https://dev.epicgames.com/docs/web-api-ref/authentication">
     <Environment Issuer="https://api.epicgames.dev/epic/oauth/v1" />
   </Provider>
+  <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▄█
+                                              ██ ▄▄██
+                                              ██ ████
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+  <Provider Name="Facebook" DisplayName="Facebook"
+          Documentation="https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login">
+    <Environment Issuer="https://www.facebook.com/">
+      <Configuration AuthorizationEndpoint="https://www.facebook.com/v14.0/dialog/oauth"
+                     TokenEndpoint="https://graph.facebook.com/v14.0/oauth/access_token"
+                     UserinfoEndpoint="https://graph.facebook.com/v14.0/me">
+      </Configuration>
+      <Scope Name="email" Default="true" Required="true" />
+    </Environment>
+    <Setting PropertyName="Fields" ParameterName="fields" Collection="true" Type="String"
+         Description="The fields that should be retrieved from the userinfo endpoint (by default, all known basic fields are requested)">
+      <Item Value="name"                                     Default="true" Required="false" />
+      <Item Value="first_name"                               Default="true" Required="false" />
+      <Item Value="last_name"                                Default="true" Required="false" />
+      <Item Value="email"                                    Default="true" Required="false" />
+    </Setting>
+  </Provider>
+
 
   <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
