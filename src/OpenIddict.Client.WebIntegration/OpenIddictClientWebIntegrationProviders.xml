@@ -287,9 +287,10 @@
   <Provider Name="Facebook" DisplayName="Facebook"
           Documentation="https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login">
     <Environment Issuer="https://www.facebook.com/">
-      <Configuration AuthorizationEndpoint="https://www.facebook.com/v14.0/dialog/oauth"
-                     TokenEndpoint="https://graph.facebook.com/v14.0/oauth/access_token"
-                     UserinfoEndpoint="https://graph.facebook.com/v14.0/me">
+      <Configuration AuthorizationEndpoint="https://www.facebook.com/v16.0/dialog/oauth"
+                     TokenEndpoint="https://graph.facebook.com/v16.0/oauth/access_token"
+                     UserinfoEndpoint="https://graph.facebook.com/v16.0/me">
+        <CodeChallengeMethod Value="S256" />
       </Configuration>
       <Scope Name="email" Default="true" Required="true" />
     </Environment>
