@@ -277,32 +277,34 @@
             Documentation="https://dev.epicgames.com/docs/web-api-ref/authentication">
     <Environment Issuer="https://api.epicgames.dev/epic/oauth/v1" />
   </Provider>
+
   <!--
-                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                              ██ ▄▄▄█
-                                              ██ ▄▄██
-                                              ██ ████
-                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ▄▄▄█ ▄▄▀██ ▄▄▀██ ▄▄▄██ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ █▀▄██
+                                      ██ ▄▄██ ▀▀ ██ █████ ▄▄▄██ ▄▄▀██ ███ ██ ███ ██ ▄▀███
+                                      ██ ████ ██ ██ ▀▀▄██ ▀▀▀██ ▀▀ ██ ▀▀▀ ██ ▀▀▀ ██ ██ ██
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
-  <Provider Name="Facebook" DisplayName="Facebook"
-          Documentation="https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login">
+
+  <Provider Name="Facebook" Documentation="https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow">
     <Environment Issuer="https://www.facebook.com/">
       <Configuration AuthorizationEndpoint="https://www.facebook.com/v16.0/dialog/oauth"
                      TokenEndpoint="https://graph.facebook.com/v16.0/oauth/access_token"
                      UserinfoEndpoint="https://graph.facebook.com/v16.0/me">
         <CodeChallengeMethod Value="S256" />
       </Configuration>
+
       <Scope Name="email" Default="true" Required="true" />
     </Environment>
+
     <Setting PropertyName="Fields" ParameterName="fields" Collection="true" Type="String"
-         Description="The fields that should be retrieved from the userinfo endpoint (by default, all known basic fields are requested)">
-      <Item Value="name"                                     Default="true" Required="false" />
-      <Item Value="first_name"                               Default="true" Required="false" />
-      <Item Value="last_name"                                Default="true" Required="false" />
-      <Item Value="email"                                    Default="true" Required="false" />
+             Description="The fields that should be retrieved from the userinfo endpoint (by default, only basic fields are requested)">
+      <Item Value="email"      Default="true" Required="false" />
+      <Item Value="first_name" Default="true" Required="false" />
+      <Item Value="last_name"  Default="true" Required="false" />
+      <Item Value="name"       Default="true" Required="false" />
     </Setting>
   </Provider>
-
 
   <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
