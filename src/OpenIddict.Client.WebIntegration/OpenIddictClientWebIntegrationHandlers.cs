@@ -518,10 +518,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
+            // Facebook limits the number of fields returned by the userinfo endpoint
+            // but allows returning additional information using special parameters that
+            // determine what fields will be returned as part of the userinfo response.
+            if (context.Registration.ProviderName is Providers.Facebook)
+            {
+                var options = context.Registration.GetFacebookOptions();
+
+                context.UserinfoRequest["fields"] = string.Join(",", options.Fields);
+            }
+
             // By default, LinkedIn returns all the basic fields except the profile image.
             // To retrieve the profile image, a projection parameter must be sent with
             // all the parameters that should be returned from the userinfo endpoint.
-            if (context.Registration.ProviderName is Providers.LinkedIn)
+            else if (context.Registration.ProviderName is Providers.LinkedIn)
             {
                 var options = context.Registration.GetLinkedInOptions();
 
