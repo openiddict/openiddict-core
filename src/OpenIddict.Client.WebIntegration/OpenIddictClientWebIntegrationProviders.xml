@@ -293,8 +293,6 @@
                      UserinfoEndpoint="https://graph.facebook.com/v16.0/me">
         <CodeChallengeMethod Value="S256" />
       </Configuration>
-
-      <Scope Name="email" Default="true" Required="true" />
     </Environment>
 
     <Setting PropertyName="Fields" ParameterName="fields" Collection="true" Type="String"
