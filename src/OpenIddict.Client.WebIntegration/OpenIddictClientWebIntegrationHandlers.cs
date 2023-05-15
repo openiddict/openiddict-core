@@ -29,6 +29,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         OverrideValidatedBackchannelTokens.Descriptor,
         DisableBackchannelIdentityTokenNonceValidation.Descriptor,
         OverrideUserinfoEndpoint.Descriptor,
+        DisableUserinfoRetrieval.Descriptor,
         DisableUserinfoValidation.Descriptor,
         AttachAdditionalUserinfoRequestParameters.Descriptor,
         PopulateUserinfoTokenPrincipalFromTokenResponse.Descriptor,
@@ -452,6 +453,59 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for disabling the userinfo retrieval for the providers that require it.
+    /// </summary>
+    public sealed class DisableUserinfoRetrieval : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<DisableUserinfoRetrieval>()
+                .SetOrder(EvaluateUserinfoRequest.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.SendUserinfoRequest = context.Registration.ProviderName switch
+            {
+                // Note: the frontchannel or backchannel access tokens returned by Azure AD when a
+                // Xbox scope is requested cannot be used with the userinfo endpoint as they use a
+                // legacy format that is not supported by the Azure AD userinfo implementation.
+                //
+                // To work around this limitation, userinfo retrieval is disabled when a Xbox scope is requested.
+                Providers.Microsoft => context.GrantType switch
+                {
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                        context.StateTokenPrincipal is ClaimsPrincipal principal &&
+                        principal.HasClaim(static claim =>
+                            claim.Type is Claims.Private.Scope &&
+                            claim.Value.StartsWith("XboxLive.", StringComparison.OrdinalIgnoreCase))
+                        => false,
+
+                    GrantTypes.DeviceCode or GrantTypes.RefreshToken when
+                        context.Scopes.Any(static scope => scope.StartsWith("XboxLive.", StringComparison.OrdinalIgnoreCase))
+                        => false,
+
+                    _ => context.SendUserinfoRequest
+                },
+
+                _ => context.SendUserinfoRequest
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for disabling the userinfo validation for the providers that require it.
     /// </summary>
     public sealed class DisableUserinfoValidation : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -462,7 +516,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<DisableUserinfoValidation>()
-                .SetOrder(EvaluateUserinfoRequest.Descriptor.Order + 500)
+                .SetOrder(DisableUserinfoRetrieval.Descriptor.Order + 250)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
