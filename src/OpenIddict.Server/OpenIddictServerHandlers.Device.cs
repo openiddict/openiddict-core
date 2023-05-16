@@ -301,7 +301,7 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireDeviceRequest>()
                     .UseScopedHandler<ApplyDeviceResponse<TContext>>()
-                    .SetOrder(int.MaxValue - 100_000)
+                    .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1099,7 +1099,7 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireVerificationRequest>()
                     .UseScopedHandler<ApplyVerificationResponse<TContext>>()
-                    .SetOrder(int.MaxValue - 100_000)
+                    .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

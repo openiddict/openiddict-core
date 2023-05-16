@@ -147,7 +147,6 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
                 return new(mode is OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker);
             }
 #endif
-
             return new(false);
         }
     }
