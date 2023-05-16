@@ -144,7 +144,8 @@ public static partial class OpenIddictClientHandlers
         /*
          * Error processing:
          */
-        AttachErrorParameters.Descriptor)
+        AttachErrorParameters.Descriptor,
+        AttachCustomErrorParameters.Descriptor)
 
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Device.DefaultHandlers)
@@ -6055,6 +6056,34 @@ public static partial class OpenIddictClientHandlers
             context.Response.Error = context.Error;
             context.Response.ErrorDescription = context.ErrorDescription;
             context.Response.ErrorUri = context.ErrorUri;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the error response.
+    /// </summary>
+    public sealed class AttachCustomErrorParameters : IOpenIddictClientHandler<ProcessErrorContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessErrorContext>()
+                .UseSingletonHandler<AttachCustomErrorParameters>()
+                .SetOrder(100_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessErrorContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             if (context.Parameters.Count > 0)
             {

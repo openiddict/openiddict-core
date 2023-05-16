@@ -373,7 +373,7 @@ public static partial class OpenIddictClientHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequirePostLogoutRedirectionRequest>()
                     .UseScopedHandler<ApplyPostLogoutRedirectionResponse<TContext>>()
-                    .SetOrder(int.MaxValue - 100_000)
+                    .SetOrder(500_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

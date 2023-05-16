@@ -53,7 +53,18 @@ public static partial class OpenIddictClientOwinHandlers
          */
         ResolveHostSignOutProperties.Descriptor,
         ValidateTransportSecurityRequirementForSignOut.Descriptor,
-        GenerateLogoutCorrelationCookie.Descriptor)
+        GenerateLogoutCorrelationCookie.Descriptor,
+
+        /*
+         * Error processing:
+         */
+        // Note: these handler registrations are only used as a last resort for errors that are not
+        // returned by an OpenIddict endpoint (e.g errors returned during a failed challenge demand).
+        //
+        // Errors returned by an OpenIddict endpoint are handled via the Apply*Response events.
+        AttachHttpResponseCode<ProcessErrorContext>.Descriptor,
+        AttachCacheControlHeader<ProcessErrorContext>.Descriptor,
+        ProcessLocalErrorResponse<ProcessErrorContext>.Descriptor)
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Session.DefaultHandlers);
 
@@ -1097,7 +1108,7 @@ public static partial class OpenIddictClientOwinHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
-                .SetOrder(100_000)
+                .SetOrder(int.MaxValue - 100_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -1303,7 +1314,7 @@ public static partial class OpenIddictClientOwinHandlers
                 .AddFilter<RequireErrorPassthroughEnabled>()
                 .AddFilter<TFilter>()
                 .UseSingletonHandler<ProcessPassthroughErrorResponse<TContext, TFilter>>()
-                .SetOrder(100_000)
+                .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
