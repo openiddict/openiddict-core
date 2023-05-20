@@ -101,7 +101,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // authorization code or implicit flows). To work around that, the list of supported grant
                 // types is amended to include the known supported types for the providers that require it.
 
-                if (context.Registration.ProviderName is Providers.Apple or Providers.QuickBooksOnline)
+                if (context.Registration.ProviderName is Providers.Apple or Providers.LinkedIn or Providers.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
@@ -276,6 +276,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Configuration.TokenEndpointAuthMethodsSupported.Add(
                         ClientAuthenticationMethods.PrivateKeyJwt);
+                }
+
+                // LinkedIn doesn't support sending the client credentials using basic authentication but
+                // doesn't return a "token_endpoint_auth_methods_supported" node containing alternative
+                // authentication methods, making basic authentication the default authentication method.
+                // To work around this compliance issue, "client_secret_post" is manually added here.
+                else if (context.Registration.ProviderName is Providers.LinkedIn)
+                {
+                    context.Configuration.TokenEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretPost);
                 }
 
                 return default;

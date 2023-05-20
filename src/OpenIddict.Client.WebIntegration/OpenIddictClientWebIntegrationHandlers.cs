@@ -60,6 +60,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireRedirectionRequest>()
                 .UseSingletonHandler<HandleNonStandardFrontchannelErrorResponse>()
                 .SetOrder(HandleFrontchannelErrorResponse.Descriptor.Order - 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -394,7 +395,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.DisableBackchannelIdentityTokenNonceValidation = context.Registration.ProviderName switch
             {
                 // These providers don't include the nonce in their identity tokens:
-                Providers.Asana or Providers.Dropbox or Providers.QuickBooksOnline => true,
+                Providers.Asana or Providers.Dropbox or Providers.LinkedIn or Providers.QuickBooksOnline => true,
 
                 _ => context.DisableBackchannelIdentityTokenNonceValidation
             };
@@ -580,16 +581,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var options = context.Registration.GetFacebookOptions();
 
                 context.UserinfoRequest["fields"] = string.Join(",", options.Fields);
-            }
-
-            // By default, LinkedIn returns all the basic fields except the profile image.
-            // To retrieve the profile image, a projection parameter must be sent with
-            // all the parameters that should be returned from the userinfo endpoint.
-            else if (context.Registration.ProviderName is Providers.LinkedIn)
-            {
-                var options = context.Registration.GetLinkedInOptions();
-
-                context.UserinfoRequest["projection"] = string.Concat("(", string.Join(",", options.Fields), ")");
             }
 
             // Patreon limits the number of fields returned by the userinfo endpoint
