@@ -398,6 +398,16 @@
                     </xs:simpleType>
                   </xs:attribute>
 
+                  <xs:attribute name="Obsolete" use="optional">
+                    <xs:annotation>
+                      <xs:documentation>A boolean indicating whether the setting is obsolete.</xs:documentation>
+                    </xs:annotation>
+
+                    <xs:simpleType>
+                      <xs:restriction base="xs:boolean" />
+                    </xs:simpleType>
+                  </xs:attribute>
+
                   <xs:attribute name="Type" use="required">
                     <xs:annotation>
                       <xs:documentation>The setting type.</xs:documentation>

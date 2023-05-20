@@ -46,6 +46,7 @@ namespace OpenIddict.Client.WebIntegration.Generators
             static string GenerateBuilderMethods(XDocument document)
             {
                 var template = Template.Parse(@"#nullable enable
+#pragma warning disable CS0618
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -284,6 +285,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Add{{ setting.property_name }}(params {{ setting.clr_type }}[] {{ setting.parameter_name }})
         {
             if ({{ setting.parameter_name }} is null)
@@ -299,6 +303,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(ECDsaSecurityKey {{ setting.parameter_name }})
         {
             if ({{ setting.parameter_name }} is null)
@@ -322,6 +329,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
         /// </param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(string key)
             => Set{{ setting.property_name }}(key.AsMemory());
 
@@ -332,6 +342,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
         /// </param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(ReadOnlyMemory<char> key)
             => Set{{ setting.property_name }}(key.Span);
 
@@ -342,6 +355,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
         /// </param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(ReadOnlySpan<char> key)
         {
             if (key.IsEmpty)
@@ -372,6 +388,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Uri {{ setting.parameter_name }})
         {
             if ({{ setting.parameter_name }} is null)
@@ -392,6 +411,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(string {{ setting.parameter_name }})
         {
             if (string.IsNullOrEmpty({{ setting.parameter_name }}))
@@ -407,6 +429,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(X509Certificate2 {{ setting.parameter_name }})
         {
             if ({{ setting.parameter_name }} is null)
@@ -429,6 +454,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""resource"">The name of the embedded resource.</param>
         /// <param name=""password"">The password used to open the certificate.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Assembly assembly, string resource, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
@@ -447,6 +475,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""password"">The password used to open the certificate.</param>
         /// <param name=""flags"">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(
             Assembly assembly, string resource,
             string? password, X509KeyStorageFlags flags)
@@ -473,6 +504,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""stream"">The stream containing the certificate.</param>
         /// <param name=""password"">The password used to open the certificate.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
@@ -493,6 +527,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// to store the private key of the certificate.
         /// </param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password, X509KeyStorageFlags flags)
         {
             if (stream is null)
@@ -511,6 +548,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""thumbprint"">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint)
         {
             if (string.IsNullOrEmpty(thumbprint))
@@ -541,6 +581,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""name"">The name of the X.509 store.</param>
         /// <param name=""location"">The location of the X.509 store.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint, StoreName name, StoreLocation location)
         {
             if (string.IsNullOrEmpty(thumbprint))
@@ -562,6 +605,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}({{ setting.clr_type }} {{ setting.parameter_name }})
         {
             if ({{ setting.parameter_name }} is null)
@@ -611,6 +657,8 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                                 ParameterName = (string) setting.Attribute("ParameterName"),
 
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
+                                Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
+
                                 Description = (string) setting.Attribute("Description") is string description ?
                                     char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                                 ClrType = (string) setting.Attribute("Type") switch
@@ -687,6 +735,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
             static string GenerateConfigurationClasses(XDocument document)
             {
                 var template = Template.Parse(@"#nullable enable
+#pragma warning disable CS0618
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -1155,6 +1204,9 @@ public sealed partial class OpenIddictClientWebIntegrationOptions
         /// <summary>
         /// Gets or sets {{ setting.description }}.
         /// </summary>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
         {{~ if setting.collection ~}}
         public HashSet<{{ setting.clr_type }}> {{ setting.property_name }} { get; } = new();
         {{~ else ~}}
@@ -1179,6 +1231,8 @@ public sealed partial class OpenIddictClientWebIntegrationOptions
                                 PropertyName = (string) setting.Attribute("PropertyName"),
 
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
+                                Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
+
                                 Description = (string) setting.Attribute("Description") is string description ?
                                     char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                                 ClrType = (string) setting.Attribute("Type") switch
