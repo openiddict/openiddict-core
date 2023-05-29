@@ -50,6 +50,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
     /// <returns>The <see cref="HttpListenerContext"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    [SupportedOSPlatform("windows10.0.17763")]
     public static WebAuthenticationResult? GetWebAuthenticationResult(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<WebAuthenticationResult>(typeof(WebAuthenticationResult).FullName!);
 #endif

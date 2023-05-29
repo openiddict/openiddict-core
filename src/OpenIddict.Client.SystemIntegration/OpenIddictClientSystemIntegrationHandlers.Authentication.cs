@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;
@@ -68,6 +69,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     .Build();
 
             /// <inheritdoc/>
+            [SupportedOSPlatform("windows10.0.17763")]
 #pragma warning disable CS1998
             public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
 #pragma warning restore CS1998

@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.IO.Pipes;
 using System.Net;
+using System.Runtime.Versioning;
 using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -71,6 +72,7 @@ public sealed class OpenIddictClientSystemIntegrationService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
+    [SupportedOSPlatform("windows10.0.17763")]
     internal Task HandleWebAuthenticationResultAsync(WebAuthenticationResult result, CancellationToken cancellationToken = default)
         => HandleRequestAsync(result ?? throw new ArgumentNullException(nameof(result)), cancellationToken);
 #endif

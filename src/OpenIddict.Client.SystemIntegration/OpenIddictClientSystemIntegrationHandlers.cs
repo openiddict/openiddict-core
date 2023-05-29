@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.Versioning;
 using System.Security.Claims;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -201,6 +202,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
+        [SupportedOSPlatform("windows10.0.17763")]
         public ValueTask HandleAsync(ProcessRequestContext context)
         {
             if (context is null)
@@ -470,6 +472,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
+        [SupportedOSPlatform("windows10.0.17763")]
         public ValueTask HandleAsync(TContext context)
         {
             if (context is null)
