@@ -24,7 +24,7 @@ using Windows.System;
 namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>
-/// Exposes companion extensions for the OpenIddict/Windows integration.
+/// Exposes companion extensions for the OpenIddict/system integration.
 /// </summary>
 public static class OpenIddictClientSystemIntegrationHelpers
 {
@@ -102,6 +102,72 @@ public static class OpenIddictClientSystemIntegrationHelpers
     internal static bool IsWindowsRuntimeSupported() => IsWindowsVersionAtLeast(10, 0, 17763);
 
     /// <summary>
+    /// Determines whether WinRT app instance activation is supported on this platform.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if WinRT app instance activation is supported, <see langword="false"/> otherwise.
+    /// </returns>
+    [SupportedOSPlatformGuard("windows10.0.17763")]
+    internal static bool IsAppInstanceActivationSupported()
+    {
+#if SUPPORTS_WINDOWS_RUNTIME
+        return IsWindowsRuntimeSupported() && IsApiPresent();
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static bool IsApiPresent() => ApiInformation.IsMethodPresent(
+            typeName           : typeof(AppInstance).FullName,
+            methodName         : nameof(AppInstance.GetActivatedEventArgs),
+            inputParameterCount: 0);
+#else
+        return false;
+#endif
+    }
+
+    /// <summary>
+    /// Determines whether the WinRT URI launcher is supported on this platform.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the WinRT URI launcher is supported, <see langword="false"/> otherwise.
+    /// </returns>
+    [SupportedOSPlatformGuard("windows10.0.17763")]
+    internal static bool IsUriLauncherSupported()
+    {
+#if SUPPORTS_WINDOWS_RUNTIME
+        return IsWindowsRuntimeSupported() && IsApiPresent();
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static bool IsApiPresent() => ApiInformation.IsMethodPresent(
+            typeName           : typeof(Launcher).FullName,
+            methodName         : nameof(Launcher.LaunchUriAsync),
+            inputParameterCount: 1);
+#else
+        return false;
+#endif
+    }
+
+    /// <summary>
+    /// Determines whether the WinRT web authentication broker is supported on this platform.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the WinRT web authentication broker is supported, <see langword="false"/> otherwise.
+    /// </returns>
+    [SupportedOSPlatformGuard("windows10.0.17763")]
+    internal static bool IsWebAuthenticationBrokerSupported()
+    {
+#if SUPPORTS_WINDOWS_RUNTIME
+        return IsWindowsRuntimeSupported() && IsApiPresent();
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static bool IsApiPresent() => ApiInformation.IsMethodPresent(
+            typeName           : typeof(WebAuthenticationBroker).FullName,
+            methodName         : nameof(WebAuthenticationBroker.AuthenticateAsync),
+            inputParameterCount: 3);
+#else
+        return false;
+#endif
+    }
+
+    /// <summary>
     /// Determines whether the specified identity contains an AppContainer
     /// token, indicating it's running in an AppContainer sandbox.
     /// </summary>
@@ -153,12 +219,6 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [MethodImpl(MethodImplOptions.NoInlining), SupportedOSPlatform("windows10.0.17763")]
     internal static Uri? GetProtocolActivationUriWithWindowsRuntime()
     {
-        if (!ApiInformation.IsMethodPresent(typeof(AppInstance).FullName,
-            nameof(AppInstance.GetActivatedEventArgs), inputParameterCount: 0))
-        {
-            return null;
-        }
-
         try
         {
             return AppInstance.GetActivatedEventArgs() is
@@ -184,12 +244,6 @@ public static class OpenIddictClientSystemIntegrationHelpers
         // identity are now allowed to use most of the WinRT APIs. Since OpenIddict's UWP support
         // is implemented via a .NET Standard 2.0 TFM (which requires Windows 10 1809), it is assumed
         // at this point that Launcher.LaunchUriAsync() can be used in both types of applications.
-
-        if (!ApiInformation.IsMethodPresent(typeof(Launcher).FullName,
-            nameof(Launcher.LaunchUriAsync), inputParameterCount: 1))
-        {
-            return false;
-        }
 
         try
         {

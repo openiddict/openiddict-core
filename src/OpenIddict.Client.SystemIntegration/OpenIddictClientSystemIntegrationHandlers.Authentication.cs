@@ -14,6 +14,7 @@ using OpenIddict.Extensions;
 
 #if SUPPORTS_WINDOWS_RUNTIME
 using Windows.Security.Authentication.Web;
+using Windows.UI.Core;
 #endif
 
 namespace OpenIddict.Client.SystemIntegration;
@@ -85,6 +86,20 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 if (string.IsNullOrEmpty(context.RedirectUri))
                 {
                     return;
+                }
+
+                // Note: WebAuthenticationBroker internally requires a pointer to the CoreWindow object associated
+                // to the thread from which the challenge operation is started. Unfortunately, CoreWindow - and by
+                // extension WebAuthenticationBroker - are only supported on UWP and cannot be used in Win32 apps.
+                //
+                // To ensure a meaningful exception is returned when the web authentication broker is used with an
+                // incompatible application model (e.g WinUI 3.0), the presence of a CoreWindow is verified here.
+                //
+                // See https://github.com/microsoft/WindowsAppSDK/issues/398 for more information.
+                if (!OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported() ||
+                    CoreWindow.GetForCurrentThread() is null)
+                {
+                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
                 }
 
                 // OpenIddict represents the complete interactive authentication dance as a two-phase process:
@@ -214,7 +229,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     // Runtime APIs and favor the Launcher.LaunchUriAsync() API when it's offered by the platform.
 
 #if SUPPORTS_WINDOWS_RUNTIME
-                    if (OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported() && await
+                    if (OpenIddictClientSystemIntegrationHelpers.IsUriLauncherSupported() && await
                         OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithWindowsRuntimeAsync(uri))
                     {
                         context.HandleRequest();

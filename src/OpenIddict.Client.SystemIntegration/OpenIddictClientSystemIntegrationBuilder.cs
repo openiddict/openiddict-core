@@ -7,7 +7,6 @@
 using System.ComponentModel;
 using System.IO.Pipes;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using OpenIddict.Client.SystemIntegration;
 
@@ -61,12 +60,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     [SupportedOSPlatform("windows10.0.17763")]
     public OpenIddictClientSystemIntegrationBuilder UseWebAuthenticationBroker()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
-        }
-
-        if (!OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported())
+        if (!OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
         }

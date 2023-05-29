@@ -80,6 +80,15 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 
+#pragma warning disable CA1416
+        // If explicitly set, ensure the specified authentication mode is supported.
+        if (options.AuthenticationMode is OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker &&
+            !OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
+        }
+#pragma warning restore CA1416
+
         // Note: the OpenIddict client system integration is currently only supported on Windows
         // and Linux. As such, using the system browser as the default authentication method in
         // conjunction with the embedded web server and activation handling should be always supported.
