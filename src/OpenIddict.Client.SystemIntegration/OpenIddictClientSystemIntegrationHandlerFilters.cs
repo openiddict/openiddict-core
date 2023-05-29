@@ -135,7 +135,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
 #if SUPPORTS_WINDOWS_RUNTIME
-            if (OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported())
+            if (OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
             {
                 if (!context.Transaction.Properties.TryGetValue(
                     typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) ||
@@ -166,7 +166,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
 #if SUPPORTS_WINDOWS_RUNTIME
-            if (OpenIddictClientSystemIntegrationHelpers.IsWindowsRuntimeSupported())
+            if (OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
             {
                 return new(ContainsWebAuthenticationResult(context.Transaction));
             }
