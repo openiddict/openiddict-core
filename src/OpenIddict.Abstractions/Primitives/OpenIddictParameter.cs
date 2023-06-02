@@ -117,10 +117,10 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
                 // If the parameter is a JsonValue wrapping a well-known primitive type
                 // (e.g int or string), always return 0 as these types can't have a length.
-                JsonValue value when value.TryGetValue(out bool   _) ||
-                                     value.TryGetValue(out int    _) ||
-                                     value.TryGetValue(out long   _) ||
-                                     value.TryGetValue(out string _) => 0,
+                JsonValue value when value.TryGetValue(out bool    _) ||
+                                     value.TryGetValue(out int     _) ||
+                                     value.TryGetValue(out long    _) ||
+                                     value.TryGetValue(out string? _) => 0,
 
                 // If the parameter is any other JsonNode (e.g a JsonValue), serialize it
                 // to a JsonElement first to determine its actual JSON representation
