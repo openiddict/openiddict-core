@@ -6,6 +6,17 @@ on:
     tags: [ '*' ]
   pull_request:
     branches: [ dev, rel/* ]
+  workflow_dispatch:
+
+env:
+  DOTNET_MULTILEVEL_LOOKUP: 0
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+  NUGET_XMLDOC_MODE: skip
+  TERM: xterm
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -17,12 +28,12 @@ jobs:
       matrix:
         os: [ macos-latest, ubuntu-latest, windows-latest ]
         include:
-          - os: macos-latest
-            os_name: macos
-          - os: ubuntu-latest
-            os_name: linux
-          - os: windows-latest
-            os_name: windows
+        - os: macos-latest
+          os_name: macos
+        - os: ubuntu-latest
+          os_name: linux
+        - os: windows-latest
+          os_name: windows
 
     steps:
     - name: Checkout code
@@ -61,19 +72,11 @@ jobs:
     - name: Build, test and pack
       if: ${{ runner.os == 'Windows' }}
       run: eng\common\CIBuild.cmd -configuration Release -prepareMachine -integrationTest
-      env:
-        DOTNET_MULTILEVEL_LOOKUP: 0
-        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-        NUGET_XMLDOC_MODE: skip
 
     - name: Build, test and pack
       if: ${{ runner.os != 'Windows' }}
       shell: pwsh
       run: ./eng/common/cibuild.sh -configuration Release -prepareMachine -integrationTest
-      env:
-        DOTNET_MULTILEVEL_LOOKUP: 0
-        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-        NUGET_XMLDOC_MODE: skip
 
     - name: Publish logs
       if: ${{ always() }}
@@ -95,10 +98,36 @@ jobs:
         name: testresults-${{ matrix.os_name }}
         path: ./artifacts/TestResults/Release
 
-    - name: Push NuGet packages to MyGet.org
-      if: ${{ github.repository_owner == 'openiddict' && (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/heads/rel/') || startsWith(github.ref, 'refs/tags/')) && runner.os == 'Windows' }}
-      run: nuget push "artifacts\packages\Release\Shipping\*.nupkg" -ApiKey ${{ secrets.MYGET_API_KEY }} -SkipDuplicate -Source https://www.myget.org/F/openiddict/api/v3/index.json
+  push-myget:
+    needs: build
+    runs-on: ubuntu-latest
+    if: |
+      github.event.repository.fork == false &&
+      (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/heads/rel/') || startsWith(github.ref, 'refs/tags/'))
+    steps:
+    - name: Download packages
+      uses: actions/download-artifact@v3
+      with:
+        name: packages-windows
 
-    - name: Push NuGet packages to NuGet.org
-      if: ${{ github.repository_owner == 'openiddict' && startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
-      run: nuget push "artifacts\packages\Release\Shipping\*.nupkg" -ApiKey ${{ secrets.NUGET_API_KEY }} -SkipDuplicate -Source https://api.nuget.org/v3/index.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+
+    - name: Push packages to MyGet.org
+      run: nuget push "*.nupkg" -ApiKey ${{ secrets.MYGET_API_KEY }} -SkipDuplicate -Source https://www.myget.org/F/openiddict/api/v3/index.json
+
+  push-nuget:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.repository.fork == false && startsWith(github.ref, 'refs/tags/')
+    steps:
+    - name: Download packages
+      uses: actions/download-artifact@v3
+      with:
+        name: packages-windows
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+
+    - name: Push packages to NuGet.org
+      run: nuget push "*.nupkg" -ApiKey ${{ secrets.NUGET_API_KEY }} -SkipDuplicate -Source https://api.nuget.org/v3/index.json
