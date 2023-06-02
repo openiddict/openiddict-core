@@ -1,12 +1,20 @@
 {
   "sdk": {
-    "version": "7.0.203",
+    "version": "7.0.302",
     "allowPrerelease": true,
     "rollForward": "major"
   },
 
   "tools": {
-    "dotnet": "7.0.203"
+    "dotnet": "7.0.302",
+
+    "runtimes": {
+      "aspnetcore": [
+        "3.1.32",
+        "6.0.16",
+        "7.0.5"
+      ]
+    }
   },
 
   "msbuild-sdks": {
