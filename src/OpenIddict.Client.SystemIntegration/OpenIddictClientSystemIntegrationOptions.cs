@@ -81,6 +81,9 @@ public sealed class OpenIddictClientSystemIntegrationOptions
     /// Gets or sets the application discriminator used to define a static
     /// pipe name that will be shared by all the instances of the application.
     /// </summary>
+    /// <remarks>
+    /// Note: this property is not used when <see cref="PipeName"/> is explicitly set.
+    /// </remarks>
     public string? ApplicationDiscriminator { get; set; }
 
     /// <summary>
