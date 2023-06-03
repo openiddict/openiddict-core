@@ -1,0 +1,75 @@
+﻿<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConfiguration.#ctor</Target>
+    <Left>lib/net6.0/OpenIddict.Client.WebIntegration.dll</Left>
+    <Right>lib/net6.0/OpenIddict.Client.WebIntegration.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConfiguration.#ctor</Target>
+    <Left>lib/net7.0/OpenIddict.Client.WebIntegration.dll</Left>
+    <Right>lib/net7.0/OpenIddict.Client.WebIntegration.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHelpers.GetWebAuthenticationResult(OpenIddict.Client.OpenIddictClientTransaction)</Target>
+    <Left>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Left>
+    <Right>lib/net6.0-windows7.0/OpenIddict.Client.SystemIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHelpers.GetWebAuthenticationResult(OpenIddict.Client.OpenIddictClientTransaction)</Target>
+    <Left>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Left>
+    <Right>lib/net6.0/OpenIddict.Client.SystemIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConfiguration.#ctor</Target>
+    <Left>lib/netcoreapp3.1/OpenIddict.Client.WebIntegration.dll</Left>
+    <Right>lib/netcoreapp3.1/OpenIddict.Client.WebIntegration.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationConfiguration.#ctor(Microsoft.Extensions.Hosting.IHostingEnvironment)</Target>
+    <Left>lib/netstandard2.0/OpenIddict.Client.SystemIntegration.dll</Left>
+    <Right>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlers.AbortAuthenticationDemand.#ctor(OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationMarshal,Microsoft.Extensions.Hosting.IApplicationLifetime)</Target>
+    <Left>lib/netstandard2.0/OpenIddict.Client.SystemIntegration.dll</Left>
+    <Right>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlers.RedirectProtocolActivation.#ctor(Microsoft.Extensions.Hosting.IApplicationLifetime,Microsoft.Extensions.Options.IOptionsMonitor{OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationOptions},OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationService)</Target>
+    <Left>lib/netstandard2.0/OpenIddict.Client.SystemIntegration.dll</Left>
+    <Right>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConfiguration.#ctor(System.IServiceProvider)</Target>
+    <Left>lib/netstandard2.0/OpenIddict.Client.WebIntegration.dll</Left>
+    <Right>lib/netstandard2.1/OpenIddict.Client.WebIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConfiguration.#ctor</Target>
+    <Left>lib/netstandard2.1/OpenIddict.Client.WebIntegration.dll</Left>
+    <Right>lib/netstandard2.1/OpenIddict.Client.WebIntegration.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+</Suppressions>
