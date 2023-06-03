@@ -60,11 +60,16 @@
 
   <PropertyGroup Condition=" $(RepoRelativeProjectDir.Contains('src')) ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnablePackageValidation>true</EnablePackageValidation>
     <IncludeSymbols>true</IncludeSymbols>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <Serviceable>false</Serviceable>
   </PropertyGroup>
+
+  <ItemGroup Condition=" $(RepoRelativeProjectDir.Contains('src')) ">
+    <ApiCompatSuppressionFile Include="$(MSBuildThisFileDirectory)eng\CompatibilitySuppressions.xml" />
+  </ItemGroup>
 
   <PropertyGroup>
     <PolySharpIncludeRuntimeSupportedAttributes>true</PolySharpIncludeRuntimeSupportedAttributes>
