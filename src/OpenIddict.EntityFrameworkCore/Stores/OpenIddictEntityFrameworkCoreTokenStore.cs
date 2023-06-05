@@ -368,7 +368,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                 return null;
             }
 
-            await reference.LoadAsync(cancellationToken);
+            await reference.LoadAsync(cancellationToken: cancellationToken);
         }
 
         if (token.Application is null)
@@ -411,7 +411,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                 return null;
             }
 
-            await reference.LoadAsync(cancellationToken);
+            await reference.LoadAsync(cancellationToken: cancellationToken);
         }
 
         if (token.Authorization is null)
@@ -742,7 +742,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                     return;
                 }
 
-                await reference.LoadAsync(cancellationToken);
+                await reference.LoadAsync(cancellationToken: cancellationToken);
             }
 
             token.Application = null;
@@ -780,7 +780,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                     return;
                 }
 
-                await reference.LoadAsync(cancellationToken);
+                await reference.LoadAsync(cancellationToken: cancellationToken);
             }
 
             token.Authorization = null;

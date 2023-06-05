@@ -446,7 +446,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
                 return null;
             }
 
-            await reference.LoadAsync(cancellationToken);
+            await reference.LoadAsync(cancellationToken: cancellationToken);
         }
 
         if (authorization.Application is null)
@@ -781,7 +781,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
                     return;
                 }
 
-                await reference.LoadAsync(cancellationToken);
+                await reference.LoadAsync(cancellationToken: cancellationToken);
             }
 
             authorization.Application = null;
