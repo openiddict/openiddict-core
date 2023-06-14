@@ -922,7 +922,6 @@ public sealed class OpenIddictClientBuilder
     /// specific OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc8628.
     /// </summary>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    [RequiresPreviewFeatures] 
     public OpenIddictClientBuilder AllowDeviceCodeFlow()
         => Configure(options => options.GrantTypes.Add(GrantTypes.DeviceCode));
 

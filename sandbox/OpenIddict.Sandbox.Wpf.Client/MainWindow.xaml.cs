@@ -30,10 +30,18 @@ public partial class MainWindow : Window, IWpfShell
 
         try
         {
-            // Ask OpenIddict to initiate the authentication flow (typically, by
-            // starting the system browser) and wait for the user to complete it.
-            var (_, _, principal) = await _service.AuthenticateInteractivelyAsync(
-                provider, cancellationToken: source.Token);
+            // Ask OpenIddict to initiate the authentication flow (typically, by starting the system browser).
+            var result = await _service.ChallengeInteractivelyAsync(new()
+            {
+                CancellationToken = source.Token,
+                ProviderName = provider
+            });
+
+            // Wait for the user to complete the authorization process.
+            var principal = (await _service.AuthenticateInteractivelyAsync(new()
+            {
+                Nonce = result.Nonce
+            })).Principal;
 
             MessageBox.Show($"Welcome, {principal.FindFirst(Claims.Name)!.Value}.",
                 "Authentication successful", MessageBoxButton.OK, MessageBoxImage.Information);

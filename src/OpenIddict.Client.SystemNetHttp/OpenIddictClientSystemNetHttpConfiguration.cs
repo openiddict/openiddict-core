@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -52,11 +53,17 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         }
 
         // Only amend the HTTP client factory options if the instance is managed by OpenIddict.
-        var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
-        if (string.IsNullOrEmpty(name) || !name.StartsWith(assembly.Name!, StringComparison.Ordinal))
+        if (string.IsNullOrEmpty(name) || !TryResolveRegistrationId(name, out string? identifier))
         {
             return;
         }
+
+        var service = _provider.GetRequiredService<OpenIddictClientService>();
+
+        // Note: while the client registration should be returned synchronously in most cases,
+        // the retrieval is always offloaded to the thread pool to help prevent deadlocks when
+        // the waiting is blocking and the operation is executed in a synchronization context.
+        var registration = Task.Run(async () => await service.GetClientRegistrationByIdAsync(identifier)).GetAwaiter().GetResult();
 
         var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientSystemNetHttpOptions>>().CurrentValue;
 
@@ -70,12 +77,9 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         });
 
         // Register the user-defined HTTP client actions.
-        foreach (var action in settings.HttpClientActions
-            .Where(action => string.IsNullOrEmpty(action.Key) || // Note: actions that have an empty key apply to all providers.
-                             action.Key.AsSpan().Equals(name.AsSpan(assembly.Name!.Length + 1), StringComparison.Ordinal))
-            .SelectMany(action => action.Value))
+        foreach (var action in settings.UnfilteredHttpClientActions)
         {
-            options.HttpClientActions.Add(action);
+            options.HttpClientActions.Add(client => action(registration, client));
         }
 
         options.HttpMessageHandlerBuilderActions.Add(builder =>
@@ -109,13 +113,27 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         });
 
         // Register the user-defined HTTP client handler actions.
-        foreach (var action in settings.HttpClientHandlerActions
-            .Where(action => string.IsNullOrEmpty(action.Key) || // Note: actions that have an empty key apply to all providers.
-                             action.Key.AsSpan().Equals(name.AsSpan(assembly.Name!.Length + 1), StringComparison.Ordinal))
-            .SelectMany(action => action.Value))
+        foreach (var action in settings.UnfilteredHttpClientHandlerActions)
         {
-            options.HttpMessageHandlerBuilderActions.Add(builder => action(builder.PrimaryHandler as HttpClientHandler ??
-                throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
+            options.HttpMessageHandlerBuilderActions.Add(builder => action(registration,
+                builder.PrimaryHandler as HttpClientHandler ??
+                    throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
+        }
+
+        static bool TryResolveRegistrationId(string name, [NotNullWhen(true)] out string? value)
+        {
+            var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
+
+            if (!name.StartsWith(assembly.Name!, StringComparison.Ordinal) ||
+                 name.Length < assembly.Name!.Length + 1 ||
+                 name[assembly.Name.Length] is not ':')
+            {
+                value = null;
+                return false;
+            }
+
+            value = name[(assembly.Name.Length + 1)..];
+            return true;
         }
     }
 }

@@ -65,14 +65,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Trakt requires sending both an API key (which is always the client identifier) and an API version
                 // (which is statically set to the last version known to be supported by the OpenIddict integration).
-                if (context.Registration.ProviderName is Providers.Trakt)
+                if (context.Registration.ProviderType is ProviderTypes.Trakt)
                 {
                     request.Headers.Add("trakt-api-key", context.Registration.ClientId);
                     request.Headers.Add("trakt-api-version", "2");
                 }
 
                 // Trovo requires sending the client identifier as a separate, non-standard header.
-                else if (context.Registration.ProviderName is Providers.Trovo)
+                else if (context.Registration.ProviderType is ProviderTypes.Trovo)
                 {
                     request.Headers.Add("Client-ID", context.Registration.ClientId);
                 }
@@ -117,7 +117,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // or using a non-standard authentication scheme (e.g OAuth instead of Bearer).
 
                 // These providers require sending the access token as part of the request payload.
-                if (context.Registration.ProviderName is Providers.Deezer or Providers.Mixcloud or Providers.StackExchange)
+                if (context.Registration.ProviderType is ProviderTypes.Deezer or ProviderTypes.Mixcloud or ProviderTypes.StackExchange)
                 {
                     context.Request.AccessToken = request.Headers.Authorization?.Parameter;
 
@@ -126,7 +126,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 // Trovo requires using the "OAuth" scheme instead of the standard "Bearer" value.
-                else if (context.Registration.ProviderName is Providers.Trovo)
+                else if (context.Registration.ProviderType is ProviderTypes.Trovo)
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("OAuth",
                         request.Headers.Authorization?.Parameter);
@@ -162,7 +162,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // ArcGIS Online doesn't support header-based content negotiation and requires using
                 // the non-standard "f" parameter to get back JSON responses instead of HTML pages.
-                if (context.Registration.ProviderName is Providers.ArcGisOnline)
+                if (context.Registration.ProviderType is ProviderTypes.ArcGisOnline)
                 {
                     context.Request["f"] = "json";
                 }
@@ -209,10 +209,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // OpenIddict from extracting userinfo responses. To work around that, the declared
                 // content type is replaced by the correct value for the providers that require it.
 
-                response.Content.Headers.ContentType = context.Registration.ProviderName switch
+                response.Content.Headers.ContentType = context.Registration.ProviderType switch
                 {
                     // Mixcloud returns JSON-formatted contents declared as "text/javascript".
-                    Providers.Mixcloud => new MediaTypeHeaderValue(MediaTypes.Json)
+                    ProviderTypes.Mixcloud => new MediaTypeHeaderValue(MediaTypes.Json)
                     {
                         CharSet = Charsets.Utf8
                     },
@@ -255,49 +255,49 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // logic from mapping the parameters to CLR claims. To work around that, this handler
                 // is responsible for extracting the nested payload and replacing the userinfo response.
 
-                context.Response = context.Registration.ProviderName switch
+                context.Response = context.Registration.ProviderType switch
                 {
                     // Basecamp returns a nested "identity" object and a collection of "accounts".
-                    Providers.Basecamp => new(context.Response["identity"]?.GetNamedParameters() ??
+                    ProviderTypes.Basecamp => new(context.Response["identity"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("identity")))
                     {
                         ["accounts"] = context.Response["accounts"]
                     },
 
                     // Fitbit returns a nested "user" object.
-                    Providers.Fitbit => new(context.Response["user"]?.GetNamedParameters() ??
+                    ProviderTypes.Fitbit => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
 
                     // Harvest returns a nested "user" object and a collection of "accounts".
-                    Providers.Harvest => new(context.Response["user"]?.GetNamedParameters() ??
+                    ProviderTypes.Harvest => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user")))
                     {
                         ["accounts"] = context.Response["accounts"]
                     },
 
                     // Patreon returns a nested "attributes" object that is itself nested in a "data" node.
-                    Providers.Patreon => new(context.Response["data"]?["attributes"]?.GetNamedParameters() ??
+                    ProviderTypes.Patreon => new(context.Response["data"]?["attributes"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data/attributes"))),
 
                     // ServiceChannel returns a nested "UserProfile" object.
-                    Providers.ServiceChannel => new(context.Response["UserProfile"]?.GetNamedParameters() ??
+                    ProviderTypes.ServiceChannel => new(context.Response["UserProfile"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("UserProfile"))),
 
                     // StackExchange returns an "items" array containing a single element.
-                    Providers.StackExchange => new(context.Response["items"]?[0]?.GetNamedParameters() ??
+                    ProviderTypes.StackExchange => new(context.Response["items"]?[0]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("items/0"))),
 
                     // Streamlabs splits the user data into multiple service-specific nodes (e.g "twitch"/"facebook").
                     //
                     // To make claims easier to use, the parameters are flattened and prefixed with the service name.
-                    Providers.Streamlabs => new(
+                    ProviderTypes.Streamlabs => new(
                         from parameter in context.Response.GetParameters()
                         from node in parameter.Value.GetNamedParameters()
                         let name = $"{parameter.Key}_{node.Key}"
                         select new KeyValuePair<string, OpenIddictParameter>(name, node.Value)),
 
                     // Twitter returns a nested "data" object.
-                    Providers.Twitter => new(context.Response["data"]?.GetNamedParameters() ??
+                    ProviderTypes.Twitter => new(context.Response["data"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data"))),
 
                     _ => context.Response

@@ -5,9 +5,9 @@
  */
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client;
+using OpenIddict.Client.SystemNetHttp;
 using OpenIddict.Client.WebIntegration;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes extensions allowing to register the OpenIddict client Web integration services.
 /// </summary>
-public static class OpenIddictClientWebIntegrationExtensions
+public static partial class OpenIddictClientWebIntegrationExtensions
 {
     /// <summary>
     /// Registers the OpenIddict client Web integration services in the DI container.
@@ -42,8 +42,19 @@ public static class OpenIddictClientWebIntegrationExtensions
         builder.Services.TryAddEnumerable(new[]
         {
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>(),
-            ServiceDescriptor.Singleton<IConfigureOptions<HttpClientFactoryOptions>, OpenIddictClientWebIntegrationConfiguration>()
+            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientSystemNetHttpOptions>, OpenIddictClientWebIntegrationConfiguration>()
         });
+
+        // Note: the IPostConfigureOptions<OpenIddictClientOptions> service responsible for populating
+        // the client registrations MUST be registered before OpenIddictClientConfiguration to ensure
+        // the registrations are correctly populated before being validated.
+        if (!builder.Services.Any(static descriptor =>
+            descriptor.ServiceType == typeof(IPostConfigureOptions<OpenIddictClientOptions>) &&
+            descriptor.ImplementationType == typeof(OpenIddictClientWebIntegrationConfiguration)))
+        {
+            builder.Services.Insert(0, ServiceDescriptor.Singleton<
+                IPostConfigureOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>());
+        }
 
         return new OpenIddictClientWebIntegrationBuilder(builder.Services);
     }

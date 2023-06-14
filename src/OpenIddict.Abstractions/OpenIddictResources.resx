@@ -579,7 +579,7 @@ Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.A
 Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' to register the default System.Net.Http-based integration.</value>
   </data>
   <data name="ID0136" xml:space="preserve">
-    <value>The issuer must be provided and must be an absolute URI.</value>
+    <value>The issuer must be a valid absolute URI.</value>
   </data>
   <data name="ID0137" xml:space="preserve">
     <value>The issuer cannot contain a fragment or a query string.</value>
@@ -1177,7 +1177,7 @@ To apply redirection responses, create a class implementing 'IOpenIddictClientHa
     <value>No client registration was found in the client options. To add a registration, use 'services.AddOpenIddict().AddClient().AddRegistration()'.</value>
   </data>
   <data name="ID0305" xml:space="preserve">
-    <value>No issuer was specified in the challenge properties. When multiple clients are registered, an issuer (or a provider name) must be specified in the challenge properties.</value>
+    <value>No client registration information was specified in the challenge properties. When multiple clients are registered, an issuer, a provider name or a client registration identifier must be specified in the challenge properties.</value>
   </data>
   <data name="ID0306" xml:space="preserve">
     <value>The specified issuer is not a valid or absolute URI.</value>
@@ -1290,7 +1290,7 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
     <value>The mandatory '{0}' setting required by the {1} provider integration must be set.</value>
   </data>
   <data name="ID0333" xml:space="preserve">
-    <value>The '{0}' provider settings cannot be resolved from the event context. Make sure the provider was correctly registered using 'services.AddOpenIddict().AddClient().UseWebProviders().Add{0}()'.</value>
+    <value>The '{0}' provider settings cannot be resolved from the client registration. Make sure the provider was correctly registered using 'services.AddOpenIddict().AddClient().UseWebProviders().Add{0}()'.</value>
   </data>
   <data name="ID0334" xml:space="preserve">
     <value>The '{0}' node cannot be extracted from the response or is not of the expected type.</value>
@@ -1314,7 +1314,7 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
     <value>The endpoint type associated with the state token cannot be resolved.</value>
   </data>
   <data name="ID0341" xml:space="preserve">
-    <value>No issuer was specified in the sign-out properties. When multiple clients are registered, an issuer (or a provider name) must be specified in the sign-out properties.</value>
+    <value>No client registration information was specified in the sign-out properties. When multiple clients are registered, an issuer, a provider name or a client registration identifier must be specified in the sign-out properties.</value>
   </data>
   <data name="ID0342" xml:space="preserve">
     <value>The same issuer cannot be used in multiple client registrations.</value>
@@ -1332,13 +1332,13 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
     <value>The PEM-encoded key cannot be empty.</value>
   </data>
   <data name="ID0347" xml:space="preserve">
-    <value>The same provider name cannot be used in multiple client registrations.</value>
+    <value>The same registration identifier cannot be used in multiple client registrations. When multiple client registrations use the same issuer or the same provider name, an explicit identifier must be attached to each client registration. To attach a registration identifier, set 'OpenIddictClientRegistration.RegistrationId' (for a custom client registration) or use 'options.Add[Provider](options =&gt; options.SetRegistrationId())' (for a web provider integration).</value>
   </data>
   <data name="ID0348" xml:space="preserve">
-    <value>The issuer corresponding to the specified provider name cannot be found in the client options.</value>
+    <value>The specified client registration identifier doesn't match the identifier of the resolved client registration.</value>
   </data>
   <data name="ID0349" xml:space="preserve">
-    <value>The issuer associated with the resolved client registration doesn't match the specified provider name.</value>
+    <value>The specified provider name doesn't match the provider name associated with the resolved client registration.</value>
   </data>
   <data name="ID0350" xml:space="preserve">
     <value>The '{0}' setting required by the {1} provider integration must be a valid absolute URI.</value>
@@ -1518,6 +1518,33 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID0402" xml:space="preserve">
     <value>The grant type '{0}' is not supported by the ASP.NET Core and OWIN integrations.</value>
+  </data>
+  <data name="ID0403" xml:space="preserve">
+    <value>This API is no longer supported and will be removed in a future version.</value>
+  </data>
+  <data name="ID0404" xml:space="preserve">
+    <value>The specified issuer is used in multiple client registrations. To select a specific client registration, specify its identifier.</value>
+  </data>
+  <data name="ID0405" xml:space="preserve">
+    <value>The issuer must be provided for custom client registrations and must be a valid absolute URI. If the client registration is expected to use a provider integration provided by the OpenIddict.Client.WebIntegration package, make sure the 'OpenIddictClientRegistration.ProviderType' property is correctly set.</value>
+  </data>
+  <data name="ID0406" xml:space="preserve">
+    <value>The provider settings attached to the client registration are missing or of an incorrect type. When manually adding client registrations that depend on a web provider integration provided by OpenIddict.Client.WebIntegration, make sure the 'OpenIddictClientRegistration.ProviderSettings' property is populated with a instance of the correct provider settings.</value>
+  </data>
+  <data name="ID0407" xml:space="preserve">
+    <value>The specified provider type is not valid or is not supported by this version of the OpenIddict.Client.WebIntegration package.</value>
+  </data>
+  <data name="ID0408" xml:space="preserve">
+    <value>The specified issuer doesn't match the issuer associated with the resolved client registration.</value>
+  </data>
+  <data name="ID0409" xml:space="preserve">
+    <value>The specified provider name is used in multiple client registrations. To select a specific client registration, specify its identifier.</value>
+  </data>
+  <data name="ID0410" xml:space="preserve">
+    <value>The client registration corresponding to the specified identifier cannot be found in the client options.</value>
+  </data>
+  <data name="ID0411" xml:space="preserve">
+    <value>The issuer couldn't be resolved from the provider configuration or is not a valid absolute URI. Make sure the OpenIddict.Client.WebIntegration package is referenced and 'options.UseWebProviders()' is correctly called.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>

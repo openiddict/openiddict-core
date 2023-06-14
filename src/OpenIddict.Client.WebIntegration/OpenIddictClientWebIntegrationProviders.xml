@@ -13,7 +13,8 @@
                                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="ActiveDirectoryFederationServices" DisplayName="Microsoft Active Directory Federation Services"
+  <Provider Name="ActiveDirectoryFederationServices"
+            DisplayName="Microsoft Active Directory Federation Services" Id="01bcc179-3f17-41db-8923-8f05e6c26a8c"
             Documentation="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/overview/ad-fs-openid-connect-oauth-flows-scenarios">
     <!--
       Note: Active Directory Federation Services (ADFS) is a self-hosted identity provider that
@@ -37,7 +38,7 @@
                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="ArcGisOnline" DisplayName="ArcGIS Online"
+  <Provider Name="ArcGisOnline" DisplayName="ArcGIS Online" Id="ae00d744-0090-425e-b932-34c5e395f588"
             Documentation="https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2.0/">
     <Environment Issuer="https://www.arcgis.com/">
       <Configuration AuthorizationEndpoint="https://www.arcgis.com/sharing/rest/oauth2/authorize"
@@ -61,7 +62,7 @@
                                                   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Apple" DisplayName="Sign in with Apple"
+  <Provider Name="Apple" DisplayName="Sign in with Apple" Id="f59a420e-9d00-4a85-94a3-8ecacc5968d8"
             Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
     <Environment Issuer="https://appleid.apple.com/" />
 
@@ -82,7 +83,8 @@
                                                   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Asana" Documentation="https://developers.asana.com/docs/openid-connect">
+  <Provider Name="Asana" Id="c04d789a-a3d3-43f9-a06f-bd56935af13f"
+            Documentation="https://developers.asana.com/docs/openid-connect">
     <Environment Issuer="https://app.asana.com/api/1.0" />
   </Provider>
 
@@ -94,7 +96,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Basecamp" Documentation="https://github.com/basecamp/api/blob/master/sections/authentication.md">
+  <Provider Name="Basecamp" Id="0f3cb4f5-e520-4b99-ae39-1c967d9d77ce"
+            Documentation="https://github.com/basecamp/api/blob/master/sections/authentication.md">
     <!--
       Note: Basecamp implements an old draft of the OAuth 2.0 specification and doesn't support the
       "response_type" and "grant_type" parameters adopted in the final version of the standard.
@@ -121,7 +124,7 @@
                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="BattleNet" DisplayName="Battle.net"
+  <Provider Name="BattleNet" DisplayName="Battle.net" Id="9baed518-5e8d-4544-b562-686218326b14"
             Documentation="https://develop.battle.net/documentation/guides/using-oauth">
     <!--
       Note: most Battle.net regions use the same issuer URI but a different domain is required for China.
@@ -145,7 +148,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Bitbucket" Documentation="https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/">
+  <Provider Name="Bitbucket" Id="2e71023e-9548-4b04-a9fe-afe93daf64ea"
+            Documentation="https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/">
     <Environment Issuer="https://bitbucket.org/">
       <Configuration AuthorizationEndpoint="https://bitbucket.org/site/oauth2/authorize"
                      TokenEndpoint="https://bitbucket.org/site/oauth2/access_token"
@@ -164,7 +168,7 @@
                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Cognito" DisplayName="Amazon Cognito"
+  <Provider Name="Cognito" DisplayName="Amazon Cognito" Id="37931265-19ea-41e9-8a8c-06bb7deb9a1d"
             Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
     <Environment Issuer="https://cognito-idp.{settings.Region}.amazonaws.com/{settings.UserPoolId}" />
 
@@ -183,7 +187,8 @@
                                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Deezer" Documentation="https://developers.deezer.com/api/oauth">
+  <Provider Name="Deezer" Id="8e6d9b1c-09c8-498f-8c27-8363d5de4c94"
+            Documentation="https://developers.deezer.com/api/oauth">
     <!--
       Note: the Deezer documentation describes an implementation with important deviations from the OAuth 2.0 standard,
       including the use of many non-standard and custom parameters. Luckily, while the documentation hasn't been fixed
@@ -207,7 +212,8 @@
                                     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="DeviantArt" Documentation="https://www.deviantart.com/developers/authentication">
+  <Provider Name="DeviantArt" Id="343233b4-661d-45be-804f-98bf2d865d60"
+            Documentation="https://www.deviantart.com/developers/authentication">
     <Environment Issuer="https://www.deviantart.com/">
       <Configuration AuthorizationEndpoint="https://www.deviantart.com/oauth2/authorize"
                      TokenEndpoint="https://www.deviantart.com/oauth2/token"
@@ -227,7 +233,8 @@
                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Discord" Documentation="https://discord.com/developers/docs/topics/oauth2">
+  <Provider Name="Discord" Id="542ac9f1-514f-4b8a-bc4c-d56d2b8356e5"
+            Documentation="https://discord.com/developers/docs/topics/oauth2">
     <Environment Issuer="https://discord.com/">
       <Configuration AuthorizationEndpoint="https://discord.com/oauth2/authorize"
                      TokenEndpoint="https://discord.com/api/oauth2/token"
@@ -254,7 +261,8 @@
                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Dropbox" Documentation="https://developers.dropbox.com/oidc-guide">
+  <Provider Name="Dropbox" Id="9f0764f5-a148-4890-b38e-b7ad368824cd"
+            Documentation="https://developers.dropbox.com/oidc-guide">
     <Environment Issuer="https://www.dropbox.com/">
       <!--
         Note: Dropbox requires sending at least either the "profile" or "email" scope.
@@ -273,7 +281,7 @@
                                     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="EpicGames" DisplayName="Epic Games"
+  <Provider Name="EpicGames" DisplayName="Epic Games" Id="53f941ab-9a5a-4849-9d8e-21bbe8d85a15"
             Documentation="https://dev.epicgames.com/docs/web-api-ref/authentication">
     <Environment Issuer="https://api.epicgames.dev/epic/oauth/v1" />
   </Provider>
@@ -286,7 +294,8 @@
                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Facebook" Documentation="https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow">
+  <Provider Name="Facebook" Id="43eabe57-af21-448a-888f-641b1ce8a402"
+            Documentation="https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow">
     <Environment Issuer="https://www.facebook.com/">
       <Configuration AuthorizationEndpoint="https://www.facebook.com/v16.0/dialog/oauth"
                      TokenEndpoint="https://graph.facebook.com/v16.0/oauth/access_token"
@@ -312,7 +321,8 @@
                                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Fitbit" Documentation="https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/">
+  <Provider Name="Fitbit" Id="10a558b9-8c81-47cc-8941-e54d0432fd51"
+            Documentation="https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/">
     <Environment Issuer="https://www.fitbit.com/">
       <Configuration AuthorizationEndpoint="https://www.fitbit.com/oauth2/authorize"
                      TokenEndpoint="https://api.fitbit.com/oauth2/token"
@@ -339,7 +349,8 @@
                                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
+  <Provider Name="GitHub" Id="87edae0b-e71e-4163-960f-cf7e2a780d77"
+            Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
     <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
                      DeviceAuthorizationEndpoint="https://github.com/login/device/code"
@@ -359,7 +370,8 @@
                                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="GitLab" Documentation="https://docs.gitlab.com/ee/integration/openid_connect_provider.html">
+  <Provider Name="GitLab" Id="521825df-8e65-4572-b192-f1a68b3e943f"
+            Documentation="https://docs.gitlab.com/ee/integration/openid_connect_provider.html">
     <Environment Issuer="https://gitlab.com/" />
   </Provider>
 
@@ -371,7 +383,8 @@
                                             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Google" Documentation="https://developers.google.com/identity/protocols/oauth2/openid-connect">
+  <Provider Name="Google" Id="e0e90ce7-adb5-4b05-9f54-594941e5d960"
+            Documentation="https://developers.google.com/identity/protocols/oauth2/openid-connect">
     <Environment Issuer="https://accounts.google.com/" />
 
     <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
@@ -386,7 +399,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Harvest" Documentation="https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/">
+  <Provider Name="Harvest" Id="1a94de4b-187b-45d2-aa8e-9510c0ede1de"
+            Documentation="https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/">
     <Environment Issuer="https://id.getharvest.com/">
       <Configuration AuthorizationEndpoint="https://id.getharvest.com/oauth2/authorize"
                      TokenEndpoint="https://id.getharvest.com/api/v2/oauth2/token"
@@ -405,7 +419,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="HubSpot" Documentation="https://developers.hubspot.com/docs/api/oauth-quickstart-guide">
+  <Provider Name="HubSpot" Id="416ca088-0096-4215-b85d-2e83c47abf89"
+            Documentation="https://developers.hubspot.com/docs/api/oauth-quickstart-guide">
     <Environment Issuer="https://www.hubspot.com/">
       <Configuration AuthorizationEndpoint="https://app.hubspot.com/oauth/authorize"
                      TokenEndpoint="https://api.hubapi.com/oauth/v1/token">
@@ -429,7 +444,8 @@
                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Keycloak" Documentation="https://www.keycloak.org/getting-started/getting-started-docker">
+  <Provider Name="Keycloak" Id="1097a0ea-08a8-431f-bc54-b547b1000420"
+            Documentation="https://www.keycloak.org/getting-started/getting-started-docker">
     <!--
       Note: Keycloak is a self-hosted-only identity provider that doesn't have a generic issuer URI.
       As such, the complete URI must always be set in the options and include the realm, if applicable.
@@ -449,7 +465,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="LinkedIn" Documentation="https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2">
+  <Provider Name="LinkedIn" Id="eb3bc226-ed25-4258-8a37-2bfcc4d628a2"
+            Documentation="https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2">
     <Environment Issuer="https://www.linkedin.com/" ConfigurationEndpoint="https://www.linkedin.com/oauth/.well-known/openid-configuration">
       <!--
         Note: LinkedIn requires sending the "profile" scope to be able to use the userinfo endpoint.
@@ -477,7 +494,8 @@
                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Mailchimp" Documentation="https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#oauth-2-workflow-overview">
+  <Provider Name="Mailchimp" Id="5453049d-4069-4668-b8d0-162a8bbd4b40"
+            Documentation="https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#oauth-2-workflow-overview">
     <Environment Issuer="https://login.mailchimp.com/">
       <Configuration AuthorizationEndpoint="https://login.mailchimp.com/oauth2/authorize"
                      TokenEndpoint="https://login.mailchimp.com/oauth2/token"
@@ -493,7 +511,7 @@
               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Microsoft" DisplayName="Microsoft Account/Azure Active Directory"
+  <Provider Name="Microsoft" DisplayName="Microsoft Account/Azure Active Directory" Id="b533a06a-3fd6-4754-aeca-025d4e3666ad"
             Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
     <!--
       Note: Microsoft is a multitenant provider that relies on virtual paths to identify instances.
@@ -516,7 +534,8 @@
                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Mixcloud" Documentation="https://www.mixcloud.com/developers/#authorization">
+  <Provider Name="Mixcloud" Id="cf9df6cb-2e1e-44c2-a4c1-42688fb0bf2c"
+            Documentation="https://www.mixcloud.com/developers/#authorization">
     <Environment Issuer="https://www.mixcloud.com/">
       <Configuration AuthorizationEndpoint="https://www.mixcloud.com/oauth/authorize"
                      TokenEndpoint="https://www.mixcloud.com/oauth/access_token"
@@ -532,7 +551,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Patreon" Documentation="https://docs.patreon.com/#oauth">
+  <Provider Name="Patreon" Id="0bf83b54-a005-4384-aa4e-828a0601d799"
+            Documentation="https://docs.patreon.com/#oauth">
     <Environment Issuer="https://www.patreon.com/">
       <Configuration AuthorizationEndpoint="https://www.patreon.com/oauth2/authorize"
                      TokenEndpoint="https://www.patreon.com/api/oauth2/token"
@@ -566,7 +586,8 @@
                                             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="PayPal" Documentation="https://developer.paypal.com/docs/log-in-with-paypal/">
+  <Provider Name="PayPal" Id="37cf4e18-138b-4b98-b8c0-ba564c0910c4"
+            Documentation="https://developer.paypal.com/docs/log-in-with-paypal/">
     <!--
       Note: PayPal offers a production and a sandbox environment, but the sandbox server metadata
       document doesn't reflect the configuration used by the sandbox environment (e.g the production
@@ -587,7 +608,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="PingOne" Documentation="https://docs.pingidentity.com/r/en-us/pingoneforenterprise/p14e_connect_oidc">
+  <Provider Name="PingOne" Id="632402f9-af28-47bb-b6b8-53c38a6c49d4"
+            Documentation="https://docs.pingidentity.com/r/en-us/pingoneforenterprise/p14e_connect_oidc">
     <!--
       Note: PingOne is a multitenant identity provider that doesn't have a generic issuer URI.
       As such, the complete URI must always be set in the options (and include the environment ID).
@@ -607,7 +629,7 @@
               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="ProSantéConnect" DisplayName="Pro Santé Connect"
+  <Provider Name="ProSantéConnect" DisplayName="Pro Santé Connect" Id="445a1710-8c71-4f00-8595-ac8c04c23777"
             Documentation="https://industriels.esante.gouv.fr/en/products-services/health-pro-authentication-pro-sante-connect">
     <!--
       Note: Pro Santé Connect requires sending the "scope_all" scope (which is currently the only supported value).
@@ -638,7 +660,7 @@
               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="QuickBooksOnline" DisplayName="QuickBooks Online"
+  <Provider Name="QuickBooksOnline" DisplayName="QuickBooks Online" Id="ee5fc05e-76bb-40e3-82f1-f369030205e9"
             Documentation="https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/openid-connect">
     <Environment Name="Production" Issuer="https://oauth.platform.intuit.com/op/v1"
                  ConfigurationEndpoint="https://developer.api.intuit.com/.well-known/openid_configuration" />
@@ -655,7 +677,8 @@
                                             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Reddit" Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">
+  <Provider Name="Reddit" Id="01ae8033-935c-43b9-8568-eaf4d08c0613"
+            Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">
     <Environment Issuer="https://www.reddit.com/">
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
                      TokenEndpoint="https://www.reddit.com/api/v1/access_token"
@@ -689,7 +712,8 @@
                     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="ServiceChannel" Documentation="https://developer.servicechannel.com/basics/general/authentication/">
+  <Provider Name="ServiceChannel" Id="3c1df98a-23e5-4ce8-af9e-1714cb875560"
+            Documentation="https://developer.servicechannel.com/basics/general/authentication/">
     <Environment Name="Production" Issuer="https://servicechannel.com/">
       <Configuration AuthorizationEndpoint="https://login.servicechannel.com/oauth/authorize"
                      TokenEndpoint="https://login.servicechannel.com/oauth/token"
@@ -721,7 +745,8 @@
                                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Slack" Documentation="https://api.slack.com/authentication/sign-in-with-slack">
+  <Provider Name="Slack" Id="57c5ef63-1fbf-47d2-b4a3-432feae2eafc"
+            Documentation="https://api.slack.com/authentication/sign-in-with-slack">
     <Environment Issuer="https://slack.com/" />
 
     <Setting PropertyName="Team" ParameterName="team" Type="String" Required="false"
@@ -736,7 +761,8 @@
                                 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Smartsheet" Documentation="https://smartsheet.redoc.ly/#section/OAuth-Walkthrough">
+  <Provider Name="Smartsheet" Id="e5f58c2a-0f45-4aa4-a700-e2540cd57419"
+            Documentation="https://smartsheet.redoc.ly/#section/OAuth-Walkthrough">
     <Environment Issuer="https://www.smartsheet.com/">
       <Configuration AuthorizationEndpoint="https://app.smartsheet.com/b/authorize"
                      TokenEndpoint="https://api.smartsheet.com/2.0/token"
@@ -755,7 +781,8 @@
                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Spotify" Documentation="https://developer.spotify.com/documentation/general/guides/authorization/">
+  <Provider Name="Spotify" Id="4474ccd3-07d5-4687-8085-4e31d1ff27fa"
+            Documentation="https://developer.spotify.com/documentation/general/guides/authorization/">
     <Environment Issuer="https://accounts.spotify.com/">
       <Configuration AuthorizationEndpoint="https://accounts.spotify.com/authorize"
                      TokenEndpoint="https://accounts.spotify.com/api/token"
@@ -775,7 +802,7 @@
                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="StackExchange" DisplayName="Stack Exchange"
+  <Provider Name="StackExchange" DisplayName="Stack Exchange" Id="1f34cc2e-c466-4a6a-a903-fd8040fb8454"
             Documentation="https://api.stackexchange.com/docs/authentication">
     <Environment Issuer="https://api.stackexchange.com/">
       <Configuration AuthorizationEndpoint="https://stackoverflow.com/oauth"
@@ -798,7 +825,8 @@
                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Strava" Documentation="https://developers.strava.com/docs/authentication/">
+  <Provider Name="Strava" Id="7400476b-2fdf-48fc-9d06-167101ffd3f6"
+            Documentation="https://developers.strava.com/docs/authentication/">
     <Environment Issuer="http://www.strava.com/">
       <!--
         Note: Strava doesn't provide a userinfo endpoint and returns
@@ -821,7 +849,8 @@
                     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="StripeConnect" DisplayName="Stripe Connect" Documentation="https://stripe.com/docs/connect/oauth-reference">
+  <Provider Name="StripeConnect" DisplayName="Stripe Connect" Id="ea608674-1d4f-470c-adee-3f47dbce688f"
+            Documentation="https://stripe.com/docs/connect/oauth-reference">
     <Environment Issuer="https://connect.stripe.com/">
       <!--
         Note: Stripe uses a different authorization endpoint for Express accounts. It also doesn't provide
@@ -857,7 +886,8 @@
                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Streamlabs" Documentation="https://dev.streamlabs.com/docs/oauth-2">
+  <Provider Name="Streamlabs" Id="b140539d-ba83-4bcb-b46b-ecc19a3b8997"
+            Documentation="https://dev.streamlabs.com/docs/oauth-2">
     <Environment Issuer="https://streamlabs.com/">
       <Configuration AuthorizationEndpoint="https://streamlabs.com/api/v2.0/authorize"
                      TokenEndpoint="https://streamlabs.com/api/v2.0/token"
@@ -876,7 +906,8 @@
                             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="SuperOffice" Documentation="https://docs.superoffice.com/en/authentication/online/api.html">
+  <Provider Name="SuperOffice" Id="570e055e-4652-415d-8237-740e196d7e89"
+            Documentation="https://docs.superoffice.com/en/authentication/online/api.html">
     <Environment Name="Production"  Issuer="https://online.superoffice.com/" />
     <Environment Name="Development" Issuer="https://sod.superoffice.com/" />
     <Environment Name="Staging"     Issuer="https://qaonline.superoffice.com/" />
@@ -890,7 +921,8 @@
                                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Trakt" Documentation="https://trakt.docs.apiary.io/#reference/authentication-oauth">
+  <Provider Name="Trakt" Id="8c38bccc-1588-4435-b612-55a443e67264"
+            Documentation="https://trakt.docs.apiary.io/#reference/authentication-oauth">
     <Environment Issuer="https://trakt.tv/">
       <Configuration AuthorizationEndpoint="https://trakt.tv/oauth/authorize"
                      TokenEndpoint="https://api.trakt.tv/oauth/token"
@@ -909,7 +941,8 @@
                                             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Trovo" Documentation="https://developer.trovo.live/docs/APIs.html#_3-authentication">
+  <Provider Name="Trovo" Id="00091647-b315-4b7c-af7c-5bc5da397b7a"
+            Documentation="https://developer.trovo.live/docs/APIs.html#_3-authentication">
     <Environment Issuer="https://trovo.live/">
       <!--
         Note: Trovo uses a different token endpoint for the refresh token grant. To accommodate this requirement,
@@ -940,7 +973,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Twitter" Documentation="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">
+  <Provider Name="Twitter" Id="1fd20ab5-d3f2-40aa-8c91-094f71652c65"
+            Documentation="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">
     <Environment Issuer="https://twitter.com/">
       <Configuration AuthorizationEndpoint="https://twitter.com/i/oauth2/authorize"
                      TokenEndpoint="https://api.twitter.com/2/oauth2/token"
@@ -1019,7 +1053,8 @@
                                             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Vimeo" Documentation="https://developer.vimeo.com/api/authentication">
+  <Provider Name="Vimeo" Id="bc5e79a9-ddef-4752-b86c-c238989ff2f1"
+            Documentation="https://developer.vimeo.com/api/authentication">
     <Environment Issuer="https://api.vimeo.com/">
       <Configuration AuthorizationEndpoint="https://api.vimeo.com/oauth/authorize"
                      TokenEndpoint="https://api.vimeo.com/oauth/access_token"
@@ -1035,7 +1070,8 @@
                                 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="WordPress" Documentation="https://developer.wordpress.com/docs/oauth2/">
+  <Provider Name="WordPress" Id="1f32ad54-d87c-454b-b47a-65f18933f4b6"
+            Documentation="https://developer.wordpress.com/docs/oauth2/">
     <Environment Issuer="https://wordpress.com/">
       <Configuration AuthorizationEndpoint="https://public-api.wordpress.com/oauth2/authorize"
                      TokenEndpoint="https://public-api.wordpress.com/oauth2/token"
@@ -1058,7 +1094,8 @@
                                                 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Xero" Documentation="https://developer.xero.com/documentation/xero-app-store/app-partner-guides/sign-in/">
+  <Provider Name="Xero" Id="7426a750-1cd3-446a-bdaa-1b4b0d33a105"
+            Documentation="https://developer.xero.com/documentation/xero-app-store/app-partner-guides/sign-in/">
     <Environment Issuer="https://identity.xero.com/" />
   </Provider>
 
@@ -1070,7 +1107,8 @@
                                             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Yahoo" Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
+  <Provider Name="Yahoo" Id="874d78ec-3d79-4492-ab79-76a7dd7fa0b5"
+            Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
     <Environment Issuer="https://api.login.yahoo.com/" />
   </Provider>
 

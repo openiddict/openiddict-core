@@ -44,10 +44,17 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));
         }
 
-        if (options.Issuer is not null && (!string.IsNullOrEmpty(options.Issuer.Fragment) ||
-                                           !string.IsNullOrEmpty(options.Issuer.Query)))
+        if (options.Issuer is not null)
         {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
+            if (!options.Issuer.IsAbsoluteUri || !options.Issuer.IsWellFormedOriginalString())
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
+            }
+
+            if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
+            }
         }
 
         if (options.ValidationType is OpenIddictValidationType.Introspection)

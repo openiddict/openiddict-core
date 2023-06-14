@@ -189,11 +189,11 @@
     <PackageVersion Include="Microsoft.AspNet.Mvc"                                            Version="5.2.9"           />
     <PackageVersion Include="Microsoft.AspNet.Web.Optimization"                               Version="1.1.3"           />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Owin"                                    Version="5.2.9"           />
-    <PackageVersion Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform"              Version="3.6.0"           />
+    <PackageVersion Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform"              Version="4.1.0"           />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite"                            Version="2.1.14"          />
     <PackageVersion Include="Microsoft.Extensions.Hosting"                                    Version="2.1.1"           />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug"                              Version="2.1.1"           />
-    <PackageVersion Include="Microsoft.Net.Compilers.Toolset"                                 Version="3.8.0"           />
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset"                                 Version="4.6.0"           />
     <PackageVersion Include="Microsoft.Owin.Host.SystemWeb"                                   Version="4.2.2"           />
     <PackageVersion Include="Microsoft.Owin.Security.Cookies"                                 Version="4.2.2"           />
     <PackageVersion Include="Microsoft.Owin.Security.OAuth"                                   Version="4.2.2"           />

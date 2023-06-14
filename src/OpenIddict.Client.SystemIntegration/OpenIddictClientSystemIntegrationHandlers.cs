@@ -724,14 +724,14 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
 
-            (context.Issuer, context.Configuration, context.Registration) = context.EndpointType switch
+            (context.Configuration, context.Registration) = context.EndpointType switch
             {
                 // When the authentication context is marshalled, restore the
                 // issuer registration and configuration from the other instance.
                 OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => (notification.Issuer, notification.Configuration, notification.Registration),
+                    => (notification.Configuration, notification.Registration),
 
-                _ => (context.Issuer, context.Configuration, context.Registration)
+                _ => (context.Configuration, context.Registration)
             };
 
             return default;

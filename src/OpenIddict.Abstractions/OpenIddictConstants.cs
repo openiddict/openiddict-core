@@ -138,6 +138,7 @@ public static class OpenIddictConstants
             public const string Presenter = "oi_prst";
             public const string RedirectUri = "oi_reduri";
             public const string RefreshTokenLifetime = "oi_reft_lft";
+            public const string RegistrationId = "oi_reg_id";
             public const string Resource = "oi_rsrc";
             public const string ResponseType = "oi_rsp_typ";
             public const string SigningAlgorithm = "oi_sign_alg";

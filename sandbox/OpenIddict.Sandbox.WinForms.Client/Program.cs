@@ -81,7 +81,7 @@ var host = new HostBuilder()
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                 options.UseWebProviders()
-                       .UseGitHub()
+                       .AddGitHub()
                        .SetClientId("cf8efb4d76c0cb7109d3")
                        .SetClientSecret("e8c0f6b869164411bb9052e42414cbcc52d518cd")
                        // Note: GitHub doesn't support the recommended ":/" syntax and requires using "://".

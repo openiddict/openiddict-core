@@ -564,6 +564,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is { Items.Count: > 0 })
             {
+                // If a registration identifier was explicitly set, update the challenge context to use it.
+                if (properties.Items.TryGetValue(Properties.RegistrationId, out string? identifier) &&
+                    !string.IsNullOrEmpty(identifier))
+                {
+                    context.RegistrationId = identifier;
+                }
+
                 // If an issuer was explicitly set, update the challenge context to use it.
                 if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
                 {
@@ -797,6 +804,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is { Items.Count: > 0 })
             {
+                // If a registration identifier was explicitly set, update the sign-out context to use it.
+                if (properties.Items.TryGetValue(Properties.RegistrationId, out string? identifier) &&
+                    !string.IsNullOrEmpty(identifier))
+                {
+                    context.RegistrationId = identifier;
+                }
+
                 // If an issuer was explicitly set, update the sign-out context to use it.
                 if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
                 {

@@ -57,8 +57,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             }
 
             var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
-            var name = !string.IsNullOrEmpty(context.Registration.ProviderName) ?
-                $"{assembly.Name}:{context.Registration.ProviderName}" : assembly.Name!;
+            var name = $"{assembly.Name}:{context.Registration.RegistrationId}";
 
             // Create and store the HttpClient in the transaction properties.
             context.Transaction.SetProperty(typeof(HttpClient).FullName!, _factory.CreateClient(name) ??
