@@ -6,7 +6,6 @@
 
 using System.ComponentModel;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client.SystemNetHttp;
@@ -19,18 +18,25 @@ namespace OpenIddict.Client.WebIntegration;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>,
-                                                                          IConfigureNamedOptions<HttpClientFactoryOptions>
+                                                                          IConfigureOptions<OpenIddictClientSystemNetHttpOptions>,
+                                                                          IConfigureNamedOptions<HttpClientFactoryOptions>,
+                                                                          IPostConfigureOptions<OpenIddictClientOptions>
 {
-#if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
-    private readonly IServiceProvider _provider;
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictClientWebIntegrationConfiguration"/> class.
+    /// </summary>
+    public OpenIddictClientWebIntegrationConfiguration()
+    {
+    }
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientWebIntegrationConfiguration"/> class.
     /// </summary>
     /// <param name="provider">The service provider.</param>
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.")]
     public OpenIddictClientWebIntegrationConfiguration(IServiceProvider provider)
-        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-#endif
+    {
+    }
 
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
@@ -45,58 +51,65 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
     }
 
     /// <inheritdoc/>
-    public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
-
-    /// <inheritdoc/>
-    public void Configure(string? name, HttpClientFactoryOptions options)
+    public void Configure(OpenIddictClientSystemNetHttpOptions options)
     {
         if (options is null)
         {
             throw new ArgumentNullException(nameof(options));
         }
 
-        // Only amend the HTTP client factory options if the instance is managed by OpenIddict
-        // and contains the name of a provider managed by OpenIddict.Client.WebIntegration.
-        var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
-        if (string.IsNullOrEmpty(name) || !name.StartsWith(assembly.Name!, StringComparison.Ordinal) ||
-            name.Length < assembly.Name!.Length + 1 || name[assembly.Name.Length] is not ':')
+        options.UnfilteredHttpClientHandlerActions.Add(static (registration, handler) =>
         {
-            return;
-        }
-
-        // Note: while not enforced yet, Pro Santé Connect's specification requires sending a TLS
-        // client certificate when communicating with its backchannel OpenID Connect endpoints.
-        //
-        // For that, the primary HTTP handler must be altered or replaced by an instance that
-        // includes the client certificate set in the options in its certificate collection.
-        //
-        // For more information, see EXI PSC 24 in the annex part of
-        // https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045551195.
-        if (name.AsSpan(assembly.Name.Length + 1) is Providers.ProSantéConnect)
-        {
-            options.HttpMessageHandlerBuilderActions.Add(builder =>
+            // Note: while not enforced yet, Pro Santé Connect's specification requires sending a TLS
+            // client certificate when communicating with its backchannel OpenID Connect endpoints.
+            //
+            // For that, the primary HTTP handler must be altered or replaced by an instance that
+            // includes the client certificate set in the options in its certificate collection.
+            //
+            // For more information, see EXI PSC 24 in the annex part of
+            // https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045551195.
+            if (registration.ProviderType is ProviderTypes.ProSantéConnect &&
+                registration.GetProSantéConnectSettings() is { ClientCertificate: X509Certificate2 certificate })
             {
-                // Note: the client registration instance is not available here,
-                // so the provider options must be resolved via the DI container.
-#if SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
-                var options = builder.Services.GetRequiredService<IOptionsMonitor<
-                    OpenIddictClientWebIntegrationOptions.ProSantéConnect>>().CurrentValue;
-#else
-                var options = _provider.GetRequiredService<IOptionsMonitor<
-                    OpenIddictClientWebIntegrationOptions.ProSantéConnect>>().CurrentValue;
-#endif
-                if (builder.PrimaryHandler is not HttpClientHandler handler)
-                {
-                    throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName));
-                }
-
-                // If a client certificate was specified, update the HTTP handler to use it.
-                if (options.ClientCertificate is X509Certificate certificate)
-                {
-                    handler.ClientCertificates.Add(certificate);
-                    handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                }
-            });
-        }
+                handler.ClientCertificates.Add(certificate);
+                handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            }
+        });
     }
+
+    /// <inheritdoc/>
+    [Obsolete("This method is no longer supported and will be removed in a future version.", error: true)]
+    public void Configure(HttpClientFactoryOptions options)
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <inheritdoc/>
+    [Obsolete("This method is no longer supported and will be removed in a future version.", error: true)]
+    public void Configure(string? name, HttpClientFactoryOptions options)
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <inheritdoc/>
+    public void PostConfigure(string? name, OpenIddictClientOptions options)
+    {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        options.Registrations.ForEach(static registration =>
+        {
+            // If the client registration has a provider type attached, apply
+            // the configuration logic corresponding to the specified provider.
+            if (!string.IsNullOrEmpty(registration.ProviderType))
+            {
+                ConfigureProvider(registration);
+            }
+        });
+    }
+
+    /// <summary>
+    /// Amends the registration with the provider-specific configuration logic.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    // Note: the implementation of this method is automatically generated by the source generator.
+    static partial void ConfigureProvider(OpenIddictClientRegistration registration);
 }

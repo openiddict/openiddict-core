@@ -117,13 +117,13 @@ public class Startup
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                 options.UseWebProviders()
-                       .UseGitHub(options =>
+                       .AddGitHub(options =>
                        {
                            options.SetClientId("c4ade52327b01ddacff3")
                                   .SetClientSecret("da6bed851b75e317bf6b2cb67013679d9467c122")
                                   .SetRedirectUri("callback/login/github");
                        })
-                       .UseGoogle(options =>
+                       .AddGoogle(options =>
                        {
                            options.SetClientId("1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com")
                                   .SetClientSecret("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")
@@ -131,7 +131,7 @@ public class Startup
                                   .SetAccessType("offline")
                                   .AddScopes(Scopes.Profile);
                        })
-                       .UseReddit(options =>
+                       .AddReddit(options =>
                        {
                            options.SetClientId("vDLNqhrkwrvqHgnoBWF3og")
                                   .SetClientSecret("Tpab28Dz0upyZLqn7AN3GFD1O-zaAw")

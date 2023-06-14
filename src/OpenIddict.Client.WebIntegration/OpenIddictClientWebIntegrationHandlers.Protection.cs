@@ -50,7 +50,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     return default;
                 }
 
-                context.TokenValidationParameters.ValidateIssuer = context.Registration.ProviderName switch
+                context.TokenValidationParameters.ValidateIssuer = context.Registration.ProviderType switch
                 {
                     // When the Microsoft Account provider is configured to use one of the special tenants,
                     // the returned tokens include a dynamic issuer claim corresponding to the tenant
@@ -59,8 +59,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     //
                     // For more information about the special tenants supported by Microsoft Account/Azure AD, see
                     // https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc#find-your-apps-openid-configuration-document-uri.
-                    Providers.Microsoft when
-                        context.Registration.GetMicrosoftOptions() is { Tenant: string tenant } &&
+                    ProviderTypes.Microsoft when
+                        context.Registration.GetMicrosoftSettings() is { Tenant: string tenant } &&
                         (string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase) ||
                          string.Equals(tenant, "consumers", StringComparison.OrdinalIgnoreCase) ||
                          string.Equals(tenant, "organizations", StringComparison.OrdinalIgnoreCase))

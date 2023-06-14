@@ -44,43 +44,57 @@ public class InteractiveService : BackgroundService
 
                 // Resolve the server configuration and determine the type of flow
                 // to use depending on the supported grants and the user selection.
-                var configuration = await _service.GetServerConfigurationAsync(provider, cancellationToken: stoppingToken);
+                var configuration = await _service.GetServerConfigurationAsync(provider, stoppingToken);
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.DeviceCode) &&
                     configuration.DeviceAuthorizationEndpoint is not null &&
                     await UseDeviceAuthorizationGrantAsync(stoppingToken))
                 {
                     // Ask OpenIddict to send a device authorization request and write
                     // the complete verification endpoint URI to the console output.
-                    var response = await _service.ChallengeUsingDeviceAsync(provider, cancellationToken: stoppingToken);
-                    if (response.VerificationUriComplete is not null)
+                    var result = await _service.ChallengeUsingDeviceAsync(new()
+                    {
+                        CancellationToken = stoppingToken,
+                        ProviderName = provider
+                    });
+
+                    if (result.VerificationUriComplete is not null)
                     {
                         AnsiConsole.MarkupLineInterpolated(
-                            $"[yellow]Please visit [link]{response.VerificationUriComplete}[/] and confirm the displayed code is '{response.UserCode}' to complete the authentication demand.[/]");
+                            $"[yellow]Please visit [link]{result.VerificationUriComplete}[/] and confirm the displayed code is '{result.UserCode}' to complete the authentication demand.[/]");
                     }
 
                     else
                     {
                         AnsiConsole.MarkupLineInterpolated(
-                            $"[yellow]Please visit [link]{response.VerificationUri}[/] and enter '{response.UserCode}' to complete the authentication demand.[/]");
+                            $"[yellow]Please visit [link]{result.VerificationUri}[/] and enter '{result.UserCode}' to complete the authentication demand.[/]");
                     }
 
-                    using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-                    cancellationTokenSource.CancelAfter(response.ExpiresIn < TimeSpan.FromMinutes(5) ?
-                        response.ExpiresIn : TimeSpan.FromMinutes(5));
-
                     // Wait for the user to complete the demand on the other device.
-                    (_, principal) = await _service.AuthenticateWithDeviceAsync(provider,
-                        response.DeviceCode, cancellationToken: cancellationTokenSource.Token);
+                    principal = (await _service.AuthenticateWithDeviceAsync(new()
+                    {
+                        DeviceCode = result.DeviceCode,
+                        Interval = result.Interval,
+                        ProviderName = provider,
+                        Timeout = result.ExpiresIn < TimeSpan.FromMinutes(5) ? result.ExpiresIn : TimeSpan.FromMinutes(5)
+                    })).Principal;
                 }
 
                 else
                 {
                     AnsiConsole.MarkupLine("[cyan]Launching the system browser.[/]");
 
-                    // Ask OpenIddict to initiate the authentication flow (typically, by
-                    // starting the system browser) and wait for the user to complete it.
-                    (_, _, principal) = await _service.AuthenticateInteractivelyAsync(
-                        provider, cancellationToken: stoppingToken);
+                    // Ask OpenIddict to initiate the authentication flow (typically, by starting the system browser).
+                    var result = await _service.ChallengeInteractivelyAsync(new()
+                    {
+                        CancellationToken = stoppingToken,
+                        ProviderName = provider
+                    });
+
+                    // Wait for the user to complete the authorization process.
+                    principal = (await _service.AuthenticateInteractivelyAsync(new()
+                    {
+                        Nonce = result.Nonce
+                    })).Principal;
                 }
 
                 AnsiConsole.MarkupLine("[green]Authentication successful:[/]");

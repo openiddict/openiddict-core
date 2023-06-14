@@ -49,7 +49,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                context.Response[Metadata.Issuer] = context.Registration.ProviderName switch
+                context.Response[Metadata.Issuer] = context.Registration.ProviderType switch
                 {
                     // Note: the server configuration metadata returned by the Microsoft Account special tenants
                     // uses "https://login.microsoftonline.com/{tenantid}/v2.0" as the issuer to indicate that
@@ -60,7 +60,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     //
                     // For more information about the special tenants supported by Microsoft Account/Azure AD, see
                     // https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc#find-your-apps-openid-configuration-document-uri.
-                    Providers.Microsoft when context.Registration.GetMicrosoftOptions() is { Tenant: string tenant } =>
+                    ProviderTypes.Microsoft when context.Registration.GetMicrosoftSettings() is { Tenant: string tenant } =>
                         string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase)        ? "https://login.microsoftonline.com/common/v2.0" :
                         string.Equals(tenant, "consumers", StringComparison.OrdinalIgnoreCase)     ? "https://login.microsoftonline.com/consumers/v2.0" :
                         string.Equals(tenant, "organizations", StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/organizations/v2.0" :
@@ -101,25 +101,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // authorization code or implicit flows). To work around that, the list of supported grant
                 // types is amended to include the known supported types for the providers that require it.
 
-                if (context.Registration.ProviderName is Providers.Apple or Providers.LinkedIn or Providers.QuickBooksOnline)
+                if (context.Registration.ProviderType is ProviderTypes.Apple or ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                else if (context.Registration.ProviderName is Providers.Cognito or Providers.EpicGames or Providers.Microsoft)
+                else if (context.Registration.ProviderType is ProviderTypes.Cognito or ProviderTypes.EpicGames or ProviderTypes.Microsoft)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                else if (context.Registration.ProviderName is Providers.Google)
+                else if (context.Registration.ProviderType is ProviderTypes.Google)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.Implicit);
                 }
 
-                else if (context.Registration.ProviderName is Providers.Asana or Providers.Slack)
+                else if (context.Registration.ProviderType is ProviderTypes.Asana or ProviderTypes.Slack)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
@@ -156,7 +156,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // doesn't list them in the server configuration metadata. To ensure the OpenIddict
                 // client uses Proof Key for Code Exchange for the Microsoft provider, the 2 methods
                 // are manually added to the list of supported code challenge methods by this handler.
-                if (context.Registration.ProviderName is Providers.Microsoft)
+                if (context.Registration.ProviderType is ProviderTypes.Microsoft)
                 {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
@@ -192,7 +192,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // While it is a recommended node, some providers don't include "scopes_supported" in their
                 // configuration and thus are treated as OAuth 2.0-only providers by the OpenIddict client.
                 // To avoid that, the "openid" scope is manually added to indicate OpenID Connect is supported.
-                if (context.Registration.ProviderName is Providers.EpicGames or Providers.Xero)
+                if (context.Registration.ProviderType is ProviderTypes.EpicGames or ProviderTypes.Xero)
                 {
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
                 }
@@ -230,7 +230,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // generic "invalid_request" request when using "client_secret_basic" instead of
                 // sending the client identifier in the request form. To work around this limitation,
                 // "client_secret_post" is listed as the only supported client authentication method.
-                if (context.Registration.ProviderName is Providers.Google)
+                if (context.Registration.ProviderType is ProviderTypes.Google)
                 {
                     context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Clear();
                     context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Add(
@@ -272,7 +272,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // is the same as private_key_jwt, the configuration is amended to assume Apple supports
                 // private_key_jwt and an event handler is responsible for populating the client_secret
                 // parameter using the client assertion token once it has been generated by OpenIddict.
-                if (context.Registration.ProviderName is Providers.Apple)
+                if (context.Registration.ProviderType is ProviderTypes.Apple)
                 {
                     context.Configuration.TokenEndpointAuthMethodsSupported.Add(
                         ClientAuthenticationMethods.PrivateKeyJwt);
@@ -282,7 +282,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // doesn't return a "token_endpoint_auth_methods_supported" node containing alternative
                 // authentication methods, making basic authentication the default authentication method.
                 // To work around this compliance issue, "client_secret_post" is manually added here.
-                else if (context.Registration.ProviderName is Providers.LinkedIn)
+                else if (context.Registration.ProviderType is ProviderTypes.LinkedIn)
                 {
                     context.Configuration.TokenEndpointAuthMethodsSupported.Add(
                         ClientAuthenticationMethods.ClientSecretPost);
@@ -319,8 +319,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // by the sandbox environment always contains the production endpoints, which would
                 // prevent the OpenIddict integration from working properly when using the sandbox mode.
                 // To work around that, the endpoints are manually overriden when this environment is used.
-                if (context.Registration.ProviderName is Providers.PayPal &&
-                    context.Registration.GetPayPalOptions() is { Environment: string environment } &&
+                if (context.Registration.ProviderType is ProviderTypes.PayPal &&
+                    context.Registration.GetPayPalSettings() is { Environment: string environment } &&
                     string.Equals(environment, PayPal.Environments.Sandbox, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Configuration.AuthorizationEndpoint =

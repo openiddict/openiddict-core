@@ -329,9 +329,21 @@ public static partial class OpenIddictClientEvents
         public string? Nonce { get; set; }
 
         /// <summary>
-        /// Gets or sets the issuer used for the authentication demand, if applicable.
+        /// Gets or sets the identifier that will be used to resolve the client registration, if applicable.
+        /// </summary>
+        public string? RegistrationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the issuer URI of the provider that will be
+        /// used to resolve the client registration, if applicable.
         /// </summary>
         public Uri? Issuer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the provider that will be
+        /// used to resolve the client registration, if applicable.
+        /// </summary>
+        public string? ProviderName { get; set; }
 
         /// <summary>
         /// Gets or sets the grant type used for the authentication demand, if applicable.
@@ -878,13 +890,19 @@ public static partial class OpenIddictClientEvents
         public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
-        /// Gets or sets the issuer used for the challenge demand, if applicable.
+        /// Gets or sets the identifier that will be used to resolve the client registration, if applicable.
+        /// </summary>
+        public string? RegistrationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the issuer URI of the provider that will be
+        /// used to resolve the client registration, if applicable.
         /// </summary>
         public Uri? Issuer { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the provider that will be
-        /// used to resolve the issuer identity, if applicable.
+        /// used to resolve the client registration, if applicable.
         /// </summary>
         public string? ProviderName { get; set; }
 
@@ -1189,13 +1207,19 @@ public static partial class OpenIddictClientEvents
         public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
-        /// Gets or sets the issuer used for the sign-out demand, if applicable.
+        /// Gets or sets the identifier that will be used to resolve the client registration, if applicable.
+        /// </summary>
+        public string? RegistrationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the issuer URI of the provider that will be
+        /// used to resolve the client registration, if applicable.
         /// </summary>
         public Uri? Issuer { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the provider that will be
-        /// used to resolve the issuer identity, if applicable.
+        /// used to resolve the client registration, if applicable.
         /// </summary>
         public string? ProviderName { get; set; }
 

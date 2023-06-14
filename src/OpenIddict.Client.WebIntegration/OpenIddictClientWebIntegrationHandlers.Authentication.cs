@@ -49,7 +49,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // corresponds to the legacy OAuth 2.0-only implicit flow, it is deliberately not
                 // supported, so the only supported value is "web_server" (aka authorization code flow).
 
-                if (context.Registration.ProviderName is Providers.Basecamp)
+                if (context.Registration.ProviderType is ProviderTypes.Basecamp)
                 {
                     context.Request["type"] = "web_server";
                     context.Request.ResponseType = null;

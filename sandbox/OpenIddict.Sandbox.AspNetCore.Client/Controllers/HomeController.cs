@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Client;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Client.Controllers;
@@ -43,32 +44,34 @@ public class HomeController : Controller
     [Authorize, HttpPost("~/refresh-token"), ValidateAntiForgeryToken]
     public async Task<ActionResult> RefreshToken(CancellationToken cancellationToken)
     {
-        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        var token = result?.Properties.GetTokenValue(Tokens.RefreshToken);
+        var ticket = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        var token = ticket?.Properties.GetTokenValue(Tokens.RefreshToken);
         if (string.IsNullOrEmpty(token))
         {
             return BadRequest();
         }
 
-        var (response, principal) = await _service.AuthenticateWithRefreshTokenAsync(
-            issuer: new Uri(result.Principal.Claims.Select(claim => claim.Issuer).First(), UriKind.Absolute),
-            token: token,
-            cancellationToken: cancellationToken);
+        var result = await _service.AuthenticateWithRefreshTokenAsync(new()
+        {
+            CancellationToken = cancellationToken,
+            RefreshToken = token,
+            RegistrationId = ticket.Principal.FindFirst(Claims.Private.RegistrationId)?.Value
+        });
 
-        var properties = new AuthenticationProperties(result.Properties.Items)
+        var properties = new AuthenticationProperties(ticket.Properties.Items)
         {
             RedirectUri = null
         };
 
-        properties.UpdateTokenValue(Tokens.BackchannelAccessToken, response.AccessToken);
+        properties.UpdateTokenValue(Tokens.BackchannelAccessToken, result.AccessToken);
 
-        if (!string.IsNullOrEmpty(response.RefreshToken))
+        if (!string.IsNullOrEmpty(result.RefreshToken))
         {
-            properties.UpdateTokenValue(Tokens.RefreshToken, response.RefreshToken);
+            properties.UpdateTokenValue(Tokens.RefreshToken, result.RefreshToken);
         }
 
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, result.Principal, properties);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, ticket.Principal, properties);
 
-        return View("Index", model: response.AccessToken);
+        return View("Index", model: result.AccessToken);
     }
 }

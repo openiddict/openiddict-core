@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Net.Http.Headers;
 using System.Net.Mail;
 using System.Reflection;
+using OpenIddict.Client;
 using OpenIddict.Client.SystemNetHttp;
 using Polly;
 
@@ -53,7 +54,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// Configures the <see cref="HttpClient"/> used by the OpenIddict client/System.Net.Http integration.
     /// </summary>
     /// <remarks>
-    /// Note: customizations configured using this method apply to all providers.
+    /// Note: customizations configured using this method apply to all client registrations.
     /// </remarks>
     /// <param name="configuration">The delegate used to configure the <see cref="HttpClient"/>.</param>
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
@@ -65,25 +66,15 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
             throw new ArgumentNullException(nameof(configuration));
         }
 
-        return Configure(options =>
-        {
-            if (options.HttpClientActions.TryGetValue(string.Empty, out var actions))
-            {
-                actions.Add(configuration);
-            }
-
-            else
-            {
-                options.HttpClientActions[string.Empty] = new(capacity: 1) { configuration };
-            }
-        });
+        return ConfigureHttpClient((registration, client) => configuration(client));
     }
 
     /// <summary>
     /// Configures the <see cref="HttpClient"/> used by the OpenIddict client/System.Net.Http integration.
     /// </summary>
     /// <remarks>
-    /// Note: customizations configured using this method only apply to the specified provider.
+    /// Note: customizations configured using this method only apply
+    /// to client registrations that use the specified provider name.
     /// </remarks>
     /// <param name="provider">The provider name, to which the customizations are applied.</param>
     /// <param name="configuration">The delegate used to configure the <see cref="HttpClient"/>.</param>
@@ -101,25 +92,40 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
             throw new ArgumentNullException(nameof(configuration));
         }
 
-        return Configure(options =>
+        return ConfigureHttpClient((registration, client) =>
         {
-            if (options.HttpClientActions.TryGetValue(provider, out var actions))
+            if (string.Equals(registration.ProviderName, provider, StringComparison.Ordinal))
             {
-                actions.Add(configuration);
-            }
-
-            else
-            {
-                options.HttpClientActions[provider] = new(capacity: 1) { configuration };
+                configuration(client);
             }
         });
+    }
+
+    /// <summary>
+    /// Configures the <see cref="HttpClient"/> used by the OpenIddict client/System.Net.Http integration.
+    /// </summary>
+    /// <remarks>
+    /// Note: customizations configured using this method apply to all client registrations, but the
+    /// configuration delegate can restrict the applied customizations to specific instances.
+    /// </remarks>
+    /// <param name="configuration">The delegate used to configure the <see cref="HttpClient"/>.</param>
+    /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientSystemNetHttpBuilder ConfigureHttpClient(Action<OpenIddictClientRegistration, HttpClient> configuration)
+    {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        return Configure(options => options.UnfilteredHttpClientActions.Add(configuration));
     }
 
     /// <summary>
     /// Configures the <see cref="HttpClientHandler"/> used by the OpenIddict client/System.Net.Http integration.
     /// </summary>
     /// <remarks>
-    /// Note: customizations configured using this method apply to all providers.
+    /// Note: customizations configured using this method apply to all client registrations.
     /// </remarks>
     /// <param name="configuration">The delegate used to configure the <see cref="HttpClientHandler"/>.</param>
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
@@ -131,25 +137,15 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
             throw new ArgumentNullException(nameof(configuration));
         }
 
-        return Configure(options =>
-        {
-            if (options.HttpClientHandlerActions.TryGetValue(string.Empty, out var actions))
-            {
-                actions.Add(configuration);
-            }
-
-            else
-            {
-                options.HttpClientHandlerActions[string.Empty] = new(capacity: 1) { configuration };
-            }
-        });
+        return ConfigureHttpClientHandler((registration, handler) => configuration(handler));
     }
 
     /// <summary>
     /// Configures the <see cref="HttpClientHandler"/> used by the OpenIddict client/System.Net.Http integration.
     /// </summary>
     /// <remarks>
-    /// Note: customizations configured using this method only apply to the specified provider.
+    /// Note: customizations configured using this method only apply
+    /// to client registrations that use the specified provider name.
     /// </remarks>
     /// <param name="provider">The provider name, to which the customizations are applied.</param>
     /// <param name="configuration">The delegate used to configure the <see cref="HttpClientHandler"/>.</param>
@@ -167,18 +163,34 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
             throw new ArgumentNullException(nameof(configuration));
         }
 
-        return Configure(options =>
+        return ConfigureHttpClientHandler((registration, handler) =>
         {
-            if (options.HttpClientHandlerActions.TryGetValue(provider, out var actions))
+            if (string.Equals(registration.ProviderName, provider, StringComparison.Ordinal))
             {
-                actions.Add(configuration);
-            }
-
-            else
-            {
-                options.HttpClientHandlerActions[provider] = new(capacity: 1) { configuration };
+                configuration(handler);
             }
         });
+    }
+
+    /// <summary>
+    /// Configures the <see cref="HttpClientHandler"/> used by the OpenIddict client/System.Net.Http integration.
+    /// </summary>
+    /// <remarks>
+    /// Note: customizations configured using this method apply to all client registrations, but the
+    /// configuration delegate can restrict the applied customizations to specific instances.
+    /// </remarks>
+    /// <param name="configuration">The delegate used to configure the <see cref="HttpClientHandler"/>.</param>
+    /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientSystemNetHttpBuilder ConfigureHttpClientHandler(
+        Action<OpenIddictClientRegistration, HttpClientHandler> configuration)
+    {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        return Configure(options => options.UnfilteredHttpClientHandlerActions.Add(configuration));
     }
 
     /// <summary>

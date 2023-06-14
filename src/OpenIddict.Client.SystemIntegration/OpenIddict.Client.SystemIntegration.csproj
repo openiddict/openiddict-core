@@ -13,7 +13,6 @@
       netstandard2.0
     </TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 

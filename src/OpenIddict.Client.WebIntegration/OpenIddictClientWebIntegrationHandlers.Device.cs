@@ -50,7 +50,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Note: Google doesn't return a standard "verification_uri" parameter
                 // but returns a custom "verification_url" that serves the same purpose.
-                if (context.Registration.ProviderName is Providers.Google)
+                if (context.Registration.ProviderType is ProviderTypes.Google)
                 {
                     context.Response[Parameters.VerificationUri] = context.Response["verification_url"];
                     context.Response["verification_url"] = null;

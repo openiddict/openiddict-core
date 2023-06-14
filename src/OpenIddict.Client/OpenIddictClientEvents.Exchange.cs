@@ -170,7 +170,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the principal containing the claims resolved from the token response.
         /// </summary>
-        [Obsolete]
+        [Obsolete("This property is no longer supported and will be removed in a future version.")]
         public ClaimsPrincipal? Principal { get; set; }
     }
 }

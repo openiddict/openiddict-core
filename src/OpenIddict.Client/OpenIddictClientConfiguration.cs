@@ -6,6 +6,9 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
@@ -43,7 +46,14 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 
         foreach (var registration in options.Registrations)
         {
-            if (registration.Issuer is not { IsAbsoluteUri: true })
+            if (registration.Issuer is null)
+            {
+                throw string.IsNullOrEmpty(registration.ProviderType) ?
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0405)) :
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0411));
+            }
+
+            if (!registration.Issuer.IsAbsoluteUri || !registration.Issuer.IsWellFormedOriginalString())
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
             }
@@ -51,6 +61,29 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             if (!string.IsNullOrEmpty(registration.Issuer.Fragment) || !string.IsNullOrEmpty(registration.Issuer.Query))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
+            }
+
+            // If no explicit registration identifier was set, compute a stable
+            // hash based on the issuer URI and the provider name, if available.
+            if (string.IsNullOrEmpty(registration.RegistrationId))
+            {
+                using var algorithm = CryptoConfig.CreateFromName("OpenIddict SHA-256 Cryptographic Provider") switch
+                {
+                    SHA256 result => result,
+                    null => SHA256.Create(),
+                    var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
+                };
+
+                TransformBlock(algorithm, registration.Issuer.AbsoluteUri);
+
+                if (!string.IsNullOrEmpty(registration.ProviderName))
+                {
+                    TransformBlock(algorithm, registration.ProviderName);
+                }
+
+                algorithm.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+
+                registration.RegistrationId = Base64UrlEncoder.Encode(algorithm.Hash);
             }
 
             if (registration.ConfigurationManager is null)
@@ -165,24 +198,13 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             }
         }
 
-        // Ensure issuers are not used in multiple client registrations.
-        if (options.Registrations.Count != options.Registrations.Select(registration => registration.Issuer)
-                                                                .Distinct()
-                                                                .Count())
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0342));
-        }
-
-        // Ensure provider names are not used in multiple client registrations.
+        // Ensure registration identifiers are not used in multiple client registrations.
         //
-        // Note: a string comparer ignoring casing is deliberately used to prevent
-        // two providers using the same name with a different casing from being added.
-        if (options.Registrations
-            .Where(registration => !string.IsNullOrEmpty(registration.ProviderName))
-            .Count() != options.Registrations.Select(registration => registration.ProviderName)
-                                             .Where(name => !string.IsNullOrEmpty(name))
-                                             .Distinct(StringComparer.OrdinalIgnoreCase)
-                                             .Count())
+        // Note: a string comparer ignoring casing is deliberately used to prevent two
+        // registrations using the same identifier with a different casing from being added.
+        if (options.Registrations.Count != options.Registrations.Select(registration => registration.RegistrationId)
+                                                                .Distinct(StringComparer.OrdinalIgnoreCase)
+                                                                .Count())
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0347));
         }
@@ -280,6 +302,13 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 #endif
 
             return null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void TransformBlock(HashAlgorithm algorithm, string input)
+        {
+            var buffer = Encoding.UTF8.GetBytes(input);
+            algorithm.TransformBlock(buffer, 0, buffer.Length, outputBuffer: null, outputOffset: 0);
         }
     }
 }

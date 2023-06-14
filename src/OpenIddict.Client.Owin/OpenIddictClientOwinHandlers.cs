@@ -576,6 +576,13 @@ public static partial class OpenIddictClientOwinHandlers
                 return default;
             }
 
+            // If a registration identifier was explicitly set, update the challenge context to use it.
+            if (properties.Dictionary.TryGetValue(Properties.RegistrationId, out string? identifier) &&
+                !string.IsNullOrEmpty(identifier))
+            {
+                context.RegistrationId = identifier;
+            }
+
             // If an issuer was explicitly set, update the challenge context to use it.
             if (properties.Dictionary.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
             {
@@ -833,6 +840,13 @@ public static partial class OpenIddictClientOwinHandlers
             if (properties is not { Dictionary.Count: > 0 })
             {
                 return default;
+            }
+
+            // If a registration identifier was explicitly set, update the sign-out context to use it.
+            if (properties.Dictionary.TryGetValue(Properties.RegistrationId, out string? identifier) &&
+                !string.IsNullOrEmpty(identifier))
+            {
+                context.RegistrationId = identifier;
             }
 
             // If an issuer was explicitly set, update the challenge context to use it.

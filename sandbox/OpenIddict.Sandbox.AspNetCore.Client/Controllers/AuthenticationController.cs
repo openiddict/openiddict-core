@@ -89,16 +89,14 @@ public class AuthenticationController : Controller
         // Remove the local authentication cookie before triggering a redirection to the remote server.
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-        // Resolve the provider of the user identifier claim stored in the local authentication cookie.
+        // Extract the client registration identifier and retrieve the associated server configuration.
         // If the provider is known to support remote sign-out, ask OpenIddict to initiate a logout request.
-        if (Uri.TryCreate(identity.FindFirst(Claims.AuthorizationServer)?.Value, UriKind.Absolute, out Uri issuer) &&
-            await _service.GetServerConfigurationAsync(issuer) is { EndSessionEndpoint: Uri })
+        if (identity.FindFirst(Claims.Private.RegistrationId)?.Value is string identifier &&
+            await _service.GetServerConfigurationByRegistrationIdAsync(identifier) is { EndSessionEndpoint: Uri })
         {
             var properties = new AuthenticationProperties(new Dictionary<string, string>
             {
-                // Note: when only one client is registered in the client options,
-                // setting the issuer property is not required and can be omitted.
-                [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = issuer.AbsoluteUri,
+                [OpenIddictClientAspNetCoreConstants.Properties.RegistrationId] = identifier,
 
                 // While not required, the specification encourages sending an id_token_hint
                 // parameter containing an identity token returned by the server for this user.
@@ -183,8 +181,10 @@ public class AuthenticationController : Controller
                 // Preserve the basic claims that are necessary for the application to work correctly.
                 { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
 
-                // Preserve the identity of the authorization server as a dedicated claim.
-                { Type: Claims.AuthorizationServer } => true,
+                // Preserve the client registration identifier as a dedicated claim so that the
+                // associated server configuration can be resolved from the logout endpoint to
+                // determine whether the authorization server supports client-initiated logouts.
+                { Type: Claims.Private.RegistrationId } => true,
 
                 // Applications that use multiple client registrations can filter claims based on the issuer.
                 { Type: "bio", Issuer: "https://github.com/" } => true,

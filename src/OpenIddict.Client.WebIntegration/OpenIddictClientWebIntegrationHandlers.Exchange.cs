@@ -65,7 +65,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // didn't support the "response_type" parameter but relied on a "type"
                 // parameter to determine the type of request (web server or refresh).
 
-                if (context.Registration.ProviderName is Providers.Basecamp)
+                if (context.Registration.ProviderType is ProviderTypes.Basecamp)
                 {
                     context.Request["type"] = context.Request.GrantType switch
                     {
@@ -121,7 +121,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // These providers require using basic authentication to flow the client_id
                 // for all types of client applications, even when there's no client_secret.
-                if (context.Registration.ProviderName is Providers.Reddit &&
+                if (context.Registration.ProviderType is ProviderTypes.Reddit &&
                     !string.IsNullOrEmpty(context.Request.ClientId))
                 {
                     // Important: the credentials MUST be formURL-encoded before being base64-encoded.
@@ -140,7 +140,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // These providers don't implement the standard version of the client_secret_basic
                 // authentication method as they don't support formURL-encoding the client credentials.
-                else if (context.Registration.ProviderName is Providers.EpicGames &&
+                else if (context.Registration.ProviderType is ProviderTypes.EpicGames &&
                     !string.IsNullOrEmpty(context.Request.ClientId) &&
                     !string.IsNullOrEmpty(context.Request.ClientSecret))
                 {
@@ -196,7 +196,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Trovo requires sending the client identifier in a non-standard "client-id" header and
                 // the client secret in the payload (formatted using JSON instead of the standard format).
-                if (context.Registration.ProviderName is Providers.Trovo)
+                if (context.Registration.ProviderType is ProviderTypes.Trovo)
                 {
                     request.Headers.Add("Client-ID", context.Request.ClientId);
 
@@ -246,7 +246,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // By default, Deezer returns non-standard token responses formatted as formurl-encoded
                 // payloads and declared as "text/html" content but allows sending an "output" query string
                 // parameter containing "json" to get a response conforming to the OAuth 2.0 specification.
-                if (context.Registration.ProviderName is Providers.Deezer)
+                if (context.Registration.ProviderType is ProviderTypes.Deezer)
                 {
                     request.RequestUri = OpenIddictHelpers.AddQueryStringParameter(
                         request.RequestUri, name: "output", value: "json");
@@ -287,11 +287,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var request = context.Transaction.GetHttpRequestMessage() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
-                request.Content = context.Registration.ProviderName switch
+                request.Content = context.Registration.ProviderType switch
                 {
                     // Trovo returns a 500 internal server error when using the standard
                     // "application/x-www-form-urlencoded" format and requires using JSON.
-                    Providers.Trovo => JsonContent.Create(context.Transaction.Request,
+                    ProviderTypes.Trovo => JsonContent.Create(context.Transaction.Request,
                         new MediaTypeHeaderValue(MediaTypes.Json)
                         {
                             CharSet = Charsets.Utf8
@@ -335,7 +335,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Note: Deezer doesn't return a standard "expires_in" parameter
                 // but returns an equivalent "expires" integer parameter instead.
-                if (context.Registration.ProviderName is Providers.Deezer)
+                if (context.Registration.ProviderType is ProviderTypes.Deezer)
                 {
                     context.Response[Parameters.ExpiresIn] = context.Response["expires"];
                     context.Response["expires"] = null;

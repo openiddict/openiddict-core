@@ -473,6 +473,18 @@
               </xs:simpleType>
             </xs:attribute>
 
+            <xs:attribute name="Id" use="required">
+              <xs:annotation>
+                <xs:documentation>The provider identifier, represented as a GUID.</xs:documentation>
+              </xs:annotation>
+
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:pattern value="([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\})" />
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+
             <xs:attribute name="Documentation" type="xs:anyURI" use="optional">
               <xs:annotation>
                 <xs:documentation>The documentation URI, if applicable.</xs:documentation>

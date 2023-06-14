@@ -166,7 +166,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
 
         else
         {
-            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
             // A single main claims-based principal instance can be attached to an authentication ticket.
             var principal = context.EndpointType switch
@@ -188,9 +188,10 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                 return null;
             }
 
-            // Attach the identity of the authorization server to the returned principal to allow resolving it even if no other
-            // claim was added to the principal (e.g when no id_token was returned and no userinfo endpoint is available).
-            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri)
+            // Attach the registration identifier and identity of the authorization server to the returned principal to allow
+            // resolving it even if no other claim was added (e.g if no id_token was returned/no userinfo endpoint is available).
+            principal.SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
+                     .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
                      .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
 
             // Restore or create a new authentication properties collection and populate it.

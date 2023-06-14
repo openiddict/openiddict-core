@@ -17,6 +17,11 @@ namespace OpenIddict.Client;
 public sealed class OpenIddictClientRegistration
 {
     /// <summary>
+    /// Gets or sets the unique identifier assigned to the registration.
+    /// </summary>
+    public string? RegistrationId { get; set; }
+
+    /// <summary>
     /// Gets or sets the client identifier assigned by the authorization server.
     /// </summary>
     public string? ClientId { get; set; }
@@ -104,18 +109,36 @@ public sealed class OpenIddictClientRegistration
     public Uri? Issuer { get; set; }
 
     /// <summary>
-    /// Gets or sets the provider name, if applicable.
+    /// Gets or sets the provider name.
     /// </summary>
     /// <remarks>
-    /// If a Web provider integration with the same name was enabled, the
-    /// provider-specific options will be automatically imported and applied.
+    /// The provider name can be safely used as a stable public identifier.
     /// </remarks>
     public string? ProviderName { get; set; }
 
     /// <summary>
     /// Gets or sets the provider options, if applicable.
     /// </summary>
-    public dynamic? ProviderOptions { get; set; }
+    [Obsolete($"This property was replaced by {nameof(ProviderSettings)} and will be removed in a future version.")]
+    public dynamic? ProviderOptions
+    {
+        get => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+        set => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+    }
+
+    /// <summary>
+    /// Gets or sets the provider settings, if applicable.
+    /// </summary>
+    public dynamic? ProviderSettings { get; set; }
+
+    /// <summary>
+    /// Gets or sets the provider type, if applicable.
+    /// </summary>
+    /// <remarks>
+    /// Note: when manually set, the specified value MUST match the type of an existing
+    /// provider supported by the OpenIddict.Client.WebIntegration companion package.
+    /// </remarks>
+    public string? ProviderType { get; set; }
 
     /// <summary>
     /// Gets or sets the static server configuration, if applicable.

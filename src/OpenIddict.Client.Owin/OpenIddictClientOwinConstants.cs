@@ -35,6 +35,7 @@ public static class OpenIddictClientOwinConstants
         public const string ErrorUri = ".error_uri";
         public const string ProviderName = ".provider_name";
         public const string RefreshTokenPrincipal = ".refresh_token_principal";
+        public const string RegistrationId = ".registration_id";
         public const string StateTokenPrincipal = ".state_token_principal";
         public const string UserinfoTokenPrincipal = ".userinfo_token_principal";
     }

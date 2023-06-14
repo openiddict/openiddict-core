@@ -325,15 +325,14 @@ public static partial class OpenIddictClientHandlers
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0311));
                         }
 
-                        // If no issuer was explicitly attached and a single client is registered, use it.
-                        // Otherwise, throw an exception to indicate that setting an explicit issuer
-                        // is required when multiple clients are registered.
-                        context.Issuer ??= context.Options.Registrations.Count switch
+                        if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
+                            context.Issuer is null && string.IsNullOrEmpty(context.ProviderName) &&
+                            context.Options.Registrations.Count is not 1)
                         {
-                            0 => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                            1 => context.Options.Registrations[0].Issuer,
-                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0355))
-                        };
+                            throw context.Options.Registrations.Count is 0 ?
+                                new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
+                                new InvalidOperationException(SR.GetResourceString(SR.ID0355));
+                        }
                     }
 
                     break;
@@ -377,15 +376,48 @@ public static partial class OpenIddictClientHandlers
             //
             // Client registrations/configurations that need to be resolved as part of authentication demands
             // triggered from the redirection or post-logout redirection requests are handled elsewhere.
-            if (context.Issuer is null || context.EndpointType is not OpenIddictClientEndpointType.Unknown)
+            if (!string.IsNullOrEmpty(context.Nonce) || context.EndpointType is not OpenIddictClientEndpointType.Unknown)
             {
                 return;
             }
 
-            // Note: if the static registration cannot be found in the options, this may indicate
-            // the client was removed after the authorization dance started and thus, can no longer
-            // be used to authenticate users. In this case, throw an exception to abort the flow.
-            context.Registration ??= await _service.GetClientRegistrationAsync(context.Issuer, context.CancellationToken);
+            context.Registration ??= context switch
+            {
+                // If specified, resolve the registration using the attached registration identifier.
+                { RegistrationId: string identifier } when !string.IsNullOrEmpty(identifier)
+                    => await _service.GetClientRegistrationByIdAsync(identifier, context.CancellationToken),
+
+                // If specified, resolve the registration using the attached issuer URI.
+                { Issuer: Uri issuer } => await _service.GetClientRegistrationAsync(issuer, context.CancellationToken),
+
+                // If specified, resolve the registration using the attached provider name.
+                { ProviderName: string provider } when !string.IsNullOrEmpty(provider)
+                    => await _service.GetClientRegistrationAsync(provider, context.CancellationToken),
+
+                // Otherwise, default to the unique registration available, if possible.
+                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+
+                // If no registration was added or multiple registrations are present, throw an exception.
+                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0355))
+            };
+
+            if (!string.IsNullOrEmpty(context.RegistrationId) &&
+                !string.Equals(context.RegistrationId, context.Registration.RegistrationId, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+            }
+
+            if (!string.IsNullOrEmpty(context.ProviderName) &&
+                !string.Equals(context.ProviderName, context.Registration.ProviderName, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
+            }
+
+            if (context.Issuer is not null && context.Issuer != context.Registration.Issuer)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0408));
+            }
 
             try
             {
@@ -967,19 +999,15 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            // Retrieve the client definition using the authorization server stored in the state token.
+            // Retrieve the client registration using the private claim stored in the state token.
             //
             // Note: there's no guarantee that the state token was not replaced by a malicious actor
             // with a state token meant to be used with a different authorization server as part of a
             // mix-up attack where the state token and the authorization code or access/identity tokens
             // wouldn't match. To mitigate this, additional defenses are added later by other handlers.
 
-            // Restore the identity of the authorization server from the special "as" claim.
-            // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09#section-2
-            // for more information.
-            var server = context.StateTokenPrincipal.GetClaim(Claims.AuthorizationServer);
-            if (string.IsNullOrEmpty(server) || !Uri.TryCreate(server, UriKind.Absolute, out Uri? issuer) ||
-                !issuer.IsWellFormedOriginalString())
+            context.RegistrationId = context.StateTokenPrincipal.GetClaim(Claims.Private.RegistrationId);
+            if (string.IsNullOrEmpty(context.RegistrationId))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0291));
             }
@@ -987,17 +1015,7 @@ public static partial class OpenIddictClientHandlers
             // Note: if the static registration cannot be found in the options, this may indicate
             // the client was removed after the authorization dance started and thus, can no longer
             // be used to authenticate users. In this case, throw an exception to abort the flow.
-            context.Issuer = issuer;
-            context.Registration = await _service.GetClientRegistrationAsync(issuer, context.CancellationToken);
-
-            // If an explicit provider name was also added, ensure the two values point to the same issuer.
-            var provider = context.StateTokenPrincipal.GetClaim(Claims.Private.ProviderName);
-            if (!string.IsNullOrEmpty(provider) &&
-                !string.IsNullOrEmpty(context.Registration.ProviderName) &&
-                !string.Equals(provider, context.Registration.ProviderName, StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
-            }
+            context.Registration = await _service.GetClientRegistrationByIdAsync(context.RegistrationId, context.CancellationToken);
 
             try
             {
@@ -1046,8 +1064,6 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-
             // To help mitigate mix-up attacks, the identity of the issuer can be returned by
             // authorization servers that support it as a part of the "iss" parameter, which
             // allows comparing it to the issuer in the state token. Depending on the selected
@@ -1078,7 +1094,7 @@ public static partial class OpenIddictClientHandlers
 
                 // If the two values don't match, this may indicate a mix-up attack attempt.
                 if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) ||
-                    !uri.IsWellFormedOriginalString() || uri != context.Issuer)
+                    !uri.IsWellFormedOriginalString() || uri != context.Registration.Issuer)
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2340,7 +2356,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
             // Create a new principal that will be used to store the client assertion claims.
             var principal = new ClaimsPrincipal(new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType));
@@ -2365,7 +2381,7 @@ public static partial class OpenIddictClientHandlers
             // If the token endpoint URI is not available, use the issuer URI as the audience.
             else
             {
-                principal.SetAudiences(context.Issuer.OriginalString);
+                principal.SetAudiences(context.Registration.Issuer.OriginalString);
             }
 
             // Use the client_id as both the subject and the issuer, as required by the specifications.
@@ -2546,7 +2562,8 @@ public static partial class OpenIddictClientHandlers
             try
             {
                 context.TokenResponse = await _service.SendTokenRequestAsync(
-                    context.Registration, context.TokenRequest, context.TokenEndpoint);
+                    context.Registration, context.Configuration,
+                    context.TokenRequest, context.TokenEndpoint);
             }
 
             catch (ProtocolException exception)
@@ -3554,7 +3571,9 @@ public static partial class OpenIddictClientHandlers
             try
             {
                 (context.UserinfoResponse, (context.UserinfoTokenPrincipal, context.UserinfoToken)) =
-                    await _service.SendUserinfoRequestAsync(context.Registration, context.UserinfoRequest, context.UserinfoEndpoint);
+                    await _service.SendUserinfoRequestAsync(
+                        context.Registration, context.Configuration,
+                        context.UserinfoRequest, context.UserinfoEndpoint);
             }
 
             catch (ProtocolException exception)
@@ -3913,31 +3932,14 @@ public static partial class OpenIddictClientHandlers
                 }
             }
 
-            // If a provider name was specified, resolve the corresponding issuer.
-            if (!string.IsNullOrEmpty(context.ProviderName))
+            if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
+                context.Issuer is null && string.IsNullOrEmpty(context.ProviderName) &&
+                context.Options.Registrations.Count is not 1)
             {
-                var registration = context.Options.Registrations.Find(registration => string.Equals(
-                    registration.ProviderName, context.ProviderName, StringComparison.Ordinal)) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
-
-                // If an explicit issuer was also attached, ensure the two values point to the same instance.
-                if (context.Issuer is not null && context.Issuer != registration.Issuer)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
-                }
-
-                context.Issuer = registration.Issuer;
+                throw context.Options.Registrations.Count is 0 ?
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0305));
             }
-
-            // If no issuer was explicitly attached and a single client is registered, use it.
-            // Otherwise, throw an exception to indicate that setting an explicit issuer
-            // is required when multiple clients are registered.
-            context.Issuer ??= context.Options.Registrations.Count switch
-            {
-                0 => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                1 => context.Options.Registrations[0].Issuer,
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
-            };
 
             return default;
         }
@@ -3971,12 +3973,43 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            context.Registration ??= context switch
+            {
+                // If specified, resolve the registration using the attached registration identifier.
+                { RegistrationId: string identifier } when !string.IsNullOrEmpty(identifier)
+                    => await _service.GetClientRegistrationByIdAsync(identifier, context.CancellationToken),
 
-            // Note: if the static registration cannot be found in the options, this may indicate
-            // the client was removed after the authorization dance started and thus, can no longer
-            // be used to authenticate users. In this case, throw an exception to abort the flow.
-            context.Registration ??= await _service.GetClientRegistrationAsync(context.Issuer, context.CancellationToken);
+                // If specified, resolve the registration using the attached issuer URI.
+                { Issuer: Uri issuer } => await _service.GetClientRegistrationAsync(issuer, context.CancellationToken),
+
+                // If specified, resolve the registration using the attached provider name.
+                { ProviderName: string provider } when !string.IsNullOrEmpty(provider)
+                    => await _service.GetClientRegistrationAsync(provider, context.CancellationToken),
+
+                // Otherwise, default to the unique registration available, if possible.
+                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+
+                // If no registration was added or multiple registrations are present, throw an exception.
+                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+            };
+
+            if (!string.IsNullOrEmpty(context.RegistrationId) &&
+                !string.Equals(context.RegistrationId, context.Registration.RegistrationId, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+            }
+
+            if (!string.IsNullOrEmpty(context.ProviderName) &&
+                !string.Equals(context.ProviderName, context.Registration.ProviderName, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
+            }
+
+            if (context.Issuer is not null && context.Issuer != context.Registration.Issuer)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0408));
+            }
 
             try
             {
@@ -4704,7 +4737,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Create a new principal containing only the filtered claims.
@@ -4743,14 +4776,15 @@ public static partial class OpenIddictClientHandlers
             // Use the client identity as the token issuer.
             principal.SetClaim(Claims.Private.Issuer, (context.Options.ClientUri ?? context.BaseUri)?.AbsoluteUri);
 
-            // Store the identity of the authorization server in the state token principal to allow
+            // Store the identifier of the client registration in the state token principal to allow
             // resolving it when handling the authorization callback. Note: additional security checks
             // are generally required to ensure the state token was not replaced with a state token
             // meant to be used with a different authorization server (e.g using the "iss" parameter).
             //
             // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09
-            // for more information about this special claim.
-            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri)
+            // for more information about the "as" claim.
+            principal.SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
+                     .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
                      .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
 
             // Store the request forgery protection in the state token so it can be later used to
@@ -5140,7 +5174,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
             // Create a new principal that will be used to store the client assertion claims.
             var principal = new ClaimsPrincipal(new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType));
@@ -5154,7 +5188,7 @@ public static partial class OpenIddictClientHandlers
 
             // Use the issuer URI as the audience. Applications that need to
             // use a different value can register a custom event handler.
-            principal.SetAudiences(context.Issuer.OriginalString);
+            principal.SetAudiences(context.Registration.Issuer.OriginalString);
 
             // Use the client_id as both the subject and the issuer, as required by the specifications.
             principal.SetClaim(Claims.Private.Issuer, context.ClientId)
@@ -5331,7 +5365,8 @@ public static partial class OpenIddictClientHandlers
             try
             {
                 context.DeviceAuthorizationResponse = await _service.SendDeviceAuthorizationRequestAsync(
-                    context.Registration, context.DeviceAuthorizationRequest, context.DeviceAuthorizationEndpoint);
+                    context.Registration, context.Configuration,
+                    context.DeviceAuthorizationRequest, context.DeviceAuthorizationEndpoint);
             }
 
             catch (ProtocolException exception)
@@ -5517,31 +5552,14 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0358));
             }
 
-            // If a provider name was specified, resolve the corresponding issuer.
-            if (!string.IsNullOrEmpty(context.ProviderName))
+            if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
+                context.Issuer is null && string.IsNullOrEmpty(context.ProviderName) &&
+                context.Options.Registrations.Count is not 1)
             {
-                var registration = context.Options.Registrations.Find(registration => string.Equals(
-                    registration.ProviderName, context.ProviderName, StringComparison.Ordinal)) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
-
-                // If an explicit issuer was also attached, ensure the two values point to the same instance.
-                if (context.Issuer is not null && context.Issuer != registration.Issuer)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
-                }
-
-                context.Issuer = registration.Issuer;
+                throw context.Options.Registrations.Count is 0 ?
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0341));
             }
-
-            // If no issuer was explicitly attached and a single client is registered, use it.
-            // Otherwise, throw an exception to indicate that setting an explicit issuer
-            // is required when multiple clients are registered.
-            context.Issuer ??= context.Options.Registrations.Count switch
-            {
-                0 => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                1 => context.Options.Registrations[0].Issuer,
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0341))
-            };
 
             return default;
         }
@@ -5575,12 +5593,43 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            context.Registration ??= context switch
+            {
+                // If specified, resolve the registration using the attached registration identifier.
+                { RegistrationId: string identifier } when !string.IsNullOrEmpty(identifier)
+                    => await _service.GetClientRegistrationByIdAsync(identifier, context.CancellationToken),
 
-            // Note: if the static registration cannot be found in the options, this may indicate
-            // the client was removed after the authorization dance started and thus, can no longer
-            // be used to authenticate users. In this case, throw an exception to abort the flow.
-            context.Registration ??= await _service.GetClientRegistrationAsync(context.Issuer, context.CancellationToken);
+                // If specified, resolve the registration using the attached issuer URI.
+                { Issuer: Uri issuer } => await _service.GetClientRegistrationAsync(issuer, context.CancellationToken),
+
+                // If specified, resolve the registration using the attached provider name.
+                { ProviderName: string provider } when !string.IsNullOrEmpty(provider)
+                    => await _service.GetClientRegistrationAsync(provider, context.CancellationToken),
+
+                // Otherwise, default to the unique registration available, if possible.
+                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+
+                // If no registration was added or multiple registrations are present, throw an exception.
+                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0341))
+            };
+
+            if (!string.IsNullOrEmpty(context.RegistrationId) &&
+                !string.Equals(context.RegistrationId, context.Registration.RegistrationId, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+            }
+
+            if (!string.IsNullOrEmpty(context.ProviderName) &&
+                !string.Equals(context.ProviderName, context.Registration.ProviderName, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
+            }
+
+            if (context.Issuer is not null && context.Issuer != context.Registration.Issuer)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0408));
+            }
 
             try
             {
@@ -5812,7 +5861,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Create a new principal containing only the filtered claims.
@@ -5851,12 +5900,13 @@ public static partial class OpenIddictClientHandlers
             // Use the client identity as the token issuer.
             principal.SetClaim(Claims.Private.Issuer, (context.Options.ClientUri ?? context.BaseUri)?.AbsoluteUri);
 
-            // Store the identity of the authorization server in the state token
+            // Store the identifier of the client registration in the state token
             // principal to allow resolving it when handling the post-logout callback.
             //
             // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09
-            // for more information about this special claim.
-            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri)
+            // for more information about the "as" claim.
+            principal.SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
+                     .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
                      .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
 
             // Store the request forgery protection in the state token so it can be later used to
