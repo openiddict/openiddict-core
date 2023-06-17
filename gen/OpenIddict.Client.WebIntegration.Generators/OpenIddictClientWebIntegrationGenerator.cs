@@ -72,6 +72,37 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 {
     {{~ for provider in providers ~}}
     /// <summary>
+    /// Adds a new {{ provider.display_name }} client registration.
+    {{~ if provider.documentation ~}}
+    /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
+    {{~ end ~}}
+    /// </summary>
+    /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.display_name }} options.</param>
+    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/> instance.</returns>
+    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
+    {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        Services.Configure<OpenIddictClientOptions>(options =>
+        {
+            var registration = new OpenIddictClientRegistration
+            {
+                ProviderSettings = new OpenIddictClientWebIntegrationSettings.{{ provider.name }}(),
+                ProviderType = ProviderTypes.{{ provider.name }}
+            };
+
+            configuration(new OpenIddictClientWebIntegrationBuilder.{{ provider.name }}(registration));
+
+            options.Registrations.Add(registration);
+        });
+
+        return this;
+    }
+
+    /// <summary>
     /// Enables the {{ provider.display_name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
     /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
@@ -82,16 +113,6 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete($""This method was replaced by {nameof(Add{{ provider.name }})} and will be removed in a future version."")]
     public OpenIddictClientWebIntegrationBuilder.{{ provider.name }} Use{{ provider.name }}()
-        => Add{{ provider.name }}();
-
-    /// <summary>
-    /// Adds a new {{ provider.display_name }} client registration.
-    {{~ if provider.documentation ~}}
-    /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
-    {{~ end ~}}
-    /// </summary>
-    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-    public OpenIddictClientWebIntegrationBuilder.{{ provider.name }} Add{{ provider.name }}()
     {
         var registration = new OpenIddictClientRegistration
         {
@@ -117,26 +138,6 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     [Obsolete($""This method was replaced by {nameof(Add{{ provider.name }})} and will be removed in a future version."")]
     public OpenIddictClientWebIntegrationBuilder Use{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
         => Add{{ provider.name }}(configuration);
-
-    /// <summary>
-    /// Adds a new {{ provider.display_name }} client registration.
-    {{~ if provider.documentation ~}}
-    /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
-    {{~ end ~}}
-    /// </summary>
-    /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.display_name }} options.</param>
-    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/> instance.</returns>
-    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
-    {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        configuration(Add{{ provider.name }}());
-
-        return this;
-    }
     {{~ end ~}}
 
     {{~ for provider in providers ~}}
