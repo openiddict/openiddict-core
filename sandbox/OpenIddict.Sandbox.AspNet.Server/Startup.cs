@@ -71,10 +71,12 @@ namespace OpenIddict.Sandbox.AspNet.Server
                     // parameter containing their URL as part of authorization responses. For more information,
                     // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                     options.UseWebProviders()
-                           .AddGitHub()
-                           .SetClientId("c4ade52327b01ddacff3")
-                           .SetClientSecret("da6bed851b75e317bf6b2cb67013679d9467c122")
-                           .SetRedirectUri("callback/login/github");
+                           .AddGitHub(options =>
+                           {
+                               options.SetClientId("c4ade52327b01ddacff3")
+                                      .SetClientSecret("da6bed851b75e317bf6b2cb67013679d9467c122")
+                                      .SetRedirectUri("callback/login/github");
+                           });
                 })
 
                 // Register the OpenIddict server components.
