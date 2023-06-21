@@ -458,6 +458,24 @@
   </Provider>
 
   <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          ██ ████▄ ▄██ ▄▄▀██ ██ ██ ▄▄▄██ ▄▄▄ ██ ▄▄▄ ██
+                                          ██ █████ ███ █████ ▄▄ ██ ▄▄▄██▄▄▄▀▀██▄▄▄▀▀██
+                                          ██ ▀▀ █▀ ▀██ ▀▀▄██ ██ ██ ▀▀▀██ ▀▀▀ ██ ▀▀▀ ██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Lichess" Id="320a2c10-d021-4488-a4dc-ade9e0a73072" Documentation="https://lichess.org/api#tag/OAuth">
+    <Environment Issuer="https://lichess.org/">
+      <Configuration AuthorizationEndpoint="https://lichess.org/oauth"
+                     TokenEndpoint="https://lichess.org/api/token"
+                     UserinfoEndpoint="https://lichess.org/api/account">
+        <CodeChallengeMethod Value="S256" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ████▄ ▄██ ▀██ ██ █▀▄██ ▄▄▄██ ▄▄▀█▄ ▄██ ▀██ ██
                                         ██ █████ ███ █ █ ██ ▄▀███ ▄▄▄██ ██ ██ ███ █ █ ██
