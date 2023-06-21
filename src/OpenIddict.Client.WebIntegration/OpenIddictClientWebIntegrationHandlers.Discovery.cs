@@ -152,11 +152,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Microsoft Account supports both the "plain" and "S256" code challenge methods but
-                // doesn't list them in the server configuration metadata. To ensure the OpenIddict
-                // client uses Proof Key for Code Exchange for the Microsoft provider, the 2 methods
+                // Some providers support Proof Key for Code Exchange but don't list any supported code
+                // challenge method in the server configuration metadata. To ensure the OpenIddict client
+                // always uses Proof Key for Code Exchange for these providers, the supported methods
                 // are manually added to the list of supported code challenge methods by this handler.
-                if (context.Registration.ProviderType is ProviderTypes.Microsoft)
+
+                if (context.Registration.ProviderType is ProviderTypes.Adobe or ProviderTypes.Microsoft)
                 {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);

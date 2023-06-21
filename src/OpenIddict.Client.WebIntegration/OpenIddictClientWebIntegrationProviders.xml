@@ -31,6 +31,20 @@
   </Provider>
 
   <!--
+                                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                  █ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ▄▄▀██ ▄▄▄██
+                                                  █ ▀▀ ██ ██ ██ ███ ██ ▄▄▀██ ▄▄▄██
+                                                  █ ██ ██ ▀▀ ██ ▀▀▀ ██ ▀▀ ██ ▀▀▀██
+                                                  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Adobe" Id="423c029c-147d-4f93-b94c-5e6e4aade643"
+            Documentation="https://developer.adobe.com/developer-console/docs/guides/authentication/UserAuthentication/">
+    <Environment Issuer="https://ims-na1.adobelogin.com/"
+                 ConfigurationEndpoint="https://ims-na1.adobelogin.com/ims/.well-known/openid-configuration" />
+  </Provider>
+
+  <!--
                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                               █ ▄▄▀██ ▄▄▀██ ▄▄▀██ ▄▄ █▄ ▄██ ▄▄▄ ████ ▄▄▄ ██ ▀██ ██ ████▄ ▄██ ▀██ ██ ▄▄▄██
                               █ ▀▀ ██ ▀▀▄██ █████ █▀▀██ ███▄▄▄▀▀████ ███ ██ █ █ ██ █████ ███ █ █ ██ ▄▄▄██
