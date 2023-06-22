@@ -150,4 +150,8 @@
         Encoding="Unicode" />
   </Target>
 
+  <ItemGroup>
+    <Using Remove="System.Net.Http" />
+  </ItemGroup>
+
 </Project>

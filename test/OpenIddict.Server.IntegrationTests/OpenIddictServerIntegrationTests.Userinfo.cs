@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Net.Http;
 using System.Security.Claims;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;

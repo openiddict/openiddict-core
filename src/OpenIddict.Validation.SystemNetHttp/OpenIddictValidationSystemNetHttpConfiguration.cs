@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;

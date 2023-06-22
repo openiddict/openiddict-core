@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;

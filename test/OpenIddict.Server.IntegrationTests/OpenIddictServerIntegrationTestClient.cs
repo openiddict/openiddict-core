@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Net.Http;
 using System.Net.Http.Json;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
