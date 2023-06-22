@@ -13,8 +13,4 @@
     <PackageTags>$(PackageTags);entityframeworkcore;models</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Using Remove="System.Net.Http" />
-  </ItemGroup>
-
 </Project>

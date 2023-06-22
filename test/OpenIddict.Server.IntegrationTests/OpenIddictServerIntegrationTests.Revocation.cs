@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

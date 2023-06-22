@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 

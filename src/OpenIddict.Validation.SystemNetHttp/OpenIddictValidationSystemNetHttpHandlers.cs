@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

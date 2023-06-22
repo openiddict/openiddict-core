@@ -298,7 +298,8 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         {
             await foreach (var scope in scopes)
             {
-                if (names.Contains(await Store.GetNameAsync(scope, cancellationToken), StringComparer.Ordinal))
+                var name = await Store.GetNameAsync(scope, cancellationToken);
+                if (!string.IsNullOrEmpty(name) && names.Contains(name, StringComparer.Ordinal))
                 {
                     yield return scope;
                 }
