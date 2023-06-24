@@ -269,6 +269,38 @@
                 </xs:complexType>
               </xs:element>
 
+              <xs:element name="Property" minOccurs="0" maxOccurs="10">
+                <xs:annotation>
+                  <xs:documentation>A custom, user-set authentication property supported by the provider integration.</xs:documentation>
+                </xs:annotation>
+
+                <xs:complexType>
+                  <xs:attribute name="Name" use="required">
+                    <xs:annotation>
+                      <xs:documentation>The name of the constant used to represent the property.</xs:documentation>
+                    </xs:annotation>
+
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:pattern value="^[A-Z][a-zA-Z0-9]*$" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+
+                  <xs:attribute name="DictionaryKey" use="required">
+                    <xs:annotation>
+                      <xs:documentation>The key associated with the property, used as the dictionary lookup value.</xs:documentation>
+                    </xs:annotation>
+
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:pattern value="^\.[a-z_]*$" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                </xs:complexType>
+              </xs:element>
+
               <xs:element name="Setting" minOccurs="0" maxOccurs="10">
                 <xs:annotation>
                   <xs:documentation>A custom setting exposed by the provider integration.</xs:documentation>

@@ -787,6 +787,13 @@ public static partial class OpenIddictClientWebIntegrationConstants
             public const string {{ environment.name }} = ""{{ environment.name }}"";
             {{~ end ~}}
         }
+
+        public static class Properties
+        {
+            {{~ for property in provider.properties ~}}
+            public const string {{ property.name }} = ""{{ property.dictionary_key }}"";
+            {{~ end ~}}
+        }
     }
     {{~ end ~}}
 
@@ -816,6 +823,13 @@ public static partial class OpenIddictClientWebIntegrationConstants
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
                                 Name = (string?) environment.Attribute("Name") ?? "Production"
+                            })
+                            .ToList(),
+
+                            Properties = provider.Elements("Property").Select(property => new
+                            {
+                                Name = (string) property.Attribute("Name"),
+                                DictionaryKey = (string) property.Attribute("DictionaryKey")
                             })
                             .ToList(),
                         })

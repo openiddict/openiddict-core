@@ -549,6 +549,46 @@ internal static class OpenIddictHelpers
     }
 
     /// <summary>
+    /// Computes the SHA-256 message authentication code (HMAC) of the specified <paramref name="data"/> array.
+    /// </summary>
+    /// <param name="key">The cryptographic key.</param>
+    /// <param name="data">The data to hash.</param>
+    /// <returns>The SHA-256 message authentication code (HMAC) of the specified <paramref name="data"/> array.</returns>
+    /// <exception cref="CryptographicException">
+    /// The implementation resolved from <see cref="CryptoConfig.CreateFromName(string)"/> is not valid.
+    /// </exception>
+    public static byte[] ComputeSha256MessageAuthenticationCode(byte[] key, byte[] data)
+    {
+        var algorithm = CryptoConfig.CreateFromName("OpenIddict HMAC SHA-256 Cryptographic Provider", new[] { key }) switch
+        {
+            HMACSHA256 result => result,
+            null => null,
+            var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
+        };
+
+        // If no custom algorithm was registered, use either the static/one-shot HashData() API
+        // on platforms that support it or create a default instance provided by the BCL.
+        if (algorithm is null)
+        {
+#if SUPPORTS_ONE_SHOT_HASHING_METHODS
+            return HMACSHA256.HashData(key, data);
+#else
+            algorithm = new HMACSHA256(key);
+#endif
+        }
+
+        try
+        {
+            return algorithm.ComputeHash(data);
+        }
+
+        finally
+        {
+            algorithm.Dispose();
+        }
+    }
+
+    /// <summary>
     /// Computes the SHA-256 hash of the specified <paramref name="data"/> array.
     /// </summary>
     /// <param name="data">The data to hash.</param>
@@ -839,6 +879,32 @@ internal static class OpenIddictHelpers
         }
 
         return accumulator is 0;
+#endif
+    }
+
+    /// <summary>
+    /// Converts the specified hex-encoded <paramref name="value"/> to a byte array.
+    /// </summary>
+    /// <param name="value">The hexadecimal string.</param>
+    /// <returns>The byte array.</returns>
+    public static byte[] ConvertFromHexadecimalString(string value)
+    {
+#if SUPPORTS_HEXADECIMAL_STRING_CONVERSION
+        return Convert.FromHexString(value);
+#else
+        if ((uint) value.Length % 2 is not 0)
+        {
+            throw new FormatException(SR.GetResourceString(SR.ID0413));
+        }
+
+        var array = new byte[value.Length / 2];
+
+        for (var index = 0; index < value.Length; index += 2)
+        {
+            array[index / 2] = Convert.ToByte(value.Substring(index, 2), 16);
+        }
+
+        return array;
 #endif
     }
 
