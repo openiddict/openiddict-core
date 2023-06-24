@@ -1086,7 +1086,7 @@ public static partial class OpenIddictClientHandlers
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2029),
+                        description: SR.FormatID2029(Parameters.Iss),
                         uri: SR.FormatID8000(SR.ID2029));
 
                     return default;

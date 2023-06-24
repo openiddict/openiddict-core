@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
@@ -21,7 +22,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /*
          * Authentication processing:
          */
+        ValidateRedirectionRequestSignature.Descriptor,
         HandleNonStandardFrontchannelErrorResponse.Descriptor,
+        ValidateNonStandardParameters.Descriptor,
         OverrideTokenEndpoint.Descriptor,
         AttachNonStandardClientAssertionTokenClaims.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
@@ -48,6 +51,119 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         .AddRange(Exchange.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
+
+    /// <summary>
+    /// Contains the logic responsible for validating the signature or message authentication
+    /// code attached to the redirection request for the providers that require it.
+    /// </summary>
+    public sealed class ValidateRedirectionRequestSignature : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireRedirectionRequest>()
+                .UseSingletonHandler<ValidateRedirectionRequestSignature>()
+                .SetOrder(ValidateIssuerParameter.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Shopify returns custom/non-standard parameters like the name of the shop for which the
+            // installation request was initiated. To prevent these parameters from being tampered with,
+            // a "hmac" parameter is added by Shopify alongside a "timestamp" parameter containing the
+            // UNIX-formatted date at which the authorization response was generated. While this doesn't
+            // by itself protect against replayed HMACs, the HMAC always includes the "state" parameter,
+            // which is itself protected against replay attacks as state tokens are automatically marked
+            // as redeemed by OpenIddict when they are returned to the redirection endpoint.
+            //
+            // For more information, see
+            // https://shopify.dev/docs/apps/auth/oauth/getting-started#step-2-verify-the-installation-request.
+            if (context.Registration.ProviderType is ProviderTypes.Shopify &&
+                !string.IsNullOrEmpty(context.Registration.ClientSecret))
+            {
+                var signature = (string?) context.Request["hmac"];
+                if (string.IsNullOrEmpty(signature))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029("hmac"),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return default;
+                }
+
+                var builder = new StringBuilder();
+
+                // Note: the "hmac" parameter MUST be ignored and the remaining parameters MUST be sorted alphabetically.
+                //
+                // See https://shopify.dev/docs/apps/auth/oauth/getting-started#remove-the-hmac-parameter-from-the-query-string
+                // for more information.
+                foreach (var (name, value) in
+                    from parameter in OpenIddictHelpers.ParseQuery(context.RequestUri!.Query)
+                    where !string.IsNullOrEmpty(parameter.Key)
+                    where !string.Equals(parameter.Key, "hmac", StringComparison.Ordinal)
+                    orderby parameter.Key ascending
+                    from value in parameter.Value
+                    select (Name: parameter.Key, Value: value))
+                {
+                    if (builder.Length > 0)
+                    {
+                        builder.Append('&');
+                    }
+
+                    builder.Append(Uri.EscapeDataString(name));
+
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        builder.Append('=');
+                        builder.Append(Uri.EscapeDataString(value));
+                    }
+                }
+
+                // Compare the received HMAC (represented as an hexadecimal string) and the HMAC computed
+                // locally from the concatenated query string: if the two don't match, return an error.
+                //
+                // Note: to prevent timing attacks, a time-constant comparer is always used.
+                try
+                {
+                    if (!OpenIddictHelpers.FixedTimeEquals(
+                        left : OpenIddictHelpers.ConvertFromHexadecimalString(signature),
+                        right: OpenIddictHelpers.ComputeSha256MessageAuthenticationCode(
+                            key : Encoding.UTF8.GetBytes(context.Registration.ClientSecret),
+                            data: Encoding.UTF8.GetBytes(builder.ToString()))))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2052("hmac"),
+                            uri: SR.FormatID8000(SR.ID2052));
+
+                        return default;
+                    }
+                }
+
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2052("hmac"),
+                        uri: SR.FormatID8000(SR.ID2052));
+
+                    return default;
+                }
+            }
+
+            return default;
+        }
+    }
 
     /// <summary>
     /// Contains the logic responsible for handling non-standard
@@ -133,6 +249,75 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for validating custom parameters for the providers that require it.
+    /// </summary>
+    public sealed class ValidateNonStandardParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireRedirectionRequest>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
+                .UseSingletonHandler<ValidateNonStandardParameters>()
+                .SetOrder(ResolveGrantTypeAndResponseTypeFromStateToken.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            if (context.Registration.ProviderType is ProviderTypes.Shopify)
+            {
+                var domain = (string?) context.Request["shop"];
+                if (string.IsNullOrEmpty(domain))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029("shop"),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return default;
+                }
+
+                // Resolve the shop name from the authentication properties stored in the state token principal.
+                if (context.StateTokenPrincipal.FindFirst(Claims.Private.HostProperties)?.Value is not string value ||
+                    JsonSerializer.Deserialize<JsonElement>(value) is not { ValueKind: JsonValueKind.Object } properties ||
+                    !properties.TryGetProperty(Shopify.Properties.ShopName, out JsonElement name))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0412));
+                }
+
+                // Note: the shop domain extracted from the redirection request is not used by OpenIddict (that stores
+                // the shop name in the state token, but it can be resolved and used by the developers in their own code.
+                //
+                // To ensure the value is correct, it is compared to the shop name stored in the state token: if
+                // the two don't match, the request is automatically rejected to prevent a potential mixup attack.
+                if (!string.Equals(domain, $"{name}.myshopify.com", StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2052("shop"),
+                        uri: SR.FormatID8000(SR.ID2052));
+
+                    return default;
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for overriding the address
     /// of the token endpoint for the providers that require it.
     /// </summary>
@@ -158,6 +343,19 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.TokenEndpoint = context.Registration.ProviderType switch
             {
+                // Shopify is a multitenant provider that requires setting the token endpoint dynamically
+                // based on the shop name stored in the authentication properties set during the challenge.
+                //
+                // For more information, see
+                // https://shopify.dev/docs/apps/auth/oauth/getting-started#step-5-get-an-access-token.
+                ProviderTypes.Shopify when context.GrantType is GrantTypes.AuthorizationCode =>
+                    context.StateTokenPrincipal is ClaimsPrincipal principal &&
+                    principal.FindFirst(Claims.Private.HostProperties)?.Value is string value &&
+                    JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Object } properties &&
+                    properties.TryGetProperty(Shopify.Properties.ShopName, out JsonElement name) ?
+                    new Uri($"https://{name}.myshopify.com/admin/oauth/access_token", UriKind.Absolute) :
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0412)),
+
                 // Trovo uses a different token endpoint for the refresh token grant.
                 //
                 // For more information, see
@@ -666,6 +864,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             var parameters = context.Registration.ProviderType switch
             {
+                // For Shopify, include all the parameters contained in the "associated_user" object.
+                //
+                // Note: the "associated_user" node is only available when using the online access mode.
+                ProviderTypes.Shopify => context.TokenResponse["associated_user"]?.GetNamedParameters(),
+
                 // For Strava, include all the parameters contained in the "athlete" object.
                 //
                 // Note: the "athlete" node is not returned for grant_type=refresh_token requests.
@@ -748,6 +951,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.AuthorizationEndpoint = context.Registration.ProviderType switch
             {
+                // Shopify is a multitenant provider that requires setting the authorization endpoint
+                // dynamically based on the shop name stored in the authentication properties.
+                //
+                // For more information, see
+                // https://shopify.dev/docs/apps/auth/oauth/getting-started#step-3-ask-for-permission.
+                ProviderTypes.Shopify => context.Properties.TryGetValue(Shopify.Properties.ShopName, out string? name) ?
+                    new Uri($"https://{name}.myshopify.com/admin/oauth/authorize", UriKind.Absolute) :
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0412)),
+
                 // Stripe uses a different authorization endpoint for express accounts.
                 //
                 // The type of account can be defined globally (via the Stripe options) or
@@ -755,7 +967,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 //
                 // For more information, see
                 // https://stripe.com/docs/connect/oauth-reference?locale=en-us#get-authorize.
-                ProviderTypes.StripeConnect when context.Properties.TryGetValue(".stripe_account_type", out string? type) =>
+                ProviderTypes.StripeConnect when context.Properties.TryGetValue(
+                    StripeConnect.Properties.AccountType, out string? type) =>
                     string.Equals(type, "express", StringComparison.OrdinalIgnoreCase) ?
                         new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute) :
                         new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
@@ -835,7 +1048,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                ProviderTypes.Deezer or ProviderTypes.Strava => string.Join(",", context.Scopes),
+                ProviderTypes.Deezer or ProviderTypes.Shopify or ProviderTypes.Strava
+                    => string.Join(",", context.Scopes),
 
                 // The following providers are known to use plus-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
@@ -962,6 +1176,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetRedditSettings();
 
                 context.Request["duration"] = settings.Duration;
+            }
+
+            // Shopify allows setting an optional access mode to enable per-user authorization.
+            else if (context.Registration.ProviderType is ProviderTypes.Shopify)
+            {
+                var settings = context.Registration.GetShopifySettings();
+                if (string.Equals(settings.AccessMode, "online", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Request["grant_options[]"] = "per-user";
+                }
             }
 
             // Slack allows sending an optional "team" parameter to simplify the login process.

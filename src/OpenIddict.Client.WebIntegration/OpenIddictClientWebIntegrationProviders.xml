@@ -783,6 +783,43 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ▄▄▄ ██ ██ ██ ▄▄▄ ██ ▄▄ █▄ ▄██ ▄▄▄██ ███ ██
+                                        ██▄▄▄▀▀██ ▄▄ ██ ███ ██ ▀▀ ██ ███ ▄▄███▄▀▀▀▄██
+                                        ██ ▀▀▀ ██ ██ ██ ▀▀▀ ██ ████▀ ▀██ ███████ ████
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Shopify" Id="b4ad4afd-1893-46ef-9b8e-f4a14998bbd1" Documentation="https://shopify.dev/docs/apps/auth/oauth">
+    <Environment Issuer="https://myshopify.com/">
+      <!--
+        Note: Shopify is a special multitenant provider for which the location of the authorization and
+        token endpoints must be determined dynamically based on the shop name specified by the user or
+        received by an application-defined endpoint (known as "installation link") that is triggered from
+        Shopify's website when starting the installation process. To achieve that, an empty configuration
+        is used here and dedicated event handlers are responsible for setting the endpoints dynamically.
+
+        For more information about this process, visit
+        https://shopify.dev/docs/apps/auth/oauth/getting-started#step-2-verify-the-installation-request.
+      -->
+
+      <Configuration />
+
+      <!--
+        Note: at least one scope must be specified for the authorization request to be accepted.
+        For that, the "read_products" (that doesn't require a specific permission) is added by default.
+      -->
+
+      <Scope Name="read_products" Default="true" Required="false" />
+    </Environment>
+
+    <Property Name="ShopName" DictionaryKey=".shopify_shop_name" />
+
+    <Setting PropertyName="AccessMode" ParameterName="mode" Type="String" Required="false"
+             Description="The access mode (can be set to 'online' for per-user authorization)" />
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄▄ ██ ████ ▄▄▀██ ▄▄▀██ █▀▄██
                                               ██▄▄▄▀▀██ ████ ▀▀ ██ █████ ▄▀███
@@ -918,6 +955,8 @@
 
       <Scope Name="read_write" Default="true" Required="false" />
     </Environment>
+
+    <Property Name="AccountType" DictionaryKey=".stripe_account_type" />
 
     <Setting PropertyName="AccountType" ParameterName="type" Type="String" Required="true" DefaultValue="standard"
              Description="The type of the Stripe account (by default, 'standard', but can also be set to 'express')" />

@@ -85,13 +85,14 @@
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_ENVIRONMENT_PROCESS_PATH</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_HEXADECIMAL_STRING_CONVERSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_PEM_ENCODED_KEY_IMPORT</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_WINFORMS_TASK_DIALOG</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
