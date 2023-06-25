@@ -66,6 +66,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                          string.Equals(tenant, "organizations", StringComparison.OrdinalIgnoreCase))
                         => false,
 
+                    // Note: the issuer returned in the Webex server configuration metadata is region-specific and
+                    // varies dynamically depending on the location of the client making the discovery request.
+                    // Since the returned issuer is not stable, issuer validation is always disabled for Webex.
+                    ProviderTypes.Webex => false,
+
                     _ => context.TokenValidationParameters.ValidateIssuer
                 };
 

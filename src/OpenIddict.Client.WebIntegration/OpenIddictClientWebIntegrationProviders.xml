@@ -1166,6 +1166,26 @@
   </Provider>
 
   <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ ███ ██ ▄▄▄██ ▄▄▀██ ▄▄▄█▄▀█▀▄██
+                                            ██ █ █ ██ ▄▄▄██ ▄▄▀██ ▄▄▄███ ████
+                                            ██▄▀▄▀▄██ ▀▀▀██ ▀▀ ██ ▀▀▀█▀▄█▄▀██
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Webex" Id="80d58673-86d2-45c6-b553-340e23e40caf"
+            Documentation="https://developer.webex.com/docs/login-with-webex">
+    <!--
+      Note: the issuer returned in the Webex server configuration metadata is region-specific and
+      varies dynamically depending on the location of the client making the discovery request.
+
+      Since the returned issuer is not stable, the hardcoded "https://www.webex.com/" is used instead.
+    -->    
+
+    <Environment Issuer="https://www.webex.com/" ConfigurationEndpoint="https://webexapis.com/v1/.well-known/openid-configuration" />
+  </Provider>
+
+  <!--
                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                 ██ ███ ██ ▄▄▄ ██ ▄▄▀██ ▄▄▀██ ▄▄ ██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ ▄▄▄ ██
                                 ██ █ █ ██ ███ ██ ▀▀▄██ ██ ██ ▀▀ ██ ▀▀▄██ ▄▄▄██▄▄▄▀▀██▄▄▄▀▀██
