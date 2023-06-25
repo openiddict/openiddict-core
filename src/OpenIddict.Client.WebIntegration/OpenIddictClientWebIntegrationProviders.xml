@@ -485,6 +485,53 @@
   </Provider>
 
   <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ █▀▄██ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▄▄▄██ ▄▄▀██
+                                            ██ ▄▀███ ▀▀▄██ ███ ██ █▀▀██ ▄▄▄██ ▀▀▄██
+                                            ██ ██ ██ ██ ██ ▀▀▀ ██ ▀▀▄██ ▀▀▀██ ██ ██
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Kroger" Id="18d33123-6b95-4f73-89a4-6e3ecbaf79f0"
+            Documentation="https://developer.kroger.com/documentation/public/security/customer">
+    <Environment Name="Production" Issuer="https://www.kroger.com/">
+      <Configuration AuthorizationEndpoint="https://api.kroger.com/v1/connect/oauth2/authorize"
+                     TokenEndpoint="https://api.kroger.com/v1/connect/oauth2/token"
+                     UserinfoEndpoint="https://api.kroger.com/v1/identity/profile">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
+        <GrantType Value="refresh_token" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+
+      <!--
+        Note: Kroger requires sending the "profile.compact" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="profile.compact" Default="true" Required="true" />
+    </Environment>
+
+    <Environment Name="Certification" Issuer="https://www.kroger.com/">
+      <Configuration AuthorizationEndpoint="https://api-ce.kroger.com/v1/connect/oauth2/authorize"
+                     TokenEndpoint="https://api-ce.kroger.com/v1/connect/oauth2/token"
+                     UserinfoEndpoint="https://api-ce.kroger.com/v1/identity/profile">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
+        <GrantType Value="refresh_token" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+
+      <!--
+        Note: Kroger requires sending the "profile.compact" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="profile.compact" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                           ██ ████▄ ▄██ ▄▄▀██ ██ ██ ▄▄▄██ ▄▄▄ ██ ▄▄▄ ██
                                           ██ █████ ███ █████ ▄▄ ██ ▄▄▄██▄▄▄▀▀██▄▄▄▀▀██
