@@ -129,7 +129,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Shopify requires using the non-standard "X-Shopify-Access-Token" header.
                 else if (context.Registration.ProviderType is ProviderTypes.Shopify)
                 {
-                    request.Headers.TryAddWithoutValidation("X-Shopify-Access-Token", request.Headers.Authorization?.Parameter);
+                    request.Headers.Add("X-Shopify-Access-Token", request.Headers.Authorization?.Parameter);
 
                     // Remove the access token from the request headers to ensure it's not sent twice.
                     request.Headers.Authorization = null;
