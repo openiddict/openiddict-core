@@ -64,9 +64,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var request = context.Transaction.GetHttpRequestMessage() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
+                // Notion requires sending an explicit API version (which is statically set
+                // to the last version known to be supported by the OpenIddict integration).
+                if (context.Registration.ProviderType is ProviderTypes.Notion)
+                {
+                    request.Headers.Add("Notion-Version", "2022-06-28");
+                }
+
                 // Trakt requires sending both an API key (which is always the client identifier) and an API version
                 // (which is statically set to the last version known to be supported by the OpenIddict integration).
-                if (context.Registration.ProviderType is ProviderTypes.Trakt)
+                else if (context.Registration.ProviderType is ProviderTypes.Trakt)
                 {
                     request.Headers.Add("trakt-api-key", context.Registration.ClientId);
                     request.Headers.Add("trakt-api-version", "2");
