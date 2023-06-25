@@ -292,6 +292,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ["accounts"] = context.Response["accounts"]
                     },
 
+                    // Kroger and Twitter return a nested "data" object.
+                    ProviderTypes.Kroger or ProviderTypes.Twitter => new(context.Response["data"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("data"))),
+
                     // Patreon returns a nested "attributes" object that is itself nested in a "data" node.
                     ProviderTypes.Patreon => new(context.Response["data"]?["attributes"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data/attributes"))),
@@ -312,10 +316,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         from node in parameter.Value.GetNamedParameters()
                         let name = $"{parameter.Key}_{node.Key}"
                         select new KeyValuePair<string, OpenIddictParameter>(name, node.Value)),
-
-                    // Twitter returns a nested "data" object.
-                    ProviderTypes.Twitter => new(context.Response["data"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("data"))),
 
                     _ => context.Response
                 };
