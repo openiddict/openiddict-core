@@ -66,6 +66,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         string.Equals(tenant, "organizations", StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/organizations/v2.0" :
                         context.Response[Metadata.Issuer],
 
+                    // Note: the issuer returned in the Webex server configuration metadata is region-specific and
+                    // varies dynamically depending on the location of the client making the discovery request.
+                    // Since the returned issuer is not stable, a hardcoded value is used instead.
+                    ProviderTypes.Webex => "https://www.webex.com/",
+
                     _ => context.Response[Metadata.Issuer]
                 };
 
