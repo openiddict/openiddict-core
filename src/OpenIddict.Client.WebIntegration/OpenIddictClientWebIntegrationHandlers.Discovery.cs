@@ -157,7 +157,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // always uses Proof Key for Code Exchange for these providers, the supported methods
                 // are manually added to the list of supported code challenge methods by this handler.
 
-                if (context.Registration.ProviderType is ProviderTypes.Adobe or ProviderTypes.Microsoft)
+                if (context.Registration.ProviderType is ProviderTypes.Adobe or ProviderTypes.Autodesk or ProviderTypes.Microsoft)
                 {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
