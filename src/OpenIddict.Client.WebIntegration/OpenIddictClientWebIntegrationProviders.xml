@@ -589,6 +589,25 @@
   </Provider>
 
   <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          ██ ▀██ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄ ██ ▀██ ██
+                                          ██ █ █ ██ ███ ███ ████ ███ ███ ██ █ █ ██
+                                          ██ ██▄ ██ ▀▀▀ ███ ███▀ ▀██ ▀▀▀ ██ ██▄ ██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Notion" Id="8ed2d19d-bd97-4121-a3b1-61b6732c9cdd"
+            Documentation="https://developers.notion.com/docs/authorization">
+    <Environment Issuer="https://www.notion.com/">
+      <Configuration AuthorizationEndpoint="https://api.notion.com/v1/oauth/authorize"
+                     TokenEndpoint="https://api.notion.com/v1/oauth/token"
+                     UserinfoEndpoint="https://api.notion.com/v1/users/me">
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ▄▄ █ ▄▄▀█▄▄ ▄▄██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ ▀██ ██
                                         ██ ▀▀ █ ▀▀ ███ ████ ▀▀▄██ ▄▄▄██ ███ ██ █ █ ██
