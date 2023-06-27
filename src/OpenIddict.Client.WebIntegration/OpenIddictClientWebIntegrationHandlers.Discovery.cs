@@ -106,13 +106,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // authorization code or implicit flows). To work around that, the list of supported grant
                 // types is amended to include the known supported types for the providers that require it.
 
-                if (context.Registration.ProviderType is ProviderTypes.Apple or ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline)
+                if (context.Registration.ProviderType is
+                    ProviderTypes.Apple or ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                else if (context.Registration.ProviderType is ProviderTypes.Cognito or ProviderTypes.EpicGames or ProviderTypes.Microsoft)
+                else if (context.Registration.ProviderType is
+                    ProviderTypes.Cognito   or ProviderTypes.EpicGames or
+                    ProviderTypes.Microsoft or ProviderTypes.Salesforce)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
@@ -162,9 +165,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // always uses Proof Key for Code Exchange for these providers, the supported methods
                 // are manually added to the list of supported code challenge methods by this handler.
 
-                if (context.Registration.ProviderType is ProviderTypes.Adobe or ProviderTypes.Autodesk or ProviderTypes.Microsoft)
+                if (context.Registration.ProviderType is
+                    ProviderTypes.Adobe or ProviderTypes.Autodesk or ProviderTypes.Microsoft)
                 {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
+                    context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
+                }
+
+                else if (context.Registration.ProviderType is ProviderTypes.Salesforce)
+                {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
                 }
 
