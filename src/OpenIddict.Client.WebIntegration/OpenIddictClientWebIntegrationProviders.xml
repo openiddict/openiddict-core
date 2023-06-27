@@ -214,8 +214,7 @@
                                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Deezer" Id="8e6d9b1c-09c8-498f-8c27-8363d5de4c94"
-            Documentation="https://developers.deezer.com/api/oauth">
+  <Provider Name="Deezer" Id="8e6d9b1c-09c8-498f-8c27-8363d5de4c94" Documentation="https://developers.deezer.com/api/oauth">
     <!--
       Note: the Deezer documentation describes an implementation with important deviations from the OAuth 2.0 standard,
       including the use of many non-standard and custom parameters. Luckily, while the documentation hasn't been fixed
@@ -288,8 +287,7 @@
                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Dropbox" Id="9f0764f5-a148-4890-b38e-b7ad368824cd"
-            Documentation="https://developers.dropbox.com/oidc-guide">
+  <Provider Name="Dropbox" Id="9f0764f5-a148-4890-b38e-b7ad368824cd" Documentation="https://developers.dropbox.com/oidc-guide">
     <Environment Issuer="https://www.dropbox.com/">
       <!--
         Note: Dropbox requires sending at least either the "profile" or "email" scope.
@@ -662,8 +660,7 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Patreon" Id="0bf83b54-a005-4384-aa4e-828a0601d799"
-            Documentation="https://docs.patreon.com/#oauth">
+  <Provider Name="Patreon" Id="0bf83b54-a005-4384-aa4e-828a0601d799" Documentation="https://docs.patreon.com/#oauth">
     <Environment Issuer="https://www.patreon.com/">
       <Configuration AuthorizationEndpoint="https://www.patreon.com/oauth2/authorize"
                      TokenEndpoint="https://www.patreon.com/api/oauth2/token"
@@ -813,6 +810,22 @@
 
     <Setting PropertyName="Duration" ParameterName="duration" Type="String" Required="false"
              Description="The value used as the 'duration' parameter (can be set to 'permanent' to retrieve a refresh token)" />
+  </Provider>
+
+  <!--
+                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                ██ ▄▄▄ █ ▄▄▀██ █████ ▄▄▄██ ▄▄▄ ██ ▄▄▄██ ▄▄▄ ██ ▄▄▀██ ▄▄▀██ ▄▄▄██
+                                ██▄▄▄▀▀█ ▀▀ ██ █████ ▄▄▄██▄▄▄▀▀██ ▄▄███ ███ ██ ▀▀▄██ █████ ▄▄▄██
+                                ██ ▀▀▀ █ ██ ██ ▀▀ ██ ▀▀▀██ ▀▀▀ ██ █████ ▀▀▀ ██ ██ ██ ▀▀▄██ ▀▀▀██
+                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Salesforce" Id="3d4728ef-8647-4eab-9269-a0dd6bcc68b7"
+            Documentation="https://help.salesforce.com/s/articleView?id=sf.connected_app_overview.htm">
+    <Environment Issuer="{settings.Issuer}" />
+
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
+             Description="The URI used to access the Salesforce instance (e.g https://fabrikam.my.salesforce.com/)" />
   </Provider>
 
   <!--
@@ -1036,8 +1049,7 @@
                               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Streamlabs" Id="b140539d-ba83-4bcb-b46b-ecc19a3b8997"
-            Documentation="https://dev.streamlabs.com/docs/oauth-2">
+  <Provider Name="Streamlabs" Id="b140539d-ba83-4bcb-b46b-ecc19a3b8997" Documentation="https://dev.streamlabs.com/docs/oauth-2">
     <Environment Issuer="https://streamlabs.com/">
       <Configuration AuthorizationEndpoint="https://streamlabs.com/api/v2.0/authorize"
                      TokenEndpoint="https://streamlabs.com/api/v2.0/token"
@@ -1240,8 +1252,7 @@
                                 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="WordPress" Id="1f32ad54-d87c-454b-b47a-65f18933f4b6"
-            Documentation="https://developer.wordpress.com/docs/oauth2/">
+  <Provider Name="WordPress" Id="1f32ad54-d87c-454b-b47a-65f18933f4b6" Documentation="https://developer.wordpress.com/docs/oauth2/">
     <Environment Issuer="https://wordpress.com/">
       <Configuration AuthorizationEndpoint="https://public-api.wordpress.com/oauth2/authorize"
                      TokenEndpoint="https://public-api.wordpress.com/oauth2/token"

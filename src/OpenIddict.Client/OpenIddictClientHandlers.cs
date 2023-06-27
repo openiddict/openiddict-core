@@ -4660,27 +4660,27 @@ public static partial class OpenIddictClientHandlers
                 },
 
                 SupportedServerCodeChallengeMethods: context.Configuration.CodeChallengeMethodsSupported) switch
-            {
-                // If the list of code challenge methods supported by the
-                // client is empty, don't use Proof Key for Code Exchange.
-                ({ Count: 0 }, { Count: _ }) => null,
+                {
+                    // If the list of code challenge methods supported by the
+                    // client is empty, don't use Proof Key for Code Exchange.
+                    ({ Count: 0 }, { Count: _ }) => null,
 
-                // If the server doesn't specify a list of code challenge methods,
-                // Proof Key for Code Exchange is assumed to be unsupported.
-                ({ Count: > 0 }, { Count: 0 }) => null,
+                    // If the server doesn't specify a list of code challenge methods,
+                    // Proof Key for Code Exchange is assumed to be unsupported.
+                    ({ Count: > 0 }, { Count: 0 }) => null,
 
-                // If both the client and the server support S256, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(CodeChallengeMethods.Sha256) && server.Contains(CodeChallengeMethods.Sha256)
-                    => CodeChallengeMethods.Sha256,
+                    // If both the client and the server support S256, use it.
+                    ({ Count: > 0 } client, { Count: > 0 } server) when
+                        client.Contains(CodeChallengeMethods.Sha256) && server.Contains(CodeChallengeMethods.Sha256)
+                        => CodeChallengeMethods.Sha256,
 
-                // If both the client and the server support plain, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(CodeChallengeMethods.Plain) && server.Contains(CodeChallengeMethods.Plain)
-                    => CodeChallengeMethods.Plain,
+                    // If both the client and the server support plain, use it.
+                    ({ Count: > 0 } client, { Count: > 0 } server) when
+                        client.Contains(CodeChallengeMethods.Plain) && server.Contains(CodeChallengeMethods.Plain)
+                        => CodeChallengeMethods.Plain,
 
-                _ => null
-            };
+                    _ => null
+                };
 
             // Note: while enforced by OAuth 2.1 under certain circumstances, PKCE is not a required feature for
             // OAuth 2.0 and OpenID Connect (where features like nonce validation can serve similar purposes).
