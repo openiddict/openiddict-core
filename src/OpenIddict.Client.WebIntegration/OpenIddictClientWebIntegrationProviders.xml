@@ -1208,6 +1208,19 @@
   </Provider>
 
   <!--
+                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                           ██ ███ █ ▄▄▄██ ▄▄▀█▄ ▄██ ▄▀▄ █▄ ▄██
+                                           ███ █ ██ ▄▄▄██ ▀▀▄██ ███ █ █ ██ ███
+                                           ███▄▀▄██ ▀▀▀██ ██ █▀ ▀██ ███ █▀ ▀██
+                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Verimi" Id="de781ebe-164c-4948-96d8-5e5adbbf19f0" Documentation="https://docs.verimi.de/#/oidc/oidc_overview">    
+    <Environment Name="Production" Issuer="https://web.verimi.de/" />
+    <Environment Name="Staging"    Issuer="https://web.uat.verimi.cloud/" />
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             ██ ███ █▄ ▄██ ▄▀▄ ██ ▄▄▄██ ▄▄▄ ██
                                             ███ █ ███ ███ █ █ ██ ▄▄▄██ ███ ██
