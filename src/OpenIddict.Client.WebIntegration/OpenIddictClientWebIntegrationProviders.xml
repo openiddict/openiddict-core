@@ -1215,14 +1215,10 @@
                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Verimi" Documentation="https://docs.verimi.de/">
-    
+  <Provider Name="Verimi" Id="de781ebe-164c-4948-96d8-5e5adbbf19f0" Documentation="https://docs.verimi.de/#/oidc/oidc_overview">    
     <Environment Name="Production" Issuer="https://web.verimi.de/" />
     
     <Environment Name="Staging" Issuer="https://web.uat.verimi.cloud/" />
-
-    <Setting PropertyName="ClientCertificate" ParameterName="certificate" Type="Certificate" Required="true"
-             Description="The required TLS client certificate that will be used with the backchannel endpoints (without the certificate, communication with the servers is not possible)" />
   </Provider>
 
   <!--
