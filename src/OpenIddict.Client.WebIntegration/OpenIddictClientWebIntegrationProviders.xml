@@ -1208,6 +1208,24 @@
   </Provider>
 
   <!--
+                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                           ██ ███ █ ▄▄▄██ ▄▄▀█▄ ▄██ ▄▀▄ █▄ ▄██
+                                           ███ █ ██ ▄▄▄██ ▀▀▄██ ███ █ █ ██ ███
+                                           ███▄▀▄██ ▀▀▀██ ██ █▀ ▀██ ███ █▀ ▀██
+                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Verimi" Documentation="https://docs.verimi.de/">
+    
+    <Environment Name="Production" Issuer="https://web.verimi.de/" />
+    
+    <Environment Name="Staging" Issuer="https://web.uat.verimi.cloud/" />
+
+    <Setting PropertyName="ClientCertificate" ParameterName="certificate" Type="Certificate" Required="true"
+             Description="The required TLS client certificate that will be used with the backchannel endpoints (without the certificate, communication with the servers is not possible)" />
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             ██ ███ █▄ ▄██ ▄▀▄ ██ ▄▄▄██ ▄▄▄ ██
                                             ███ █ ███ ███ █ █ ██ ▄▄▄██ ███ ██
