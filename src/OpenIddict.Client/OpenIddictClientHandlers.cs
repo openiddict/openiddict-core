@@ -4227,6 +4227,15 @@ public static partial class OpenIddictClientHandlers
 
                     => (GrantTypes.Implicit, ResponseTypes.IdToken + ' ' + ResponseTypes.Token),
 
+                // Note: response_type=token is not considered secure enough as it allows malicious
+                // actors to inject access tokens that were initially issued to a different client.
+                // As such, while OpenIddict-based servers allow using response_type=token for backward
+                // compatibility with legacy clients, OpenIddict-based clients are deliberately not
+                // allowed to negotiate the unsafe and OAuth 2.0-only response_type=token flow.
+                //
+                // For more information, see https://datatracker.ietf.org/doc/html/rfc6749#section-10.16 and
+                // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-2.1.2.
+
                 // None flow with response_type=none.
                 (var client, var server) when
                     // Ensure response_type=none is supported.
