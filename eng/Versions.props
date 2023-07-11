@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <MajorVersion>4</MajorVersion>
-    <MinorVersion>6</MinorVersion>
+    <MinorVersion>7</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <PackageValidationBaselineVersion Condition=" '$(PackageValidationBaselineVersion)' == '' ">4.4.0</PackageValidationBaselineVersion>
