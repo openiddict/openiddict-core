@@ -943,10 +943,16 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsMissing()
+    public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsMissingAndPlainIsNotSupported()
     {
         // Arrange
-        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+                options.CodeChallengeMethods.Remove(CodeChallengeMethods.Plain));
+        });
+
         await using var client = await server.CreateClientAsync();
 
         // Act
@@ -984,29 +990,6 @@ public abstract partial class OpenIddictServerIntegrationTests
             ClientId = "Fabrikam",
             CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
             CodeChallengeMethod = CodeChallengeMethods.Sha256,
-            RedirectUri = "http://www.fabrikam.com/path",
-            ResponseType = ResponseTypes.Code
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidRequest, response.Error);
-        Assert.Equal(SR.FormatID2032(Parameters.CodeChallengeMethod), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
-    }
-
-    [Fact]
-    public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenPlainCodeChallengeMethodIsNotExplicitlyEnabled()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
-            CodeChallengeMethod = CodeChallengeMethods.Plain,
             RedirectUri = "http://www.fabrikam.com/path",
             ResponseType = ResponseTypes.Code
         });

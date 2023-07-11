@@ -898,6 +898,7 @@ public sealed class OpenIddictClientBuilder
     public OpenIddictClientBuilder AllowAuthorizationCodeFlow()
         => Configure(options =>
         {
+            options.CodeChallengeMethods.Add(CodeChallengeMethods.Plain);
             options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
 
             options.GrantTypes.Add(GrantTypes.AuthorizationCode);
@@ -934,6 +935,7 @@ public sealed class OpenIddictClientBuilder
     public OpenIddictClientBuilder AllowHybridFlow()
         => Configure(options =>
         {
+            options.CodeChallengeMethods.Add(CodeChallengeMethods.Plain);
             options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
 
             options.GrantTypes.Add(GrantTypes.AuthorizationCode);
