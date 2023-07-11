@@ -6,7 +6,6 @@
 
 using System.ComponentModel;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client.SystemNetHttp;
@@ -61,16 +60,19 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
 
         options.UnfilteredHttpClientHandlerActions.Add(static (registration, handler) =>
         {
-            // Note: while not enforced yet, Pro Santé Connect's specification requires sending a TLS
-            // client certificate when communicating with its backchannel OpenID Connect endpoints.
-            //
-            // For that, the primary HTTP handler must be altered or replaced by an instance that
-            // includes the client certificate set in the options in its certificate collection.
-            //
-            // For more information, see EXI PSC 24 in the annex part of
-            // https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045551195.
-            if (registration.ProviderType is ProviderTypes.ProSantéConnect &&
-                registration.GetProSantéConnectSettings() is { ClientCertificate: X509Certificate2 certificate })
+            var certificate = registration.ProviderType switch
+            {
+                // Note: while not enforced yet, Pro Santé Connect's specification requires sending a TLS
+                // client certificate when communicating with its backchannel OpenID Connect endpoints.
+                //
+                // For more information, see EXI PSC 24 in the annex part of
+                // https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045551195.
+                ProviderTypes.ProSantéConnect => registration.GetProSantéConnectSettings().ClientCertificate,
+
+                _ => null
+            };
+
+            if (certificate is not null)
             {
                 handler.ClientCertificates.Add(certificate);
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
