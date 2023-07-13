@@ -677,9 +677,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.SendUserinfoRequest = context.Registration.ProviderType switch
             {
-                // Note: the frontchannel or backchannel access tokens returned by Azure AD when a
-                // Xbox scope is requested cannot be used with the userinfo endpoint as they use a
-                // legacy format that is not supported by the Azure AD userinfo implementation.
+                // Note: the frontchannel or backchannel access tokens returned by Microsoft Entra ID
+                // when a Xbox scope is requested cannot be used with the userinfo endpoint as they use
+                // a legacy format that is not supported by the Microsoft Entra userinfo implementation.
                 //
                 // To work around this limitation, userinfo retrieval is disabled when a Xbox scope is requested.
                 ProviderTypes.Microsoft => context.GrantType switch

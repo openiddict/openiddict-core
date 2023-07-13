@@ -58,7 +58,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // such responses as the issuer wouldn't match the expected value. To work around that, the
                     // issuer is replaced by this handler to always use a static value (e.g "common" or "consumers").
                     //
-                    // For more information about the special tenants supported by Microsoft Account/Azure AD, see
+                    // For more information about the special tenants supported by Microsoft Account/Entra ID, see
                     // https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc#find-your-apps-openid-configuration-document-uri.
                     ProviderTypes.Microsoft when context.Registration.GetMicrosoftSettings() is { Tenant: string tenant } =>
                         string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase)        ? "https://login.microsoftonline.com/common/v2.0" :

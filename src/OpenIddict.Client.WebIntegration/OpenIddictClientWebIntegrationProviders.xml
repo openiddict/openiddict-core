@@ -601,7 +601,7 @@
               ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Microsoft" DisplayName="Microsoft Account/Azure Active Directory" Id="b533a06a-3fd6-4754-aeca-025d4e3666ad"
+  <Provider Name="Microsoft" DisplayName="Microsoft Account/Entra ID" Id="b533a06a-3fd6-4754-aeca-025d4e3666ad"
             Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
     <!--
       Note: Microsoft is a multitenant provider that relies on virtual paths to identify instances.
@@ -613,7 +613,7 @@
     <Environment Issuer="https://login.microsoftonline.com/{settings.Tenant}/v2.0" />
 
     <Setting PropertyName="Tenant" ParameterName="tenant" Type="String" Required="false" DefaultValue="common"
-             Description="The tenant used to identify the Azure AD instance (by default, the common tenant is used)" />
+             Description="The tenant used to identify the Microsoft Entra instance (by default, the common tenant is used)" />
   </Provider>
 
   <!--
