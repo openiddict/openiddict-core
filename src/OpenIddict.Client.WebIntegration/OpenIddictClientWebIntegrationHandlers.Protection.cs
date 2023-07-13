@@ -58,7 +58,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // that is associated with the client application. Since the tenant cannot be
                     // inferred when targeting these special tenants, issuer validation is disabled.
                     //
-                    // For more information about the special tenants supported by Microsoft Account/Azure AD, see
+                    // For more information about the special tenants supported by Microsoft Account/Entra ID, see
                     // https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc#find-your-apps-openid-configuration-document-uri.
                     ProviderTypes.Microsoft when
                         context.Registration.GetMicrosoftSettings() is { Tenant: string tenant } &&
