@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
@@ -24,15 +25,58 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Userinfo request preparation:
              */
+            OverrideHttpMethod.Descriptor,
             AttachRequestHeaders.Descriptor,
             AttachAccessTokenParameter.Descriptor,
             AttachNonStandardParameters.Descriptor,
+            AttachNonStandardRequestPayload.Descriptor,
 
             /*
              * Userinfo response extraction:
              */
             NormalizeContentType.Descriptor,
             UnwrapUserinfoResponse.Descriptor);
+
+        /// <summary>
+        /// Contains the logic responsible for overriding the HTTP method for the providers that require it.
+        /// </summary>
+        public sealed class OverrideHttpMethod : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                    .AddFilter<RequireHttpMetadataUri>()
+                    .UseSingletonHandler<OverrideHttpMethod>()
+                    .SetOrder(PreparePostHttpRequest<PrepareUserinfoRequestContext>.Descriptor.Order + 250)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                request.Method = context.Registration.ProviderType switch
+                {
+                    // SubscribeStar's userinfo implementation is based on GraphQL, which requires using POST.
+                    ProviderTypes.SubscribeStar => HttpMethod.Post,
+
+                    _ => request.Method
+                };
+
+                return default;
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for attaching additional
@@ -165,7 +209,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
                     .UseSingletonHandler<AttachNonStandardParameters>()
-                    .SetOrder(AttachQueryStringParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 250)
+                    .SetOrder(AttachHttpParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -183,6 +227,54 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Request["f"] = "json";
                 }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching a non-standard payload for the providers that require it.
+        /// </summary>
+        public sealed class AttachNonStandardRequestPayload : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                    .AddFilter<RequireHttpMetadataUri>()
+                    .UseSingletonHandler<AttachNonStandardRequestPayload>()
+                    .SetOrder(AttachHttpParameters<PrepareUserinfoRequestContext>.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                request.Content = context.Registration.ProviderType switch
+                {
+                    // SubscribeStar's userinfo implementation is based on GraphQL,
+                    // which requires sending the request parameters as a JSON payload.
+                    ProviderTypes.SubscribeStar => JsonContent.Create(context.Transaction.Request,
+                        new MediaTypeHeaderValue(MediaTypes.Json)
+                        {
+                            CharSet = Charsets.Utf8
+                        }),
+
+                    _ => request.Content
+                };
 
                 return default;
             }
@@ -316,6 +408,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         from node in parameter.Value.GetNamedParameters()
                         let name = $"{parameter.Key}_{node.Key}"
                         select new KeyValuePair<string, OpenIddictParameter>(name, node.Value)),
+
+                    // SubscribeStar returns a nested "user" object that is itself nested in a GraphQL "data" node.
+                    ProviderTypes.SubscribeStar => new(context.Response["data"]?["user"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("data/user"))),
 
                     // Tumblr returns a nested "user" object that is itself nested in a "response" node.
                     ProviderTypes.Tumblr => new(context.Response["response"]?["user"]?.GetNamedParameters() ??

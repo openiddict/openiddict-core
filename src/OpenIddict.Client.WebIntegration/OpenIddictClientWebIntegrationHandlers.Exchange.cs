@@ -222,7 +222,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
                     .AddFilter<RequireHttpMetadataUri>()
                     .UseSingletonHandler<AttachNonStandardQueryStringParameters>()
-                    .SetOrder(AttachQueryStringParameters<PrepareTokenRequestContext>.Descriptor.Order + 500)
+                    .SetOrder(AttachHttpParameters<PrepareTokenRequestContext>.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -269,7 +269,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
                     .AddFilter<RequireHttpMetadataUri>()
                     .UseSingletonHandler<AttachNonStandardRequestPayload>()
-                    .SetOrder(AttachFormParameters<PrepareTokenRequestContext>.Descriptor.Order + 500)
+                    .SetOrder(AttachHttpParameters<PrepareTokenRequestContext>.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

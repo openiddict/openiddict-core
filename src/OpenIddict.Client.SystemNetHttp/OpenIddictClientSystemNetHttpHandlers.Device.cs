@@ -27,7 +27,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             AttachUserAgentHeader<PrepareDeviceAuthorizationRequestContext>.Descriptor,
             AttachFromHeader<PrepareDeviceAuthorizationRequestContext>.Descriptor,
             AttachBasicAuthenticationCredentials.Descriptor,
-            AttachFormParameters<PrepareDeviceAuthorizationRequestContext>.Descriptor,
+            AttachHttpParameters<PrepareDeviceAuthorizationRequestContext>.Descriptor,
             SendHttpRequest<ApplyDeviceAuthorizationRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyDeviceAuthorizationRequestContext>.Descriptor,
 
@@ -52,7 +52,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareDeviceAuthorizationRequestContext>()
                     .AddFilter<RequireHttpMetadataUri>()
                     .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
-                    .SetOrder(AttachFormParameters<PrepareDeviceAuthorizationRequestContext>.Descriptor.Order - 500)
+                    .SetOrder(AttachHttpParameters<PrepareDeviceAuthorizationRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

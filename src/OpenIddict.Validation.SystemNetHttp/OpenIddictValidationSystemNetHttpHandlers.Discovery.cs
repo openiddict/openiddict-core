@@ -22,7 +22,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             AttachJsonAcceptHeaders<PrepareConfigurationRequestContext>.Descriptor,
             AttachUserAgentHeader<PrepareConfigurationRequestContext>.Descriptor,
             AttachFromHeader<PrepareConfigurationRequestContext>.Descriptor,
-            AttachQueryStringParameters<PrepareConfigurationRequestContext>.Descriptor,
+            AttachHttpParameters<PrepareConfigurationRequestContext>.Descriptor,
             SendHttpRequest<ApplyConfigurationRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyConfigurationRequestContext>.Descriptor,
 
@@ -44,7 +44,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             AttachJsonAcceptHeaders<PrepareCryptographyRequestContext>.Descriptor,
             AttachUserAgentHeader<PrepareCryptographyRequestContext>.Descriptor,
             AttachFromHeader<PrepareCryptographyRequestContext>.Descriptor,
-            AttachQueryStringParameters<PrepareCryptographyRequestContext>.Descriptor,
+            AttachHttpParameters<PrepareCryptographyRequestContext>.Descriptor,
             SendHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
 
