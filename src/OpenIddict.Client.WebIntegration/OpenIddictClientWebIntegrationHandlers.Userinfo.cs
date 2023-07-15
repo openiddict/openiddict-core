@@ -317,6 +317,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         let name = $"{parameter.Key}_{node.Key}"
                         select new KeyValuePair<string, OpenIddictParameter>(name, node.Value)),
 
+                    // Tumblr returns a nested "user" object that is itself nested in a "response" node.
+                    ProviderTypes.Tumblr => new(context.Response["response"]?["user"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("response/user"))),
+
                     _ => context.Response
                 };
 

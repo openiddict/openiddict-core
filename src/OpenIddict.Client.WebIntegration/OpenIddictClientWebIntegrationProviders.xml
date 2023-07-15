@@ -1128,6 +1128,26 @@
   </Provider>
 
   <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          █▄▄ ▄▄██ ██ ██ ▄▀▄ ██ ▄▄▀██ █████ ▄▄▀██
+                                          ███ ████ ██ ██ █ █ ██ ▄▄▀██ █████ ▀▀▄██
+                                          ███ ████▄▀▀▄██ ███ ██ ▀▀ ██ ▀▀ ██ ██ ██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Tumblr" Id="546a1f33-f660-4aa6-9cce-ef950d3ca6f8"
+            Documentation="https://www.tumblr.com/docs/en/api/v2#oauth2-authorization">
+    <Environment Issuer="https://www.tumblr.com/">
+      <Configuration AuthorizationEndpoint="https://www.tumblr.com/oauth2/authorize"
+                     TokenEndpoint="https://api.tumblr.com/v2/oauth2/token"
+                     UserinfoEndpoint="https://api.tumblr.com/v2/user/info">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         █▄▄ ▄▄██ ███ █▄ ▄█▄▄ ▄▄█▄▄ ▄▄██ ▄▄▄██ ▄▄▀██
                                         ███ ████ █ █ ██ ████ █████ ████ ▄▄▄██ ▀▀▄██

@@ -342,6 +342,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Response["expires"] = null;
                 }
 
+                // Note: Tumblr returns a non-standard "id_token: false" node that collides
+                // with the standard id_token parameter used in OpenID Connect. To ensure
+                // the response is not rejected, the "id_token" node is manually removed.
+                else if (context.Registration.ProviderType is ProviderTypes.Tumblr)
+                {
+                    context.Response["id_token"] = null;
+                }
+
                 return default;
             }
         }
