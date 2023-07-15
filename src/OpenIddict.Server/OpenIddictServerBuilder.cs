@@ -1739,7 +1739,8 @@ public sealed class OpenIddictServerBuilder
     /// </summary>
     /// <param name="uri">The issuer uri.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetIssuer([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
+    public OpenIddictServerBuilder SetIssuer(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
     {
         if (string.IsNullOrEmpty(uri))
         {

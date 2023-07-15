@@ -1158,7 +1158,8 @@ public sealed class OpenIddictClientBuilder
     /// <param name="uri">The client URI.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictClientBuilder SetClientUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
+    public OpenIddictClientBuilder SetClientUri(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
     {
         if (string.IsNullOrEmpty(uri))
         {
