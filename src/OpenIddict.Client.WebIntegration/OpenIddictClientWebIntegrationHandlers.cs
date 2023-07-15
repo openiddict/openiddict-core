@@ -802,6 +802,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["site"] = settings.Site;
             }
 
+            // SubscribeStar's userinfo endpoint is a GraphQL implementation that requires
+            // sending a proper "query" parameter containing the requested user details.
+            else if (context.Registration.ProviderType is ProviderTypes.SubscribeStar)
+            {
+                var settings = context.Registration.GetSubscribeStarSettings();
+
+                context.UserinfoRequest["query"] = $"{{ user {{ {string.Join(", ", settings.UserFields)} }} }}";
+            }
+
             // Trakt allows retrieving additional user details via the "extended" parameter.
             else if (context.Registration.ProviderType is ProviderTypes.Trakt)
             {

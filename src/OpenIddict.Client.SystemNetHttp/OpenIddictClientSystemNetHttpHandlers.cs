@@ -316,8 +316,71 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the parameters to the HTTP request.
+    /// </summary>
+    public sealed class AttachHttpParameters<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataUri>()
+                .UseSingletonHandler<AttachHttpParameters<TContext>>()
+#pragma warning disable CS0618
+                .SetOrder(AttachQueryStringParameters<TContext>.Descriptor.Order - 1_000)
+#pragma warning restore CS0618
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var request = context.Transaction.GetHttpRequestMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            if (context.Transaction.Request.Count is 0)
+            {
+                return default;
+            }
+
+            // For GET requests, attach the request parameters to the query string by default.
+            if (request.Method == HttpMethod.Get && request.RequestUri is not null)
+            {
+                request.RequestUri = OpenIddictHelpers.AddQueryStringParameters(request.RequestUri,
+                    context.Transaction.Request.GetParameters().ToDictionary(
+                        parameter => parameter.Key,
+                        parameter => new StringValues((string?[]?) parameter.Value)));
+            }
+
+            // For POST requests, attach the request parameters to the request form by default.
+            else if (request.Method == HttpMethod.Post)
+            {
+                request.Content = new FormUrlEncodedContent(
+                    from parameter in context.Transaction.Request.GetParameters()
+                    let values = (string?[]?) parameter.Value
+                    where values is not null
+                    from value in values
+                    select new KeyValuePair<string?, string?>(parameter.Key, value));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the query string parameters to the HTTP request.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachQueryStringParameters<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
@@ -332,37 +395,13 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
-
-            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
-            // this may indicate that the request was incorrectly processed by another client stack.
-            var request = context.Transaction.GetHttpRequestMessage() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-
-            if (request.RequestUri is null || context.Transaction.Request.Count is 0)
-            {
-                return default;
-            }
-
-            request.RequestUri = OpenIddictHelpers.AddQueryStringParameters(request.RequestUri,
-                context.Transaction.Request.GetParameters().ToDictionary(
-                    parameter => parameter.Key,
-                    parameter => new StringValues((string?[]?) parameter.Value)));
-
-            return default;
-        }
+        public ValueTask HandleAsync(TContext context) => default;
     }
 
     /// <summary>
     /// Contains the logic responsible for attaching the form parameters to the HTTP request.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachFormParameters<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
@@ -377,29 +416,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
-
-            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
-            // this may indicate that the request was incorrectly processed by another client stack.
-            var request = context.Transaction.GetHttpRequestMessage() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-
-            request.Content = new FormUrlEncodedContent(
-                from parameter in context.Transaction.Request.GetParameters()
-                let values = (string?[]?) parameter.Value
-                where values is not null
-                from value in values
-                select new KeyValuePair<string?, string?>(parameter.Key, value));
-
-            return default;
-        }
+        public ValueTask HandleAsync(TContext context) => default;
     }
 
     /// <summary>

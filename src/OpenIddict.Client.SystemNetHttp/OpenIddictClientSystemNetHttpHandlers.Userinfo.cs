@@ -27,7 +27,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             AttachUserAgentHeader<PrepareUserinfoRequestContext>.Descriptor,
             AttachFromHeader<PrepareUserinfoRequestContext>.Descriptor,
             AttachBearerAccessToken.Descriptor,
-            AttachQueryStringParameters<PrepareUserinfoRequestContext>.Descriptor,
+            AttachHttpParameters<PrepareUserinfoRequestContext>.Descriptor,
             SendHttpRequest<ApplyUserinfoRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyUserinfoRequestContext>.Descriptor,
 
@@ -53,7 +53,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
                     .AddFilter<RequireHttpMetadataUri>()
                     .UseSingletonHandler<AttachBearerAccessToken>()
-                    .SetOrder(AttachQueryStringParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 500)
+                    .SetOrder(AttachHttpParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
