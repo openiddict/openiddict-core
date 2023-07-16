@@ -1155,46 +1155,51 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="authorization">The authorization.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The validation error encountered when validating the authorization.</returns>
-    public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
-        TAuthorization authorization, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<ValidationResult> ValidateAsync(
+        TAuthorization authorization, CancellationToken cancellationToken = default)
     {
         if (authorization is null)
         {
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        var type = await Store.GetTypeAsync(authorization, cancellationToken);
-        if (string.IsNullOrEmpty(type))
-        {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2116));
-        }
+        return ExecuteAsync(cancellationToken);
 
-        else if (!string.Equals(type, AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
-                 !string.Equals(type, AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
+        async IAsyncEnumerable<ValidationResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2117));
-        }
-
-        if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
-        {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2038));
-        }
-
-        // Ensure that the scopes are not null or empty and do not contain spaces.
-        foreach (var scope in await Store.GetScopesAsync(authorization, cancellationToken))
-        {
-            if (string.IsNullOrEmpty(scope))
+            var type = await Store.GetTypeAsync(authorization, cancellationToken);
+            if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2039));
-
-                break;
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2116));
             }
 
-            if (scope.Contains(Separators.Space[0]))
+            else if (!string.Equals(type, AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
             {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2042));
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2117));
+            }
 
-                break;
+            if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
+            {
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2038));
+            }
+
+            // Ensure that the scopes are not null or empty and do not contain spaces.
+            foreach (var scope in await Store.GetScopesAsync(authorization, cancellationToken))
+            {
+                if (string.IsNullOrEmpty(scope))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2039));
+
+                    break;
+                }
+
+                if (scope.Contains(Separators.Space[0]))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2042));
+
+                    break;
+                }
             }
         }
     }
