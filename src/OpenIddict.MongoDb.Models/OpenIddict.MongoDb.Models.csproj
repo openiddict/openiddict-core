@@ -1,7 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>
+      net461;
+      netcoreapp3.1;
+      net6.0;
+      net7.0;
+      netstandard2.0;
+      netstandard2.1
+    </TargetFrameworks>
     <DisablePolySharp>true</DisablePolySharp>
     <SignAssembly>false</SignAssembly>
     <PublicSign>false</PublicSign>
@@ -13,7 +20,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Bson" />
+    <PackageReference Include="MongoDB.Bson" NoWarn="NU1902" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
