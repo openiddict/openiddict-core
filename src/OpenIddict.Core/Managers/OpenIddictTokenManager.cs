@@ -1275,41 +1275,45 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="token">The token.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The validation error encountered when validating the token.</returns>
-    public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
-        TToken token, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<ValidationResult> ValidateAsync(TToken token, CancellationToken cancellationToken = default)
     {
         if (token is null)
         {
             throw new ArgumentNullException(nameof(token));
         }
 
-        // If a reference identifier was associated with the token,
-        // ensure it's not already used for a different token.
-        var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
-        if (!string.IsNullOrEmpty(identifier))
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<ValidationResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            // Note: depending on the database/table/query collation used by the store, a reference token
-            // whose identifier doesn't exactly match the specified value may be returned (e.g because
-            // the casing is different). To avoid issues when the reference identifier is part of an index
-            // using the same collation, an error is added even if the two identifiers don't exactly match.
-            var other = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
-            if (other is not null && !string.Equals(
-                await Store.GetIdAsync(other, cancellationToken),
-                await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
+            // If a reference identifier was associated with the token,
+            // ensure it's not already used for a different token.
+            var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
+            if (!string.IsNullOrEmpty(identifier))
             {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2085));
+                // Note: depending on the database/table/query collation used by the store, a reference token
+                // whose identifier doesn't exactly match the specified value may be returned (e.g because
+                // the casing is different). To avoid issues when the reference identifier is part of an index
+                // using the same collation, an error is added even if the two identifiers don't exactly match.
+                var other = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
+                if (other is not null && !string.Equals(
+                    await Store.GetIdAsync(other, cancellationToken),
+                    await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2085));
+                }
             }
-        }
 
-        var type = await Store.GetTypeAsync(token, cancellationToken);
-        if (string.IsNullOrEmpty(type))
-        {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2086));
-        }
+            var type = await Store.GetTypeAsync(token, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2086));
+            }
 
-        if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
-        {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2038));
+            if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
+            {
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2038));
+            }
         }
     }
 

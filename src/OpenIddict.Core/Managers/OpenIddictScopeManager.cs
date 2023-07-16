@@ -918,39 +918,43 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// <param name="scope">The scope.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The validation error encountered when validating the scope.</returns>
-    public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
-        TScope scope, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<ValidationResult> ValidateAsync(TScope scope, CancellationToken cancellationToken = default)
     {
         if (scope is null)
         {
             throw new ArgumentNullException(nameof(scope));
         }
 
-        // Ensure the name is not null or empty, does not contain a
-        // space and is not already used for a different scope entity.
-        var name = await Store.GetNameAsync(scope, cancellationToken);
-        if (string.IsNullOrEmpty(name))
-        {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2044));
-        }
+        return ExecuteAsync(cancellationToken);
 
-        else if (name!.Contains(Separators.Space[0]))
+        async IAsyncEnumerable<ValidationResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2045));
-        }
-
-        else
-        {
-            // Note: depending on the database/table/query collation used by the store, a scope
-            // whose name doesn't exactly match the specified value may be returned (e.g because
-            // the casing is different). To avoid issues when the scope name is part of an index
-            // using the same collation, an error is added even if the two names don't exactly match.
-            var other = await Store.FindByNameAsync(name, cancellationToken);
-            if (other is not null && !string.Equals(
-                await Store.GetIdAsync(other, cancellationToken),
-                await Store.GetIdAsync(scope, cancellationToken), StringComparison.Ordinal))
+            // Ensure the name is not null or empty, does not contain a
+            // space and is not already used for a different scope entity.
+            var name = await Store.GetNameAsync(scope, cancellationToken);
+            if (string.IsNullOrEmpty(name))
             {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2060));
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2044));
+            }
+
+            else if (name!.Contains(Separators.Space[0]))
+            {
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2045));
+            }
+
+            else
+            {
+                // Note: depending on the database/table/query collation used by the store, a scope
+                // whose name doesn't exactly match the specified value may be returned (e.g because
+                // the casing is different). To avoid issues when the scope name is part of an index
+                // using the same collation, an error is added even if the two names don't exactly match.
+                var other = await Store.FindByNameAsync(name, cancellationToken);
+                if (other is not null && !string.Equals(
+                    await Store.GetIdAsync(other, cancellationToken),
+                    await Store.GetIdAsync(scope, cancellationToken), StringComparison.Ordinal))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2060));
+                }
             }
         }
     }

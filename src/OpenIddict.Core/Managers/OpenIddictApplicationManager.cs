@@ -1133,105 +1133,110 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="application">The application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The validation error encountered when validating the application.</returns>
-    public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
-        TApplication application, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<ValidationResult> ValidateAsync(
+        TApplication application, CancellationToken cancellationToken = default)
     {
         if (application is null)
         {
             throw new ArgumentNullException(nameof(application));
         }
 
-        // Ensure the client_id is not null or empty and is not already used for a different application.
-        var identifier = await Store.GetClientIdAsync(application, cancellationToken);
-        if (string.IsNullOrEmpty(identifier))
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<ValidationResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2036));
-        }
-
-        else
-        {
-            // Note: depending on the database/table/query collation used by the store, an application
-            // whose client_id doesn't exactly match the specified value may be returned (e.g because
-            // the casing is different). To avoid issues when the client identifier is part of an index
-            // using the same collation, an error is added even if the two identifiers don't exactly match.
-            var other = await Store.FindByClientIdAsync(identifier, cancellationToken);
-            if (other is not null && !string.Equals(
-                await Store.GetIdAsync(other, cancellationToken),
-                await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
+            // Ensure the client_id is not null or empty and is not already used for a different application.
+            var identifier = await Store.GetClientIdAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(identifier))
             {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2111));
-            }
-        }
-
-        var type = await Store.GetClientTypeAsync(application, cancellationToken);
-        if (string.IsNullOrEmpty(type))
-        {
-            yield return new ValidationResult(SR.GetResourceString(SR.ID2050));
-        }
-
-        else
-        {
-            // Ensure the application type is supported by the manager.
-            if (!string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
-            {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2112));
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2036));
             }
 
-            // Ensure a client secret was specified if the client is a confidential application.
-            var secret = await Store.GetClientSecretAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+            else
             {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2113));
-            }
-
-            // Ensure no client secret was specified if the client is a public application.
-            else if (!string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
-            {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2114));
-            }
-        }
-
-        // When callback URIs are specified, ensure they are valid and spec-compliant.
-        // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
-        foreach (var uri in ImmutableArray.Create<string>()
-            .AddRange(await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-            .AddRange(await Store.GetRedirectUrisAsync(application, cancellationToken)))
-        {
-            // Ensure the URI is not null or empty.
-            if (string.IsNullOrEmpty(uri))
-            {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2061));
-
-                break;
-            }
-
-            // Ensure the URI is a valid absolute URI.
-            if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
-            {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2062));
-
-                break;
-            }
-
-            // Ensure the URI doesn't contain a fragment.
-            if (!string.IsNullOrEmpty(value.Fragment))
-            {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2115));
-
-                break;
-            }
-
-            // To prevent issuer fixation attacks where a malicious client would specify an "iss" parameter
-            // in the callback URI, ensure the query - if present - doesn't include an "iss" parameter.
-            if (!string.IsNullOrEmpty(value.Query))
-            {
-                var parameters = OpenIddictHelpers.ParseQuery(value.Query);
-                if (parameters.ContainsKey(Parameters.Iss))
+                // Note: depending on the database/table/query collation used by the store, an application
+                // whose client_id doesn't exactly match the specified value may be returned (e.g because
+                // the casing is different). To avoid issues when the client identifier is part of an index
+                // using the same collation, an error is added even if the two identifiers don't exactly match.
+                var other = await Store.FindByClientIdAsync(identifier, cancellationToken);
+                if (other is not null && !string.Equals(
+                    await Store.GetIdAsync(other, cancellationToken),
+                    await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
                 {
-                    yield return new ValidationResult(SR.FormatID2134(Parameters.Iss));
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2111));
+                }
+            }
+
+            var type = await Store.GetClientTypeAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2050));
+            }
+
+            else
+            {
+                // Ensure the application type is supported by the manager.
+                if (!string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2112));
+                }
+
+                // Ensure a client secret was specified if the client is a confidential application.
+                var secret = await Store.GetClientSecretAsync(application, cancellationToken);
+                if (string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2113));
+                }
+
+                // Ensure no client secret was specified if the client is a public application.
+                else if (!string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2114));
+                }
+            }
+
+            // When callback URIs are specified, ensure they are valid and spec-compliant.
+            // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
+            foreach (var uri in ImmutableArray.Create<string>()
+                .AddRange(await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+                .AddRange(await Store.GetRedirectUrisAsync(application, cancellationToken)))
+            {
+                // Ensure the URI is not null or empty.
+                if (string.IsNullOrEmpty(uri))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2061));
 
                     break;
+                }
+
+                // Ensure the URI is a valid absolute URI.
+                if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2062));
+
+                    break;
+                }
+
+                // Ensure the URI doesn't contain a fragment.
+                if (!string.IsNullOrEmpty(value.Fragment))
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2115));
+
+                    break;
+                }
+
+                // To prevent issuer fixation attacks where a malicious client would specify an "iss" parameter
+                // in the callback URI, ensure the query - if present - doesn't include an "iss" parameter.
+                if (!string.IsNullOrEmpty(value.Query))
+                {
+                    var parameters = OpenIddictHelpers.ParseQuery(value.Query);
+                    if (parameters.ContainsKey(Parameters.Iss))
+                    {
+                        yield return new ValidationResult(SR.FormatID2134(Parameters.Iss));
+
+                        break;
+                    }
                 }
             }
         }
