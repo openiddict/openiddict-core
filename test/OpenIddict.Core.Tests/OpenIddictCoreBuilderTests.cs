@@ -7,7 +7,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace OpenIddict.Core.Tests;
@@ -105,16 +104,14 @@ public class OpenIddictCoreBuilderTests
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
-        var type = Mock.Of<IOpenIddictApplicationStoreResolver>().GetType();
-
         // Act
-        builder.ReplaceApplicationStoreResolver(type);
+        builder.ReplaceApplicationStoreResolver<CustomApplicationStoreResolver>();
 
         var provider = services.BuildServiceProvider();
-        var store = provider.GetRequiredService<IOpenIddictApplicationStoreResolver>();
+        var resolver = provider.GetRequiredService<IOpenIddictApplicationStoreResolver>();
 
         // Assert
-        Assert.IsType(type, store);
+        Assert.IsType<CustomApplicationStoreResolver>(resolver);
     }
 
     [Fact]
@@ -195,16 +192,14 @@ public class OpenIddictCoreBuilderTests
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
-        var type = Mock.Of<IOpenIddictAuthorizationStoreResolver>().GetType();
-
         // Act
-        builder.ReplaceAuthorizationStoreResolver(type);
+        builder.ReplaceAuthorizationStoreResolver<CustomAuthorizationStoreResolver>();
 
         var provider = services.BuildServiceProvider();
-        var store = provider.GetRequiredService<IOpenIddictAuthorizationStoreResolver>();
+        var resolver = provider.GetRequiredService<IOpenIddictAuthorizationStoreResolver>();
 
         // Assert
-        Assert.IsType(type, store);
+        Assert.IsType<CustomAuthorizationStoreResolver>(resolver);
     }
 
     [Fact]
@@ -286,16 +281,14 @@ public class OpenIddictCoreBuilderTests
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
-        var type = Mock.Of<IOpenIddictScopeStoreResolver>().GetType();
-
         // Act
-        builder.ReplaceScopeStoreResolver(type);
+        builder.ReplaceScopeStoreResolver<CustomScopeStoreResolver>();
 
         var provider = services.BuildServiceProvider();
-        var store = provider.GetRequiredService<IOpenIddictScopeStoreResolver>();
+        var resolver = provider.GetRequiredService<IOpenIddictScopeStoreResolver>();
 
         // Assert
-        Assert.IsType(type, store);
+        Assert.IsType<CustomScopeStoreResolver>(resolver);
     }
 
     [Fact]
@@ -377,16 +370,14 @@ public class OpenIddictCoreBuilderTests
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
-        var type = Mock.Of<IOpenIddictTokenStoreResolver>().GetType();
-
         // Act
-        builder.ReplaceTokenStoreResolver(type);
+        builder.ReplaceTokenStoreResolver<CustomTokenStoreResolver>();
 
         var provider = services.BuildServiceProvider();
-        var store = provider.GetRequiredService<IOpenIddictTokenStoreResolver>();
+        var resolver = provider.GetRequiredService<IOpenIddictTokenStoreResolver>();
 
         // Assert
-        Assert.IsType(type, store);
+        Assert.IsType<CustomTokenStoreResolver>(resolver);
     }
 
     [Fact]
@@ -668,10 +659,34 @@ public class OpenIddictCoreBuilderTests
         return services;
     }
 
-    public class CustomApplication { }
-    public class CustomAuthorization { }
-    public class CustomScope { }
-    public class CustomToken { }
+    private class CustomApplication { }
+    private class CustomAuthorization { }
+    private class CustomScope { }
+    private class CustomToken { }
+
+    private class CustomApplicationStoreResolver : IOpenIddictApplicationStoreResolver
+    {
+        public IOpenIddictApplicationStore<TApplication> Get<TApplication>() where TApplication : class
+            => throw new NotImplementedException();
+    }
+
+    private class CustomAuthorizationStoreResolver : IOpenIddictAuthorizationStoreResolver
+    {
+        public IOpenIddictAuthorizationStore<TAuthorization> Get<TAuthorization>() where TAuthorization : class
+            => throw new NotImplementedException();
+    }
+
+    private class CustomScopeStoreResolver : IOpenIddictScopeStoreResolver
+    {
+        public IOpenIddictScopeStore<TScope> Get<TScope>() where TScope : class
+            => throw new NotImplementedException();
+    }
+
+    private class CustomTokenStoreResolver : IOpenIddictTokenStoreResolver
+    {
+        public IOpenIddictTokenStore<TToken> Get<TToken>() where TToken : class
+            => throw new NotImplementedException();
+    }
 
     private class ClosedGenericApplicationManager : OpenIddictApplicationManager<CustomApplication>
     {
