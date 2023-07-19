@@ -677,6 +677,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.SendUserinfoRequest = context.Registration.ProviderType switch
             {
+                // Note: ADFS has severe restrictions affecting the ability to access the userinfo endpoint
+                // (e.g the "resource" parameter MUST be null or the "urn:microsoft:userinfo" value MUST be
+                // used, which prevents specifying any other resource as only one value is allowed by ADFS).
+                //
+                // Since the userinfo endpoint returns very limited information anyway,
+                // userinfo retrieval is always disabled for the ADFS provider.
+                ProviderTypes.ActiveDirectoryFederationServices => false,
+
                 // Note: the frontchannel or backchannel access tokens returned by Azure AD when a
                 // Xbox scope is requested cannot be used with the userinfo endpoint as they use a
                 // legacy format that is not supported by the Azure AD userinfo implementation.
