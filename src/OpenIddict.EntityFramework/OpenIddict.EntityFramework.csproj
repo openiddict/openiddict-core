@@ -2,9 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>
-      net461;
-      net6.0;
-      net7.0;
+      $(NetFrameworkTargetFrameworks);
+      $(NetCoreTargetFrameworks);
       netstandard2.1
     </TargetFrameworks>
   </PropertyGroup>

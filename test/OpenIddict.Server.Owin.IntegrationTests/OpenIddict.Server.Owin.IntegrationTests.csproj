@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>
-      net461;
-      net472;
-      net48
-    </TargetFrameworks>
+    <TargetFrameworks>$(NetFrameworkTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

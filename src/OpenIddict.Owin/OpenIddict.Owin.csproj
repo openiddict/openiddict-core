@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>$(NetFrameworkTargetFrameworks)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
@@ -20,6 +20,8 @@
 
   <ItemGroup>
     <None Include="_._" Pack="true" PackagePath="lib\net461\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\net472\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\net48\_._" />
   </ItemGroup>
 
 </Project>

@@ -2,11 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>
-      net461;
-      net6.0;
-      net7.0;
-      netstandard2.0;
-      netstandard2.1
+      $(NetFrameworkTargetFrameworks);
+      $(NetCoreTargetFrameworks);
+      $(NetStandardTargetFrameworks)
     </TargetFrameworks>
     <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
   </PropertyGroup>

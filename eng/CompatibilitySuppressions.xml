@@ -46,6 +46,13 @@
 
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationConfiguration.#ctor(Microsoft.Extensions.Hosting.IHostingEnvironment)</Target>
+    <Left>lib/netstandard2.1/OpenIddict.Client.SystemIntegration.dll</Left>
+    <Right>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlers.AbortAuthenticationDemand.#ctor(OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationMarshal,Microsoft.Extensions.Hosting.IApplicationLifetime)</Target>
     <Left>lib/netstandard2.0/OpenIddict.Client.SystemIntegration.dll</Left>
     <Right>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Right>
@@ -53,8 +60,22 @@
 
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlers.AbortAuthenticationDemand.#ctor(OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationMarshal,Microsoft.Extensions.Hosting.IApplicationLifetime)</Target>
+    <Left>lib/netstandard2.1/OpenIddict.Client.SystemIntegration.dll</Left>
+    <Right>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlers.RedirectProtocolActivation.#ctor(Microsoft.Extensions.Hosting.IApplicationLifetime,Microsoft.Extensions.Options.IOptionsMonitor{OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationOptions},OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationService)</Target>
     <Left>lib/netstandard2.0/OpenIddict.Client.SystemIntegration.dll</Left>
+    <Right>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Right>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlers.RedirectProtocolActivation.#ctor(Microsoft.Extensions.Hosting.IApplicationLifetime,Microsoft.Extensions.Options.IOptionsMonitor{OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationOptions},OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationService)</Target>
+    <Left>lib/netstandard2.1/OpenIddict.Client.SystemIntegration.dll</Left>
     <Right>lib/netcoreapp3.1/OpenIddict.Client.SystemIntegration.dll</Right>
   </Suppression>
 
