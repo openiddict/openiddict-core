@@ -1,10 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>
-      $(NetFrameworkTargetFrameworks);
-      $(NetCoreTargetFrameworks)
-    </TargetFrameworks>
+    <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -5,7 +5,6 @@
     <MinorVersion>7</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <PackageValidationBaselineVersion Condition=" '$(PackageValidationBaselineVersion)' == '' ">4.4.0</PackageValidationBaselineVersion>
     <PreReleaseVersionLabel>preview1</PreReleaseVersionLabel>
     <PreReleaseVersionIteration></PreReleaseVersionIteration>
     <PreReleaseBrandingLabel>Preview 1</PreReleaseBrandingLabel>
