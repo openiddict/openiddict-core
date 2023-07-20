@@ -14,6 +14,21 @@ namespace OpenIddict.Client.AspNetCore;
 public sealed class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOptions
 {
     /// <summary>
+    /// Gets or sets a boolean indicating whether the static client registrations with a non-null
+    /// provider name attached are automatically added to <see cref="ForwardedAuthenticationSchemes"/>.
+    /// When automatic forwarding is disabled, calls to <see cref="IAuthenticationService"/> such as
+    /// <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>
+    /// cannot directly use the provider name associated to a client registration as the authentication
+    /// scheme and must set the provider name (or the issuer) as an authentication property instead.
+    /// </summary>
+    public bool DisableAutomaticAuthenticationSchemeForwarding { get; set; }
+
+    /// <summary>
+    /// Gets the forwarded authentication schemes that are managed by the OpenIddict ASP.NET Core client host.
+    /// </summary>
+    public List<AuthenticationScheme> ForwardedAuthenticationSchemes { get; } = new();
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether incoming requests arriving on insecure endpoints should be
     /// rejected and whether challenge and sign-out operations can be triggered from non-HTTPS endpoints.
     /// By default, this property is set to <see langword="false"/> to help mitigate man-in-the-middle attacks.

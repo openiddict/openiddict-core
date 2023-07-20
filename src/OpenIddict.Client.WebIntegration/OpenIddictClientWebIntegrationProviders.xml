@@ -14,7 +14,7 @@
   -->
 
   <Provider Name="ActiveDirectoryFederationServices"
-            DisplayName="Microsoft Active Directory Federation Services" Id="01bcc179-3f17-41db-8923-8f05e6c26a8c"
+            DisplayName="Active Directory Federation Services" Id="01bcc179-3f17-41db-8923-8f05e6c26a8c"
             Documentation="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/overview/ad-fs-openid-connect-oauth-flows-scenarios">
     <!--
       Note: Active Directory Federation Services (ADFS) is a self-hosted identity provider that

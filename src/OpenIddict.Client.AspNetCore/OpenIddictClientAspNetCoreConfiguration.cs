@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Client.AspNetCore;
@@ -15,8 +16,22 @@ namespace OpenIddict.Client.AspNetCore;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
                                                               IConfigureOptions<OpenIddictClientOptions>,
-                                                              IPostConfigureOptions<AuthenticationOptions>
+                                                              IPostConfigureOptions<AuthenticationOptions>,
+                                                              IPostConfigureOptions<OpenIddictClientAspNetCoreOptions>
 {
+    private readonly IServiceProvider _provider;
+
+    /// <inheritdoc/>
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
+    public OpenIddictClientAspNetCoreConfiguration() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictClientAspNetCoreConfiguration"/> class.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictClientAspNetCoreConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+
     /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
     {
@@ -34,6 +49,58 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
 
         options.AddScheme<OpenIddictClientAspNetCoreHandler>(
             OpenIddictClientAspNetCoreDefaults.AuthenticationScheme, displayName: null);
+
+        // Resolve the forwarded authentication schemes managed by the OpenIddict ASP.NET Core
+        // client host and add an entry for each scheme in the ASP.NET Core authentication options.
+        foreach (var scheme in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientAspNetCoreOptions>>()
+            .CurrentValue.ForwardedAuthenticationSchemes)
+        {
+            if (options.SchemeMap.TryGetValue(scheme.Name, out builder) &&
+                builder.HandlerType != typeof(OpenIddictClientAspNetCoreForwarder))
+            {
+                throw new InvalidOperationException(SR.FormatID0414(scheme.Name));
+            }
+
+            options.AddScheme<OpenIddictClientAspNetCoreForwarder>(scheme.Name, scheme.DisplayName);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void PostConfigure(string? name, OpenIddictClientAspNetCoreOptions options)
+    {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        if (!options.DisableAutomaticAuthenticationSchemeForwarding)
+        {
+            foreach (var (provider, registrations) in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>()
+                .CurrentValue.Registrations
+                .Where(registration => !string.IsNullOrEmpty(registration.ProviderName))
+                .GroupBy(registration => registration.ProviderName)
+                .Select(group => (ProviderName: group.Key, Registrations: group.ToList())))
+            {
+                // If an explicit mapping was already added, don't overwrite it.
+                if (options.ForwardedAuthenticationSchemes.Exists(scheme =>
+                    string.Equals(scheme.Name, provider, StringComparison.Ordinal)))
+                {
+                    continue;
+                }
+
+                // Ensure multiple client registrations don't share the same provider
+                // name when automatic authentication scheme forwarding is enabled.
+                if (registrations is not [OpenIddictClientRegistration registration])
+                {
+                    throw new InvalidOperationException(SR.FormatID0415(provider));
+                }
+
+                options.ForwardedAuthenticationSchemes.Add(new AuthenticationScheme(
+                    name       : registration.ProviderName!,
+                    displayName: registration.ProviderDisplayName,
+                    handlerType: typeof(OpenIddictClientAspNetCoreForwarder)));
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -91,7 +158,8 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
                 return true;
             }
 
-            return builder.HandlerType != typeof(OpenIddictClientAspNetCoreHandler);
+            return builder.HandlerType != typeof(OpenIddictClientAspNetCoreHandler) &&
+                   builder.HandlerType != typeof(OpenIddictClientAspNetCoreForwarder);
         }
     }
 }

@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using Microsoft.AspNetCore;
+using OpenIddict.Client;
 using OpenIddict.Client.AspNetCore;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,41 @@ public sealed class OpenIddictClientAspNetCoreBuilder
         Services.Configure(configuration);
 
         return this;
+    }
+
+    /// <summary>
+    /// Disables automatic authentication scheme forwarding. When automatic forwarding
+    /// is disabled, static client registrations are not mapped as individual
+    /// authentication schemes and calls to <see cref="IAuthenticationService"/> such as
+    /// <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>
+    /// cannot directly use the provider name associated to a client registration as the authentication
+    /// scheme and must set the provider name (or the issuer) as an authentication property instead.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictClientAspNetCoreBuilder DisableAutomaticAuthenticationSchemeForwarding()
+        => Configure(options => options.DisableAutomaticAuthenticationSchemeForwarding = true);
+
+    /// <summary>
+    /// Adds the specified authentication scheme to the list of forwarded authentication
+    /// schemes that are managed by the OpenIddict ASP.NET Core client host.
+    /// </summary>
+    /// <remarks>
+    /// Note: the <paramref name="provider"/> parameter MUST match
+    /// an existing <see cref="OpenIddictClientRegistration.ProviderName"/>.
+    /// </remarks>
+    /// <param name="provider">The provider name, also used as the authentication scheme.</param>
+    /// <param name="caption">The caption that will be used as the public/user-visible display name, if applicable.</param>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientAspNetCoreBuilder AddForwardedAuthenticationScheme(string provider, string? caption)
+    {
+        if (string.IsNullOrEmpty(provider))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
+        }
+
+        return Configure(options => options.ForwardedAuthenticationSchemes.Add(
+            new AuthenticationScheme(provider, caption, typeof(OpenIddictClientAspNetCoreForwarder))));
     }
 
     /// <summary>
