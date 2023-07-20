@@ -199,7 +199,10 @@ public class AuthenticationController : Controller
             roleType: ClaimTypes.Role);
 
         // Build the authentication properties based on the properties that were added when the challenge was triggered.
-        var properties = new AuthenticationProperties(result.Properties.Items);
+        var properties = new AuthenticationProperties(result.Properties.Items)
+        {
+            RedirectUri = result.Properties.RedirectUri ?? "/"
+        };
 
         // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
         // To make cookies less heavy, tokens that are not used are filtered out before creating the cookie.
@@ -234,6 +237,6 @@ public class AuthenticationController : Controller
         // to the authorization server. Applications that prefer delaying the removal of the local cookie can
         // remove the corresponding code from the logout action and remove the authentication cookie in this action.
 
-        return Redirect(result!.Properties!.RedirectUri);
+        return Redirect(result!.Properties!.RedirectUri ?? "/");
     }
 }

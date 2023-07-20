@@ -109,6 +109,11 @@ public sealed class OpenIddictClientRegistration
     public Uri? Issuer { get; set; }
 
     /// <summary>
+    /// Gets or sets the provider display name.
+    /// </summary>
+    public string? ProviderDisplayName { get; set; }
+
+    /// <summary>
     /// Gets or sets the provider name.
     /// </summary>
     /// <remarks>

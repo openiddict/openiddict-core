@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using OpenIddict.Client;
 using OpenIddict.Client.Owin;
 using Owin;
 
@@ -45,6 +46,44 @@ public sealed class OpenIddictClientOwinBuilder
         Services.Configure(configuration);
 
         return this;
+    }
+
+    /// <summary>
+    /// Disables automatic authentication type forwarding. When automatic forwarding
+    /// is disabled, static client registrations are not mapped as individual
+    /// authentication schemes and calls to <see cref="IAuthenticationManager"/> such as
+    /// <see cref="IAuthenticationManager.Challenge(AuthenticationProperties, string[])"/>
+    /// cannot directly use the provider name associated to a client registration as the authentication
+    /// type and must set the provider name (or the issuer) as an authentication property instead.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
+    public OpenIddictClientOwinBuilder DisableAutomaticAuthenticationTypeForwarding()
+        => Configure(options => options.DisableAutomaticAuthenticationTypeForwarding = true);
+
+    /// <summary>
+    /// Adds the specified authentication type to the list of forwarded authentication
+    /// types that are managed by the OpenIddict ASP.NET Core client host.
+    /// </summary>
+    /// <remarks>
+    /// Note: the <paramref name="provider"/> parameter MUST match
+    /// match an existing <see cref="OpenIddictClientRegistration.ProviderName"/>.
+    /// </remarks>
+    /// <param name="provider">The provider name, also used as the authentication type.</param>
+    /// <param name="caption">The caption that will be used as the public/user-visible display name, if applicable.</param>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientOwinBuilder AddForwardedAuthenticationType(string provider, string? caption)
+    {
+        if (string.IsNullOrEmpty(provider))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
+        }
+
+        return Configure(options => options.ForwardedAuthenticationTypes.Add(new AuthenticationDescription
+        {
+            AuthenticationType = provider,
+            Caption = caption
+        }));
     }
 
     /// <summary>

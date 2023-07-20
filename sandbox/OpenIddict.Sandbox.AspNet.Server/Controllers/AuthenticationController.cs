@@ -124,7 +124,7 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                 .ToDictionary(pair => pair.Key, pair => pair.Value));
 
             context.Authentication.SignIn(properties, identity);
-            return Redirect(properties.RedirectUri);
+            return Redirect(properties.RedirectUri ?? "/");
         }
     }
 }

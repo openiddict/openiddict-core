@@ -31,6 +31,7 @@ public static class OpenIddictClientAspNetCoreExtensions
 
         builder.Services.AddAuthentication();
 
+        builder.Services.TryAddScoped<OpenIddictClientAspNetCoreForwarder>();
         builder.Services.TryAddScoped<OpenIddictClientAspNetCoreHandler>();
 
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core client components.
@@ -52,7 +53,8 @@ public static class OpenIddictClientAspNetCoreExtensions
             ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>(),
             ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>(),
 
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientAspNetCoreConfiguration>()
+            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientAspNetCoreConfiguration>(),
+            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictClientAspNetCoreOptions>, OpenIddictClientAspNetCoreConfiguration>()
         });
 
         return new OpenIddictClientAspNetCoreBuilder(builder.Services);

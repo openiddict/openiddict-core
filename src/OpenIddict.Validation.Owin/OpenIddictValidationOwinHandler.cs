@@ -197,12 +197,12 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Open
     protected override async Task TeardownCoreAsync()
     {
         // Note: OWIN authentication handlers cannot reliabily write to the response stream
-        // from ApplyResponseGrantAsync or ApplyResponseChallengeAsync because these methods
-        // are susceptible to be invoked from AuthenticationHandler.OnSendingHeaderCallback,
-        // where calling Write or WriteAsync on the response stream may result in a deadlock
+        // from ApplyResponseGrantAsync() or ApplyResponseChallengeAsync() because these methods
+        // are susceptible to be invoked from AuthenticationHandler.OnSendingHeaderCallback(),
+        // where calling Write() or WriteAsync() on the response stream may result in a deadlock
         // on hosts using streamed responses. To work around this limitation, this handler
-        // doesn't implement ApplyResponseGrantAsync but TeardownCoreAsync, which is never called
-        // by AuthenticationHandler.OnSendingHeaderCallback. In theory, this would prevent
+        // doesn't implement ApplyResponseGrantAsync() but TeardownCoreAsync(), which is never
+        // called by AuthenticationHandler.OnSendingHeaderCallback(). In theory, this would prevent
         // OpenIddictValidationOwinMiddleware from both applying the response grant and allowing
         // the next middleware in the pipeline to alter the response stream but in practice,
         // OpenIddictValidationOwinMiddleware is assumed to be the only middleware allowed to write

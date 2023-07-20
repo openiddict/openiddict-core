@@ -199,6 +199,21 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         }
 
         /// <summary>
+        /// Sets the provider display name.
+        /// </summary>
+        /// <param name=""name"">The provider display name.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} SetProviderDisplayName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(name));
+            }
+
+            return Set(registration => registration.ProviderDisplayName = name);
+        }
+
+        /// <summary>
         /// Sets the registration identifier.
         /// </summary>
         /// <param name=""identifier"">The registration identifier.</param>
@@ -961,6 +976,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             {{~ end ~}}
 
             registration.ProviderName ??= Providers.{{ provider.name }};
+            registration.ProviderDisplayName ??= ""{{ provider.display_name }}"";
 
             registration.Issuer ??= settings.Environment switch
             {

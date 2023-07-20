@@ -4,8 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Owin.Security.Infrastructure;
@@ -277,12 +280,12 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
     protected override async Task TeardownCoreAsync()
     {
         // Note: OWIN authentication handlers cannot reliabily write to the response stream
-        // from ApplyResponseGrantAsync or ApplyResponseChallengeAsync because these methods
-        // are susceptible to be invoked from AuthenticationHandler.OnSendingHeaderCallback,
-        // where calling Write or WriteAsync on the response stream may result in a deadlock
+        // from ApplyResponseGrantAsync() or ApplyResponseChallengeAsync() because these methods
+        // are susceptible to be invoked from AuthenticationHandler.OnSendingHeaderCallback(),
+        // where calling Write() or WriteAsync() on the response stream may result in a deadlock
         // on hosts using streamed responses. To work around this limitation, this handler
-        // doesn't implement ApplyResponseGrantAsync but TeardownCoreAsync, which is never called
-        // by AuthenticationHandler.OnSendingHeaderCallback. In theory, this would prevent
+        // doesn't implement ApplyResponseGrantAsync() but TeardownCoreAsync(), which is never
+        // called by AuthenticationHandler.OnSendingHeaderCallback(). In theory, this would prevent
         // OpenIddictClientOwinMiddleware from both applying the response grant and allowing
         // the next middleware in the pipeline to alter the response stream but in practice,
         // OpenIddictClientOwinMiddleware is assumed to be the only middleware allowed to write
@@ -291,7 +294,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
         // Note: unlike the ASP.NET Core host, the OWIN host MUST check whether the status code
         // corresponds to a challenge response, as LookupChallenge() will always return a non-null
         // value when active authentication is used, even if no challenge was actually triggered.
-        var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode);
+        var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode) ?? LookupForwardedChallenge();
         if (challenge is not null && Response.StatusCode is 401 or 403)
         {
             var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName) ??
@@ -335,7 +338,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
             }
         }
 
-        var signout = Helper.LookupSignOut(Options.AuthenticationType, Options.AuthenticationMode);
+        var signout = Helper.LookupSignOut(Options.AuthenticationType, Options.AuthenticationMode) ?? LookupForwardedSignOut();
         if (signout is not null)
         {
             var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName) ??
@@ -377,6 +380,98 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
 
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
             }
+        }
+
+        AuthenticationResponseChallenge? LookupForwardedChallenge()
+        {
+            // Note: unlike its server counterpart, the OpenIddict OWIN client authentication handler allows
+            // associating additional authentication types to trigger a provider-specific challenge. For that,
+            // the authentication types attached to the context are iterated: if a type matches one of the types
+            // managed by OpenIddict, a challenge pointing to the OpenIddict OWIN client authentication handler
+            // is dynamically forwarded with the appropriate provider name authentication property attached.
+
+            if (Context.Authentication.AuthenticationResponseChallenge?.AuthenticationTypes is { Length: > 0 } types)
+            {
+                foreach (var type in types)
+                {
+                    if (TryGetForwardedAuthenticationType(type, out _))
+                    {
+                        // Ensure no client registration information was attached to the authentication properties.
+                        if (Context.Authentication.AuthenticationResponseChallenge.Properties is AuthenticationProperties properties &&
+                           (properties.Dictionary.ContainsKey(Properties.Issuer) ||
+                            properties.Dictionary.ContainsKey(Properties.ProviderName) ||
+                            properties.Dictionary.ContainsKey(Properties.RegistrationId)))
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0417));
+                        }
+
+                        return new AuthenticationResponseChallenge(
+                            authenticationTypes: new[] { OpenIddictClientOwinDefaults.AuthenticationType },
+                            properties         : new AuthenticationProperties(dictionary: new Dictionary<string, string>(
+                                Context.Authentication.AuthenticationResponseChallenge.Properties.Dictionary ??
+                                ImmutableDictionary.Create<string, string>())
+                                {
+                                    [Properties.ProviderName] = type
+                                }));
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        AuthenticationResponseRevoke? LookupForwardedSignOut()
+        {
+            // Note: unlike its server counterpart, the OpenIddict OWIN client authentication handler allows
+            // associating additional authentication types to trigger a provider-specific sign-out. For that,
+            // the authentication types attached to the context are iterated: if a type matches one of the types
+            // managed by OpenIddict, a sign-out pointing to the OpenIddict OWIN client authentication handler
+            // is dynamically forwarded with the appropriate provider name authentication property attached.
+
+            if (Context.Authentication.AuthenticationResponseRevoke?.AuthenticationTypes is { Length: > 0 } types)
+            {
+                foreach (var type in types)
+                {
+                    if (TryGetForwardedAuthenticationType(type, out _))
+                    {
+                        // Ensure no client registration information was attached to the authentication properties.
+                        if (Context.Authentication.AuthenticationResponseRevoke.Properties is AuthenticationProperties properties &&
+                           (properties.Dictionary.ContainsKey(Properties.Issuer) ||
+                            properties.Dictionary.ContainsKey(Properties.ProviderName) ||
+                            properties.Dictionary.ContainsKey(Properties.RegistrationId)))
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0417));
+                        }
+
+                        return new AuthenticationResponseRevoke(
+                            authenticationTypes: new[] { OpenIddictClientOwinDefaults.AuthenticationType },
+                            properties         : new AuthenticationProperties(dictionary: new Dictionary<string, string>(
+                                Context.Authentication.AuthenticationResponseRevoke.Properties.Dictionary ??
+                                ImmutableDictionary.Create<string, string>())
+                                {
+                                    [Properties.ProviderName] = type
+                                }));
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool TryGetForwardedAuthenticationType(string type, [NotNullWhen(true)] out AuthenticationDescription? result)
+        {
+            foreach (var description in Options.ForwardedAuthenticationTypes)
+            {
+                if (string.Equals(description.AuthenticationType, type, StringComparison.Ordinal))
+                {
+                    result = description;
+                    return true;
+                }
+            }
+
+            result = null;
+            return false;
         }
     }
 }

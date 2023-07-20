@@ -12,7 +12,7 @@ namespace OpenIddict.Validation.Owin;
 
 /// <summary>
 /// Provides the entry point necessary to register the OpenIddict validation handler in an OWIN pipeline.
-/// Note: this middleware is intented to be used with dependency injection containers
+/// Note: this middleware is intended to be used with dependency injection containers
 /// that support middleware resolution, like Autofac. Since it depends on scoped services,
 /// it is NOT recommended to instantiate it as a singleton like a regular OWIN middleware.
 /// </summary>

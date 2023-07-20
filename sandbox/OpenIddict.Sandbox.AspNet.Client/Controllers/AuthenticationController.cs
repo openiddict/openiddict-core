@@ -240,7 +240,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
                 .ToDictionary(pair => pair.Key, pair => pair.Value));
 
             context.Authentication.SignIn(properties, identity);
-            return Redirect(properties.RedirectUri);
+            return Redirect(properties.RedirectUri ?? "/");
         }
 
         // Note: this controller uses the same callback action for all providers
@@ -258,7 +258,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             // to the authorization server. Applications that prefer delaying the removal of the local cookie can
             // remove the corresponding code from the logout action and remove the authentication cookie in this action.
 
-            return Redirect(result.Properties.RedirectUri);
+            return Redirect(result.Properties.RedirectUri ?? "/");
         }
     }
 }

@@ -1552,6 +1552,18 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0413" xml:space="preserve">
     <value>The specified string is not a valid hexadecimal string.</value>
   </data>
+  <data name="ID0414" xml:space="preserve">
+    <value>The '{0}' authentication scheme already exists and cannot be registered as a forwarded authentication scheme by the OpenIddict client. Consider removing the conflicting authentication handler or use a different provider name. Alternatively, automatic authentication scheme forwarding can be disabled using 'services.AddOpenIddict().AddClient().UseAspNetCore().DisableAutomaticAuthenticationSchemeForwarding()'.</value>
+  </data>
+  <data name="ID0415" xml:space="preserve">
+    <value>Multiple client registrations sharing the same provider name exist, which prevents registering an automatic forwarded authentication scheme with the name '{0}'. Consider using a unique provider name per client registration or disable automatic authentication scheme forwarding using 'services.AddOpenIddict().AddClient().UseAspNetCore().DisableAutomaticAuthenticationSchemeForwarding()'.</value>
+  </data>
+  <data name="ID0416" xml:space="preserve">
+    <value>Multiple client registrations sharing the same provider name exist, which prevents registering an automatic forwarded authentication type with the name '{0}'. Consider using a unique provider name per client registration or disable automatic authentication type forwarding using 'services.AddOpenIddict().AddClient().UseOwin().DisableAutomaticAuthenticationTypeForwarding()'.</value>
+  </data>
+  <data name="ID0417" xml:space="preserve">
+    <value>The authentication properties must not contain an '.issuer', '.provider_name' or '.registration_id' property when using a forwarded authentication scheme/type.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
