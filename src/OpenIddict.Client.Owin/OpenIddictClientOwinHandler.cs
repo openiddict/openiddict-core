@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Json;
@@ -208,6 +209,9 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
 
             // Attach the tokens to allow any OWIN component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
+            //
+            // Note: for consistency with the OWIN OpenID Connect middleware, the expiration
+            // dates of the backchannel/frontchannel access tokens are also stored as tokens.
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
@@ -219,6 +223,12 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                 properties.Dictionary[Tokens.BackchannelAccessToken] = context.BackchannelAccessToken;
             }
 
+            if (context.BackchannelAccessTokenExpirationDate is not null)
+            {
+                properties.Dictionary[Tokens.BackchannelAccessTokenExpirationDate] =
+                    context.BackchannelAccessTokenExpirationDate.Value.ToString("o", CultureInfo.InvariantCulture);
+            }
+
             if (!string.IsNullOrEmpty(context.BackchannelIdentityToken))
             {
                 properties.Dictionary[Tokens.BackchannelIdentityToken] = context.BackchannelIdentityToken;
@@ -227,6 +237,12 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
             if (!string.IsNullOrEmpty(context.FrontchannelAccessToken))
             {
                 properties.Dictionary[Tokens.FrontchannelAccessToken] = context.FrontchannelAccessToken;
+            }
+
+            if (context.FrontchannelAccessTokenExpirationDate is not null)
+            {
+                properties.Dictionary[Tokens.FrontchannelAccessTokenExpirationDate] =
+                    context.FrontchannelAccessTokenExpirationDate.Value.ToString("o", CultureInfo.InvariantCulture);
             }
 
             if (!string.IsNullOrEmpty(context.FrontchannelIdentityToken))
