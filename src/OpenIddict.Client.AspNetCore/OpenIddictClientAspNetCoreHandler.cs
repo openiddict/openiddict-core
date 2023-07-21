@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -192,6 +193,9 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
 
             // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
+            //
+            // Note: for consistency with the ASP.NET Core OpenID Connect handler, the expiration
+            // dates of the backchannel/frontchannel access tokens are also stored as tokens.
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
@@ -213,6 +217,16 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 });
             }
 
+            if (context.BackchannelAccessTokenExpirationDate is not null)
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.BackchannelAccessTokenExpirationDate,
+                    Value = context.BackchannelAccessTokenExpirationDate.Value.ToString("o", CultureInfo.InvariantCulture)
+                });
+            }
+
             if (!string.IsNullOrEmpty(context.BackchannelIdentityToken))
             {
                 tokens ??= new(capacity: 1);
@@ -230,6 +244,16 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 {
                     Name = Tokens.FrontchannelAccessToken,
                     Value = context.FrontchannelAccessToken
+                });
+            }
+
+            if (context.FrontchannelAccessTokenExpirationDate is not null)
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.FrontchannelAccessTokenExpirationDate,
+                    Value = context.FrontchannelAccessTokenExpirationDate.Value.ToString("o", CultureInfo.InvariantCulture)
                 });
             }
 

@@ -1392,6 +1392,15 @@ public static partial class OpenIddictClientHandlers
                 _ => null
             };
 
+            context.FrontchannelAccessTokenExpirationDate = context.EndpointType switch
+            {
+                OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelAccessToken
+                    => ((long?) context.Request[Parameters.ExpiresIn]) is long value ?
+                        DateTimeOffset.UtcNow.AddSeconds(value) : null,
+
+                _ => null
+            };
+
             context.FrontchannelIdentityToken = context.EndpointType switch
             {
                 OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelIdentityToken
@@ -2721,9 +2730,18 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
 
-            context.BackchannelAccessToken   = context.ExtractBackchannelAccessToken   ? context.TokenResponse.AccessToken  : null;
-            context.BackchannelIdentityToken = context.ExtractBackchannelIdentityToken ? context.TokenResponse.IdToken      : null;
-            context.RefreshToken             = context.ExtractRefreshToken             ? context.TokenResponse.RefreshToken : null;
+            context.BackchannelAccessToken = context.ExtractBackchannelAccessToken ?
+                context.TokenResponse.AccessToken : null;
+
+            context.BackchannelAccessTokenExpirationDate =
+                context.ExtractBackchannelAccessToken &&
+                context.TokenResponse.ExpiresIn is long value ? DateTimeOffset.UtcNow.AddSeconds(value) : null;
+
+            context.BackchannelIdentityToken = context.ExtractBackchannelIdentityToken ?
+                context.TokenResponse.IdToken : null;
+
+            context.RefreshToken = context.ExtractRefreshToken ?
+                context.TokenResponse.RefreshToken : null;
 
             return default;
         }

@@ -684,6 +684,11 @@ public static partial class OpenIddictClientEvents
         public string? BackchannelAccessToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the expiration date of the backchannel access token, if applicable.
+        /// </summary>
+        public DateTimeOffset? BackchannelAccessTokenExpirationDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the backchannel identity token to validate, if applicable.
         /// </summary>
         public string? BackchannelIdentityToken { get; set; }
@@ -697,6 +702,11 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the frontchannel access token to validate, if applicable.
         /// </summary>
         public string? FrontchannelAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expiration date of the frontchannel access token, if applicable.
+        /// </summary>
+        public DateTimeOffset? FrontchannelAccessTokenExpirationDate { get; set; }
 
         /// <summary>
         /// Gets or sets the frontchannel identity token to validate, if applicable.
