@@ -6099,7 +6099,7 @@ public static partial class OpenIddictClientHandlers
             {
                 foreach (var parameter in context.Parameters)
                 {
-                    context.Response.SetParameter(parameter.Key, parameter.Value);
+                    context.Request.SetParameter(parameter.Key, parameter.Value);
                 }
             }
 
