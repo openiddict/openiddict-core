@@ -966,19 +966,19 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // If no explicit shop name was attached to the challenge properties, use the default
+            // If no explicit shop name was attached to the challenge properties, use the
             // shop name set in the provider settings, if set. Otherwise, throw an exception.
             if (context.Registration.ProviderType is ProviderTypes.Shopify &&
               (!context.Properties.TryGetValue(Shopify.Properties.ShopName, out string? name) ||
                 string.IsNullOrEmpty(name)))
             {
                 var settings = context.Registration.GetShopifySettings();
-                if (string.IsNullOrEmpty(settings.DefaultShopName))
+                if (string.IsNullOrEmpty(settings.ShopName))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0412));
                 }
 
-                context.Properties[Shopify.Properties.ShopName] = settings.DefaultShopName;
+                context.Properties[Shopify.Properties.ShopName] = settings.ShopName;
             }
 
             return default;

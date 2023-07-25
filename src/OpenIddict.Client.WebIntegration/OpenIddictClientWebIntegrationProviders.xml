@@ -897,8 +897,8 @@
     <Setting PropertyName="AccessMode" ParameterName="mode" Type="String" Required="false"
              Description="The access mode (can be set to 'online' for per-user authorization)" />
 
-    <Setting PropertyName="DefaultShopName" ParameterName="name" Type="String" Required="false"
-             Description="The static shop name used by default when no value is set in the authentication properties (useful for scenarios where a single shop is supported, e.g employees authentication)" />
+    <Setting PropertyName="ShopName" ParameterName="name" Type="String" Required="false"
+             Description="The shop name (note: the shop name can also be set dynamically via the authentication properties)" />
   </Provider>
 
   <!--
@@ -1041,7 +1041,7 @@
     <Property Name="AccountType" DictionaryKey=".stripe_account_type" />
 
     <Setting PropertyName="AccountType" ParameterName="type" Type="String" Required="true" DefaultValue="standard"
-             Description="The type of the Stripe account (by default, 'standard', but can also be set to 'express')" />
+             Description="The type of the Stripe account (by default, 'standard', but can also be set to 'express'). Note: the account type can also be set dynamically via the authentication properties" />
   </Provider>
 
   <!--
