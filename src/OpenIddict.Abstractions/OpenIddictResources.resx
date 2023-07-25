@@ -1547,7 +1547,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The issuer couldn't be resolved from the provider configuration or is not a valid absolute URI. Make sure the OpenIddict.Client.WebIntegration package is referenced and 'options.UseWebProviders()' is correctly called.</value>
   </data>
   <data name="ID0412" xml:space="preserve">
-    <value>The Shopify integration requires setting the shop name to be able to determine the location of the OAuth 2.0 endpoints. To dynamically set the shop name when triggering a challenge, add a ".shopify_shop_name" authentication property containing the shop name received by the installation endpoint or specified by the user.</value>
+    <value>The Shopify integration requires setting the shop name to be able to determine the location of the OAuth 2.0 endpoints. To dynamically set the shop name when triggering a challenge, add a ".shopify_shop_name" authentication property containing the shop name received by the installation endpoint or specified by the user. Alternatively, for scenarios where a single shop should be supported (e.g employees authentication), the shop name can be set statically in the Shopify provider settings.</value>
   </data>
   <data name="ID0413" xml:space="preserve">
     <value>The specified string is not a valid hexadecimal string.</value>

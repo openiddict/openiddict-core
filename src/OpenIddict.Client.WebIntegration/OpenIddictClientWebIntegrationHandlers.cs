@@ -40,6 +40,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /*
          * Challenge processing:
          */
+        ValidateChallengeProperties.Descriptor,
         OverrideAuthorizationEndpoint.Descriptor,
         OverrideResponseMode.Descriptor,
         FormatNonStandardScopeParameter.Descriptor,
@@ -937,6 +938,48 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             }
 
             context.UserinfoTokenPrincipal = new ClaimsPrincipal(identity);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the user-defined authentication properties.
+    /// </summary>
+    public sealed class ValidateChallengeProperties : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<ValidateChallengeProperties>()
+                .SetOrder(ResolveClientRegistrationFromChallengeContext.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If no explicit shop name was attached to the challenge properties, use the default
+            // shop name set in the provider settings, if set. Otherwise, throw an exception.
+            if (context.Registration.ProviderType is ProviderTypes.Shopify &&
+              (!context.Properties.TryGetValue(Shopify.Properties.ShopName, out string? name) ||
+                string.IsNullOrEmpty(name)))
+            {
+                var settings = context.Registration.GetShopifySettings();
+                if (string.IsNullOrEmpty(settings.DefaultShopName))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0412));
+                }
+
+                context.Properties[Shopify.Properties.ShopName] = settings.DefaultShopName;
+            }
 
             return default;
         }
