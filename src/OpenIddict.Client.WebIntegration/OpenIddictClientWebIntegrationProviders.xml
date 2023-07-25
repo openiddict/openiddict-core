@@ -896,6 +896,9 @@
 
     <Setting PropertyName="AccessMode" ParameterName="mode" Type="String" Required="false"
              Description="The access mode (can be set to 'online' for per-user authorization)" />
+
+    <Setting PropertyName="DefaultShopName" ParameterName="name" Type="String" Required="false"
+             Description="The static shop name used by default when no value is set in the authentication properties (useful for scenarios where a single shop is supported, e.g employees authentication)" />
   </Provider>
 
   <!--
