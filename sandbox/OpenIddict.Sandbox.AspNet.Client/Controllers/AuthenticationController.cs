@@ -173,47 +173,15 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             //
             // By default, all claims extracted during the authorization dance are available. The claims collection stored
             // in the cookie can be filtered out or mapped to different names depending the claim name or its issuer.
-            var claims = new List<Claim>(result.Identity.Claims
-                .Select(claim => claim switch
-                {
-                    // Map the standard "sub" and custom "id" claims to ClaimTypes.NameIdentifier, which is
-                    // the default claim type used by .NET and is required by the antiforgery components.
-                    { Type: Claims.Subject } or
-                    { Type: "id", Issuer: "https://github.com/" or "https://twitter.com/" }
-                        => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
-
-                    // Map the standard "name" claim to ClaimTypes.Name.
-                    { Type: Claims.Name }
-                        => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
-
-                    // The antiforgery components require an "identityprovider" claim, which
-                    // is mapped from the authorization server claim returned by OpenIddict.
-                    { Type: Claims.AuthorizationServer }
-                        => new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
-                            claim.Value, claim.ValueType, claim.Issuer),
-
-                    _ => claim
-                })
-                .Where(claim => claim switch
-                {
-                    // Preserve the basic claims that are necessary for the application to work correctly.
-                    {
-                        Type: ClaimTypes.NameIdentifier or
-                              ClaimTypes.Name           or
-                              "http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider"
-                    } => true,
-
-                    // Preserve the client registration identifier as a dedicated claim so that the
-                    // associated server configuration can be resolved from the logout endpoint to
-                    // determine whether the authorization server supports client-initiated logouts.
-                    { Type: Claims.Private.RegistrationId } => true,
-
-                    // Applications that use multiple client registrations can filter claims based on the issuer.
-                    { Type: "bio", Issuer: "https://github.com/" } => true,
-
-                    // Don't preserve the other claims.
-                    _ => false
-                }));
+            var claims = result.Identity.Claims.Where(claim => claim.Type is ClaimTypes.NameIdentifier or ClaimTypes.Name
+                //
+                // Preserve the registration identifier to be able to resolve it later.
+                //
+                or Claims.Private.RegistrationId
+                //
+                // The ASP.NET 4.x antiforgery module requires preserving the "identityprovider" claim.
+                //
+                or "http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider");
 
             var identity = new ClaimsIdentity(claims,
                 authenticationType: CookieAuthenticationDefaults.AuthenticationType,

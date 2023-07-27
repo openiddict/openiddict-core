@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -887,6 +888,21 @@ public sealed class OpenIddictClientBuilder
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder DisableTokenStorage()
         => Configure(options => options.DisableTokenStorage = true);
+
+    /// <summary>
+    /// Disables automatic claim mapping so that the merged principal returned by
+    /// OpenIddict after a successful authentication doesn't contain any WS-Federation
+    /// claims - exposed by the <see cref="ClaimTypes"/> class - mapped from their
+    /// OpenID Connect/JSON Web Token or provider-specific equivalent.
+    /// </summary>
+    /// <remarks>
+    /// Note: OpenID Connect/JSON Web Token or provider-specific claims that are mapped
+    /// to their WS-Federation equivalent are never removed from the merged principal
+    /// when automatic claim mapping is enabled.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder DisableWebServicesFederationClaimMapping()
+        => Configure(options => options.DisableWebServicesFederationClaimMapping = true);
 
     /// <summary>
     /// Enables authorization code flow support. For more information

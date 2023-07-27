@@ -93,6 +93,9 @@ public static partial class OpenIddictClientHandlers
         ValidateUserinfoTokenWellknownClaims.Descriptor,
         ValidateUserinfoTokenSubject.Descriptor,
 
+        PopulateMergedPrincipal.Descriptor,
+        MapStandardWebServicesFederationClaims.Descriptor,
+
         /*
          * Challenge processing:
          */
@@ -3887,6 +3890,162 @@ public static partial class OpenIddictClientHandlers
 
                 return default;
             }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for populating the merged principal from the other available principals.
+    /// </summary>
+    public sealed class PopulateMergedPrincipal : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<PopulateMergedPrincipal>()
+                .SetOrder(100_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+            context.MergedPrincipal = context.EndpointType switch
+            {
+                // Create a composite principal containing claims resolved from the frontchannel
+                // and backchannel identity tokens and the userinfo token principal, if available.
+                OpenIddictClientEndpointType.Redirection => CreateMergedPrincipal(
+                    context.FrontchannelIdentityTokenPrincipal,
+                    context.BackchannelIdentityTokenPrincipal,
+                    context.UserinfoTokenPrincipal),
+
+                OpenIddictClientEndpointType.PostLogoutRedirection
+                    => context.StateTokenPrincipal?.Clone() ?? new ClaimsPrincipal(new ClaimsIdentity()),
+
+                _ => new ClaimsPrincipal(new ClaimsIdentity())
+            };
+
+            // Attach the registration identifier and identity of the authorization server to the returned principal to allow
+            // resolving it even if no other claim was added (e.g if no id_token was returned/no userinfo endpoint is available).
+            context.MergedPrincipal.SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
+                                   .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
+                                   .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
+
+            return default;
+
+            ClaimsPrincipal CreateMergedPrincipal(params ClaimsPrincipal?[] principals)
+            {
+                // Note: the OpenIddict client can be used as a pure OAuth 2.0 authorization stack for
+                // delegation scenarios where the identity of the user is not needed. In this case,
+                // since no principal can be resolved from a token or a userinfo response to construct
+                // a user identity, a fake one containing an "unauthenticated" identity (i.e with its
+                // AuthenticationType property deliberately left to null) is used to allow the host
+                // to return a "successful" authentication result for these delegation-only scenarios.
+                if (!Array.Exists(principals, static principal => principal?.Identity is ClaimsIdentity { IsAuthenticated: true }))
+                {
+                    return new ClaimsPrincipal(new ClaimsIdentity());
+                }
+
+                // Create a new composite identity containing the claims of all the principals.
+                //
+                // Note: if WS-Federation claim mapping was not disabled, the resulting identity
+                // will use the default WS-Federation claims as the name/role claim types.
+                var identity = context.Options.DisableWebServicesFederationClaimMapping ?
+                    new ClaimsIdentity(
+                        context.Registration.TokenValidationParameters.AuthenticationType,
+                        context.Registration.TokenValidationParameters.NameClaimType,
+                        context.Registration.TokenValidationParameters.RoleClaimType) :
+                    new ClaimsIdentity(context.Registration.TokenValidationParameters.AuthenticationType);
+
+                foreach (var principal in principals)
+                {
+                    // Note: the principal may be null if no value was extracted from the corresponding token.
+                    if (principal is null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var claim in principal.Claims)
+                    {
+                        // If a claim with the same type and the same value already exist, skip it.
+                        if (identity.HasClaim(claim.Type, claim.Value))
+                        {
+                            continue;
+                        }
+
+                        identity.AddClaim(claim);
+                    }
+                }
+
+                return new ClaimsPrincipal(identity);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for mapping select standard claims to their WS-Federation equivalent, if applicable.
+    /// </summary>
+    public sealed class MapStandardWebServicesFederationClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireWebServicesFederationClaimMappingEnabled>()
+                .UseSingletonHandler<MapStandardWebServicesFederationClaims>()
+                .SetOrder(PopulateMergedPrincipal.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+            // As an OpenID Connect framework, the OpenIddict client mostly uses the claim set defined by the OpenID
+            // Connect core specification (https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims).
+            // While these claims can be easily accessed using their standard OIDC name, many components still use
+            // the Web Services Federation claims exposed by the BCL ClaimTypes class, sometimes without allowing
+            // to use different claim types (e.g ASP.NET Core Identity hardcodes ClaimTypes.NameIdentifier in a few
+            // places, like the GetUserId() extension). To reduce the difficulty of using the OpenIddict client with
+            // these components relying on WS-Federation-style claims, OpenIddict >= 4.7 integrates a built-in
+            // event handler that maps standard OpenID Connect claims to their Web Services Federation equivalent
+            // but deliberately doesn't remove the OpenID Connect claims from the resulting claims principal.
+            //
+            // Note: a similar event handler exists in OpenIddict.Client.WebIntegration to map these claims
+            // from non-standard/provider-specific claim types (see MapCustomWebServicesFederationClaims).
+
+            var issuer = context.Registration.Issuer.AbsoluteUri;
+
+            context.MergedPrincipal
+                .SetClaim(ClaimTypes.Email,          context.MergedPrincipal.GetClaim(Claims.Email),             issuer)
+                .SetClaim(ClaimTypes.Gender,         context.MergedPrincipal.GetClaim(Claims.Gender),            issuer)
+                .SetClaim(ClaimTypes.GivenName,      context.MergedPrincipal.GetClaim(Claims.GivenName),         issuer)
+                .SetClaim(ClaimTypes.Name,           context.MergedPrincipal.GetClaim(Claims.PreferredUsername), issuer)
+                .SetClaim(ClaimTypes.NameIdentifier, context.MergedPrincipal.GetClaim(Claims.Subject),           issuer)
+                .SetClaim(ClaimTypes.OtherPhone,     context.MergedPrincipal.GetClaim(Claims.PhoneNumber),       issuer)
+                .SetClaim(ClaimTypes.Surname,        context.MergedPrincipal.GetClaim(Claims.FamilyName),        issuer);
+
+            // Note: while this claim is not exposed by the BCL ClaimTypes class, it is used by both ASP.NET Identity
+            // for ASP.NET 4.x and the System.Web.WebPages package, that requires it for antiforgery to work correctly.
+            context.MergedPrincipal.SetClaim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
+                context.MergedPrincipal.GetClaim(Claims.Private.ProviderName));
 
             return default;
         }

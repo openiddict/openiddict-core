@@ -5,14 +5,12 @@
  */
 
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants;
 using Properties = OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants.Properties;
 
@@ -149,41 +147,15 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
 
         else
         {
-            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-
-            // A single main claims-based principal instance can be attached to an authentication ticket.
-            // To return the most appropriate one, the principal is selected based on the endpoint type.
-            // Independently of the selected main principal, all principals resolved from validated tokens
-            // are attached to the authentication properties bag so they can be accessed from user code.
-            var principal = context.EndpointType switch
-            {
-                // Create a composite principal containing claims resolved from the frontchannel
-                // and backchannel identity tokens and the userinfo token principal, if available.
-                OpenIddictClientEndpointType.Redirection => OpenIddictHelpers.CreateMergedPrincipal(
-                    context.FrontchannelIdentityTokenPrincipal,
-                    context.BackchannelIdentityTokenPrincipal,
-                    context.UserinfoTokenPrincipal),
-
-                OpenIddictClientEndpointType.PostLogoutRedirection => context.StateTokenPrincipal,
-
-                _ => null
-            };
-
-            if (principal is null)
+            if (context.MergedPrincipal is not ClaimsPrincipal principal)
             {
                 return AuthenticateResult.NoResult();
             }
 
-            // Attach the registration identifier and identity of the authorization server to the returned principal to allow
-            // resolving it even if no other claim was added (e.g if no id_token was returned/no userinfo endpoint is available).
-            principal.SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
-                     .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
-                     .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
-
             // Restore or create a new authentication properties collection and populate it.
             var properties = CreateProperties(context.StateTokenPrincipal);
-            properties.ExpiresUtc = principal.GetExpirationDate();
-            properties.IssuedUtc = principal.GetCreationDate();
+            properties.ExpiresUtc = context.StateTokenPrincipal?.GetExpirationDate();
+            properties.IssuedUtc = context.StateTokenPrincipal?.GetCreationDate();
 
             // Restore the target link URI that was stored in the state
             // token when the challenge operation started, if available.

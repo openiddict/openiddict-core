@@ -348,12 +348,7 @@ public sealed class OpenIddictClientService
                     FrontchannelAccessToken = context.FrontchannelAccessToken,
                     FrontchannelIdentityToken = context.FrontchannelIdentityToken,
                     FrontchannelIdentityTokenPrincipal = context.FrontchannelIdentityTokenPrincipal,
-                    Principal = OpenIddictHelpers.CreateMergedPrincipal(context.FrontchannelIdentityTokenPrincipal,
-                                                                        context.BackchannelIdentityTokenPrincipal,
-                                                                        context.UserinfoTokenPrincipal)
-                        .SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
-                        .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
-                        .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName),
+                    Principal = context.MergedPrincipal,
                     Properties = context.Properties,
                     RefreshToken = context.RefreshToken,
                     StateTokenPrincipal = context.StateTokenPrincipal,
@@ -597,11 +592,7 @@ public sealed class OpenIddictClientService
                 AccessToken = context.BackchannelAccessToken!,
                 IdentityToken = context.BackchannelIdentityToken,
                 IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                Principal = OpenIddictHelpers.CreateMergedPrincipal(context.BackchannelIdentityTokenPrincipal,
-                                                                    context.UserinfoTokenPrincipal)
-                    .SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
-                    .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
-                    .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName),
+                Principal = context.MergedPrincipal,
                 Properties = context.Properties,
                 RefreshToken = context.RefreshToken,
                 TokenResponse = context.TokenResponse,
@@ -769,11 +760,7 @@ public sealed class OpenIddictClientService
                             AccessToken = context.BackchannelAccessToken!,
                             IdentityToken = context.BackchannelIdentityToken,
                             IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                            Principal = OpenIddictHelpers.CreateMergedPrincipal(context.BackchannelIdentityTokenPrincipal,
-                                                                                context.UserinfoTokenPrincipal)
-                                .SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
-                                .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
-                                .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName),
+                            Principal = context.MergedPrincipal,
                             Properties = context.Properties,
                             RefreshToken = context.RefreshToken,
                             TokenResponse = context.TokenResponse ?? new(),
@@ -1117,11 +1104,7 @@ public sealed class OpenIddictClientService
                 AccessToken = context.BackchannelAccessToken!,
                 IdentityToken = context.BackchannelIdentityToken,
                 IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                Principal = OpenIddictHelpers.CreateMergedPrincipal(context.BackchannelIdentityTokenPrincipal,
-                                                                    context.UserinfoTokenPrincipal)
-                    .SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
-                    .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
-                    .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName),
+                Principal = context.MergedPrincipal,
                 Properties = context.Properties,
                 RefreshToken = context.RefreshToken,
                 TokenResponse = context.TokenResponse,
@@ -1282,12 +1265,7 @@ public sealed class OpenIddictClientService
                 AccessToken = context.BackchannelAccessToken!,
                 IdentityToken = context.BackchannelIdentityToken,
                 IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                Principal = OpenIddictHelpers.CreateMergedPrincipal(
-                    context.BackchannelIdentityTokenPrincipal,
-                    context.UserinfoTokenPrincipal)
-                    .SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
-                    .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
-                    .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName),
+                Principal = context.MergedPrincipal,
                 Properties = context.Properties,
                 RefreshToken = context.RefreshToken,
                 TokenResponse = context.TokenResponse,

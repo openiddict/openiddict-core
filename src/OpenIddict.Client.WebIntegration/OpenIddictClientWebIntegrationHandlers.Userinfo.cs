@@ -384,13 +384,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ["accounts"] = context.Response["accounts"]
                     },
 
-                    // Kroger and Twitter return a nested "data" object.
-                    ProviderTypes.Kroger or ProviderTypes.Twitter => new(context.Response["data"]?.GetNamedParameters() ??
+                    // Kroger, Twitter and Patreon return a nested "data" object.
+                    ProviderTypes.Kroger or ProviderTypes.Patreon or ProviderTypes.Twitter
+                        => new(context.Response["data"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data"))),
-
-                    // Patreon returns a nested "attributes" object that is itself nested in a "data" node.
-                    ProviderTypes.Patreon => new(context.Response["data"]?["attributes"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("data/attributes"))),
 
                     // ServiceChannel returns a nested "UserProfile" object.
                     ProviderTypes.ServiceChannel => new(context.Response["UserProfile"]?.GetNamedParameters() ??
@@ -399,15 +396,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // StackExchange returns an "items" array containing a single element.
                     ProviderTypes.StackExchange => new(context.Response["items"]?[0]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("items/0"))),
-
-                    // Streamlabs splits the user data into multiple service-specific nodes (e.g "twitch"/"facebook").
-                    //
-                    // To make claims easier to use, the parameters are flattened and prefixed with the service name.
-                    ProviderTypes.Streamlabs => new(
-                        from parameter in context.Response.GetParameters()
-                        from node in parameter.Value.GetNamedParameters()
-                        let name = $"{parameter.Key}_{node.Key}"
-                        select new KeyValuePair<string, OpenIddictParameter>(name, node.Value)),
 
                     // SubscribeStar returns a nested "user" object that is itself nested in a GraphQL "data" node.
                     ProviderTypes.SubscribeStar => new(context.Response["data"]?["user"]?.GetNamedParameters() ??

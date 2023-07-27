@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -158,6 +159,8 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
                 // Ignore the response instance if a userinfo token was extracted.
                 if (!string.IsNullOrEmpty(context.UserinfoToken))
                 {
@@ -170,11 +173,6 @@ public static partial class OpenIddictClientHandlers
                     context.Registration.TokenValidationParameters.AuthenticationType,
                     context.Registration.TokenValidationParameters.NameClaimType,
                     context.Registration.TokenValidationParameters.RoleClaimType);
-
-                // Resolve the issuer that will be attached to the claims created by this handler.
-                // Note: at this stage, the optional issuer extracted from the response is assumed
-                // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
-                var issuer = (string?) context.Response[Claims.Issuer] ?? context.Configuration.Issuer!.AbsoluteUri;
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -209,11 +207,11 @@ public static partial class OpenIddictClientHandlers
                         // Top-level claims represented as arrays are split and mapped to multiple CLR claims
                         // to match the logic implemented by IdentityModel for JWT token deserialization.
                         case { ValueKind: JsonValueKind.Array } value:
-                            identity.AddClaims(parameter.Key, value, issuer);
+                            identity.AddClaims(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
                             break;
 
                         case { ValueKind: _ } value:
-                            identity.AddClaim(parameter.Key, value, issuer);
+                            identity.AddClaim(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
                             break;
                     }
                 }
