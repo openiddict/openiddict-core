@@ -376,50 +376,6 @@ internal static class OpenIddictHelpers
             .ToDictionary(pair => pair.Key!, pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
     }
 
-    /// <summary>
-    /// Creates a merged principal based on the specified principals.
-    /// </summary>
-    /// <param name="principals">The collection of principals to merge.</param>
-    /// <returns>The merged principal.</returns>
-    public static ClaimsPrincipal CreateMergedPrincipal(params ClaimsPrincipal?[] principals)
-    {
-        // Note: components like the client handler can be used as a pure OAuth 2.0 stack for
-        // delegation scenarios where the identity of the user is not needed. In this case,
-        // since no principal can be resolved from a token or a userinfo response to construct
-        // a user identity, a fake one containing an "unauthenticated" identity (i.e with its
-        // AuthenticationType property deliberately left to null) is used to allow the host
-        // to return a "successful" authentication result for these delegation-only scenarios.
-        if (!Array.Exists(principals, static principal => principal?.Identity is ClaimsIdentity { IsAuthenticated: true }))
-        {
-            return new ClaimsPrincipal(new ClaimsIdentity());
-        }
-
-        // Create a new composite identity containing the claims of all the principals.
-        var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
-
-        foreach (var principal in principals)
-        {
-            // Note: the principal may be null if no value was extracted from the corresponding token.
-            if (principal is null)
-            {
-                continue;
-            }
-
-            foreach (var claim in principal.Claims)
-            {
-                // If a claim with the same type and the same value already exist, skip it.
-                if (identity.HasClaim(claim.Type, claim.Value))
-                {
-                    continue;
-                }
-
-                identity.AddClaim(claim);
-            }
-        }
-
-        return new ClaimsPrincipal(identity);
-    }
-
 #if SUPPORTS_ECDSA
     /// <summary>
     /// Creates a new <see cref="ECDsa"/> key.

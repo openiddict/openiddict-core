@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -123,6 +124,17 @@ public sealed class OpenIddictClientOptions
     /// OpenIddict client services. Using this option is generally NOT recommended.
     /// </summary>
     public bool DisableTokenStorage { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the claim mapping feature inferring
+    /// WS-Federation claims (exposed by the <see cref="ClaimTypes"/> class) from their
+    /// OpenID Connect/JSON Web Token or provider-specific equivalent should be disabled.
+    /// </summary>
+    /// <remarks>
+    /// Note: if automatic claim mapping is disabled, no WS-Federation claim will
+    /// be added to <see cref="ProcessAuthenticationContext.MergedPrincipal"/>.
+    /// </remarks>
+    public bool DisableWebServicesFederationClaimMapping { get; set; }
 
     /// <summary>
     /// Gets the OAuth 2.0 code challenge methods enabled for this application.

@@ -45,11 +45,14 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
          * Authentication processing:
          */
         WaitMarshalledAuthentication.Descriptor,
+
         RestoreStateTokenFromMarshalledAuthentication.Descriptor,
         RestoreStateTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreClientRegistrationFromMarshalledContext.Descriptor,
+
         RedirectProtocolActivation.Descriptor,
         ResolveRequestForgeryProtection.Descriptor,
+
         RestoreFrontchannelTokensFromMarshalledAuthentication.Descriptor,
         RestoreFrontchannelIdentityTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreFrontchannelAccessTokenPrincipalFromMarshalledAuthentication.Descriptor,
@@ -60,6 +63,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         RestoreBackchannelAccessTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreRefreshTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreUserinfoDetailsFromMarshalledAuthentication.Descriptor,
+        RestoreMergedPrincipalFromMarshalledAuthentication.Descriptor,
+
         CompleteAuthenticationOperation.Descriptor,
         UntrackMarshalledAuthenticationOperation.Descriptor,
 
@@ -1347,6 +1352,51 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 // Otherwise, don't alter the current context.
                 _ => (context.UserinfoResponse, context.UserinfoTokenPrincipal, context.UserinfoToken)
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for restoring the merged principal from the marshalled authentication context, if applicable.
+    /// </summary>
+    public sealed class RestoreMergedPrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public RestoreMergedPrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<RestoreMergedPrincipalFromMarshalledAuthentication>()
+                .SetOrder(PopulateMergedPrincipal.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            context.MergedPrincipal = context.EndpointType switch
+            {
+                // When the authentication context is marshalled, restore the merged principal from the other instance.
+                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
+                    => notification.MergedPrincipal,
+
+                // Otherwise, don't alter the current context.
+                _ => context.MergedPrincipal
             };
 
             return default;

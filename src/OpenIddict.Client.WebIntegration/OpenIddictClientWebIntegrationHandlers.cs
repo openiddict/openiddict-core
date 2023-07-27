@@ -36,6 +36,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         DisableUserinfoValidation.Descriptor,
         AttachAdditionalUserinfoRequestParameters.Descriptor,
         PopulateUserinfoTokenPrincipalFromTokenResponse.Descriptor,
+        MapCustomWebServicesFederationClaims.Descriptor,
 
         /*
          * Challenge processing:
@@ -867,6 +868,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
             Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
 
             // Don't overwrite the userinfo token principal if one was already set.
@@ -912,8 +914,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Registration.TokenValidationParameters.NameClaimType,
                 context.Registration.TokenValidationParameters.RoleClaimType);
 
-            var issuer = context.Configuration.Issuer!.AbsoluteUri;
-
             foreach (var parameter in parameters)
             {
                 // Note: in the typical case, the response parameters should be deserialized from a
@@ -928,16 +928,225 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // Top-level claims represented as arrays are split and mapped to multiple CLR claims
                     // to match the logic implemented by IdentityModel for JWT token deserialization.
                     case { ValueKind: JsonValueKind.Array } value:
-                        identity.AddClaims(parameter.Key, value, issuer);
+                        identity.AddClaims(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
                         break;
 
                     case { ValueKind: _ } value:
-                        identity.AddClaim(parameter.Key, value, issuer);
+                        identity.AddClaim(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
                         break;
                 }
             }
 
             context.UserinfoTokenPrincipal = new ClaimsPrincipal(identity);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for mapping select custom claims to
+    /// their WS-Federation equivalent for the providers that require it.
+    /// </summary>
+    public sealed class MapCustomWebServicesFederationClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireWebServicesFederationClaimMappingEnabled>()
+                .UseSingletonHandler<MapCustomWebServicesFederationClaims>()
+                .SetOrder(MapStandardWebServicesFederationClaims.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+            // As an OpenID Connect framework, the OpenIddict client mostly uses the claim set defined by the OpenID
+            // Connect core specification (https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims).
+            // While these claims can be easily accessed using their standard OIDC name, many components still use
+            // the Web Services Federation claims exposed by the BCL ClaimTypes class, sometimes without allowing
+            // to use different claim types (e.g ASP.NET Core Identity hardcodes ClaimTypes.NameIdentifier in a few
+            // places, like the GetUserId() extension). To reduce the difficulty of using the OpenIddict client with
+            // these components relying on WS-Federation-style claims, these claims are mapped from the custom,
+            // provider-specific parameters (either from the userinfo response or from the token rensponse).
+            //
+            // Note: a similar event handler exists in OpenIddict.Client to map these claims from
+            // the standard OpenID Connect claim types (see MapStandardWebServicesFederationClaims).
+
+            var issuer = context.Registration.Issuer.AbsoluteUri;
+
+            context.MergedPrincipal.SetClaim(ClaimTypes.Email, issuer: issuer, value: context.Registration.ProviderType switch
+            {
+                // Basecamp returns the email address as a custom "email_address" node:
+                ProviderTypes.Basecamp => (string?) context.UserinfoResponse?["email_address"],
+
+                // HubSpot returns the email address as a custom "user" node:
+                ProviderTypes.HubSpot => (string?) context.UserinfoResponse?["user"],
+
+                // Mailchimp returns the email address as a custom "login/login_email" node:
+                ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["login"]?["login_email"],
+
+                // Notion returns the email address as a custom "bot/owner/user/person/email" node
+                // but requires a special capability to access this node, that may not be present:
+                ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["person"]?["email"],
+
+                // Patreon returns the email address as a custom "attributes/email" node:
+                ProviderTypes.Patreon => (string?) context.UserinfoResponse?["attributes"]?["email"],
+
+                // ServiceChannel returns the email address as a custom "Email" node:
+                ProviderTypes.ServiceChannel => (string?) context.UserinfoResponse?["Email"],
+
+                // Shopify returns the email address as a custom "associated_user/email" node in token responses:
+                ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["email"],
+
+                _ => context.MergedPrincipal.GetClaim(ClaimTypes.Email)
+            });
+
+            context.MergedPrincipal.SetClaim(ClaimTypes.Name, issuer: issuer, value: context.Registration.ProviderType switch
+            {
+                // These providers return the username as a custom "username" node:
+                ProviderTypes.ArcGisOnline or ProviderTypes.Discord  or ProviderTypes.DeviantArt or
+                ProviderTypes.Lichess      or ProviderTypes.Mixcloud or ProviderTypes.Trakt      or
+                ProviderTypes.WordPress
+                    => (string?) context.UserinfoResponse?["username"],
+
+                // Basecamp and Harvest don't return a username so one is created using the "first_name" and "last_name" nodes:
+                ProviderTypes.Basecamp or ProviderTypes.Harvest
+                    when context.UserinfoResponse?.HasParameter("first_name") is true &&
+                         context.UserinfoResponse?.HasParameter("last_name")  is true
+                    => $"{(string?) context.UserinfoResponse?["first_name"]} {(string?) context.UserinfoResponse?["last_name"]}",
+
+                // These providers return the username as a custom "name" node:
+                ProviderTypes.Deezer        or ProviderTypes.Facebook or ProviderTypes.Reddit or
+                ProviderTypes.SubscribeStar or ProviderTypes.Vimeo
+                    => (string?) context.UserinfoResponse?["name"],
+
+                // FitBit returns the username as a custom "displayName" node:
+                ProviderTypes.Fitbit => (string?) context.UserinfoResponse?["displayName"],
+
+                // HubSpot returns the username as a custom "user" node:
+                ProviderTypes.HubSpot => (string?) context.UserinfoResponse?["user"],
+
+                // Mailchimp returns the username as a custom "accountname" node:
+                ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["accountname"],
+
+                // Notion returns the username as a custom "bot/owner/user/name" node but
+                // requires a special capability to access this node, that may not be present:
+                ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["name"],
+
+                // Patreon doesn't return a username and require using the complete user name as the username:
+                ProviderTypes.Patreon => (string?) context.UserinfoResponse?["attributes"]?["full_name"],
+
+                // ServiceChannel returns the username as a custom "UserName" node:
+                ProviderTypes.ServiceChannel => (string?) context.UserinfoResponse?["UserName"],
+
+                // Shopify doesn't return a username so one is created using the "first_name" and "last_name" nodes:
+                ProviderTypes.Shopify
+                    when context.TokenResponse?["associated_user"]?["first_name"] is not null &&
+                         context.TokenResponse?["associated_user"]?["last_name"]  is not null
+                    => $"{(string?) context.TokenResponse?["associated_user"]?["first_name"]} {(string?) context.TokenResponse?["associated_user"]?["last_name"]}",
+
+                // Smartsheet doesn't return a username so one is created using the "firstName" and "lastName" nodes:
+                ProviderTypes.Smartsheet
+                    when context.UserinfoResponse?.HasParameter("firstName") is true &&
+                         context.UserinfoResponse?.HasParameter("lastName")  is true
+                    => $"{(string?) context.UserinfoResponse?["firstName"]} {(string?) context.UserinfoResponse?["lastName"]}",
+
+                // Spotify and StackExchange return the username as a custom "display_name" node:
+                ProviderTypes.Spotify or ProviderTypes.StackExchange
+                    => (string?) context.UserinfoResponse?["display_name"],
+
+                // Strava returns the username as a custom "athlete/username" node in token responses:
+                ProviderTypes.Strava => (string?) context.TokenResponse?["athlete"]?["username"],
+
+                // Streamlabs returns the username as a custom "streamlabs/display_name" node:
+                ProviderTypes.Streamlabs => (string?) context.UserinfoResponse?["streamlabs"]?["display_name"],
+
+                // Trovo returns the username as a custom "userName" node:
+                ProviderTypes.Trovo => (string?) context.UserinfoResponse?["userName"],
+
+                // Tumblr returns the username as a custom "name" node:
+                ProviderTypes.Tumblr => (string?) context.UserinfoResponse?["name"],
+
+                _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
+            });
+
+            context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
+            {
+                // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
+                ProviderTypes.ArcGisOnline or ProviderTypes.Trakt
+                    => (string?) context.UserinfoResponse?["username"],
+
+                // These providers return the user identifier as a custom "id" node:
+                ProviderTypes.Basecamp or ProviderTypes.Deezer  or ProviderTypes.Discord    or
+                ProviderTypes.Facebook or ProviderTypes.GitHub  or ProviderTypes.Harvest    or
+                ProviderTypes.Kroger   or ProviderTypes.Lichess or ProviderTypes.Twitter    or
+                ProviderTypes.Patreon  or ProviderTypes.Reddit  or ProviderTypes.Smartsheet or
+                ProviderTypes.Spotify  or ProviderTypes.SubscribeStar
+                    => (string?) context.UserinfoResponse?["id"],
+
+                // Bitbucket returns the user identifier as a custom "uuid" node:
+                ProviderTypes.Bitbucket => (string?) context.UserinfoResponse?["uuid"],
+
+                // DeviantArt returns the user identifier as a custom "userid" node:
+                ProviderTypes.DeviantArt => (string?) context.UserinfoResponse?["userid"],
+
+                // Fitbit returns the user identifier as a custom "encodedId" node:
+                ProviderTypes.Fitbit => (string?) context.UserinfoResponse?["encodedId"],
+
+                // HubSpot and StackExchange return the user identifier as a custom "user_id" node:
+                ProviderTypes.HubSpot or ProviderTypes.StackExchange
+                    => (string?) context.UserinfoResponse?["user_id"],
+
+                // Mailchimp returns the user identifier as a custom "login/login_id" node:
+                ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["login"]?["login_id"],
+
+                // Mixcloud returns the user identifier as a custom "key" node:
+                ProviderTypes.Mixcloud => (string?) context.UserinfoResponse?["key"],
+
+                // Notion returns the user identifier as a custom "bot/owner/user/id" node but
+                // requires a special capability to access this node, that may not be present:
+                ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["id"],
+
+                // ServiceChannel returns the user identifier as a custom "UserId" node:
+                ProviderTypes.ServiceChannel => (string?) context.UserinfoResponse?["UserId"],
+
+                // Shopify returns the user identifier as a custom "associated_user/id" node in token responses:
+                ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["id"],
+
+                // Strava returns the user identifier as a custom "athlete/id" node in token responses:
+                ProviderTypes.Strava => (string?) context.TokenResponse?["athlete"]?["id"],
+
+                // Stripe returns the user identifier as a custom "stripe_user_id" node in token responses:
+                ProviderTypes.StripeConnect => (string?) context.TokenResponse?["stripe_user_id"],
+
+                // Streamlabs returns the user identifier as a custom "streamlabs/id" node:
+                ProviderTypes.Streamlabs => (string?) context.UserinfoResponse?["streamlabs"]?["id"],
+
+                // Trovo returns the user identifier as a custom "userId" node:
+                ProviderTypes.Trovo => (string?) context.UserinfoResponse?["userId"],
+
+                // Tumblr doesn't return a user identifier and requires using the username as the identifier:
+                ProviderTypes.Tumblr => (string?) context.UserinfoResponse?["name"],
+
+                // Vimeo returns the user identifier as a custom "uri" node, prefixed with "/users/":
+                ProviderTypes.Vimeo => (string?) context.UserinfoResponse?["uri"] is string uri &&
+                    uri.StartsWith("/users/", StringComparison.Ordinal) ? uri["/users/".Length..] : null,
+
+                // WordPress returns the user identifier as a custom "ID" node:
+                ProviderTypes.WordPress => (string?) context.UserinfoResponse?["ID"],
+
+                _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
+            });
 
             return default;
         }

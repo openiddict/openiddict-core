@@ -764,6 +764,11 @@ public static partial class OpenIddictClientEvents
         public ClaimsPrincipal? FrontchannelIdentityTokenPrincipal { get; set; }
 
         /// <summary>
+        /// Gets or sets the merged principal containing the claims of the other principals.
+        /// </summary>
+        public ClaimsPrincipal MergedPrincipal { get; set; } = new ClaimsPrincipal(new ClaimsIdentity());
+
+        /// <summary>
         /// Gets or sets the principal extracted from the refresh token, if applicable.
         /// </summary>
         public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
