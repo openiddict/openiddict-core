@@ -1293,6 +1293,21 @@
     </Environment>
   </Provider>
 
+  <Provider Name="Vkontakte" Id="493e3768-12a0-4332-946d-c709b9fa63e2"
+            Documentation="https://dev.vk.com/ru/api/access-token/authcode-flow-user">
+    <Environment Issuer="https://oauth.vk.com/">
+      <Configuration AuthorizationEndpoint="https://oauth.vk.com/authorize"
+      TokenEndpoint="https://oauth.vk.com/access_token"
+      UserinfoEndpoint="https://api.vk.com/method/users.get.json" />
+
+      <!--
+        Note: a scope is needed for authorization and can be bitmasked or listed as text
+      -->
+
+      <Scope Name="friends" Default="true" Required="false" />
+    </Environment>
+  </Provider>
+
   <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             ██ ███ ██ ▄▄▄██ ▄▄▀██ ▄▄▄█▄▀█▀▄██
