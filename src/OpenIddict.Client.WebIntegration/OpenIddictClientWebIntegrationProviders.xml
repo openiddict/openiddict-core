@@ -633,6 +633,18 @@
     </Environment>
   </Provider>
 
+  <Provider Name="Naver" Id="29a6977d-0630-4709-ba41-61e1b12c5455"
+            Documentation="https://developers.naver.com/docs/login/api/api.md">
+    <Environment Issuer="https://nid.naver.com/">
+      <Configuration AuthorizationEndpoint="https://nid.naver.com/oauth2.0/authorize"
+                     TokenEndpoint="https://nid.naver.com/oauth2.0/token"
+                     UserinfoEndpoint="https://openapi.naver.com/v1/nid/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
   <!--
                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                           ██ ▀██ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄ ██ ▀██ ██
