@@ -635,7 +635,7 @@
 
   <Provider Name="MusicBrainz" Id="4aff779b-4d13-4e24-b5cb-5d798886ee40"
             Documentation="https://musicbrainz.org/doc/Development/OAuth2">
-    <Environment Issuer="https://musicbrainz.org">
+    <Environment Issuer="https://musicbrainz.org/">
       <Configuration AuthorizationEndpoint="https://musicbrainz.org/oauth2/authorize"
                      TokenEndpoint="https://musicbrainz.org/oauth2/token"
                      UserinfoEndpoint="https://musicbrainz.org/oauth2/userinfo">
