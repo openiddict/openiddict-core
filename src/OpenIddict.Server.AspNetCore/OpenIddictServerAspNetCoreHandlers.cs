@@ -1125,7 +1125,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = true
+                Indented = false
             });
 
             context.Transaction.Response.WriteTo(writer);
