@@ -633,6 +633,22 @@
     </Environment>
   </Provider>
 
+  <Provider Name="NextCloud" Id="f256847d-c720-4b2f-bda0-69e8f4bceac2"
+            Documentation="https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/oauth2.html">
+    <Environment Issuer="https://nextcloud.com/">
+      <Configuration AuthorizationEndpoint="https://{settings.Tenant}/index.php/apps/oauth2/authorize"
+                   TokenEndpoint="https://{settings.Tenant}/index.php/apps/oauth2/api/v1/token"
+                   UserinfoEndpoint="https://{settings.Tenant}/ocs/v2.php/cloud/user?format=json">
+        <TokenEndpointAuthMethod Value="client_secret_post" />
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="Tenant" ParameterName="tenant" Type="String" Required="true"
+           Description="The tenant used to identify the NextCloud instance" />
+  </Provider>
+
   <!--
                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                           ██ ▀██ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄ ██ ▀██ ██
