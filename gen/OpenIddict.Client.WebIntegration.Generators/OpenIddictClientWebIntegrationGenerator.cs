@@ -862,6 +862,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
+using static OpenIddict.Extensions.OpenIddictHelpers;
 
 namespace OpenIddict.Client.WebIntegration;
 
