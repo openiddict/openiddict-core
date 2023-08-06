@@ -995,6 +995,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Mailchimp returns the email address as a custom "login/login_email" node:
                 ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["login"]?["login_email"],
 
+                // Nextcloud returns the email address as a custom "ocs/data/email" node:
+                ProviderTypes.Nextcloud => (string?) context.UserinfoResponse?["ocs"]?["data"]?["email"],
+
                 // Notion returns the email address as a custom "bot/owner/user/person/email" node
                 // but requires a special capability to access this node, that may not be present:
                 ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["person"]?["email"],
@@ -1038,6 +1041,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Mailchimp returns the username as a custom "accountname" node:
                 ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["accountname"],
+
+                // Nextcloud returns the username as a custom "ocs/data/displayName" node:
+                ProviderTypes.Nextcloud => (string?) context.UserinfoResponse?["ocs"]?["data"]?["displayname"],
 
                 // Notion returns the username as a custom "bot/owner/user/name" node but
                 // requires a special capability to access this node, that may not be present:
@@ -1112,6 +1118,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Mixcloud returns the user identifier as a custom "key" node:
                 ProviderTypes.Mixcloud => (string?) context.UserinfoResponse?["key"],
+
+                // Nextcloud returns the username as a custom "ocs/data/id" node:
+                ProviderTypes.Nextcloud => (string?) context.UserinfoResponse?["ocs"]?["data"]?["id"],
 
                 // Notion returns the user identifier as a custom "bot/owner/user/id" node but
                 // requires a special capability to access this node, that may not be present:
