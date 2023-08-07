@@ -1039,6 +1039,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Mailchimp returns the username as a custom "accountname" node:
                 ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["accountname"],
 
+                // Nextcloud returns the username as a custom "displayname" or "display-name" node:
+                ProviderTypes.Nextcloud => (string?) context.UserinfoResponse?["displayname"] ??
+                                           (string?) context.UserinfoResponse?["display-name"],
+
                 // Notion returns the username as a custom "bot/owner/user/name" node but
                 // requires a special capability to access this node, that may not be present:
                 ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["name"],
@@ -1087,11 +1091,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => (string?) context.UserinfoResponse?["username"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Basecamp or ProviderTypes.Deezer  or ProviderTypes.Discord    or
-                ProviderTypes.Facebook or ProviderTypes.GitHub  or ProviderTypes.Harvest    or
-                ProviderTypes.Kroger   or ProviderTypes.Lichess or ProviderTypes.Twitter    or
-                ProviderTypes.Patreon  or ProviderTypes.Reddit  or ProviderTypes.Smartsheet or
-                ProviderTypes.Spotify  or ProviderTypes.SubscribeStar
+                ProviderTypes.Basecamp or ProviderTypes.Deezer        or ProviderTypes.Discord    or
+                ProviderTypes.Facebook or ProviderTypes.GitHub        or ProviderTypes.Harvest    or
+                ProviderTypes.Kroger   or ProviderTypes.Lichess       or ProviderTypes.Nextcloud  or
+                ProviderTypes.Patreon  or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
+                ProviderTypes.Spotify  or ProviderTypes.SubscribeStar or ProviderTypes.Twitter
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:

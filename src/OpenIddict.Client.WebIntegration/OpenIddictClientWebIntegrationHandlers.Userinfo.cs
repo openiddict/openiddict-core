@@ -389,6 +389,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         => new(context.Response["data"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data"))),
 
+                    // Nextcloud returns a nested "data" object that is itself nested in a "ocs" node.
+                    ProviderTypes.Nextcloud => new(context.Response["ocs"]?["data"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("ocs/data"))),
+
                     // ServiceChannel returns a nested "UserProfile" object.
                     ProviderTypes.ServiceChannel => new(context.Response["UserProfile"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("UserProfile"))),

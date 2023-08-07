@@ -187,6 +187,18 @@ internal static class OpenIddictHelpers
     /// <returns>An absolute URI from the specified <paramref name="left"/> and <paramref name="right"/>.</returns>
     /// <exception cref="InvalidOperationException"><paramref name="left"/> is not an absolute URI.</exception>
     [return: NotNullIfNotNull(nameof(right))]
+    public static Uri? CreateAbsoluteUri(Uri? left, string? right)
+        => CreateAbsoluteUri(left, !string.IsNullOrEmpty(right) ? new Uri(right, UriKind.RelativeOrAbsolute) : null);
+
+    /// <summary>
+    /// Computes an absolute URI from the specified <paramref name="left"/> and <paramref name="right"/> URIs.
+    /// Note: if the <paramref name="right"/> URI is already absolute, it is directly returned.
+    /// </summary>
+    /// <param name="left">The left part.</param>
+    /// <param name="right">The right part.</param>
+    /// <returns>An absolute URI from the specified <paramref name="left"/> and <paramref name="right"/>.</returns>
+    /// <exception cref="InvalidOperationException"><paramref name="left"/> is not an absolute URI.</exception>
+    [return: NotNullIfNotNull(nameof(right))]
     public static Uri? CreateAbsoluteUri(Uri? left, Uri? right)
     {
         if (right is null)

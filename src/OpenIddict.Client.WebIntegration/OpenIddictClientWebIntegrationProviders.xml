@@ -634,6 +634,29 @@
   </Provider>
 
   <!--
+                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                  ██ ▀██ ██ ▄▄▄█▄▀█▀▄█▄▄ ▄▄██ ▄▄▀██ █████ ▄▄▄ ██ ██ ██ ▄▄▀██
+                                  ██ █ █ ██ ▄▄▄███ █████ ████ █████ █████ ███ ██ ██ ██ ██ ██
+                                  ██ ██▄ ██ ▀▀▀█▀▄█▄▀███ ████ ▀▀▄██ ▀▀ ██ ▀▀▀ ██▄▀▀▄██ ▀▀ ██
+                                  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Nextcloud" Id="f256847d-c720-4b2f-bda0-69e8f4bceac2"
+            Documentation="https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/oauth2.html">
+    <Environment Issuer="{settings.Issuer}">
+      <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, 'index.php/apps/oauth2/authorize')}"
+                     TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, 'index.php/apps/oauth2/api/v1/token')}"
+                     UserinfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'ocs/v2.php/cloud/user?format=json')}">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
+             Description="The URI used to access the Nextcloud instance (e.g https://fabrikam.com/)" />
+  </Provider>
+
+  <!--
                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                           ██ ▀██ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄ ██ ▀██ ██
                                           ██ █ █ ██ ███ ███ ████ ███ ███ ██ █ █ ██
