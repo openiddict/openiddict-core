@@ -1026,8 +1026,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => $"{(string?) context.UserinfoResponse?["first_name"]} {(string?) context.UserinfoResponse?["last_name"]}",
 
                 // These providers return the username as a custom "name" node:
-                ProviderTypes.Deezer        or ProviderTypes.Facebook or ProviderTypes.Reddit or
-                ProviderTypes.SubscribeStar or ProviderTypes.Vimeo
+                ProviderTypes.Deezer or ProviderTypes.Facebook      or ProviderTypes.GitHub or
+                ProviderTypes.Reddit or ProviderTypes.SubscribeStar or ProviderTypes.Vimeo
                     => (string?) context.UserinfoResponse?["name"],
 
                 // FitBit returns the username as a custom "displayName" node:
