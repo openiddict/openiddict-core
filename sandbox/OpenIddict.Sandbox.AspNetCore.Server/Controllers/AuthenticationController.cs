@@ -1,7 +1,5 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.AspNetCore;
@@ -53,14 +51,14 @@ public class AuthenticationController : Controller
         }
 
         // Build an identity based on the external claims and that will be used to create the authentication cookie.
-        //
+        var identity = new ClaimsIdentity(authenticationType: "ExternalLogin");
+
         // By default, OpenIddict will automatically try to map the email/name and name identifier claims from
         // their standard OpenID Connect or provider-specific equivalent, if available. If needed, additional
         // claims can be resolved from the external identity and copied to the final authentication cookie.
-        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme)
-            .SetClaim(ClaimTypes.Email, result.Principal.GetClaim(ClaimTypes.Email))
-            .SetClaim(ClaimTypes.Name, result.Principal.GetClaim(ClaimTypes.Name))
-            .SetClaim(ClaimTypes.NameIdentifier, result.Principal.GetClaim(ClaimTypes.NameIdentifier));
+        identity.SetClaim(ClaimTypes.Email, result.Principal.GetClaim(ClaimTypes.Email))
+                .SetClaim(ClaimTypes.Name, result.Principal.GetClaim(ClaimTypes.Name))
+                .SetClaim(ClaimTypes.NameIdentifier, result.Principal.GetClaim(ClaimTypes.NameIdentifier));
 
         // Preserve the registration identifier to be able to resolve it later.
         identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId));
