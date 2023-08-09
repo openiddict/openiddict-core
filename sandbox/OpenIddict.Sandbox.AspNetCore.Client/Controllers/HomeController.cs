@@ -1,7 +1,6 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Client;
@@ -29,7 +28,9 @@ public class HomeController : Controller
     [Authorize, HttpPost("~/message"), ValidateAntiForgeryToken]
     public async Task<ActionResult> GetMessage(CancellationToken cancellationToken)
     {
-        var token = await HttpContext.GetTokenAsync(CookieAuthenticationDefaults.AuthenticationScheme, Tokens.BackchannelAccessToken);
+        // For scenarios where the default authentication handler configured in the ASP.NET Core
+        // authentication options shouldn't be used, a specific scheme can be specified here.
+        var token = await HttpContext.GetTokenAsync(Tokens.BackchannelAccessToken);
 
         using var client = _httpClientFactory.CreateClient();
 
@@ -45,7 +46,9 @@ public class HomeController : Controller
     [Authorize, HttpPost("~/refresh-token"), ValidateAntiForgeryToken]
     public async Task<ActionResult> RefreshToken(CancellationToken cancellationToken)
     {
-        var ticket = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        // For scenarios where the default authentication handler configured in the ASP.NET Core
+        // authentication options shouldn't be used, a specific scheme can be specified here.
+        var ticket = await HttpContext.AuthenticateAsync();
         var token = ticket?.Properties.GetTokenValue(Tokens.RefreshToken);
         if (string.IsNullOrEmpty(token))
         {
@@ -71,7 +74,9 @@ public class HomeController : Controller
             properties.UpdateTokenValue(Tokens.RefreshToken, result.RefreshToken);
         }
 
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, ticket.Principal, properties);
+        // For scenarios where the default sign-in handler configured in the ASP.NET Core
+        // authentication options shouldn't be used, a specific scheme can be specified here.
+        await HttpContext.SignInAsync(ticket.Principal, properties);
 
         return View("Index", model: result.AccessToken);
     }

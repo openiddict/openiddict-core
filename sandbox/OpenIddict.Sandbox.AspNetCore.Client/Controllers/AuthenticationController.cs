@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
@@ -80,7 +79,10 @@ public class AuthenticationController : Controller
     {
         // Retrieve the identity stored in the local authentication cookie. If it's not available,
         // this indicate that the user is already logged out locally (or has not logged in yet).
-        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        //
+        // For scenarios where the default authentication handler configured in the ASP.NET Core
+        // authentication options shouldn't be used, a specific scheme can be specified here.
+        var result = await HttpContext.AuthenticateAsync();
         if (result is not { Principal.Identity: ClaimsIdentity identity })
         {
             // Only allow local return URLs to prevent open redirect attacks.
@@ -88,7 +90,10 @@ public class AuthenticationController : Controller
         }
 
         // Remove the local authentication cookie before triggering a redirection to the remote server.
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        //
+        // For scenarios where the default sign-out handler configured in the ASP.NET Core
+        // authentication options shouldn't be used, a specific scheme can be specified here.
+        await HttpContext.SignOutAsync();
 
         // Extract the client registration identifier and retrieve the associated server configuration.
         // If the provider is known to support remote sign-out, ask OpenIddict to initiate a logout request.
@@ -159,14 +164,14 @@ public class AuthenticationController : Controller
         }
 
         // Build an identity based on the external claims and that will be used to create the authentication cookie.
-        //
+        var identity = new ClaimsIdentity(authenticationType: "ExternalLogin");
+
         // By default, OpenIddict will automatically try to map the email/name and name identifier claims from
         // their standard OpenID Connect or provider-specific equivalent, if available. If needed, additional
         // claims can be resolved from the external identity and copied to the final authentication cookie.
-        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme)
-            .SetClaim(ClaimTypes.Email, result.Principal.GetClaim(ClaimTypes.Email))
-            .SetClaim(ClaimTypes.Name, result.Principal.GetClaim(ClaimTypes.Name))
-            .SetClaim(ClaimTypes.NameIdentifier, result.Principal.GetClaim(ClaimTypes.NameIdentifier));
+        identity.SetClaim(ClaimTypes.Email, result.Principal.GetClaim(ClaimTypes.Email))
+                .SetClaim(ClaimTypes.Name, result.Principal.GetClaim(ClaimTypes.Name))
+                .SetClaim(ClaimTypes.NameIdentifier, result.Principal.GetClaim(ClaimTypes.NameIdentifier));
         
         // Preserve the registration identifier to be able to resolve it later.
         identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId));
