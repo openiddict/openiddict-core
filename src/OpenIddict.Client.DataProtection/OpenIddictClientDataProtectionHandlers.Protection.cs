@@ -62,9 +62,15 @@ public static partial class OpenIddictClientDataProtectionHandlers
                     return default;
                 }
 
-                // Note: ASP.NET Core Data Protection tokens always start with "CfDJ8", that corresponds
-                // to the base64 representation of the magic "09 F0 C9 F0" header identifying DP payloads.
-                // However, if a custom DataProtectionProvider has been configured, then we cannot make any assumptions about the token prefix.
+                // Note: ASP.NET Core Data Protection tokens created by the default implementation always start
+                // with "CfDJ8", that corresponds to the base64 representation of the "09 F0 C9 F0" value used
+                // by KeyRingBasedDataProtectionProvider as a Data Protection version identifier/magic header.
+                //
+                // Unless a custom provider implementation - that may use a different mechanism - has been
+                // registered, return immediately if the token doesn't start with the expected magic header.
+                //
+                // See https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/implementation/authenticated-encryption-details
+                // for more information.
                 if (!context.Token.StartsWith("CfDJ8", StringComparison.Ordinal) &&
                     string.Equals(_options.CurrentValue.DataProtectionProvider.GetType().FullName,
                         "Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtectionProvider",
