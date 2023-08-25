@@ -461,6 +461,14 @@
     </Environment>
   </Provider>
 
+  <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                ██ █▀▄█ ▄▄▀██ █▀▄█ ▄▄▀██ ▄▄▄ ██
+                                                ██ ▄▀██ ▀▀ ██ ▄▀██ ▀▀ ██ ███ ██
+                                                ██ ██ █ ██ ██ ██ █ ██ ██ ▀▀▀ ██
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
   <Provider Name="Kakao" Id="765c91dd-48c0-4a46-acd3-a4b346523d36"
             Documentation="https://developers.kakao.com/docs/latest/en/kakaologin/rest-api">
     <Environment Issuer="https://kauth.kakao.com/" />
