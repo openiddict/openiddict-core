@@ -589,16 +589,6 @@
 
       <Scope Name="profile" Default="true" Required="true" />
     </Environment>
-
-    <Setting PropertyName="Fields" ParameterName="fields" Collection="true" Obsolete="true" Type="String"
-             Description="The fields that should be retrieved from the userinfo endpoint (by default, all known basic fields are requested)">
-      <Item Value="firstName"                                     Default="true" Required="false" />
-      <Item Value="id"                                            Default="true" Required="false" />
-      <Item Value="lastName"                                      Default="true" Required="false" />
-      <Item Value="localizedFirstName"                            Default="true" Required="false" />
-      <Item Value="localizedLastName"                             Default="true" Required="false" />
-      <Item Value="profilePicture(displayImage~:playableStreams)" Default="true" Required="false" />
-    </Setting>
   </Provider>
 
   <!--

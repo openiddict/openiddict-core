@@ -122,16 +122,6 @@ public sealed class OpenIddictClientRegistration
     public string? ProviderName { get; set; }
 
     /// <summary>
-    /// Gets or sets the provider options, if applicable.
-    /// </summary>
-    [Obsolete($"This property was replaced by {nameof(ProviderSettings)} and will be removed in a future version.")]
-    public dynamic? ProviderOptions
-    {
-        get => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        set => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-    }
-
-    /// <summary>
     /// Gets or sets the provider settings, if applicable.
     /// </summary>
     public dynamic? ProviderSettings { get; set; }

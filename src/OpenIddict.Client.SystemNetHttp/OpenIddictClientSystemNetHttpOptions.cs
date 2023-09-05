@@ -49,18 +49,4 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// instances created by the OpenIddict client/System.Net.Http integration.
     /// </summary>
     public List<Action<OpenIddictClientRegistration, HttpClientHandler>> UnfilteredHttpClientHandlerActions { get; } = new();
-
-    /// <summary>
-    /// Gets the user-defined actions used to amend the <see cref="HttpClient"/>
-    /// instances created by the OpenIddict client/System.Net.Http integration.
-    /// </summary>
-    [Obsolete($"This property was replaced by {nameof(UnfilteredHttpClientActions)} and will be removed in a future version.")]
-    public Dictionary<string, List<Action<HttpClient>>> HttpClientActions { get; } = new();
-
-    /// <summary>
-    /// Gets the user-defined actions used to amend the <see cref="HttpClientHandler"/>
-    /// instances created by the OpenIddict client/System.Net.Http integration.
-    /// </summary>
-    [Obsolete($"This property was replaced by {nameof(UnfilteredHttpClientActions)} and will be removed in a future version.")]
-    public Dictionary<string, List<Action<HttpClientHandler>>> HttpClientHandlerActions { get; } = new();
 }

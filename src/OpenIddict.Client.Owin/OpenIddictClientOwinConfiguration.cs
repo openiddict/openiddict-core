@@ -19,10 +19,6 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
 {
     private readonly IServiceProvider _provider;
 
-    /// <inheritdoc/>
-    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
-    public OpenIddictClientOwinConfiguration() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientOwinConfiguration"/> class.
     /// </summary>

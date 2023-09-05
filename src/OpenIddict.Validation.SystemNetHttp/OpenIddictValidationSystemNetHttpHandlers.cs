@@ -326,9 +326,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<AttachHttpParameters<TContext>>()
-#pragma warning disable CS0618
-                .SetOrder(AttachQueryStringParameters<TContext>.Descriptor.Order - 1_000)
-#pragma warning restore CS0618
+                .SetOrder(int.MaxValue - 100_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -374,48 +372,6 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
             return default;
         }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for attaching the query string parameters to the HTTP request.
-    /// </summary>
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
-    public sealed class AttachQueryStringParameters<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-            = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataUri>()
-                .UseSingletonHandler<AttachQueryStringParameters<TContext>>()
-                .SetOrder(AttachFormParameters<TContext>.Descriptor.Order - 1_000)
-                .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context) => default;
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for attaching the form parameters to the HTTP request.
-    /// </summary>
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
-    public sealed class AttachFormParameters<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-            = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataUri>()
-                .UseSingletonHandler<AttachFormParameters<TContext>>()
-                .SetOrder(int.MaxValue - 100_000)
-                .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context) => default;
     }
 
     /// <summary>

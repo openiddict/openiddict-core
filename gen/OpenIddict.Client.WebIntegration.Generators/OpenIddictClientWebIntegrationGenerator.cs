@@ -40,10 +40,6 @@ namespace OpenIddict.Client.WebIntegration.Generators
                 SourceText.From(GenerateHelpers(document), Encoding.UTF8));
 
             context.AddSource(
-                "OpenIddictClientWebIntegrationOptions.generated.cs",
-                SourceText.From(GenerateOptions(document), Encoding.UTF8));
-
-            context.AddSource(
                 "OpenIddictClientWebIntegrationSettings.generated.cs",
                 SourceText.From(GenerateSettings(document), Encoding.UTF8));
 
@@ -101,43 +97,6 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
         return this;
     }
-
-    /// <summary>
-    /// Enables the {{ provider.display_name }} integration and registers the associated services in the DI container.
-    {{~ if provider.documentation ~}}
-    /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
-    {{~ end ~}}
-    /// </summary>
-    /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete($""This method was replaced by {nameof(Add{{ provider.name }})} and will be removed in a future version."")]
-    public OpenIddictClientWebIntegrationBuilder.{{ provider.name }} Use{{ provider.name }}()
-    {
-        var registration = new OpenIddictClientRegistration
-        {
-            ProviderSettings = new OpenIddictClientWebIntegrationSettings.{{ provider.name }}(),
-            ProviderType = ProviderTypes.{{ provider.name }}
-        };
-
-        Services.Configure<OpenIddictClientOptions>(options => options.Registrations.Add(registration));
-
-        return new OpenIddictClientWebIntegrationBuilder.{{ provider.name }}(registration);
-    }
-
-    /// <summary>
-    /// Enables the {{ provider.display_name }} integration and registers the associated services in the DI container.
-    {{~ if provider.documentation ~}}
-    /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
-    {{~ end ~}}
-    /// </summary>
-    /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.display_name }} options.</param>
-    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/> instance.</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete($""This method was replaced by {nameof(Add{{ provider.name }})} and will be removed in a future version."")]
-    public OpenIddictClientWebIntegrationBuilder Use{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
-        => Add{{ provider.name }}(configuration);
     {{~ end ~}}
 
     {{~ for provider in providers ~}}
@@ -146,14 +105,6 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     /// </summary>
     public sealed partial class {{ provider.name }}
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.
-        /// </summary>
-        /// <param name=""services"">The services collection.</param>
-        [Obsolete(""This constructor is no longer supported and will be removed in a future version."", error: true)]
-        public {{ provider.name }}(IServiceCollection services)
-            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
         /// <summary>
         /// Initializes a new instance of <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.
         /// </summary>
@@ -166,22 +117,6 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public OpenIddictClientRegistration Registration { get; }
-
-        /// <summary>
-        /// Gets the services collection.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public IServiceCollection Services => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-        /// <summary>
-        /// Amends the default OpenIddict client {{ provider.display_name }} configuration.
-        /// </summary>
-        /// <param name=""configuration"">The delegate used to configure the OpenIddict options.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        [Obsolete(""This method is no longer supported and will be removed in a future version."", error: true)]
-        public {{ provider.name }} Configure(Action<OpenIddictClientWebIntegrationOptions.{{ provider.name }}> configuration)
-            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Sets the provider name.
@@ -868,34 +803,6 @@ namespace OpenIddict.Client.WebIntegration;
 
 public sealed partial class OpenIddictClientWebIntegrationConfiguration
 {
-    {{~ for provider in providers ~}}
-    /// <summary>
-    /// Contains the methods required to register the {{ provider.display_name }} integration in the OpenIddict client options.
-    /// </summary>
-    [Obsolete(""This class is no longer supported and will be removed in a future version."", error: true)]
-    public sealed class {{ provider.name }} : IConfigureOptions<OpenIddictClientOptions>,
-                                              IPostConfigureOptions<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>
-    {
-        /// <summary>
-        /// Creates a new instance of the <see cref=""OpenIddictClientWebIntegrationConfiguration.{{ provider.name }}"" /> class.
-        /// </summary>
-        /// <param name=""provider"">The service provider.</param>
-        [Obsolete(""This constructor is no longer supported and will be removed in a future version."", error: true)]
-        public {{ provider.name }}(IServiceProvider provider)
-             => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-        /// <inheritdoc/>
-        [Obsolete(""This method is no longer supported and will be removed in a future version."", error: true)]
-        public void PostConfigure(string? name, OpenIddictClientWebIntegrationOptions.{{ provider.name }} options)
-             => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-        /// <inheritdoc/>
-        [Obsolete(""This method is no longer supported and will be removed in a future version."", error: true)]
-        public void Configure(OpenIddictClientOptions options)
-             => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-    }
-    {{~ end ~}}
-
     static partial void ConfigureProvider(OpenIddictClientRegistration registration)
     {
         {{~ for provider in providers ~}}
@@ -1238,16 +1145,6 @@ public static partial class OpenIddictClientWebIntegrationHelpers
 {
     {{~ for provider in providers ~}}
     /// <summary>
-    /// Resolves the {{ provider.display_name }} provider options from the specified registration.
-    /// </summary>
-    /// <param name=""registration"">The client registration.</param>
-    /// <returns>The {{ provider.display_name }} provider options.</returns>
-    /// <exception cref=""InvalidOperationException"">The provider options cannot be resolved.</exception>
-    [Obsolete($""This extension was replaced by {nameof(Get{{ provider.name }}Settings)} and will be removed in a future version."", error: true)]
-    public static OpenIddictClientWebIntegrationOptions.{{ provider.name }} Get{{ provider.name }}Options(this OpenIddictClientRegistration registration)
-        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-    /// <summary>
     /// Resolves the {{ provider.display_name }} provider settings from the specified registration.
     /// </summary>
     /// <param name=""registration"">The client registration.</param>
@@ -1267,123 +1164,6 @@ public static partial class OpenIddictClientWebIntegrationHelpers
                         {
                             Name = (string) provider.Attribute("Name"),
                             DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name")
-                        })
-                        .ToList()
-                });
-            }
-
-            static string GenerateOptions(XDocument document)
-            {
-                var template = Template.Parse(@"#nullable enable
-
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.IdentityModel.Tokens;
-
-namespace OpenIddict.Client.WebIntegration;
-
-public sealed partial class OpenIddictClientWebIntegrationOptions
-{
-    {{~ for provider in providers ~}}
-    /// <summary>
-    /// Provides various options needed to configure the {{ provider.display_name }} integration.
-    /// </summary>
-    [Obsolete(""This class is no longer supported and will be removed in a future version."")]
-    public sealed class {{ provider.name }}
-    {
-        /// <summary>
-        /// Gets or sets the client identifier.
-        /// </summary>
-        public string? ClientId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the client secret, if applicable.
-        /// </summary>
-        public string? ClientSecret { get; set; }
-
-        /// <summary>
-        /// Gets or sets the post-logout redirect URI.
-        /// </summary>
-        /// <remarks>
-        /// Note: this value is automatically added to
-        /// <see cref=""OpenIddictClientOptions.PostLogoutRedirectionEndpointUris""/>.
-        /// </remarks>
-        public Uri? PostLogoutRedirectUri { get; set; }
-
-        /// <summary>
-        /// Gets or sets the redirect URI.
-        /// </summary>
-        /// <remarks>
-        /// Note: this value is automatically added to
-        /// <see cref=""OpenIddictClientOptions.RedirectionEndpointUris""/>.
-        /// </remarks>
-        public Uri? RedirectUri { get; set; }
-
-        /// <summary>
-        /// Gets the scopes requested to the authorization server.
-        /// </summary>
-        public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
-
-        /// <summary>
-        /// Gets or sets the environment that determines the endpoints to use (by default, ""Production"").
-        /// </summary>
-        public string? Environment { get; set; } = OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.Production;
-
-        {{~ for setting in provider.settings ~}}
-        /// <summary>
-        /// Gets or sets {{ setting.description }}.
-        /// </summary>
-        {{~ if setting.obsolete ~}}
-        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
-        {{~ if setting.collection ~}}
-        public HashSet<{{ setting.clr_type }}> {{ setting.property_name }} { get; } = new();
-        {{~ else ~}}
-        public {{ setting.clr_type }}? {{ setting.property_name }} { get; set; }
-        {{~ end ~}}
-
-        {{~ end ~}}
-    }
-    {{~ end ~}}
-}
-");
-                return template.Render(new
-                {
-                    Providers = document.Root.Elements("Provider")
-                        .Select(provider => new
-                        {
-                            Name = (string) provider.Attribute("Name"),
-                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
-
-                            Settings = provider.Elements("Setting").Select(setting => new
-                            {
-                                PropertyName = (string) setting.Attribute("PropertyName"),
-
-                                Collection = (bool?) setting.Attribute("Collection") ?? false,
-                                Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
-
-                                Description = (string) setting.Attribute("Description") is string description ?
-                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
-                                ClrType = (string) setting.Attribute("Type") switch
-                                {
-                                    "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
-                                        is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
-
-                                    "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                        is "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
-
-                                    "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                        is "PS256" or "PS384" or "PS512" or
-                                           "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
-
-                                    "Certificate" => "X509Certificate2",
-                                    "String" => "string",
-                                    "StringHashSet" => "HashSet<string>",
-                                    "Uri" => "Uri",
-
-                                    string value => value
-                                }
-                            })
-                            .ToList()
                         })
                         .ToList()
                 });

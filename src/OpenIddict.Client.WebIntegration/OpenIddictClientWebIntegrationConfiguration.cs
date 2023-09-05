@@ -6,7 +6,6 @@
 
 using System.ComponentModel;
 using System.Net.Http;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client.SystemNetHttp;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
@@ -19,25 +18,8 @@ namespace OpenIddict.Client.WebIntegration;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>,
                                                                           IConfigureOptions<OpenIddictClientSystemNetHttpOptions>,
-                                                                          IConfigureNamedOptions<HttpClientFactoryOptions>,
                                                                           IPostConfigureOptions<OpenIddictClientOptions>
 {
-    /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictClientWebIntegrationConfiguration"/> class.
-    /// </summary>
-    public OpenIddictClientWebIntegrationConfiguration()
-    {
-    }
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictClientWebIntegrationConfiguration"/> class.
-    /// </summary>
-    /// <param name="provider">The service provider.</param>
-    [Obsolete("This constructor is no longer supported and will be removed in a future version.")]
-    public OpenIddictClientWebIntegrationConfiguration(IServiceProvider provider)
-    {
-    }
-
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
@@ -79,16 +61,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
             }
         });
     }
-
-    /// <inheritdoc/>
-    [Obsolete("This method is no longer supported and will be removed in a future version.", error: true)]
-    public void Configure(HttpClientFactoryOptions options)
-        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-    /// <inheritdoc/>
-    [Obsolete("This method is no longer supported and will be removed in a future version.", error: true)]
-    public void Configure(string? name, HttpClientFactoryOptions options)
-        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOptions options)
