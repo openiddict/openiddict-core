@@ -36,7 +36,6 @@ To use these features on ASP.NET Core or OWIN/Katana/ASP.NET 4.x, reference the 
     <None Include="_._" Pack="true" PackagePath="lib\net461\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\net472\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\net48\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\netcoreapp3.1\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\net6.0\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\net6.0-windows7.0\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\net6.0-windows10.0.17763\_._" />

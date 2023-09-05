@@ -42,7 +42,6 @@
       net48
     </NetFrameworkTargetFrameworks>
     <NetCoreTargetFrameworks Condition=" '$(NetCoreTargetFrameworks)' == '' ">
-      netcoreapp3.1;
       net6.0;
       net7.0
     </NetCoreTargetFrameworks>

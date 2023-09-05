@@ -43,7 +43,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: |
-          3.1.426
           6.0.408
           7.0.302
 
