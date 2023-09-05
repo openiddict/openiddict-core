@@ -166,11 +166,5 @@ public static partial class OpenIddictClientEvents
             get => Response.RefreshToken;
             set => Response.RefreshToken = value;
         }
-
-        /// <summary>
-        /// Gets or sets the principal containing the claims resolved from the token response.
-        /// </summary>
-        [Obsolete("This property is no longer supported and will be removed in a future version.")]
-        public ClaimsPrincipal? Principal { get; set; }
     }
 }

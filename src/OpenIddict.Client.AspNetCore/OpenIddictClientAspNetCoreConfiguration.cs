@@ -21,10 +21,6 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
 {
     private readonly IServiceProvider _provider;
 
-    /// <inheritdoc/>
-    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
-    public OpenIddictClientAspNetCoreConfiguration() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientAspNetCoreConfiguration"/> class.
     /// </summary>
