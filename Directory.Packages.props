@@ -188,8 +188,8 @@
     <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.AppServices"                 Version="1.0.14"          />
     <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.WinForms"                    Version="1.0.14"          />
     <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.Wpf"                         Version="1.0.14"          />
-    <PackageVersion Include="Microsoft.AspNet.Identity.EntityFramework"                       Version="2.2.3"           />
-    <PackageVersion Include="Microsoft.AspNet.Identity.Owin"                                  Version="2.2.3"           />
+    <PackageVersion Include="Microsoft.AspNet.Identity.EntityFramework"                       Version="2.2.4"           />
+    <PackageVersion Include="Microsoft.AspNet.Identity.Owin"                                  Version="2.2.4"           />
     <PackageVersion Include="Microsoft.AspNet.Mvc"                                            Version="5.2.9"           />
     <PackageVersion Include="Microsoft.AspNet.Web.Optimization"                               Version="1.1.3"           />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Owin"                                    Version="5.2.9"           />
