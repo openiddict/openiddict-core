@@ -172,9 +172,10 @@ public class AuthenticationController : Controller
         identity.SetClaim(ClaimTypes.Email, result.Principal.GetClaim(ClaimTypes.Email))
                 .SetClaim(ClaimTypes.Name, result.Principal.GetClaim(ClaimTypes.Name))
                 .SetClaim(ClaimTypes.NameIdentifier, result.Principal.GetClaim(ClaimTypes.NameIdentifier));
-        
-        // Preserve the registration identifier to be able to resolve it later.
-        identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId));
+
+        // Preserve the registration details to be able to resolve them later.
+        identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId))
+                .SetClaim(Claims.Private.ProviderName, result.Principal.GetClaim(Claims.Private.ProviderName));
 
         // Build the authentication properties based on the properties that were added when the challenge was triggered.
         var properties = new AuthenticationProperties(result.Properties.Items)
