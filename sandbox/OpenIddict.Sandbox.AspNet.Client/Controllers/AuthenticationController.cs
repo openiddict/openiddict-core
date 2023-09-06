@@ -175,9 +175,9 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             // in the cookie can be filtered out or mapped to different names depending the claim name or its issuer.
             var claims = result.Identity.Claims.Where(claim => claim.Type is ClaimTypes.NameIdentifier or ClaimTypes.Name
                 //
-                // Preserve the registration identifier to be able to resolve it later.
+                // Preserve the registration details to be able to resolve them later.
                 //
-                or Claims.Private.RegistrationId
+                or Claims.Private.RegistrationId or Claims.Private.ProviderName
                 //
                 // The ASP.NET 4.x antiforgery module requires preserving the "identityprovider" claim.
                 //

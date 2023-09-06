@@ -2,6 +2,7 @@
 @using Microsoft.Owin
 @using Microsoft.Owin.Security
 @using Microsoft.Owin.Security.Cookies
+@using OpenIddict.Abstractions
 @using OpenIddict.Client.Owin
 @model string
 
@@ -22,8 +23,7 @@
             <h3>Payload returned by the controller: @Model</h3>
         }
 
-        if (User is ClaimsPrincipal principal &&
-            principal.FindFirst(ClaimTypes.NameIdentifier)?.Issuer is "https://localhost:44349/")
+        if (User is ClaimsPrincipal principal && principal.FindFirst(OpenIddictConstants.Claims.Private.ProviderName)?.Value is "Local")
         {
             <form action="/message" method="post">
                 @Html.AntiForgeryToken()
