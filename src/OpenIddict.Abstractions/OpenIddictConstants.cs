@@ -24,6 +24,12 @@ public static class OpenIddictConstants
         public const string RsaSsaPssSha512 = "PS512";
     }
 
+    public static class ApplicationTypes
+    {
+        public const string Native = "native";
+        public const string Web = "web";
+    }
+
     public static class AuthenticationMethodReferences
     {
         public const string Face = "face";

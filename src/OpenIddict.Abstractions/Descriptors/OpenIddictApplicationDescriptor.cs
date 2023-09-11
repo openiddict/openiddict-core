@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using System.Text.Json;
 
 namespace OpenIddict.Abstractions;
@@ -8,6 +9,11 @@ namespace OpenIddict.Abstractions;
 /// </summary>
 public class OpenIddictApplicationDescriptor
 {
+    /// <summary>
+    /// Gets or sets the application type associated with the application.
+    /// </summary>
+    public string? ApplicationType { get; set; }
+
     /// <summary>
     /// Gets or sets the client identifier associated with the application.
     /// </summary>
@@ -19,6 +25,11 @@ public class OpenIddictApplicationDescriptor
     /// this property may be hashed or encrypted for security reasons.
     /// </summary>
     public string? ClientSecret { get; set; }
+
+    /// <summary>
+    /// Gets or sets the client type associated with the application.
+    /// </summary>
+    public string? ClientType { get; set; }
 
     /// <summary>
     /// Gets or sets the consent type associated with the application.
@@ -61,7 +72,13 @@ public class OpenIddictApplicationDescriptor
     public HashSet<string> Requirements { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets or sets the application type associated with the application.
+    /// Gets or sets the client type associated with the application.
     /// </summary>
-    public string? Type { get; set; }
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete($"This property was replaced by {nameof(ClientType)} and will be removed in a future version.", true)]
+    public string? Type
+    {
+        get => ClientType;
+        set => ClientType = value;
+    }
 }

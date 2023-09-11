@@ -408,6 +408,32 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
+    /// Retrieves the application type associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the application type of the application (by default, "web").
+    /// </returns>
+    public virtual async ValueTask<string?> GetApplicationTypeAsync(
+        TApplication application, CancellationToken cancellationToken = default)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        var type = await Store.GetApplicationTypeAsync(application, cancellationToken);
+        if (string.IsNullOrEmpty(type))
+        {
+            return ApplicationTypes.Web;
+        }
+
+        return type;
+    }
+
+    /// <summary>
     /// Executes the specified query and returns the first element.
     /// </summary>
     /// <typeparam name="TResult">The result type.</typeparam>
@@ -745,6 +771,29 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
+    /// Determines whether a given application has the specified application type.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="type">The expected application type.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the application has the specified application type, <see langword="false"/> otherwise.</returns>
+    public virtual async ValueTask<bool> HasApplicationTypeAsync(
+        TApplication application, string type, CancellationToken cancellationToken = default)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0209), nameof(type));
+        }
+
+        return string.Equals(await GetApplicationTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Determines whether a given application has the specified client type.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -908,9 +957,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             throw new ArgumentNullException(nameof(descriptor));
         }
 
+        await Store.SetApplicationTypeAsync(application, descriptor.ApplicationType, cancellationToken);
         await Store.SetClientIdAsync(application, descriptor.ClientId, cancellationToken);
         await Store.SetClientSecretAsync(application, descriptor.ClientSecret, cancellationToken);
-        await Store.SetClientTypeAsync(application, descriptor.Type, cancellationToken);
+        await Store.SetClientTypeAsync(application, descriptor.ClientType, cancellationToken);
         await Store.SetConsentTypeAsync(application, descriptor.ConsentType, cancellationToken);
         await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
         await Store.SetDisplayNamesAsync(application, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
@@ -946,11 +996,12 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             throw new ArgumentNullException(nameof(application));
         }
 
+        descriptor.ApplicationType = await Store.GetApplicationTypeAsync(application, cancellationToken);
         descriptor.ClientId = await Store.GetClientIdAsync(application, cancellationToken);
         descriptor.ClientSecret = await Store.GetClientSecretAsync(application, cancellationToken);
+        descriptor.ClientType = await Store.GetClientTypeAsync(application, cancellationToken);
         descriptor.ConsentType = await Store.GetConsentTypeAsync(application, cancellationToken);
         descriptor.DisplayName = await Store.GetDisplayNameAsync(application, cancellationToken);
-        descriptor.Type = await Store.GetClientTypeAsync(application, cancellationToken);
         descriptor.Permissions.Clear();
         descriptor.Permissions.UnionWith(await Store.GetPermissionsAsync(application, cancellationToken));
         descriptor.Requirements.Clear();
@@ -1316,8 +1367,42 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
         foreach (var candidate in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
         {
-            // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
+            // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison",
+            // unless the application was explicitly registered as a native application. In this case, a second
+            // pass using the relaxed comparison method is performed if the application is a native application.
             if (string.Equals(candidate, uri, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            if (await HasApplicationTypeAsync(application, ApplicationTypes.Native, cancellationToken) &&
+                Uri.TryCreate(uri, UriKind.Absolute, out Uri? left) &&
+                Uri.TryCreate(candidate, UriKind.Absolute, out Uri? right) &&
+                // Only apply the relaxed comparison if the URI specified by the client uses a
+                // non-default port and if the value resolved from the database doesn't specify one.
+                !left.IsDefaultPort && right.IsDefaultPort &&
+                // The relaxed policy only applies to loopback URIs.
+                left.IsLoopback && right.IsLoopback &&
+                // The relaxed policy only applies to HTTP and HTTPS URIs.
+                //
+                // Note: the scheme case is deliberately ignored here as it is always
+                // normalized to a lowercase value by the Uri.TryCreate() API, which
+                // would prevent performing a case-sensitive comparison anyway.
+              ((string.Equals(left.Scheme,  Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(right.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase)) ||
+               (string.Equals(left.Scheme,  Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(right.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))) &&
+
+                string.Equals(left.UserInfo, right.UserInfo, StringComparison.Ordinal) &&
+
+                // Note: the host case is deliberately ignored here as it is always
+                // normalized to a lowercase value by the Uri.TryCreate() API, which
+                // would prevent performing a case-sensitive comparison anyway.
+                string.Equals(left.Host, right.Host, StringComparison.OrdinalIgnoreCase) &&
+
+                string.Equals(left.AbsolutePath, right.AbsolutePath, StringComparison.Ordinal) &&
+                string.Equals(left.Query, right.Query, StringComparison.Ordinal) &&
+                string.Equals(left.Fragment, right.Fragment, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -1353,9 +1438,44 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
         foreach (var candidate in await Store.GetRedirectUrisAsync(application, cancellationToken))
         {
-            // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison".
+            // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison",
+            // unless the application was explicitly registered as a native application. In this case, a second
+            // pass using the relaxed comparison method is performed if the application is a native application.
+            //
             // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
             if (string.Equals(candidate, uri, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            if (await HasApplicationTypeAsync(application, ApplicationTypes.Native, cancellationToken) &&
+                Uri.TryCreate(uri, UriKind.Absolute, out Uri? left) &&
+                Uri.TryCreate(candidate, UriKind.Absolute, out Uri? right) &&
+                // Only apply the relaxed comparison if the URI specified by the client uses a
+                // non-default port and if the value resolved from the database doesn't specify one.
+                !left.IsDefaultPort && right.IsDefaultPort &&
+                // The relaxed policy only applies to loopback URIs.
+                left.IsLoopback && right.IsLoopback &&
+                // The relaxed policy only applies to HTTP and HTTPS URIs.
+                //
+                // Note: the scheme case is deliberately ignored here as it is always
+                // normalized to a lowercase value by the Uri.TryCreate() API, which
+                // would prevent performing a case-sensitive comparison anyway.
+              ((string.Equals(left.Scheme,  Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(right.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase)) ||
+               (string.Equals(left.Scheme,  Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(right.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))) &&
+
+                string.Equals(left.UserInfo, right.UserInfo, StringComparison.Ordinal) &&
+
+                // Note: the host case is deliberately ignored here as it is always
+                // normalized to a lowercase value by the Uri.TryCreate() API, which
+                // would prevent performing a case-sensitive comparison anyway.
+                string.Equals(left.Host, right.Host, StringComparison.OrdinalIgnoreCase) &&
+
+                string.Equals(left.AbsolutePath, right.AbsolutePath, StringComparison.Ordinal) &&
+                string.Equals(left.Query, right.Query, StringComparison.Ordinal) &&
+                string.Equals(left.Fragment, right.Fragment, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -1580,6 +1700,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => FindByRedirectUriAsync(uri, cancellationToken);
 
     /// <inheritdoc/>
+    ValueTask<string?> IOpenIddictApplicationManager.GetApplicationTypeAsync(object application, CancellationToken cancellationToken)
+        => GetApplicationTypeAsync((TApplication) application, cancellationToken);
+
+    /// <inheritdoc/>
     ValueTask<TResult?> IOpenIddictApplicationManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken) where TResult : default
         => GetAsync(query, cancellationToken);
 
@@ -1638,6 +1762,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <inheritdoc/>
     ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRequirementsAsync(object application, CancellationToken cancellationToken)
         => GetRequirementsAsync((TApplication) application, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<bool> IOpenIddictApplicationManager.HasApplicationTypeAsync(object application, string type, CancellationToken cancellationToken)
+        => HasApplicationTypeAsync((TApplication) application, type, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<bool> IOpenIddictApplicationManager.HasClientTypeAsync(object application, string type, CancellationToken cancellationToken)

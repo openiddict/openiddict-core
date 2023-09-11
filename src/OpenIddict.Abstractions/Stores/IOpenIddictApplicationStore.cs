@@ -96,6 +96,17 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
         [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Retrieves the application type associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the application type of the application (by default, "web").
+    /// </returns>
+    ValueTask<string?> GetApplicationTypeAsync(TApplication application, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Executes the specified query and returns the first element.
     /// </summary>
     /// <typeparam name="TState">The state type.</typeparam>
@@ -276,6 +287,15 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
         Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the application type associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="type">The application type associated with the application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+    ValueTask SetApplicationTypeAsync(TApplication application, string? type, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the client identifier associated with an application.

@@ -24,12 +24,17 @@ public class OpenIddictEntityFrameworkApplication : OpenIddictEntityFrameworkApp
 /// <summary>
 /// Represents an OpenIddict application.
 /// </summary>
-[DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; Type = {Type,nq}")]
+[DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; ClientType = {ClientType,nq}")]
 public class OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
     where TKey : notnull, IEquatable<TKey>
     where TAuthorization : class
     where TToken : class
 {
+    /// <summary>
+    /// Gets or sets the application type associated with the current application.
+    /// </summary>
+    public virtual string? ApplicationType { get; set; }
+
     /// <summary>
     /// Gets the list of the authorizations associated with this application.
     /// </summary>
@@ -46,6 +51,11 @@ public class OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
     /// this property may be hashed or encrypted for security reasons.
     /// </summary>
     public virtual string? ClientSecret { get; set; }
+
+    /// <summary>
+    /// Gets or sets the client type associated with the current application.
+    /// </summary>
+    public virtual string? ClientType { get; set; }
 
     /// <summary>
     /// Gets or sets the concurrency token.
@@ -114,9 +124,4 @@ public class OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
     /// Gets the list of the tokens associated with this application.
     /// </summary>
     public virtual ICollection<TToken> Tokens { get; } = new HashSet<TToken>();
-
-    /// <summary>
-    /// Gets or sets the application type associated with the current application.
-    /// </summary>
-    public virtual string? Type { get; set; }
 }

@@ -30,6 +30,9 @@ public class Worker : IHostedService
             {
                 await manager.CreateAsync(new OpenIddictApplicationDescriptor
                 {
+                    // Note: the application must be registered as a native application to force OpenIddict
+                    // to apply a relaxed redirect_uri validation policy that allows specifying a random port.
+                    ApplicationType = ApplicationTypes.Native,
                     ClientId = "console",
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "Console client application",
@@ -39,17 +42,9 @@ public class Worker : IHostedService
                     },
                     RedirectUris =
                     {
-                        new Uri("http://localhost:49152/callback/login/local"),
-                        new Uri("http://localhost:49153/callback/login/local"),
-                        new Uri("http://localhost:49154/callback/login/local"),
-                        new Uri("http://localhost:49155/callback/login/local"),
-                        new Uri("http://localhost:49156/callback/login/local"),
-                        new Uri("http://localhost:49157/callback/login/local"),
-                        new Uri("http://localhost:49158/callback/login/local"),
-                        new Uri("http://localhost:49159/callback/login/local"),
-                        new Uri("http://localhost:49160/callback/login/local"),
-                        new Uri("http://localhost:49161/callback/login/local"),
-                        new Uri("http://localhost:49162/callback/login/local")
+                        // Note: the port must not be explicitly specified as it is selected
+                        // dynamically at runtime by the OpenIddict client system integration.
+                        new Uri("http://localhost/callback/login/local")
                     },
                     Permissions =
                     {
@@ -76,6 +71,7 @@ public class Worker : IHostedService
             {
                 await manager.CreateAsync(new OpenIddictApplicationDescriptor
                 {
+                    ApplicationType = ApplicationTypes.Web,
                     ClientId = "mvc",
                     ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                     ConsentType = ConsentTypes.Explicit,
@@ -116,6 +112,7 @@ public class Worker : IHostedService
             {
                 await manager.CreateAsync(new OpenIddictApplicationDescriptor
                 {
+                    ApplicationType = ApplicationTypes.Native,
                     ClientId = "winforms",
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "WinForms client application",
@@ -150,6 +147,7 @@ public class Worker : IHostedService
             {
                 await manager.CreateAsync(new OpenIddictApplicationDescriptor
                 {
+                    ApplicationType = ApplicationTypes.Native,
                     ClientId = "wpf",
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "WPF client application",
@@ -209,6 +207,7 @@ public class Worker : IHostedService
             {
                 await manager.CreateAsync(new OpenIddictApplicationDescriptor
                 {
+                    ApplicationType = ApplicationTypes.Native,
                     ClientId = "postman",
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "Postman",

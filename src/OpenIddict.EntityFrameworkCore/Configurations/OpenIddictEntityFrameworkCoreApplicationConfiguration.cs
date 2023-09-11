@@ -37,6 +37,9 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<TAppli
 
         builder.HasKey(application => application.Id);
 
+        builder.Property(application => application.ApplicationType)
+               .HasMaxLength(50);
+
         // Warning: the non-generic overlord is deliberately used to work around
         // a breaking change introduced in Entity Framework Core 3.x (where a
         // generic entity type builder is now returned by the HasIndex() method).
@@ -45,6 +48,9 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<TAppli
 
         builder.Property(application => application.ClientId)
                .HasMaxLength(100);
+
+        builder.Property(application => application.ClientType)
+               .HasMaxLength(50);
 
         builder.Property(application => application.ConcurrencyToken)
                .HasMaxLength(50)
@@ -55,9 +61,6 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<TAppli
 
         builder.Property(application => application.Id)
                .ValueGeneratedOnAdd();
-
-        builder.Property(application => application.Type)
-               .HasMaxLength(50);
 
         builder.HasMany(application => application.Authorizations)
                .WithOne(authorization => authorization.Application!)

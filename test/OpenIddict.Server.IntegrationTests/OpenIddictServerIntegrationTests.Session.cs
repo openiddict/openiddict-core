@@ -364,6 +364,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
             mock.Setup(manager => manager.HasPermissionAsync(applications[2], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.ValidatePostLogoutRedirectUriAsync(applications[1], "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -561,19 +564,34 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task ValidateLogoutRequest_IdentityTokenHintCausesAnErrorWhenInferredCallerIsNotAuthorized()
     {
         // Arrange
-        var application = new OpenIddictApplication();
+        var applications = new[]
+        {
+            new OpenIddictApplication(),
+            new OpenIddictApplication()
+        };
 
         var manager = CreateApplicationManager(mock =>
         {
             mock.Setup(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                .Returns(new[] { application }.ToAsyncEnumerable());
+                .Returns(new[] { applications[0] }.ToAsyncEnumerable());
 
-            mock.Setup(manager => manager.HasPermissionAsync(application,
-                Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
+            mock.Setup(manager => manager.HasPermissionAsync(applications[0], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            mock.Setup(manager => manager.GetClientIdAsync(application, It.IsAny<CancellationToken>()))
+            mock.Setup(manager => manager.ValidatePostLogoutRedirectUriAsync(applications[0], "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.GetClientIdAsync(applications[0], It.IsAny<CancellationToken>()))
                 .ReturnsAsync("Fabrikam");
+
+            mock.Setup(manager => manager.FindByClientIdAsync("Contoso", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(applications[1]);
+
+            mock.Setup(manager => manager.HasPermissionAsync(applications[1], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.ValidatePostLogoutRedirectUriAsync(applications[1], "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -615,7 +633,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.GetResourceString(SR.ID2141), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2141), response.ErrorUri);
 
-        Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Contoso", It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.ValidatePostLogoutRedirectUriAsync(applications[0], "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.ValidatePostLogoutRedirectUriAsync(applications[1], "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
