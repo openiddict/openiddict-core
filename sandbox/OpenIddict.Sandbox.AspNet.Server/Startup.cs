@@ -179,6 +179,7 @@ namespace OpenIddict.Sandbox.AspNet.Server
                 {
                     await manager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
+                        ApplicationType = ApplicationTypes.Web,
                         ClientId = "mvc",
                         ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                         ConsentType = ConsentTypes.Explicit,
@@ -215,6 +216,7 @@ namespace OpenIddict.Sandbox.AspNet.Server
                 {
                     await manager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
+                        ApplicationType = ApplicationTypes.Native,
                         ClientId = "postman",
                         ConsentType = ConsentTypes.Systematic,
                         DisplayName = "Postman",

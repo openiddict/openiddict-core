@@ -394,6 +394,10 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
+                    // Note: support for the client_id parameter was only added in the second draft of the
+                    // https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RPLogout specification
+                    // and is optional. As such, the client identifier is only validated if it was specified.
+                    .AddFilter<RequireClientIdParameter>()
                     .UseScopedHandler<ValidateClientId>()
                     .SetOrder(ValidatePostLogoutRedirectUriParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -407,13 +411,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: support for the client_id parameter was only added in the second draft of the
-                // https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RPLogout specification
-                // and is optional. As such, the client identifier is only validated if it was specified.
-                if (string.IsNullOrEmpty(context.ClientId))
-                {
-                    return;
-                }
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                 if (application is null)
@@ -521,10 +519,48 @@ public static partial class OpenIddictServerHandlers
 
                     await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(uri))
                     {
-                        if (context.Options.IgnoreEndpointPermissions ||
-                            await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
+                        if (!context.Options.IgnoreEndpointPermissions &&
+                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
+                        {
+                            continue;
+                        }
+
+                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri))
                         {
                             return true;
+                        }
+                    }
+
+                    // If the specified URI is an HTTP/HTTPS URI, points to the local host and doesn't use the
+                    // default port, make a second pass to determine whether a native application allowed to use
+                    // a relaxed post_logout_redirect_uri comparison policy has the specified URI attached.
+                    if (Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) &&
+                        // Only apply the relaxed comparison if the URI specified by the client uses a non-default port.
+                        !value.IsDefaultPort &&
+                        // The relaxed policy only applies to loopback URIs.
+                        value.IsLoopback &&
+                        // The relaxed policy only applies to HTTP and HTTPS URIs.
+                        //
+                        // Note: the scheme case is deliberately ignored here as it is always
+                        // normalized to a lowercase value by the Uri.TryCreate() API, which
+                        // would prevent performing a case-sensitive comparison anyway.
+                       (string.Equals(value.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(value.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(
+                            uri: new UriBuilder(value) { Port = -1 }.Uri.AbsoluteUri))
+                        {
+                            if (!context.Options.IgnoreEndpointPermissions &&
+                                !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
+                            {
+                                continue;
+                            }
+
+                            if (await _applicationManager.HasApplicationTypeAsync(application, ApplicationTypes.Native) &&
+                                await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri))
+                            {
+                                return true;
+                            }
                         }
                     }
 
@@ -553,6 +589,13 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
                     .AddFilter<RequireEndpointPermissionsEnabled>()
                     .AddFilter<RequireDegradedModeDisabled>()
+                    // Note: support for the client_id parameter was only added in the second draft of the
+                    // https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RPLogout specification
+                    // and is optional. As such, the client permissions are only validated if it was specified.
+                    //
+                    // Note: if only post_logout_redirect_uri was specified, client permissions are expected to be
+                    // enforced by the ValidateClientPostLogoutRedirectUri handler when finding matching clients.
+                    .AddFilter<RequireClientIdParameter>()
                     .UseScopedHandler<ValidateEndpointPermissions>()
                     .SetOrder(ValidateClientPostLogoutRedirectUri.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -566,15 +609,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: support for the client_id parameter was only added in the second draft of the
-                // https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RPLogout specification
-                // and is optional. As such, the client permissions are only validated if it was specified.
-                // If only post_logout_redirect_uri was specified, client permissions are expected to be
-                // enforced by the ValidateClientPostLogoutRedirectUri handler when finding matching clients.
-                if (string.IsNullOrEmpty(context.ClientId))
-                {
-                    return;
-                }
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
@@ -757,14 +792,28 @@ public static partial class OpenIddictServerHandlers
                 async ValueTask<bool> ValidateAuthorizedParty(ClaimsPrincipal principal,
                     [StringSyntax(StringSyntaxAttribute.Uri)] string uri)
                 {
-                    // To be considered valid, one of the clients matching the specified post_logout_redirect_uri
-                    // must be listed either as an audience or as a presenter in the identity token hint.
+                    // To be considered valid, the specified post_logout_redirect_uri must
+                    // be considered valid for one of the listed audiences/presenters.
 
-                    await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(uri))
+                    var identifiers = new HashSet<string>(StringComparer.Ordinal);
+                    identifiers.UnionWith(principal.GetAudiences());
+                    identifiers.UnionWith(principal.GetPresenters());
+
+                    foreach (var identifier in identifiers)
                     {
-                        var identifier = await _applicationManager.GetClientIdAsync(application);
-                        if (!string.IsNullOrEmpty(identifier) && (principal.HasAudience(identifier) ||
-                                                                  principal.HasPresenter(identifier)))
+                        var application = await _applicationManager.FindByClientIdAsync(identifier);
+                        if (application is null)
+                        {
+                            continue;
+                        }
+
+                        if (!context.Options.IgnoreEndpointPermissions &&
+                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
+                        {
+                            continue;
+                        }
+
+                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri))
                         {
                             return true;
                         }

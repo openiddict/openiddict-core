@@ -12,9 +12,15 @@ namespace OpenIddict.MongoDb.Models;
 /// <summary>
 /// Represents an OpenIddict application.
 /// </summary>
-[DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; Type = {Type,nq}")]
+[DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; ClientType = {ClientType,nq}")]
 public class OpenIddictMongoDbApplication
 {
+    /// <summary>
+    /// Gets or sets the application type associated with the current application.
+    /// </summary>
+    [BsonElement("application_type"), BsonIgnoreIfNull]
+    public virtual string? ApplicationType { get; set; }
+
     /// <summary>
     /// Gets or sets the client identifier associated with the current application.
     /// </summary>
@@ -28,6 +34,12 @@ public class OpenIddictMongoDbApplication
     /// </summary>
     [BsonElement("client_secret"), BsonIgnoreIfNull]
     public virtual string? ClientSecret { get; set; }
+
+    /// <summary>
+    /// Gets or sets the client type associated with the current application.
+    /// </summary>
+    [BsonElement("client_type"), BsonIgnoreIfNull]
+    public virtual string? ClientType { get; set; }
 
     /// <summary>
     /// Gets or sets the concurrency token.
@@ -89,11 +101,4 @@ public class OpenIddictMongoDbApplication
     /// </summary>
     [BsonElement("requirements"), BsonIgnoreIfNull]
     public virtual IReadOnlyList<string>? Requirements { get; set; } = ImmutableList.Create<string>();
-
-    /// <summary>
-    /// Gets or sets the application type
-    /// associated with the current application.
-    /// </summary>
-    [BsonElement("type"), BsonIgnoreIfNull]
-    public virtual string? Type { get; set; }
 }

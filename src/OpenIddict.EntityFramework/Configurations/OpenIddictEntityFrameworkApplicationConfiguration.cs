@@ -34,6 +34,9 @@ public sealed class OpenIddictEntityFrameworkApplicationConfiguration<TApplicati
 
         HasKey(application => application.Id);
 
+        Property(application => application.ApplicationType)
+            .HasMaxLength(50);
+
         Property(application => application.ClientId)
             .HasMaxLength(100)
             .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
@@ -41,14 +44,14 @@ public sealed class OpenIddictEntityFrameworkApplicationConfiguration<TApplicati
                 IsUnique = true
             }));
 
+        Property(application => application.ClientType)
+            .HasMaxLength(50);
+
         Property(application => application.ConcurrencyToken)
             .HasMaxLength(50)
             .IsConcurrencyToken();
 
         Property(application => application.ConsentType)
-            .HasMaxLength(50);
-
-        Property(application => application.Type)
             .HasMaxLength(50);
 
         HasMany(application => application.Authorizations)

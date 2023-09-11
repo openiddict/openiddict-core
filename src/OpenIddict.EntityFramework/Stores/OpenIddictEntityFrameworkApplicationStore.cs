@@ -305,6 +305,17 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
     }
 
     /// <inheritdoc/>
+    public virtual ValueTask<string?> GetApplicationTypeAsync(TApplication application, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        return new(application.ApplicationType);
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask<TResult?> GetAsync<TState, TResult>(
         Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
@@ -347,7 +358,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             throw new ArgumentNullException(nameof(application));
         }
 
-        return new(application.Type);
+        return new(application.ClientType);
     }
 
     /// <inheritdoc/>
@@ -671,6 +682,20 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
     }
 
     /// <inheritdoc/>
+    public virtual ValueTask SetApplicationTypeAsync(TApplication application,
+        string? type, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        application.ApplicationType = type;
+
+        return default;
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask SetClientIdAsync(TApplication application, string? identifier, CancellationToken cancellationToken)
     {
         if (application is null)
@@ -704,7 +729,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             throw new ArgumentNullException(nameof(application));
         }
 
-        application.Type = type;
+        application.ClientType = type;
 
         return default;
     }

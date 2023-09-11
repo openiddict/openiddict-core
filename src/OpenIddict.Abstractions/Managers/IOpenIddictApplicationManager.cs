@@ -131,6 +131,17 @@ public interface IOpenIddictApplicationManager
         [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the application type associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the application type of the application (by default, "web").
+    /// </returns>
+    ValueTask<string?> GetApplicationTypeAsync(object application, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Executes the specified query and returns the first element.
     /// </summary>
     /// <typeparam name="TResult">The result type.</typeparam>
@@ -306,6 +317,15 @@ public interface IOpenIddictApplicationManager
     /// whose result returns all the requirements associated with the application.
     /// </returns>
     ValueTask<ImmutableArray<string>> GetRequirementsAsync(object application, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Determines whether a given application has the specified application type.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="type">The expected application type.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the application has the specified application type, <see langword="false"/> otherwise.</returns>
+    ValueTask<bool> HasApplicationTypeAsync(object application, string type, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Determines whether a given application has the specified client type.
