@@ -4640,7 +4640,21 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.ClientId ??= context.Registration.ClientId;
+            context.ClientId ??= context.Registration.ClientId switch
+            {
+                { Length: > 0 } value => value,
+
+                // Note: the client identifier is required for the authorization code/hybrid/implicit and device flows.
+                // If no client identifier was attached to the registration, abort the challenge demand immediately.
+                _ when context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or GrantTypes.Implicit
+                    => throw new InvalidOperationException(SR.GetResourceString(SR.ID0418)),
+
+                // Note: the client identifier is also required for the special response_type=none flow.
+                _ when context.GrantType is null && context.ResponseType is ResponseTypes.None
+                    => throw new InvalidOperationException(SR.GetResourceString(SR.ID0418)),
+
+                _ => null
+            };
 
             return default;
         }
