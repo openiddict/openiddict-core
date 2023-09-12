@@ -147,6 +147,13 @@ public sealed class OpenIddictServerAspNetCoreBuilder
         => Configure(options => options.EnableStatusCodePagesIntegration = true);
 
     /// <summary>
+    /// Suppresses indentation for the JSON responses returned by the ASP.NET Core host.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictServerAspNetCoreBuilder SuppressJsonResponseIndentation()
+        => Configure(options => options.SuppressJsonResponseIndentation = true);
+
+    /// <summary>
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     /// <param name="realm">The realm.</param>
