@@ -1887,6 +1887,9 @@ public abstract partial class OpenIddictServerIntegrationTests
             mock.Setup(manager => manager.HasRequirementAsync(application,
                 Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -1955,6 +1958,9 @@ public abstract partial class OpenIddictServerIntegrationTests
             mock.Setup(manager => manager.HasRequirementAsync(application,
                 Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -2158,6 +2164,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
             }));
 
             options.SetDeviceEndpointUris(Array.Empty<Uri>());
@@ -3304,6 +3313,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
             }));
 
             options.Services.AddSingleton(CreateTokenManager(mock =>
@@ -3994,6 +4006,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
             }));
 
             options.Services.AddSingleton(manager);

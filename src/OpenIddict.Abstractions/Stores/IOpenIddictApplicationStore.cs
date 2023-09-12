@@ -257,6 +257,17 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     ValueTask<ImmutableArray<string>> GetRequirementsAsync(TApplication application, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Retrieves the settings associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns all the settings associated with the application.
+    /// </returns>
+    ValueTask<ImmutableDictionary<string, string>> GetSettingsAsync(TApplication application, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Instantiates a new application.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -399,6 +410,16 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     ValueTask SetRequirementsAsync(TApplication application, ImmutableArray<string> requirements, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the settings associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="settings">The settings associated with the application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+    ValueTask SetSettingsAsync(TApplication application,
+        ImmutableDictionary<string, string> settings, CancellationToken cancellationToken);
 
     /// <summary>
     /// Updates an existing application.

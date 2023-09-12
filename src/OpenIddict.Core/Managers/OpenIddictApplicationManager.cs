@@ -771,6 +771,26 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
+    /// Retrieves the settings associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns all the settings associated with the application.
+    /// </returns>
+    public virtual ValueTask<ImmutableDictionary<string, string>> GetSettingsAsync(
+        TApplication application, CancellationToken cancellationToken = default)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        return Store.GetSettingsAsync(application, cancellationToken);
+    }
+
+    /// <summary>
     /// Determines whether a given application has the specified application type.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -971,6 +991,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
             descriptor.RedirectUris.Select(uri => uri.OriginalString)), cancellationToken);
         await Store.SetRequirementsAsync(application, descriptor.Requirements.ToImmutableArray(), cancellationToken);
+        await Store.SetSettingsAsync(application, descriptor.Settings.ToImmutableDictionary(), cancellationToken);
     }
 
     /// <summary>
@@ -1053,6 +1074,12 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             }
 
             descriptor.RedirectUris.Add(value);
+        }
+
+        descriptor.Settings.Clear();
+        foreach (var pair in await Store.GetSettingsAsync(application, cancellationToken))
+        {
+            descriptor.Settings.Add(pair.Key, pair.Value);
         }
     }
 
@@ -1762,6 +1789,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <inheritdoc/>
     ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRequirementsAsync(object application, CancellationToken cancellationToken)
         => GetRequirementsAsync((TApplication) application, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<ImmutableDictionary<string, string>> IOpenIddictApplicationManager.GetSettingsAsync(object application, CancellationToken cancellationToken)
+        => GetSettingsAsync((TApplication) application, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<bool> IOpenIddictApplicationManager.HasApplicationTypeAsync(object application, string type, CancellationToken cancellationToken)

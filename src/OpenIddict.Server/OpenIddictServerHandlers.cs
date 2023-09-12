@@ -7,9 +7,12 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
 
@@ -1868,19 +1871,34 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareAccessTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
+        private readonly IOpenIddictApplicationManager? _applicationManager;
+
+        public PrepareAccessTokenPrincipal(IOpenIddictApplicationManager? applicationManager = null)
+            => _applicationManager = applicationManager;
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAccessTokenGenerated>()
-                .UseSingletonHandler<PrepareAccessTokenPrincipal>()
+                .UseScopedHandler<PrepareAccessTokenPrincipal>(static provider =>
+                {
+                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                    // invalid core configuration exceptions are not thrown even if the managers were registered.
+                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    return options.EnableDegradedMode ?
+                        new PrepareAccessTokenPrincipal() :
+                        new PrepareAccessTokenPrincipal(provider.GetService<IOpenIddictApplicationManager>() ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                })
                 .SetOrder(AttachAuthorization.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
             if (context is null)
             {
@@ -1950,7 +1968,31 @@ public static partial class OpenIddictServerHandlers
 
             principal.SetCreationDate(DateTimeOffset.UtcNow);
 
-            var lifetime = context.Principal.GetAccessTokenLifetime() ?? context.Options.AccessTokenLifetime;
+            // If a specific token lifetime was attached to the principal, prefer it over any other value.
+            var lifetime = context.Principal.GetAccessTokenLifetime();
+
+            // If the client to which the token is returned is known, use the attached setting if available.
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            {
+                if (_applicationManager is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                }
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                var settings = await _applicationManager.GetSettingsAsync(application);
+                if (settings.TryGetValue(Settings.TokenLifetimes.AccessToken, out string? setting) &&
+                    TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
+                {
+                    lifetime = value;
+                }
+            }
+
+            // Otherwise, fall back to the global value.
+            lifetime ??= context.Options.AccessTokenLifetime;
+
             if (lifetime.HasValue)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
@@ -1978,8 +2020,6 @@ public static partial class OpenIddictServerHandlers
             }
 
             context.AccessTokenPrincipal = principal;
-
-            return default;
         }
     }
 
@@ -1989,19 +2029,34 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareAuthorizationCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
+        private readonly IOpenIddictApplicationManager? _applicationManager;
+
+        public PrepareAuthorizationCodePrincipal(IOpenIddictApplicationManager? applicationManager = null)
+            => _applicationManager = applicationManager;
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAuthorizationCodeGenerated>()
-                .UseSingletonHandler<PrepareAuthorizationCodePrincipal>()
+                .UseScopedHandler<PrepareAuthorizationCodePrincipal>(static provider =>
+                {
+                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                    // invalid core configuration exceptions are not thrown even if the managers were registered.
+                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    return options.EnableDegradedMode ?
+                        new PrepareAuthorizationCodePrincipal() :
+                        new PrepareAuthorizationCodePrincipal(provider.GetService<IOpenIddictApplicationManager>() ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                })
                 .SetOrder(PrepareAccessTokenPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
             if (context is null)
             {
@@ -2037,7 +2092,31 @@ public static partial class OpenIddictServerHandlers
 
             principal.SetCreationDate(DateTimeOffset.UtcNow);
 
-            var lifetime = context.Principal.GetAuthorizationCodeLifetime() ?? context.Options.AuthorizationCodeLifetime;
+            // If a specific token lifetime was attached to the principal, prefer it over any other value.
+            var lifetime = context.Principal.GetAuthorizationCodeLifetime();
+
+            // If the client to which the token is returned is known, use the attached setting if available.
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            {
+                if (_applicationManager is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                }
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                var settings = await _applicationManager.GetSettingsAsync(application);
+                if (settings.TryGetValue(Settings.TokenLifetimes.AuthorizationCode, out string? setting) &&
+                    TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
+                {
+                    lifetime = value;
+                }
+            }
+
+            // Otherwise, fall back to the global value.
+            lifetime ??= context.Options.AuthorizationCodeLifetime;
+
             if (lifetime.HasValue)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
@@ -2067,8 +2146,6 @@ public static partial class OpenIddictServerHandlers
             principal.SetClaim(Claims.Private.Nonce, context.Request.Nonce);
 
             context.AuthorizationCodePrincipal = principal;
-
-            return default;
         }
     }
 
@@ -2078,19 +2155,34 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareDeviceCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
+        private readonly IOpenIddictApplicationManager? _applicationManager;
+
+        public PrepareDeviceCodePrincipal(IOpenIddictApplicationManager? applicationManager = null)
+            => _applicationManager = applicationManager;
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireDeviceCodeGenerated>()
-                .UseSingletonHandler<PrepareDeviceCodePrincipal>()
+                .UseScopedHandler<PrepareDeviceCodePrincipal>(static provider =>
+                {
+                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                    // invalid core configuration exceptions are not thrown even if the managers were registered.
+                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    return options.EnableDegradedMode ?
+                        new PrepareDeviceCodePrincipal() :
+                        new PrepareDeviceCodePrincipal(provider.GetService<IOpenIddictApplicationManager>() ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                })
                 .SetOrder(PrepareAuthorizationCodePrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
             if (context is null)
             {
@@ -2126,7 +2218,31 @@ public static partial class OpenIddictServerHandlers
 
             principal.SetCreationDate(DateTimeOffset.UtcNow);
 
-            var lifetime = context.Principal.GetDeviceCodeLifetime() ?? context.Options.DeviceCodeLifetime;
+            // If a specific token lifetime was attached to the principal, prefer it over any other value.
+            var lifetime = context.Principal.GetDeviceCodeLifetime();
+
+            // If the client to which the token is returned is known, use the attached setting if available.
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            {
+                if (_applicationManager is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                }
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                var settings = await _applicationManager.GetSettingsAsync(application);
+                if (settings.TryGetValue(Settings.TokenLifetimes.DeviceCode, out string? setting) &&
+                    TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
+                {
+                    lifetime = value;
+                }
+            }
+
+            // Otherwise, fall back to the global value.
+            lifetime ??= context.Options.DeviceCodeLifetime;
+
             if (lifetime.HasValue)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
@@ -2143,8 +2259,6 @@ public static partial class OpenIddictServerHandlers
             }
 
             context.DeviceCodePrincipal = principal;
-
-            return default;
         }
     }
 
@@ -2154,19 +2268,34 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareRefreshTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
+        private readonly IOpenIddictApplicationManager? _applicationManager;
+
+        public PrepareRefreshTokenPrincipal(IOpenIddictApplicationManager? applicationManager = null)
+            => _applicationManager = applicationManager;
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireRefreshTokenGenerated>()
-                .UseSingletonHandler<PrepareRefreshTokenPrincipal>()
+                .UseScopedHandler<PrepareRefreshTokenPrincipal>(static provider =>
+                {
+                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                    // invalid core configuration exceptions are not thrown even if the managers were registered.
+                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    return options.EnableDegradedMode ?
+                        new PrepareRefreshTokenPrincipal() :
+                        new PrepareRefreshTokenPrincipal(provider.GetService<IOpenIddictApplicationManager>() ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                })
                 .SetOrder(PrepareDeviceCodePrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
             if (context is null)
             {
@@ -2219,7 +2348,31 @@ public static partial class OpenIddictServerHandlers
 
             else
             {
-                var lifetime = context.Principal.GetRefreshTokenLifetime() ?? context.Options.RefreshTokenLifetime;
+                // If a specific token lifetime was attached to the principal, prefer it over any other value.
+                var lifetime = context.Principal.GetRefreshTokenLifetime();
+
+                // If the client to which the token is returned is known, use the attached setting if available.
+                if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+                {
+                    if (_applicationManager is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                    }
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                    var settings = await _applicationManager.GetSettingsAsync(application);
+                    if (settings.TryGetValue(Settings.TokenLifetimes.RefreshToken, out string? setting) &&
+                        TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
+                    {
+                        lifetime = value;
+                    }
+                }
+
+                // Otherwise, fall back to the global value.
+                lifetime ??= context.Options.RefreshTokenLifetime;
+
                 if (lifetime.HasValue)
                 {
                     principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
@@ -2230,8 +2383,6 @@ public static partial class OpenIddictServerHandlers
             principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
 
             context.RefreshTokenPrincipal = principal;
-
-            return default;
         }
     }
 
@@ -2241,19 +2392,34 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareIdentityTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
+        private readonly IOpenIddictApplicationManager? _applicationManager;
+
+        public PrepareIdentityTokenPrincipal(IOpenIddictApplicationManager? applicationManager = null)
+            => _applicationManager = applicationManager;
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireIdentityTokenGenerated>()
-                .UseSingletonHandler<PrepareIdentityTokenPrincipal>()
+                .UseScopedHandler<PrepareIdentityTokenPrincipal>(static provider =>
+                {
+                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                    // invalid core configuration exceptions are not thrown even if the managers were registered.
+                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    return options.EnableDegradedMode ?
+                        new PrepareIdentityTokenPrincipal() :
+                        new PrepareIdentityTokenPrincipal(provider.GetService<IOpenIddictApplicationManager>() ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                })
                 .SetOrder(PrepareRefreshTokenPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
             if (context is null)
             {
@@ -2316,7 +2482,31 @@ public static partial class OpenIddictServerHandlers
 
             principal.SetCreationDate(DateTimeOffset.UtcNow);
 
-            var lifetime = context.Principal.GetIdentityTokenLifetime() ?? context.Options.IdentityTokenLifetime;
+            // If a specific token lifetime was attached to the principal, prefer it over any other value.
+            var lifetime = context.Principal.GetIdentityTokenLifetime();
+
+            // If the client to which the token is returned is known, use the attached setting if available.
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            {
+                if (_applicationManager is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                }
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                var settings = await _applicationManager.GetSettingsAsync(application);
+                if (settings.TryGetValue(Settings.TokenLifetimes.IdentityToken, out string? setting) &&
+                    TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
+                {
+                    lifetime = value;
+                }
+            }
+
+            // Otherwise, fall back to the global value.
+            lifetime ??= context.Options.IdentityTokenLifetime;
+
             if (lifetime.HasValue)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
@@ -2345,8 +2535,6 @@ public static partial class OpenIddictServerHandlers
             });
 
             context.IdentityTokenPrincipal = principal;
-
-            return default;
         }
     }
 
@@ -2356,19 +2544,34 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareUserCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
+        private readonly IOpenIddictApplicationManager? _applicationManager;
+
+        public PrepareUserCodePrincipal(IOpenIddictApplicationManager? applicationManager = null)
+            => _applicationManager = applicationManager;
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireUserCodeGenerated>()
-                .UseSingletonHandler<PrepareUserCodePrincipal>()
+                .UseScopedHandler<PrepareUserCodePrincipal>(static provider =>
+                {
+                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                    // invalid core configuration exceptions are not thrown even if the managers were registered.
+                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    return options.EnableDegradedMode ?
+                        new PrepareUserCodePrincipal() :
+                        new PrepareUserCodePrincipal(provider.GetService<IOpenIddictApplicationManager>() ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                })
                 .SetOrder(PrepareIdentityTokenPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
             if (context is null)
             {
@@ -2404,7 +2607,31 @@ public static partial class OpenIddictServerHandlers
 
             principal.SetCreationDate(DateTimeOffset.UtcNow);
 
-            var lifetime = context.Principal.GetUserCodeLifetime() ?? context.Options.UserCodeLifetime;
+            // If a specific token lifetime was attached to the principal, prefer it over any other value.
+            var lifetime = context.Principal.GetUserCodeLifetime();
+
+            // If the client to which the token is returned is known, use the attached setting if available.
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            {
+                if (_applicationManager is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                }
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                var settings = await _applicationManager.GetSettingsAsync(application);
+                if (settings.TryGetValue(Settings.TokenLifetimes.UserCode, out string? setting) &&
+                    TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
+                {
+                    lifetime = value;
+                }
+            }
+
+            // Otherwise, fall back to the global value.
+            lifetime ??= context.Options.UserCodeLifetime;
+
             if (lifetime.HasValue)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
@@ -2417,8 +2644,6 @@ public static partial class OpenIddictServerHandlers
             principal.SetClaim(Claims.ClientId, context.Request.ClientId);
 
             context.UserCodePrincipal = principal;
-
-            return default;
         }
     }
 

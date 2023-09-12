@@ -101,4 +101,11 @@ public class OpenIddictMongoDbApplication
     /// </summary>
     [BsonElement("requirements"), BsonIgnoreIfNull]
     public virtual IReadOnlyList<string>? Requirements { get; set; } = ImmutableList.Create<string>();
+
+    /// <summary>
+    /// Gets or sets the settings associated with the current application.
+    /// </summary>
+    [BsonElement("settings"), BsonIgnoreIfNull]
+    public virtual IReadOnlyDictionary<string, string>? Settings { get; set; }
+        = ImmutableDictionary.Create<string, string>();
 }

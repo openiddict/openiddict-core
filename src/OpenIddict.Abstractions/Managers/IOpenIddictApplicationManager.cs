@@ -319,6 +319,17 @@ public interface IOpenIddictApplicationManager
     ValueTask<ImmutableArray<string>> GetRequirementsAsync(object application, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the settings associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns all the settings associated with the application.
+    /// </returns>
+    ValueTask<ImmutableDictionary<string, string>> GetSettingsAsync(object application, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Determines whether a given application has the specified application type.
     /// </summary>
     /// <param name="application">The application.</param>

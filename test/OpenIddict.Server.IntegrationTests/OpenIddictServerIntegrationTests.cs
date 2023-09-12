@@ -6,6 +6,8 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -3100,6 +3102,10 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>()
+                        .SetItem(Settings.TokenLifetimes.AccessToken, TimeSpan.FromMinutes(5).ToString("c", CultureInfo.InvariantCulture)));
             }));
 
             options.Services.AddSingleton(manager);
@@ -3292,6 +3298,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.GetIdAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
             }));
 
             options.Services.AddSingleton(CreateTokenManager(mock =>
@@ -3369,6 +3378,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.GetIdAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
             }));
 
             options.Services.AddSingleton(CreateTokenManager(mock =>
