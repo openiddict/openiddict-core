@@ -72,6 +72,11 @@ public class OpenIddictApplicationDescriptor
     public HashSet<string> Requirements { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets the settings associated with the application.
+    /// </summary>
+    public Dictionary<string, string> Settings { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets or sets the client type associated with the application.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]

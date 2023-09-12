@@ -387,6 +387,22 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
     }
 
     /// <inheritdoc/>
+    public virtual ValueTask<ImmutableDictionary<string, string>> GetSettingsAsync(TApplication application, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        if (application.Settings is not { Count: > 0 })
+        {
+            return new(ImmutableDictionary.Create<string, string>());
+        }
+
+        return new(application.Settings.ToImmutableDictionary());
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask<TApplication> InstantiateAsync(CancellationToken cancellationToken)
     {
         try
@@ -675,6 +691,27 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
         }
 
         application.Requirements = requirements.ToImmutableList();
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetSettingsAsync(TApplication application,
+        ImmutableDictionary<string, string> settings, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        if (settings is not { Count: > 0 })
+        {
+            application.Settings = null;
+
+            return default;
+        }
+
+        application.Settings = settings;
 
         return default;
     }

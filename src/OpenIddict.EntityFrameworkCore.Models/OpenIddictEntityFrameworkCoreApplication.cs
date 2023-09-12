@@ -129,6 +129,12 @@ public class OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TTok
     public virtual string? Requirements { get; set; }
 
     /// <summary>
+    /// Gets or sets the settings serialized as a JSON object.
+    /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
+    public virtual string? Settings { get; set; }
+
+    /// <summary>
     /// Gets the list of the tokens associated with this application.
     /// </summary>
     public virtual ICollection<TToken> Tokens { get; } = new HashSet<TToken>();

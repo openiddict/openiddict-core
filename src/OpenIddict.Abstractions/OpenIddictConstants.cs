@@ -457,20 +457,6 @@ public static class OpenIddictConstants
         public const string Token = "token";
     }
 
-    public static class Separators
-    {
-        public static readonly char[] Ampersand = { '&' };
-        public static readonly char[] Comma = { ',' };
-        public static readonly char[] Dash = { '-' };
-        public static readonly char[] Dot = { '.' };
-        public static readonly char[] DoubleQuote = { '"' };
-        public static readonly char[] EqualsSign = { '=' };
-        public static readonly char[] Hash = { '#' };
-        public static readonly char[] QuestionMark = { '?' };
-        public static readonly char[] Semicolon = { ';' };
-        public static readonly char[] Space = { ' ' };
-    }
-
     public static class Schemes
     {
         public const string Basic = "Basic";
@@ -486,6 +472,38 @@ public static class OpenIddictConstants
         public const string Phone = "phone";
         public const string Profile = "profile";
         public const string Roles = "roles";
+    }
+
+    public static class Separators
+    {
+        public static readonly char[] Ampersand = { '&' };
+        public static readonly char[] Comma = { ',' };
+        public static readonly char[] Dash = { '-' };
+        public static readonly char[] Dot = { '.' };
+        public static readonly char[] DoubleQuote = { '"' };
+        public static readonly char[] EqualsSign = { '=' };
+        public static readonly char[] Hash = { '#' };
+        public static readonly char[] QuestionMark = { '?' };
+        public static readonly char[] Semicolon = { ';' };
+        public static readonly char[] Space = { ' ' };
+    }
+
+    public static class Settings
+    {
+        public static class Prefixes
+        {
+            public const string TokenLifetime = "tkn_lft:";
+        }
+
+        public static class TokenLifetimes
+        {
+            public const string AccessToken = "tkn_lft:act";
+            public const string AuthorizationCode = "tkn_lft:auc";
+            public const string DeviceCode = "tkn_lft:dvc";
+            public const string IdentityToken = "tkn_lft:idt";
+            public const string RefreshToken = "tkn_lft:reft";
+            public const string UserCode = "tkn_lft:usrc";
+        }
     }
 
     public static class Statuses

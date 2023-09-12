@@ -677,6 +677,47 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
     }
 
     /// <inheritdoc/>
+    public virtual ValueTask<ImmutableDictionary<string, string>> GetSettingsAsync(TApplication application, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        if (string.IsNullOrEmpty(application.Settings))
+        {
+            return new(ImmutableDictionary.Create<string, string>());
+        }
+
+        // Note: parsing the stringified settings is an expensive operation.
+        // To mitigate that, the resulting object is stored in the memory cache.
+        var key = string.Concat("492ea63f-c26f-47ea-bf9b-b0a0c3d02656", "\x1e", application.Settings);
+        var settings = Cache.GetOrCreate(key, entry =>
+        {
+            entry.SetPriority(CacheItemPriority.High)
+                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+            using var document = JsonDocument.Parse(application.Settings);
+            var builder = ImmutableDictionary.CreateBuilder<string, string>();
+
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                var value = property.Value.GetString();
+                if (string.IsNullOrEmpty(value))
+                {
+                    continue;
+                }
+
+                builder[property.Name] = value;
+            }
+
+            return builder.ToImmutable();
+        })!;
+
+        return new(settings);
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask<TApplication> InstantiateAsync(CancellationToken cancellationToken)
     {
         try
@@ -1025,6 +1066,45 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
         writer.Flush();
 
         application.Requirements = Encoding.UTF8.GetString(stream.ToArray());
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetSettingsAsync(TApplication application,
+        ImmutableDictionary<string, string> settings, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        if (settings is not { Count: > 0 })
+        {
+            application.Settings = null;
+
+            return default;
+        }
+
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Indented = false
+        });
+
+        writer.WriteStartObject();
+
+        foreach (var setting in settings)
+        {
+            writer.WritePropertyName(setting.Key);
+            writer.WriteStringValue(setting.Value);
+        }
+
+        writer.WriteEndObject();
+        writer.Flush();
+
+        application.Settings = Encoding.UTF8.GetString(stream.ToArray());
 
         return default;
     }

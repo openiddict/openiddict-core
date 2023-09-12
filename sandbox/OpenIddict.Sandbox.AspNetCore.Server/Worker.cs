@@ -228,6 +228,11 @@ public class Worker : IHostedService
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
                         Permissions.Scopes.Roles
+                    },
+                    Settings =
+                    {
+                        // Use a shorter access token lifetime for tokens issued to the Postman application.
+                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromMinutes(10).ToString("c", CultureInfo.InvariantCulture)
                     }
                 });
             }
