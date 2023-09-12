@@ -136,6 +136,13 @@ public sealed class OpenIddictServerOwinBuilder
         => Configure(options => options.EnableLogoutRequestCaching = true);
 
     /// <summary>
+    /// Suppresses indentation for the JSON responses returned by the OWIN host.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    public OpenIddictServerOwinBuilder SuppressJsonResponseIndentation()
+        => Configure(options => options.SuppressJsonResponseIndentation = true);
+
+    /// <summary>
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     /// <param name="realm">The realm.</param>

@@ -1265,6 +1265,11 @@ public static partial class OpenIddictServerOwinHandlers
     /// </summary>
     public sealed class ProcessJsonResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
     {
+        private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
+
+        public ProcessJsonResponse(IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -1297,7 +1302,7 @@ public static partial class OpenIddictServerOwinHandlers
             using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = true
+                Indented = !_options.CurrentValue.SuppressJsonResponseIndentation
             });
 
             context.Transaction.Response.WriteTo(writer);

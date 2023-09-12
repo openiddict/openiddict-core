@@ -94,6 +94,11 @@ public sealed class OpenIddictServerAspNetCoreOptions : AuthenticationSchemeOpti
     public bool EnableStatusCodePagesIntegration { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean whether JSON response indentation should be suppressed or not.
+    /// </summary>
+    public bool SuppressJsonResponseIndentation { get; set; }
+
+    /// <summary>
     /// Gets or sets the optional "realm" value returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     public string? Realm { get; set; }
