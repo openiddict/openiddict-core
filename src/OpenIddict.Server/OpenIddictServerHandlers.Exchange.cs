@@ -46,14 +46,11 @@ public static partial class OpenIddictServerHandlers
             ValidateProofKeyForCodeExchangeParameters.Descriptor,
             ValidateScopeParameter.Descriptor,
             ValidateScopes.Descriptor,
-            ValidateClientId.Descriptor,
-            ValidateClientType.Descriptor,
-            ValidateClientSecret.Descriptor,
+            ValidateAuthentication.Descriptor,
             ValidateEndpointPermissions.Descriptor,
             ValidateGrantTypePermissions.Descriptor,
             ValidateScopePermissions.Descriptor,
             ValidateProofKeyForCodeExchangeRequirement.Descriptor,
-            ValidateToken.Descriptor,
             ValidatePresenters.Descriptor,
             ValidateRedirectUri.Descriptor,
             ValidateCodeVerifier.Descriptor,
@@ -425,17 +422,12 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (!string.IsNullOrEmpty(context.ClientId))
-                {
-                    return default;
-                }
-
-                // At this stage, reject the token request unless the client identification requirement was disabled.
-                // Independently of this setting, also reject grant_type=authorization_code requests that don't specify
-                // a client_id, as the client identifier MUST be sent by the client application in the request body
-                // if it cannot be inferred from the client authentication method (e.g the username when using basic).
+                // Reject grant_type=authorization_code requests that don't specify a client_id, as the client
+                // identifier MUST be sent by the client application in the request body if it cannot be
+                // inferred from the client authentication method (e.g the username when using basic).
+                //
                 // See https://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
-                if (!context.Options.AcceptAnonymousClients || context.Request.IsAuthorizationCodeGrantType())
+                if (string.IsNullOrEmpty(context.ClientId) && context.Request.IsAuthorizationCodeGrantType())
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.ClientId);
 
@@ -834,26 +826,21 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting token requests that use an invalid client_id.
-        /// Note: this handler is not used when the degraded mode is enabled.
+        /// Contains the logic responsible for applying the authentication logic to token requests.
         /// </summary>
-        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateTokenRequestContext>
+        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientId(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+            public ValidateAuthentication(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientId>()
+                    .UseScopedHandler<ValidateAuthentication>()
                     .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -866,167 +853,38 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+                var notification = new ProcessAuthenticationContext(context.Transaction);
+                await _dispatcher.DispatchAsync(notification);
 
-                // Retrieve the application details corresponding to the requested client_id.
-                // If no entity can be found, this likely indicates that the client_id is invalid.
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
+                // Store the context object in the transaction so it can be later retrieved by handlers
+                // that want to access the authentication result without triggering a new authentication flow.
+                context.Transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, notification);
+
+                if (notification.IsRequestHandled)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6081), context.ClientId);
+                    context.HandleRequest();
+                    return;
+                }
 
+                else if (notification.IsRequestSkipped)
+                {
+                    context.SkipRequest();
+                    return;
+                }
+
+                else if (notification.IsRejected)
+                {
                     context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2052(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2052));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting token requests made by applications
-        /// whose client type is not compatible with the requested grant type.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientType : IOpenIddictServerHandler<ValidateTokenRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientType(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientType>()
-                    .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-                {
-                    // Public applications are not allowed to use the client credentials grant.
-                    if (context.Request.IsClientCredentialsGrantType())
-                    {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6082), context.Request.ClientId);
-
-                        context.Reject(
-                            error: Errors.UnauthorizedClient,
-                            description: SR.FormatID2043(Parameters.GrantType),
-                            uri: SR.FormatID8000(SR.ID2043));
-
-                        return;
-                    }
-
-                    // Reject token requests containing a client_secret when the client is a public application.
-                    if (!string.IsNullOrEmpty(context.ClientSecret))
-                    {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6083), context.ClientId);
-
-                        context.Reject(
-                            error: Errors.InvalidClient,
-                            description: SR.FormatID2053(Parameters.ClientSecret),
-                            uri: SR.FormatID8000(SR.ID2053));
-
-                        return;
-                    }
-
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
                     return;
                 }
 
-                // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
-                if (string.IsNullOrEmpty(context.ClientSecret))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6084), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2054(Parameters.ClientSecret),
-                        uri: SR.FormatID8000(SR.ID2054));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting token requests specifying an invalid client secret.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientSecret : IOpenIddictServerHandler<ValidateTokenRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientSecret>()
-                    .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                // If the application is a public client, don't validate the client secret.
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-                {
-                    return;
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID4000(Parameters.ClientSecret));
-
-                if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6085), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.GetResourceString(SR.ID2055),
-                        uri: SR.FormatID8000(SR.ID2055));
-
-                    return;
-                }
+                // Attach the security principal extracted from the token to the validation context.
+                context.Principal = context.Request.IsAuthorizationCodeGrantType() ? notification.AuthorizationCodePrincipal :
+                                    context.Request.IsDeviceCodeGrantType()        ? notification.DeviceCodePrincipal :
+                                    context.Request.IsRefreshTokenGrantType()      ? notification.RefreshTokenPrincipal : null;
             }
         }
 
@@ -1053,7 +911,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireEndpointPermissionsEnabled>()
                     .UseScopedHandler<ValidateEndpointPermissions>()
-                    .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1286,76 +1144,6 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for validating the token(s) present in the request.
-        /// </summary>
-        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateTokenRequestContext>
-        {
-            private readonly IOpenIddictServerDispatcher _dispatcher;
-
-            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
-                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                    .UseScopedHandler<ValidateToken>()
-                    .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                if (!context.Request.IsAuthorizationCodeGrantType() &&
-                    !context.Request.IsDeviceCodeGrantType() &&
-                    !context.Request.IsRefreshTokenGrantType())
-                {
-                    return;
-                }
-
-                var notification = new ProcessAuthenticationContext(context.Transaction);
-                await _dispatcher.DispatchAsync(notification);
-
-                // Store the context object in the transaction so it can be later retrieved by handlers
-                // that want to access the authentication result without triggering a new authentication flow.
-                context.Transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, notification);
-
-                if (notification.IsRequestHandled)
-                {
-                    context.HandleRequest();
-                    return;
-                }
-
-                else if (notification.IsRequestSkipped)
-                {
-                    context.SkipRequest();
-                    return;
-                }
-
-                else if (notification.IsRejected)
-                {
-                    context.Reject(
-                        error: notification.Error ?? Errors.InvalidRequest,
-                        description: notification.ErrorDescription,
-                        uri: notification.ErrorUri);
-                    return;
-                }
-
-                // Attach the security principal extracted from the token to the validation context.
-                context.Principal = context.Request.IsAuthorizationCodeGrantType() ? notification.AuthorizationCodePrincipal :
-                                    context.Request.IsDeviceCodeGrantType()        ? notification.DeviceCodePrincipal        :
-                                    context.Request.IsRefreshTokenGrantType()      ? notification.RefreshTokenPrincipal      : null;
-            }
-        }
-
-        /// <summary>
         /// Contains the logic responsible for rejecting token requests that use an authorization code,
         /// a device code or a refresh token that was issued for a different client application.
         /// </summary>
@@ -1367,7 +1155,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                     .UseSingletonHandler<ValidatePresenters>()
-                    .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

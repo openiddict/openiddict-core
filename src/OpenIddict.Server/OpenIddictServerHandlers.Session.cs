@@ -33,10 +33,9 @@ public static partial class OpenIddictServerHandlers
              * Logout request validation:
              */
             ValidatePostLogoutRedirectUriParameter.Descriptor,
-            ValidateClientId.Descriptor,
+            ValidateAuthentication.Descriptor,
             ValidateClientPostLogoutRedirectUri.Descriptor,
             ValidateEndpointPermissions.Descriptor,
-            ValidateToken.Descriptor,
             ValidateAuthorizedParty.Descriptor,
 
             /*
@@ -375,30 +374,21 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting logout requests
-        /// that use an invalid client_id, if one was explicitly specified.
-        /// Note: this handler is not used when the degraded mode is enabled.
+        /// Contains the logic responsible for applying the authentication logic to logout requests.
         /// </summary>
-        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateLogoutRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientId(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+            public ValidateAuthentication(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    // Note: support for the client_id parameter was only added in the second draft of the
-                    // https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RPLogout specification
-                    // and is optional. As such, the client identifier is only validated if it was specified.
-                    .AddFilter<RequireClientIdParameter>()
-                    .UseScopedHandler<ValidateClientId>()
+                    .UseScopedHandler<ValidateAuthentication>()
                     .SetOrder(ValidatePostLogoutRedirectUriParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -411,20 +401,36 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+                var notification = new ProcessAuthenticationContext(context.Transaction);
+                await _dispatcher.DispatchAsync(notification);
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
+                // Store the context object in the transaction so it can be later retrieved by handlers
+                // that want to access the authentication result without triggering a new authentication flow.
+                context.Transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, notification);
+
+                if (notification.IsRequestHandled)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6196), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2052(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2052));
-
+                    context.HandleRequest();
                     return;
                 }
+
+                else if (notification.IsRequestSkipped)
+                {
+                    context.SkipRequest();
+                    return;
+                }
+
+                else if (notification.IsRejected)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
+                // Attach the security principal extracted from the token to the validation context.
+                context.IdentityTokenHintPrincipal = notification.IdentityTokenPrincipal;
             }
         }
 
@@ -450,7 +456,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequirePostLogoutRedirectUriParameter>()
                     .UseScopedHandler<ValidateClientPostLogoutRedirectUri>()
-                    .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -630,67 +636,6 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for validating the token(s) present in the request.
-        /// </summary>
-        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateLogoutRequestContext>
-        {
-            private readonly IOpenIddictServerDispatcher _dispatcher;
-
-            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
-                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
-                    .UseScopedHandler<ValidateToken>()
-                    .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateLogoutRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                var notification = new ProcessAuthenticationContext(context.Transaction);
-                await _dispatcher.DispatchAsync(notification);
-
-                // Store the context object in the transaction so it can be later retrieved by handlers
-                // that want to access the authentication result without triggering a new authentication flow.
-                context.Transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, notification);
-
-                if (notification.IsRequestHandled)
-                {
-                    context.HandleRequest();
-                    return;
-                }
-
-                else if (notification.IsRequestSkipped)
-                {
-                    context.SkipRequest();
-                    return;
-                }
-
-                else if (notification.IsRejected)
-                {
-                    context.Reject(
-                        error: notification.Error ?? Errors.InvalidRequest,
-                        description: notification.ErrorDescription,
-                        uri: notification.ErrorUri);
-                    return;
-                }
-
-                // Attach the security principal extracted from the token to the validation context.
-                context.IdentityTokenHintPrincipal = notification.IdentityTokenPrincipal;
-            }
-        }
-
-        /// <summary>
         /// Contains the logic responsible for rejecting logout requests that specify an identity
         /// token hint that cannot be used by the client application sending the logout request.
         /// </summary>
@@ -717,7 +662,7 @@ public static partial class OpenIddictServerHandlers
                             new ValidateAuthorizedParty(provider.GetService<IOpenIddictApplicationManager>() ??
                                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
-                    .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

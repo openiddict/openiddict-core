@@ -1846,7 +1846,31 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         await using var server = await CreateServerAsync(options =>
         {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.AuthorizationCode)
+                        .SetPresenters("Fabrikam")
+                        .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
             options.Services.AddSingleton(manager);
+
+            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
+            options.DisableTokenStorage();
         });
 
         await using var client = await server.CreateClientAsync();

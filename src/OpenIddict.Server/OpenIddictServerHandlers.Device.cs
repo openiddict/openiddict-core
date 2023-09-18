@@ -33,12 +33,9 @@ public static partial class OpenIddictServerHandlers
             /*
              * Device request validation:
              */
-            ValidateClientIdParameter.Descriptor,
             ValidateScopeParameter.Descriptor,
             ValidateScopes.Descriptor,
-            ValidateClientId.Descriptor,
-            ValidateClientType.Descriptor,
-            ValidateClientSecret.Descriptor,
+            ValidateDeviceAuthentication.Descriptor,
             ValidateEndpointPermissions.Descriptor,
             ValidateGrantTypePermissions.Descriptor,
             ValidateScopePermissions.Descriptor,
@@ -57,7 +54,7 @@ public static partial class OpenIddictServerHandlers
             /*
              * Verification request validation:
              */
-            ValidateToken.Descriptor,
+            ValidateVerificationAuthentication.Descriptor,
 
             /*
              * Verification request handling:
@@ -333,47 +330,6 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting device requests that don't specify a client identifier.
-        /// </summary>
-        public sealed class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateDeviceRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceRequestContext>()
-                    .UseSingletonHandler<ValidateClientIdParameter>()
-                    .SetOrder(int.MinValue + 100_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateDeviceRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // client_id is a required parameter and MUST cause an error when missing.
-                // See https://tools.ietf.org/html/rfc8628#section-3.1 for more information.
-                if (string.IsNullOrEmpty(context.ClientId))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6056), Parameters.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2029(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2029));
-
-                    return default;
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
         /// Contains the logic responsible for rejecting device requests that don't specify a valid scope parameter.
         /// </summary>
         public sealed class ValidateScopeParameter : IOpenIddictServerHandler<ValidateDeviceRequestContext>
@@ -384,7 +340,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceRequestContext>()
                     .UseSingletonHandler<ValidateScopeParameter>()
-                    .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
+                    .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -491,26 +447,21 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting device requests that use an invalid client_id.
-        /// Note: this handler is not used when the degraded mode is enabled.
+        /// Contains the logic responsible for applying the authentication logic to device requests.
         /// </summary>
-        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateDeviceRequestContext>
+        public sealed class ValidateDeviceAuthentication : IOpenIddictServerHandler<ValidateDeviceRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientId(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+            public ValidateDeviceAuthentication(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientId>()
+                    .UseScopedHandler<ValidateDeviceAuthentication>()
                     .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -523,152 +474,31 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+                var notification = new ProcessAuthenticationContext(context.Transaction);
+                await _dispatcher.DispatchAsync(notification);
 
-                // Retrieve the application details corresponding to the requested client_id.
-                // If no entity can be found, this likely indicates that the client_id is invalid.
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
+                // Store the context object in the transaction so it can be later retrieved by handlers
+                // that want to access the authentication result without triggering a new authentication flow.
+                context.Transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, notification);
+
+                if (notification.IsRequestHandled)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6058), context.ClientId);
+                    context.HandleRequest();
+                    return;
+                }
 
+                else if (notification.IsRequestSkipped)
+                {
+                    context.SkipRequest();
+                    return;
+                }
+
+                else if (notification.IsRejected)
+                {
                     context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2052(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2052));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting device requests made by applications
-        /// whose client type is not compatible with the requested grant type.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientType : IOpenIddictServerHandler<ValidateDeviceRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientType(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientType>()
-                    .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateDeviceRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-                {
-                    // Reject device requests containing a client_secret when the client is a public application.
-                    if (!string.IsNullOrEmpty(context.ClientSecret))
-                    {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6059), context.ClientId);
-
-                        context.Reject(
-                            error: Errors.InvalidClient,
-                            description: SR.FormatID2053(Parameters.ClientSecret),
-                            uri: SR.FormatID8000(SR.ID2053));
-
-                        return;
-                    }
-
-                    return;
-                }
-
-                // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
-                if (string.IsNullOrEmpty(context.ClientSecret))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6060), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2054(Parameters.ClientSecret),
-                        uri: SR.FormatID8000(SR.ID2054));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting device requests specifying an invalid client secret.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientSecret : IOpenIddictServerHandler<ValidateDeviceRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientSecret>()
-                    .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateDeviceRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                // If the application is a public client, don't validate the client secret.
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-                {
-                    return;
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID4000(Parameters.ClientSecret));
-
-                if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6061), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.GetResourceString(SR.ID2055),
-                        uri: SR.FormatID8000(SR.ID2055));
-
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
                     return;
                 }
             }
@@ -697,7 +527,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireEndpointPermissionsEnabled>()
                     .UseScopedHandler<ValidateEndpointPermissions>()
-                    .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateDeviceAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1131,13 +961,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for validating the token(s) present in the request.
+        /// Contains the logic responsible for applying the authentication logic to verification requests.
         /// </summary>
-        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateVerificationRequestContext>
+        public sealed class ValidateVerificationAuthentication : IOpenIddictServerHandler<ValidateVerificationRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
+            public ValidateVerificationAuthentication(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -1145,7 +975,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateVerificationRequestContext>()
-                    .UseScopedHandler<ValidateToken>()
+                    .UseScopedHandler<ValidateVerificationAuthentication>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();

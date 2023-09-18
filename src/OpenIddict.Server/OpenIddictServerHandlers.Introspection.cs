@@ -35,12 +35,8 @@ public static partial class OpenIddictServerHandlers
              * Introspection request validation:
              */
             ValidateTokenParameter.Descriptor,
-            ValidateClientIdParameter.Descriptor,
-            ValidateClientId.Descriptor,
-            ValidateClientType.Descriptor,
-            ValidateClientSecret.Descriptor,
+            ValidateAuthentication.Descriptor,
             ValidateEndpointPermissions.Descriptor,
-            ValidateToken.Descriptor,
             ValidateTokenType.Descriptor,
             ValidateAuthorizedParty.Descriptor,
 
@@ -371,292 +367,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting introspection requests that don't specify a client identifier.
+        /// Contains the logic responsible for applying the authentication logic to introspection requests.
         /// </summary>
-        public sealed class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
-                    .UseSingletonHandler<ValidateClientIdParameter>()
-                    .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // At this stage, reject the introspection request unless the client identification requirement was disabled.
-                if (!context.Options.AcceptAnonymousClients && string.IsNullOrEmpty(context.ClientId))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6098), Parameters.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2029(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2029));
-
-                    return default;
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting introspection requests that use an invalid client_id.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientId(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientId>()
-                    .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                // Retrieve the application details corresponding to the requested client_id.
-                // If no entity can be found, this likely indicates that the client_id is invalid.
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6099), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2052(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2052));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting introspection requests made by applications
-        /// whose client type is not compatible with the presence or absence of a client secret.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientType : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientType(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientType>()
-                    .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-                {
-                    // Reject introspection requests containing a client_secret when the client is a public application.
-                    if (!string.IsNullOrEmpty(context.ClientSecret))
-                    {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6100), context.ClientId);
-
-                        context.Reject(
-                            error: Errors.InvalidClient,
-                            description: SR.FormatID2053(Parameters.ClientSecret),
-                            uri: SR.FormatID8000(SR.ID2053));
-
-                        return;
-                    }
-
-                    return;
-                }
-
-                // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
-                if (string.IsNullOrEmpty(context.ClientSecret))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6101), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2054(Parameters.ClientSecret),
-                        uri: SR.FormatID8000(SR.ID2054));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting introspection requests specifying an invalid client secret.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientSecret : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientSecret>()
-                    .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                // If the application is a public client, don't validate the client secret.
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-                {
-                    return;
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID4000(Parameters.ClientSecret));
-
-                if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6102), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.GetResourceString(SR.ID2055),
-                        uri: SR.FormatID8000(SR.ID2055));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting introspection requests made by
-        /// applications that haven't been granted the introspection endpoint permission.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireEndpointPermissionsEnabled>()
-                    .UseScopedHandler<ValidateEndpointPermissions>()
-                    .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                // Reject the request if the application is not allowed to use the introspection endpoint.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Introspection))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6103), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.UnauthorizedClient,
-                        description: SR.GetResourceString(SR.ID2075),
-                        uri: SR.FormatID8000(SR.ID2075));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for validating the token(s) present in the request.
-        /// </summary>
-        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
+            public ValidateAuthentication(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -664,8 +381,8 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
-                    .UseScopedHandler<ValidateToken>()
-                    .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
+                    .UseScopedHandler<ValidateAuthentication>()
+                    .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -711,6 +428,61 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting introspection requests made by
+        /// applications that haven't been granted the introspection endpoint permission.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+
+            public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
+                    .AddFilter<RequireClientIdParameter>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireEndpointPermissionsEnabled>()
+                    .UseScopedHandler<ValidateEndpointPermissions>()
+                    .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                // Reject the request if the application is not allowed to use the introspection endpoint.
+                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Introspection))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6103), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.UnauthorizedClient,
+                        description: SR.GetResourceString(SR.ID2075),
+                        uri: SR.FormatID8000(SR.ID2075));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting introspection requests that specify an unsupported token.
         /// </summary>
         public sealed class ValidateTokenType : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
@@ -721,7 +493,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
                     .UseSingletonHandler<ValidateTokenType>()
-                    .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

@@ -29,12 +29,8 @@ public static partial class OpenIddictServerHandlers
              * Revocation request validation:
              */
             ValidateTokenParameter.Descriptor,
-            ValidateClientIdParameter.Descriptor,
-            ValidateClientId.Descriptor,
-            ValidateClientType.Descriptor,
-            ValidateClientSecret.Descriptor,
+            ValidateAuthentication.Descriptor,
             ValidateEndpointPermissions.Descriptor,
-            ValidateToken.Descriptor,
             ValidateTokenType.Descriptor,
             ValidateAuthorizedParty.Descriptor,
 
@@ -318,292 +314,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting revocation requests that don't specify a client identifier.
+        /// Contains the logic responsible for applying the authentication logic to revocation requests.
         /// </summary>
-        public sealed class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateRevocationRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
-                    .UseSingletonHandler<ValidateClientIdParameter>()
-                    .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateRevocationRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // At this stage, reject the revocation request unless the client identification requirement was disabled.
-                if (!context.Options.AcceptAnonymousClients && string.IsNullOrEmpty(context.ClientId))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6111), Parameters.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2029(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2029));
-
-                    return default;
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting revocation requests that use an invalid client_id.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateRevocationRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientId(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientId>()
-                    .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                // Retrieve the application details corresponding to the requested client_id.
-                // If no entity can be found, this likely indicates that the client_id is invalid.
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6112), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2052(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2052));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting revocation requests made by applications
-        /// whose client type is not compatible with the presence or absence of a client secret.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientType : IOpenIddictServerHandler<ValidateRevocationRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientType(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientType>()
-                    .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-                {
-                    // Reject revocation requests containing a client_secret when the client is a public application.
-                    if (!string.IsNullOrEmpty(context.ClientSecret))
-                    {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6113), context.ClientId);
-
-                        context.Reject(
-                            error: Errors.InvalidClient,
-                            description: SR.FormatID2053(Parameters.ClientSecret),
-                            uri: SR.FormatID8000(SR.ID2053));
-
-                        return;
-                    }
-
-                    return;
-                }
-
-                // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
-                if (string.IsNullOrEmpty(context.ClientSecret))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6114), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2054(Parameters.ClientSecret),
-                        uri: SR.FormatID8000(SR.ID2054));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting revocation requests specifying an invalid client secret.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateClientSecret : IOpenIddictServerHandler<ValidateRevocationRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateClientSecret>()
-                    .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                // If the application is a public client, don't validate the client secret.
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-                {
-                    return;
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID4000(Parameters.ClientSecret));
-
-                if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6115), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.GetResourceString(SR.ID2055),
-                        uri: SR.FormatID8000(SR.ID2055));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting revocation requests made by
-        /// applications that haven't been granted the revocation endpoint permission.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateRevocationRequestContext>
-        {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireEndpointPermissionsEnabled>()
-                    .UseScopedHandler<ValidateEndpointPermissions>()
-                    .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                // Reject the request if the application is not allowed to use the revocation endpoint.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Revocation))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6116), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.UnauthorizedClient,
-                        description: SR.GetResourceString(SR.ID2078),
-                        uri: SR.FormatID8000(SR.ID2078));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for validating the token(s) present in the request.
-        /// </summary>
-        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
+            public ValidateAuthentication(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -611,8 +328,8 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
-                    .UseScopedHandler<ValidateToken>()
-                    .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
+                    .UseScopedHandler<ValidateAuthentication>()
+                    .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -658,6 +375,61 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting revocation requests made by
+        /// applications that haven't been granted the revocation endpoint permission.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+
+            public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
+                    .AddFilter<RequireClientIdParameter>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireEndpointPermissionsEnabled>()
+                    .UseScopedHandler<ValidateEndpointPermissions>()
+                    .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                // Reject the request if the application is not allowed to use the revocation endpoint.
+                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Revocation))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6116), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.UnauthorizedClient,
+                        description: SR.GetResourceString(SR.ID2078),
+                        uri: SR.FormatID8000(SR.ID2078));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting revocation requests that specify an unsupported token.
         /// </summary>
         public sealed class ValidateTokenType : IOpenIddictServerHandler<ValidateRevocationRequestContext>
@@ -668,7 +440,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                     .UseSingletonHandler<ValidateTokenType>()
-                    .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

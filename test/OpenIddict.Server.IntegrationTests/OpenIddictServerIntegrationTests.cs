@@ -485,40 +485,6 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ProcessAuthentication_UnsupportedGrantTypeThrowsAnException()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.EnableDegradedMode();
-            options.SetTokenEndpointUris("/authenticate");
-
-            options.AddEventHandler<HandleTokenRequestContext>(builder =>
-                builder.UseInlineHandler(context =>
-                {
-                    context.SkipRequest();
-
-                    return default;
-                }));
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act and assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
-        {
-            return client.PostAsync("/authenticate", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w",
-            });
-        });
-
-        Assert.Equal(SR.GetResourceString(SR.ID0001), exception.Message);
-    }
-
-    [Fact]
     public async Task ProcessAuthentication_MissingAccessTokenReturnsNull()
     {
         // Arrange
@@ -3880,22 +3846,13 @@ public abstract partial class OpenIddictServerIntegrationTests
                 options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
                     builder.UseInlineHandler(context => default));
 
-                options.AddEventHandler<ValidateDeviceRequestContext>(builder =>
-                    builder.UseInlineHandler(context => default));
-
-                options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
-                    builder.UseInlineHandler(context => default));
-
                 options.AddEventHandler<ValidateLogoutRequestContext>(builder =>
                     builder.UseInlineHandler(context => default));
 
-                options.AddEventHandler<ValidateRevocationRequestContext>(builder =>
-                    builder.UseInlineHandler(context => default));
-
-                options.AddEventHandler<ValidateTokenRequestContext>(builder =>
-                    builder.UseInlineHandler(context => default));
-
                 options.AddEventHandler<ValidateVerificationRequestContext>(builder =>
+                    builder.UseInlineHandler(context => default));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                     builder.UseInlineHandler(context => default));
 
                 options.AddEventHandler<ValidateTokenContext>(builder =>

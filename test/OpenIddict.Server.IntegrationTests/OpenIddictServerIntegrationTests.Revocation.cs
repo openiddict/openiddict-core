@@ -7,6 +7,7 @@
 using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -150,6 +151,248 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
     }
 
+    [Fact]
+    public async Task ValidateRevocationRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.AcceptAnonymousClients = false);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            Token = "SlAV32hkKG",
+            TokenTypeHint = TokenTypeHints.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientCannotBeFound()
+    {
+        // Arrange
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Token = "SlAV32hkKG",
+            TokenTypeHint = TokenTypeHints.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.FormatID2052(Parameters.ClientId), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public async Task ValidateRevocationRequest_RequestIsRejectedWhenEndpointPermissionIsNotGranted()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.HasPermissionAsync(application,
+                Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("SlAV32hkKG", context.Token);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.RefreshToken);
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Token = "SlAV32hkKG",
+            TokenTypeHint = TokenTypeHints.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.UnauthorizedClient, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2078), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2078), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+            Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ValidateRevocationRequest_ClientSecretCannotBeUsedByPublicClients()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+            Token = "SlAV32hkKG",
+            TokenTypeHint = TokenTypeHints.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.FormatID2053(Parameters.ClientSecret), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2053), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ValidateRevocationRequest_ClientSecretIsRequiredForNonPublicClients()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            ClientSecret = null,
+            Token = "SlAV32hkKG",
+            TokenTypeHint = TokenTypeHints.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.FormatID2054(Parameters.ClientSecret), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2054), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientCredentialsAreInvalid()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(builder =>
+        {
+            builder.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+            Token = "SlAV32hkKG",
+            TokenTypeHint = TokenTypeHints.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2055), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2055), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
     [Theory]
     [InlineData(TokenTypeHints.AuthorizationCode)]
     [InlineData(TokenTypeHints.DeviceCode)]
@@ -281,233 +524,6 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(Errors.InvalidToken, response.Error);
         Assert.Equal(SR.GetResourceString(SR.ID2080), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2080), response.ErrorUri);
-    }
-
-    [Fact]
-    public async Task ValidateRevocationRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(builder =>
-        {
-            builder.Configure(options => options.AcceptAnonymousClients = false);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-        {
-            Token = "SlAV32hkKG",
-            TokenTypeHint = TokenTypeHints.RefreshToken
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
-    }
-
-    [Fact]
-    public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientCannotBeFound()
-    {
-        // Arrange
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(value: null);
-        });
-
-        await using var server = await CreateServerAsync(builder =>
-        {
-            builder.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            Token = "SlAV32hkKG",
-            TokenTypeHint = TokenTypeHints.RefreshToken
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.FormatID2052(Parameters.ClientId), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-    }
-
-    [Fact]
-    public async Task ValidateRevocationRequest_RequestIsRejectedWhenEndpointPermissionIsNotGranted()
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-
-            mock.Setup(manager => manager.HasPermissionAsync(application,
-                Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-        });
-
-        await using var server = await CreateServerAsync(builder =>
-        {
-            builder.Services.AddSingleton(manager);
-
-            builder.Configure(options => options.IgnoreEndpointPermissions = false);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            Token = "SlAV32hkKG",
-            TokenTypeHint = TokenTypeHints.RefreshToken
-        });
-
-        // Assert
-        Assert.Equal(Errors.UnauthorizedClient, response.Error);
-        Assert.Equal(SR.GetResourceString(SR.ID2078), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2078), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-            Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Fact]
-    public async Task ValidateRevocationRequest_ClientSecretCannotBeUsedByPublicClients()
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-        });
-
-        await using var server = await CreateServerAsync(builder =>
-        {
-            builder.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-            Token = "SlAV32hkKG",
-            TokenTypeHint = TokenTypeHints.RefreshToken
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.FormatID2053(Parameters.ClientSecret), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2053), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Fact]
-    public async Task ValidateRevocationRequest_ClientSecretIsRequiredForNonPublicClients()
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-        });
-
-        await using var server = await CreateServerAsync(builder =>
-        {
-            builder.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            ClientSecret = null,
-            Token = "SlAV32hkKG",
-            TokenTypeHint = TokenTypeHints.RefreshToken
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.FormatID2054(Parameters.ClientSecret), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2054), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Fact]
-    public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientCredentialsAreInvalid()
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-
-            mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-        });
-
-        await using var server = await CreateServerAsync(builder =>
-        {
-            builder.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-            Token = "SlAV32hkKG",
-            TokenTypeHint = TokenTypeHints.RefreshToken
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.GetResourceString(SR.ID2055), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2055), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
