@@ -30,7 +30,7 @@ public static partial class OpenIddictServerHandlers
              * Userinfo request validation:
              */
             ValidateAccessTokenParameter.Descriptor,
-            ValidateToken.Descriptor,
+            ValidateAuthentication.Descriptor,
 
             /*
              * Userinfo request handling:
@@ -342,13 +342,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for validating the token(s) present in the request.
+        /// Contains the logic responsible for applying the authentication logic to userinfo requests.
         /// </summary>
-        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
+        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
+            public ValidateAuthentication(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -356,7 +356,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateUserinfoRequestContext>()
-                    .UseScopedHandler<ValidateToken>()
+                    .UseScopedHandler<ValidateAuthentication>()
                     .SetOrder(ValidateAccessTokenParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();

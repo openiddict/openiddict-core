@@ -48,6 +48,7 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireAuthorizationStorageEnabled>();
         builder.Services.TryAddSingleton<RequireAuthorizationRequest>();
         builder.Services.TryAddSingleton<RequireClientIdParameter>();
+        builder.Services.TryAddSingleton<RequireClientSecretParameter>();
         builder.Services.TryAddSingleton<RequireConfigurationRequest>();
         builder.Services.TryAddSingleton<RequireCryptographyRequest>();
         builder.Services.TryAddSingleton<RequireDegradedModeDisabled>();

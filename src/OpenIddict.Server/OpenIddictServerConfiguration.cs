@@ -178,7 +178,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             }
 
             if (options.DeviceEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                descriptor.ContextType == typeof(ValidateDeviceRequestContext) &&
+                (descriptor.ContextType == typeof(ValidateDeviceRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type == OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
@@ -186,7 +187,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             }
 
             if (options.IntrospectionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) &&
+                (descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type == OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
@@ -202,7 +204,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             }
 
             if (options.RevocationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                descriptor.ContextType == typeof(ValidateRevocationRequestContext) &&
+                (descriptor.ContextType == typeof(ValidateRevocationRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type == OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
@@ -210,7 +213,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             }
 
             if (options.TokenEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                descriptor.ContextType == typeof(ValidateTokenRequestContext) &&
+                (descriptor.ContextType == typeof(ValidateTokenRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type == OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
@@ -232,16 +236,16 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             {
                 if (!options.Handlers.Exists(static descriptor =>
                     descriptor.ContextType == typeof(ValidateTokenContext) &&
-                    descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                    descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                    descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                    descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0096));
                 }
 
                 if (!options.Handlers.Exists(static descriptor =>
                     descriptor.ContextType == typeof(GenerateTokenContext) &&
-                    descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                    descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                    descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                    descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0097));
                 }
@@ -249,11 +253,11 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         }
 
         // Sort the handlers collection using the order associated with each handler.
-        options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
+        options.Handlers.Sort(static (left, right) => left.Order.CompareTo(right.Order));
 
         // Sort the encryption and signing credentials.
-        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
-        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+        options.EncryptionCredentials.Sort(static (left, right) => Compare(left.Key, right.Key));
+        options.SigningCredentials.Sort(static (left, right) => Compare(left.Key, right.Key));
 
         // Generate a key identifier for the encryption/signing keys that don't already have one.
         foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key)

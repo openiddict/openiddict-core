@@ -117,13 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ID0001" xml:space="preserve">
-    <value>An identity cannot be extracted from this token request.
-This generally indicates that the OpenIddict server stack was asked to validate a token for an invalid grant type (e.g password).</value>
-  </data>
   <data name="ID0002" xml:space="preserve">
     <value>An identity cannot be extracted from this request.
-This generally indicates that the OpenIddict server stack was asked to validate a token for an endpoint it doesn't manage.
+This generally indicates that the OpenIddict server stack was asked to authenticate a request for an endpoint it doesn't manage.
 To validate tokens received by custom API endpoints, the OpenIddict validation handler (e.g OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme or OpenIddictValidationOwinDefaults.AuthenticationType) must be used instead.</value>
   </data>
   <data name="ID0003" xml:space="preserve">
@@ -426,19 +422,19 @@ To use key rollover, register both the new certificate and the old one in the cr
     <value>No custom authorization request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateAuthorizationRequestContext&gt;' must be implemented to validate authorization requests (e.g to ensure the client_id and redirect_uri are valid).</value>
   </data>
   <data name="ID0090" xml:space="preserve">
-    <value>No custom device request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateDeviceRequestContext&gt;' must be implemented to validate device requests (e.g to ensure the client_id and client_secret are valid).</value>
+    <value>No custom device request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateDeviceRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate device requests (e.g to ensure the client_id and client_secret are valid).</value>
   </data>
   <data name="ID0091" xml:space="preserve">
-    <value>No custom introspection request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateIntrospectionRequestContext&gt;' must be implemented to validate introspection requests (e.g to ensure the client_id and client_secret are valid).</value>
+    <value>No custom introspection request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateIntrospectionRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate introspection requests (e.g to ensure the client_id and client_secret are valid).</value>
   </data>
   <data name="ID0092" xml:space="preserve">
     <value>No custom logout request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateLogoutRequestContext&gt;' must be implemented to validate logout requests (e.g to ensure the post_logout_redirect_uri is valid).</value>
   </data>
   <data name="ID0093" xml:space="preserve">
-    <value>No custom revocation request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateRevocationRequestContext&gt;' must be implemented to validate revocation requests (e.g to ensure the client_id and client_secret are valid).</value>
+    <value>No custom revocation request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateRevocationRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate revocation requests (e.g to ensure the client_id and client_secret are valid).</value>
   </data>
   <data name="ID0094" xml:space="preserve">
-    <value>No custom token request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateTokenRequestContext&gt;' must be implemented to validate token requests (e.g to ensure the client_id and client_secret are valid).</value>
+    <value>No custom token request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateTokenRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate token requests (e.g to ensure the client_id and client_secret are valid).</value>
   </data>
   <data name="ID0095" xml:space="preserve">
     <value>No custom verification request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateVerificationRequestContext&gt;' must be implemented to validate verification requests (e.g to ensure the user_code is valid).</value>
@@ -2235,9 +2231,6 @@ The principal used to create the token contained the following claims: {Claims}.
   <data name="ID6043" xml:space="preserve">
     <value>The authorization request was rejected because the specified response type was not compatible with PKCE.</value>
   </data>
-  <data name="ID6044" xml:space="preserve">
-    <value>The authorization request was rejected because the client application was not found: '{ClientId}'.</value>
-  </data>
   <data name="ID6045" xml:space="preserve">
     <value>The authorization request was rejected because the confidential application '{ClientId}' was not allowed to retrieve an access token from the authorization endpoint.</value>
   </data>
@@ -2271,23 +2264,8 @@ The principal used to create the token contained the following claims: {Claims}.
   <data name="ID6055" xml:space="preserve">
     <value>The device request was successfully validated.</value>
   </data>
-  <data name="ID6056" xml:space="preserve">
-    <value>The device request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
-  </data>
   <data name="ID6057" xml:space="preserve">
     <value>The device request was rejected because invalid scopes were specified: {Scopes}.</value>
-  </data>
-  <data name="ID6058" xml:space="preserve">
-    <value>The device request was rejected because the client application was not found: '{ClientId}'.</value>
-  </data>
-  <data name="ID6059" xml:space="preserve">
-    <value>The device request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
-  </data>
-  <data name="ID6060" xml:space="preserve">
-    <value>The device request was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
-  </data>
-  <data name="ID6061" xml:space="preserve">
-    <value>The device request was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
   </data>
   <data name="ID6062" xml:space="preserve">
     <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device endpoint.</value>
@@ -2346,21 +2324,6 @@ The principal used to create the token contained the following claims: {Claims}.
   <data name="ID6080" xml:space="preserve">
     <value>The token request was rejected because invalid scopes were specified: {Scopes}.</value>
   </data>
-  <data name="ID6081" xml:space="preserve">
-    <value>The token request was rejected because the client application was not found: '{ClientId}'.</value>
-  </data>
-  <data name="ID6082" xml:space="preserve">
-    <value>The token request was rejected because the public client application '{ClientId}' was not allowed to use the client credentials grant.</value>
-  </data>
-  <data name="ID6083" xml:space="preserve">
-    <value>The token request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
-  </data>
-  <data name="ID6084" xml:space="preserve">
-    <value>The token request was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
-  </data>
-  <data name="ID6085" xml:space="preserve">
-    <value>The token request was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
-  </data>
   <data name="ID6086" xml:space="preserve">
     <value>The token request was rejected because the application '{ClientId}' was not allowed to use the token endpoint.</value>
   </data>
@@ -2400,18 +2363,6 @@ The principal used to create the token contained the following claims: {Claims}.
   <data name="ID6098" xml:space="preserve">
     <value>The introspection request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
   </data>
-  <data name="ID6099" xml:space="preserve">
-    <value>The introspection request was rejected because the client application was not found: '{ClientId}'.</value>
-  </data>
-  <data name="ID6100" xml:space="preserve">
-    <value>The introspection request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
-  </data>
-  <data name="ID6101" xml:space="preserve">
-    <value>The introspection request was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
-  </data>
-  <data name="ID6102" xml:space="preserve">
-    <value>The introspection request was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
-  </data>
   <data name="ID6103" xml:space="preserve">
     <value>The introspection request was rejected because the application '{ClientId}' was not allowed to use the introspection endpoint.</value>
   </data>
@@ -2438,18 +2389,6 @@ The principal used to create the token contained the following claims: {Claims}.
   </data>
   <data name="ID6111" xml:space="preserve">
     <value>The revocation request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
-  </data>
-  <data name="ID6112" xml:space="preserve">
-    <value>The revocation request was rejected because the client application was not found: '{ClientId}'.</value>
-  </data>
-  <data name="ID6113" xml:space="preserve">
-    <value>The revocation request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
-  </data>
-  <data name="ID6114" xml:space="preserve">
-    <value>The revocation request was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
-  </data>
-  <data name="ID6115" xml:space="preserve">
-    <value>The revocation request was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
   </data>
   <data name="ID6116" xml:space="preserve">
     <value>The revocation request was rejected because the application '{ClientId}' was not allowed to use the revocation endpoint.</value>
@@ -2689,9 +2628,6 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6195" xml:space="preserve">
     <value>The userinfo response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
-  <data name="ID6196" xml:space="preserve">
-    <value>The logout request was rejected because the client application was not found: '{ClientId}'.</value>
-  </data>
   <data name="ID6197" xml:space="preserve">
     <value>The authorization request was rejected because the identity token used as a hint was issued to a different client.</value>
   </data>
@@ -2757,6 +2693,24 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6219" xml:space="preserve">
     <value>An error occurred while retrieving the configuration of the remote authorization server.</value>
+  </data>
+  <data name="ID6220" xml:space="preserve">
+    <value>The authentication demand was rejected because the mandatory '{Parameter}' parameter was missing.</value>
+  </data>
+  <data name="ID6221" xml:space="preserve">
+    <value>The authentication demand was rejected because the client application was not found: '{ClientId}'.</value>
+  </data>
+  <data name="ID6222" xml:space="preserve">
+    <value>The authentication demand was rejected because the public client application '{ClientId}' was not allowed to use the client credentials grant.</value>
+  </data>
+  <data name="ID6223" xml:space="preserve">
+    <value>The authentication demand was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
+  </data>
+  <data name="ID6224" xml:space="preserve">
+    <value>The authentication demand was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
+  </data>
+  <data name="ID6225" xml:space="preserve">
+    <value>The authentication demand was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

@@ -294,7 +294,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called when processing an authentication operation.
     /// </summary>
-    public sealed class ProcessAuthenticationContext : BaseValidatingContext
+    public sealed class ProcessAuthenticationContext : BaseValidatingClientContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessAuthenticationContext"/> class.
