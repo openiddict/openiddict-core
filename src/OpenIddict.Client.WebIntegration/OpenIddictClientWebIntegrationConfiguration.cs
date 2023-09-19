@@ -40,7 +40,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
             throw new ArgumentNullException(nameof(options));
         }
 
-        options.UnfilteredHttpClientHandlerActions.Add(static (registration, handler) =>
+        options.HttpClientHandlerActions.Add(static (registration, handler) =>
         {
             var certificate = registration.ProviderType switch
             {
