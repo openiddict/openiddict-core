@@ -119,7 +119,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
             throw new ArgumentNullException(nameof(configuration));
         }
 
-        return Configure(options => options.UnfilteredHttpClientActions.Add(configuration));
+        return Configure(options => options.HttpClientActions.Add(configuration));
     }
 
     /// <summary>
@@ -191,7 +191,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
             throw new ArgumentNullException(nameof(configuration));
         }
 
-        return Configure(options => options.UnfilteredHttpClientHandlerActions.Add(configuration));
+        return Configure(options => options.HttpClientHandlerActions.Add(configuration));
     }
 
     /// <summary>

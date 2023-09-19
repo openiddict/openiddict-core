@@ -78,7 +78,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         });
 
         // Register the user-defined HTTP client actions.
-        foreach (var action in settings.UnfilteredHttpClientActions)
+        foreach (var action in settings.HttpClientActions)
         {
             options.HttpClientActions.Add(client => action(registration, client));
         }
@@ -114,7 +114,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         });
 
         // Register the user-defined HTTP client handler actions.
-        foreach (var action in settings.UnfilteredHttpClientHandlerActions)
+        foreach (var action in settings.HttpClientHandlerActions)
         {
             options.HttpMessageHandlerBuilderActions.Add(builder => action(registration,
                 builder.PrimaryHandler as HttpClientHandler ??
