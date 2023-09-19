@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFrameworkCore;
+using OpenIddict.EntityFrameworkCore.Factory;
 using OpenIddict.EntityFrameworkCore.Models;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -54,6 +55,9 @@ public static class OpenIddictEntityFrameworkCoreExtensions
         builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkCoreScopeStore<,,>));
         builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkCoreTokenStore<,,,,>));
 
+        // Here Adding Factory
+        builder.Services.TryAddScoped<IOpeniddictEntityFrameworkCoreContextFactory, OpeniddictEntityFrameworkCoreContextFactory>();
+
         return new OpenIddictEntityFrameworkCoreBuilder(builder.Services);
     }
 
@@ -77,7 +81,6 @@ public static class OpenIddictEntityFrameworkCoreExtensions
         {
             throw new ArgumentNullException(nameof(configuration));
         }
-
         configuration(builder.UseEntityFrameworkCore());
 
         return builder;

@@ -8,6 +8,8 @@ using System.ComponentModel;
 using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore;
 using OpenIddict.EntityFrameworkCore.Models;
+using OpenIddict.EntityFrameworkCore.Factory;
+using System;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -110,7 +112,61 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
 
         return Configure(options => options.DbContextType = type);
     }
+    /// <summary>
+    /// Configures the OpenIddict Entity Framework Core stores to use the specified database context func.
+    /// </summary>
+    /// <param name="func">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
+    public OpenIddictEntityFrameworkCoreBuilder UseDbContext(Func<IServiceProvider, DbContext> func)
+    {
+        if (func is null)
+            throw new ArgumentNullException(nameof(func));
 
+        return Configure(options => options.DbContextFunc = func);
+    }
+    /// <summary>
+    /// Configures the OpenIddict Entity Framework Core stores to use the specified database context func.
+    /// </summary>
+    /// <param name="func">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
+    public OpenIddictEntityFrameworkCoreBuilder UseDbContext(Func<DbContext> func)
+    {
+        if (func is null)
+        {
+            throw new ArgumentNullException(nameof(func));
+        }
+
+        return Configure(options => options.DbContextFunc = e => func.Invoke());
+    }
+    /// <summary>
+    /// Configures the OpenIddict Entity Framework Core stores to use the specified database context func.
+    /// Steps Create Factory Inherit From <see cref="IOpeniddictEntityFrameworkCoreContextFactory"/>
+    /// Inject The Factory Type And You Done
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
+    public OpenIddictEntityFrameworkCoreBuilder UseDbContextFactory<TFactory>() where TFactory : IOpeniddictEntityFrameworkCoreContextFactory
+    {
+        return UseDbContextFactory(typeof(TFactory));
+    }
+    /// <summary>
+    /// Configures the OpenIddict Entity Framework Core stores to use the specified database context func.
+    /// Steps Create Factory Inherit From <see cref="IOpeniddictEntityFrameworkCoreContextFactory"/>
+    /// Inject The Factory Type And You Done
+    /// </summary>
+    /// <param name="type">The type of the <see cref="IOpeniddictEntityFrameworkCoreContextFactory"/> used by OpenIddict.</param>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
+    public OpenIddictEntityFrameworkCoreBuilder UseDbContextFactory(Type type)
+    {
+        if (type is null)
+        {
+            throw new ArgumentNullException(nameof(type));
+        }
+        if (!typeof(IOpeniddictEntityFrameworkCoreContextFactory).IsAssignableFrom(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+        return Configure(options => options.DbContextType = type);
+    }
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => base.Equals(obj);

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFrameworkCore.Models;
 using OpenIddict.Extensions;
+using OpenIddict.EntityFrameworkCore.Factory;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFrameworkCore;
@@ -31,9 +32,9 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TContext> :
 {
     public OpenIddictEntityFrameworkCoreAuthorizationStore(
         IMemoryCache cache,
-        TContext context,
+        IOpeniddictEntityFrameworkCoreContextFactory factory,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(cache, factory, options)
     {
     }
 }
@@ -52,9 +53,9 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TContext, TKey> :
 {
     public OpenIddictEntityFrameworkCoreAuthorizationStore(
         IMemoryCache cache,
-        TContext context,
+        IOpeniddictEntityFrameworkCoreContextFactory factory,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(cache, factory, options)
     {
     }
 }
@@ -76,11 +77,11 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 {
     public OpenIddictEntityFrameworkCoreAuthorizationStore(
         IMemoryCache cache,
-        TContext context,
+        IOpeniddictEntityFrameworkCoreContextFactory factory,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
     {
         Cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        Context = context ?? throw new ArgumentNullException(nameof(context));
+        Context = (factory ?? throw new ArgumentNullException(nameof(factory))).CreateDbContext() is TContext context ? context : throw new InvalidOperationException("Context Not Same");
         Options = options ?? throw new ArgumentNullException(nameof(options));
     }
 

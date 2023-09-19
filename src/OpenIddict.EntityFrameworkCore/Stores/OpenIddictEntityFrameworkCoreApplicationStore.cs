@@ -17,6 +17,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFrameworkCore.Models;
 using OpenIddict.Extensions;
+using OpenIddict.EntityFrameworkCore.Factory;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFrameworkCore;
@@ -33,9 +34,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TContext> :
 {
     public OpenIddictEntityFrameworkCoreApplicationStore(
         IMemoryCache cache,
-        TContext context,
+        IOpeniddictEntityFrameworkCoreContextFactory factory,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(cache, factory, options)
     {
     }
 }
@@ -54,9 +55,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TContext, TKey> :
 {
     public OpenIddictEntityFrameworkCoreApplicationStore(
         IMemoryCache cache,
-        TContext context,
+        IOpeniddictEntityFrameworkCoreContextFactory factory,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(cache, factory, options)
     {
     }
 }
@@ -78,11 +79,11 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
 {
     public OpenIddictEntityFrameworkCoreApplicationStore(
         IMemoryCache cache,
-        TContext context,
+        IOpeniddictEntityFrameworkCoreContextFactory factory,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
     {
         Cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        Context = context ?? throw new ArgumentNullException(nameof(context));
+        Context = (factory ?? throw new ArgumentNullException(nameof(factory))).CreateDbContext() is TContext context ? context : throw new InvalidOperationException("Context Not Same");
         Options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
@@ -1151,7 +1152,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
             return default;
         }
 
-        return (TKey?) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        return (TKey?)TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
     }
 
     /// <summary>

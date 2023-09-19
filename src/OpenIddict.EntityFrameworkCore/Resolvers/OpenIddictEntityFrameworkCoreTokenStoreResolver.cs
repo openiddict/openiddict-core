@@ -50,8 +50,7 @@ public sealed class OpenIddictEntityFrameworkCoreTokenStoreResolver : IOpenIddic
             var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkCoreToken<,,>)) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0256));
 
-            var context = _options.CurrentValue.DbContextType ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0253));
+            var context = _options.CurrentValue.DbContextType ?? typeof(DbContext);
 
             return typeof(OpenIddictEntityFrameworkCoreTokenStore<,,,,>).MakeGenericType(
                 /* TToken: */ key,
