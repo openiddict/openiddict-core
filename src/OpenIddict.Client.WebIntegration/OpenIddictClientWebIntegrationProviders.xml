@@ -105,15 +105,15 @@
   <!--
   
   -->
-  <Provider Name="Auth0" DisplayName="Sign in with Auth0" Id ="7409ff87-3c9d-4959-b187-2fc0077d544f"
+  <Provider Name="Auth0" Id ="7409ff87-3c9d-4959-b187-2fc0077d544f"
             Documentation="https://auth0.com/docs">
     <!--
-      Note: Auth0 is a multitenant identity provider that doesn't have a generic issuer URI.  The full teneant domain should be specified
+      Note: Auth0 is a multitenant identity provider that doesn't have a generic issuer URI.  The full teneant issuer URI should be specified
     -->
-    <Environment Issuer="https://{settings.Domain}" />
+    <Environment Issuer="{settings.Issuer}" />
         
-    <Setting PropertyName="Domain" ParameterName="issuer" Type="String" Required="true"
-             Description="The full domain used to access the Auth0 tenant instance (e.g 'dev-dd1pbjnagjzxyyfi.us.auth0.com')" />
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
+             Description="The full URI used to access the Auth0 tenant instance (e.g 'https://contoso.us.auth0.com')" />
   </Provider>
 
 
