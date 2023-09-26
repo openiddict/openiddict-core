@@ -3507,8 +3507,27 @@ public static partial class OpenIddictClientHandlers
             // The OpenIddict client is expected to be used with standard OpenID Connect userinfo endpoints
             // but must also support non-standard implementations, that are common with OAuth 2.0-only servers.
             //
-            // As such, protocol requirements are only enforced if the server supports OpenID Connect.
-            context.DisableUserinfoValidation = !context.Configuration.ScopesSupported.Contains(Scopes.OpenId);
+            // As such, protocol requirements are, by default, only enforced if the openid scope was requested.
+            context.DisableUserinfoValidation = context.GrantType switch
+            {
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit
+                    when context.StateTokenPrincipal is ClaimsPrincipal principal
+                    => !principal.HasScope(Scopes.OpenId),
+
+                // Note: while the OAuth 2.0-only device authorization and password flows can be generally used
+                // flawlessly with OpenID Connect implementations, the userinfo response returned by the server
+                // for an OAuth 2.0-only flow might not be OpenID Connect-compliant. In this case, disable
+                // userinfo validation, unless the "openid" scope was explicitly requested by the application.
+                GrantTypes.DeviceCode or GrantTypes.Password or
+
+                // Note: when using grant_type=refresh_token, it is not possible to determine whether the refresh token
+                // was issued during an OAuth 2.0-only or OpenID Connect flow. In this case, only validate userinfo
+                // responses if the openid scope was explicitly added by the user to the list of requested scopes.
+                GrantTypes.RefreshToken or
+
+                // For unknown grant types, disable userinfo validation, unless the openid scope was explicitly added.
+                _ => !context.Scopes.Contains(Scopes.OpenId)
+            };
 
             return default;
         }
