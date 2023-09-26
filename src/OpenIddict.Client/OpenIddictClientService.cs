@@ -522,6 +522,11 @@ public sealed class OpenIddictClientService
                             is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
                     };
 
+                    if (request.Scopes is { Count: > 0 })
+                    {
+                        context.Scopes.UnionWith(request.Scopes);
+                    }
+
                     if (request.Properties is { Count: > 0 })
                     {
                         foreach (var property in request.Properties)
