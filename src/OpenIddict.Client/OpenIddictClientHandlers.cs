@@ -2252,7 +2252,8 @@ public static partial class OpenIddictClientHandlers
                 string type => type
             };
 
-            if (context.Scopes.Count > 0)
+            if (context.Scopes.Count > 0 &&
+                context.TokenRequest.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.DeviceCode))
             {
                 // Note: the final OAuth 2.0 specification requires using a space as the scope separator.
                 // Clients that need to deal with older or non-compliant implementations can register
