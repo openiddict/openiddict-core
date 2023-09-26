@@ -103,6 +103,27 @@
   </Provider>
 
   <!--
+                                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                  █ ▄▄▀██ ██ █▄▄ ▄▄██ ██ █ ▄▄ ██
+                                                  █ ▀▀ ██ ██ ███ ████ ▄▄ █ ▀▄ ██
+                                                  █ ██ ██▄▀▀▄███ ████ ██ █ ▀▀ ██
+                                                  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Auth0" Id="7409ff87-3c9d-4959-b187-2fc0077d544f" Documentation="https://auth0.com/docs">
+    <!--
+      Note: Auth0 is a multitenant identity provider that doesn't have a generic
+      issuer URI. As such, the complete URI must always be set in the options.
+    -->
+
+    <Environment Issuer="{settings.Issuer}" />
+
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
+             Description="The URI used to access the Auth0 tenant (e.g 'https://contoso.us.auth0.com')" />
+  </Provider>
+
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         █ ▄▄▀██ ██ █▄▄ ▄▄██ ▄▄▄ ██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ █▀▄██
                                         █ ▀▀ ██ ██ ███ ████ ███ ██ ██ ██ ▄▄▄██▄▄▄▀▀██ ▄▀███
@@ -1319,7 +1340,7 @@
                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Verimi" Id="de781ebe-164c-4948-96d8-5e5adbbf19f0" Documentation="https://docs.verimi.de/#/oidc/oidc_overview">    
+  <Provider Name="Verimi" Id="de781ebe-164c-4948-96d8-5e5adbbf19f0" Documentation="https://docs.verimi.de/#/oidc/oidc_overview">
     <Environment Name="Production" Issuer="https://web.verimi.de/" />
     <Environment Name="Staging"    Issuer="https://web.uat.verimi.cloud/" />
   </Provider>
@@ -1356,7 +1377,7 @@
       varies dynamically depending on the location of the client making the discovery request.
 
       Since the returned issuer is not stable, the hardcoded "https://www.webex.com/" is used instead.
-    -->    
+    -->
 
     <Environment Issuer="https://www.webex.com/" ConfigurationEndpoint="https://webexapis.com/v1/.well-known/openid-configuration" />
   </Provider>
