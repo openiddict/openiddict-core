@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.OpenIddictClientHandlers.Discovery;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
@@ -110,6 +111,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.Apple or ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
+                }
+
+                else if (context.Registration.ProviderType is ProviderTypes.Auth0)
+                {
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.DeviceCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
@@ -330,11 +339,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                // While Auth0 exposes an OpenID Connect-compliant logout endpoint, its address is not returned
+                // as part of the configuration document. To ensure RP-initiated logout is supported with Auth0,
+                // "end_session_endpoint" is manually computed using the issuer URI and added to the configuration.
+                if (context.Registration.ProviderType is ProviderTypes.Auth0)
+                {
+                    context.Configuration.EndSessionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                        context.Registration.Issuer, "oidc/logout");
+                }
+
                 // While PayPal supports OpenID Connect discovery, the configuration document returned
                 // by the sandbox environment always contains the production endpoints, which would
                 // prevent the OpenIddict integration from working properly when using the sandbox mode.
                 // To work around that, the endpoints are manually overriden when this environment is used.
-                if (context.Registration.ProviderType is ProviderTypes.PayPal &&
+                else if (context.Registration.ProviderType is ProviderTypes.PayPal &&
                     context.Registration.GetPayPalSettings() is { Environment: string environment } &&
                     string.Equals(environment, PayPal.Environments.Sandbox, StringComparison.OrdinalIgnoreCase))
                 {
