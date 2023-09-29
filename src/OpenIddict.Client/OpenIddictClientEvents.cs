@@ -810,36 +810,36 @@ public static partial class OpenIddictClientEvents
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool GenerateClientAssertionToken { get; set; }
+        public bool GenerateClientAssertion { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated client
-        /// assertion token should be included as part of the request.
+        /// assertion should be included as part of the request.
         /// </summary>
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool IncludeClientAssertionToken { get; set; }
+        public bool IncludeClientAssertion { get; set; }
 
         /// <summary>
-        /// Gets or sets the generated client assertion token, if applicable.
-        /// The client assertion token will only be returned if
-        /// <see cref="IncludeClientAssertionToken"/> is set to <see langword="true"/>.
+        /// Gets or sets the generated client assertion, if applicable.
+        /// The client assertion will only be returned if
+        /// <see cref="IncludeClientAssertion"/> is set to <see langword="true"/>.
         /// </summary>
-        public string? ClientAssertionToken { get; set; }
+        public string? ClientAssertion { get; set; }
 
         /// <summary>
-        /// Gets or sets type of the generated client assertion token, if applicable.
-        /// The client assertion token type will only be returned if
-        /// <see cref="IncludeClientAssertionToken"/> is set to <see langword="true"/>.
+        /// Gets or sets type of the generated client assertion, if applicable.
+        /// The client assertion type will only be returned if
+        /// <see cref="IncludeClientAssertion"/> is set to <see langword="true"/>.
         /// </summary>
-        public string? ClientAssertionTokenType { get; set; }
+        public string? ClientAssertionType { get; set; }
 
         /// <summary>
         /// Gets or sets the principal containing the claims that will be
-        /// used to create the client assertion token, if applicable.
+        /// used to create the client assertion, if applicable.
         /// </summary>
-        public ClaimsPrincipal? ClientAssertionTokenPrincipal { get; set; }
+        public ClaimsPrincipal? ClientAssertionPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether backchannel
@@ -1055,36 +1055,36 @@ public static partial class OpenIddictClientEvents
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool GenerateClientAssertionToken { get; set; }
+        public bool GenerateClientAssertion { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated client
-        /// assertion token should be included as part of the request.
+        /// assertion should be included as part of the request.
         /// </summary>
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool IncludeClientAssertionToken { get; set; }
+        public bool IncludeClientAssertion { get; set; }
 
         /// <summary>
-        /// Gets or sets the generated client assertion token, if applicable.
-        /// The client assertion token will only be returned if
-        /// <see cref="IncludeClientAssertionToken"/> is set to <see langword="true"/>.
+        /// Gets or sets the generated client assertion, if applicable.
+        /// The client assertion will only be returned if
+        /// <see cref="IncludeClientAssertion"/> is set to <see langword="true"/>.
         /// </summary>
-        public string? ClientAssertionToken { get; set; }
+        public string? ClientAssertion { get; set; }
 
         /// <summary>
-        /// Gets or sets type of the generated client assertion token, if applicable.
-        /// The client assertion token type will only be returned if
-        /// <see cref="IncludeClientAssertionToken"/> is set to <see langword="true"/>.
+        /// Gets or sets type of the generated client assertion, if applicable.
+        /// The client assertion type will only be returned if
+        /// <see cref="IncludeClientAssertion"/> is set to <see langword="true"/>.
         /// </summary>
-        public string? ClientAssertionTokenType { get; set; }
+        public string? ClientAssertionType { get; set; }
 
         /// <summary>
         /// Gets or sets the principal containing the claims that will be
-        /// used to create the client assertion token, if applicable.
+        /// used to create the client assertion, if applicable.
         /// </summary>
-        public ClaimsPrincipal? ClientAssertionTokenPrincipal { get; set; }
+        public ClaimsPrincipal? ClientAssertionPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the principal containing the claims that

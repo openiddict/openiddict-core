@@ -131,6 +131,40 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no client assertion principal is available.
+    /// </summary>
+    public sealed class RequireClientAssertionPrincipal : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.ClientAssertionPrincipal is not null);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no client assertion is validated.
+    /// </summary>
+    public sealed class RequireClientAssertionValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.ValidateClientAssertion);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers when no client identifier is received.
     /// </summary>
     public sealed class RequireClientIdParameter : IOpenIddictServerHandlerFilter<BaseContext>

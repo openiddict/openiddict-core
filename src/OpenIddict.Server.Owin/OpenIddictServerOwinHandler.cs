@@ -215,6 +215,11 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
                 properties.Dictionary[Tokens.AuthorizationCode] = context.AuthorizationCode;
             }
 
+            if (!string.IsNullOrEmpty(context.ClientAssertion))
+            {
+                properties.Dictionary[Tokens.ClientAssertion] = context.ClientAssertion;
+            }
+
             if (!string.IsNullOrEmpty(context.DeviceCode))
             {
                 properties.Dictionary[Tokens.DeviceCode] = context.DeviceCode;

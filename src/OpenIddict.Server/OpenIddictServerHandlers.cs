@@ -37,6 +37,10 @@ public static partial class OpenIddictServerHandlers
         ValidateClientId.Descriptor,
         ValidateClientType.Descriptor,
         ValidateClientSecret.Descriptor,
+        ValidateClientAssertion.Descriptor,
+        ValidateClientAssertionWellknownClaims.Descriptor,
+        ValidateClientAssertionIssuer.Descriptor,
+        ValidateClientAssertionAudience.Descriptor,
         ValidateAccessToken.Descriptor,
         ValidateAuthorizationCode.Descriptor,
         ValidateDeviceCode.Descriptor,
@@ -286,6 +290,21 @@ public static partial class OpenIddictServerHandlers
                 _ => (false, false, false, false)
             };
 
+            (context.ExtractClientAssertion,
+             context.RequireClientAssertion,
+             context.ValidateClientAssertion,
+             context.RejectClientAssertion) = context.EndpointType switch
+            {
+                // Client assertions can be used with all the endpoints that support client authentication.
+                // By default, client assertions are not required, but they are extracted and validated if
+                // present and invalid client assertions are always automatically rejected by OpenIddict.
+                OpenIddictServerEndpointType.Device     or OpenIddictServerEndpointType.Introspection or
+                OpenIddictServerEndpointType.Revocation or OpenIddictServerEndpointType.Token
+                    => (true, false, true, true),
+
+                _ => (false, false, false, false)
+            };
+
             (context.ExtractDeviceCode,
              context.RequireDeviceCode,
              context.ValidateDeviceCode,
@@ -303,8 +322,8 @@ public static partial class OpenIddictServerHandlers
              context.ValidateGenericToken,
              context.RejectGenericToken) = context.EndpointType switch
             {
-                // Tokens received by the introspection and revocation endpoints can be of any type.
-                // Additional token type filtering is made by the endpoint themselves, if needed.
+                // Tokens received by the introspection and revocation endpoints can be of any supported type.
+                // Additional token type filtering is typically performed by the endpoint themselves when needed.
                 OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
                     => (true, true, true, true),
 
@@ -394,6 +413,16 @@ public static partial class OpenIddictServerHandlers
                 _ => null
             };
 
+            (context.ClientAssertion, context.ClientAssertionType) = context.EndpointType switch
+            {
+                OpenIddictServerEndpointType.Device     or OpenIddictServerEndpointType.Introspection or
+                OpenIddictServerEndpointType.Revocation or OpenIddictServerEndpointType.Token
+                    when context.ExtractClientAssertion
+                    => (context.Request.ClientAssertion, context.Request.ClientAssertionType),
+
+                _ => (null, null)
+            };
+
             context.DeviceCode = context.EndpointType switch
             {
                 OpenIddictServerEndpointType.Token when context.ExtractDeviceCode
@@ -467,6 +496,7 @@ public static partial class OpenIddictServerHandlers
 
             if ((context.RequireAccessToken       && string.IsNullOrEmpty(context.AccessToken))       ||
                 (context.RequireAuthorizationCode && string.IsNullOrEmpty(context.AuthorizationCode)) ||
+                (context.RequireClientAssertion   && string.IsNullOrEmpty(context.ClientAssertion))   ||
                 (context.RequireDeviceCode        && string.IsNullOrEmpty(context.DeviceCode))        ||
                 (context.RequireGenericToken      && string.IsNullOrEmpty(context.GenericToken))      ||
                 (context.RequireIdentityToken     && string.IsNullOrEmpty(context.IdentityToken))     ||
@@ -482,6 +512,450 @@ public static partial class OpenIddictServerHandlers
             }
 
             return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the client assertion resolved from the context.
+    /// </summary>
+    public sealed class ValidateClientAssertion : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        private readonly IOpenIddictServerDispatcher _dispatcher;
+
+        public ValidateClientAssertion(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireClientAssertionValidated>()
+                .UseScopedHandler<ValidateClientAssertion>()
+                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.ClientAssertionPrincipal is not null || string.IsNullOrEmpty(context.ClientAssertion))
+            {
+                return;
+            }
+
+            var notification = new ValidateTokenContext(context.Transaction)
+            {
+                Token = context.ClientAssertion,
+                TokenFormat = context.ClientAssertionType switch
+                {
+                    ClientAssertionTypes.JwtBearer => TokenFormats.Jwt,
+                    _ => null
+                },
+                ValidTokenTypes = { TokenTypeHints.ClientAssertion }
+            };
+
+            await _dispatcher.DispatchAsync(notification);
+
+            if (notification.IsRequestHandled)
+            {
+                context.HandleRequest();
+                return;
+            }
+
+            else if (notification.IsRequestSkipped)
+            {
+                context.SkipRequest();
+                return;
+            }
+
+            else if (notification.IsRejected)
+            {
+                if (context.RejectClientAssertion)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
+                return;
+            }
+
+            context.ClientAssertionPrincipal = notification.Principal;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the well-known claims contained in the client assertion principal.
+    /// </summary>
+    public sealed class ValidateClientAssertionWellknownClaims : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireClientAssertionPrincipal>()
+                .UseSingletonHandler<ValidateClientAssertionWellknownClaims>()
+                .SetOrder(ValidateClientAssertion.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            foreach (var group in context.ClientAssertionPrincipal.Claims
+                .GroupBy(claim => claim.Type)
+                .ToDictionary(group => group.Key, group => group.ToList()))
+            {
+                if (ValidateClaimGroup(group))
+                {
+                    continue;
+                }
+
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2171(group.Key),
+                    uri: SR.FormatID8000(SR.ID2171));
+
+                return default;
+            }
+
+            // Client assertions MUST contain an "iss" claim. For more information,
+            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
+            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            if (!context.ClientAssertionPrincipal.HasClaim(Claims.Issuer))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2172(Claims.Issuer),
+                    uri: SR.FormatID8000(SR.ID2172));
+
+                return default;
+            }
+
+            // Client assertions MUST contain a "sub" claim. For more information,
+            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
+            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            if (!context.ClientAssertionPrincipal.HasClaim(Claims.Subject))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2172(Claims.Subject),
+                    uri: SR.FormatID8000(SR.ID2172));
+
+                return default;
+            }
+
+            // Client assertions MUST contain at least one "aud" claim. For more information,
+            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
+            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            if (!context.ClientAssertionPrincipal.HasClaim(Claims.Audience))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2172(Claims.Audience),
+                    uri: SR.FormatID8000(SR.ID2172));
+
+                return default;
+            }
+
+            // Client assertions MUST contain contain a "exp" claim. For more information,
+            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
+            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            if (!context.ClientAssertionPrincipal.HasClaim(Claims.ExpiresAt))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2172(Claims.ExpiresAt),
+                    uri: SR.FormatID8000(SR.ID2172));
+
+                return default;
+            }
+
+            // Client assertions MUST contain contain an "iat" claim. For more information,
+            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
+            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            if (!context.ClientAssertionPrincipal.HasClaim(Claims.IssuedAt))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2172(Claims.IssuedAt),
+                    uri: SR.FormatID8000(SR.ID2172));
+
+                return default;
+            }
+
+            return default;
+
+            static bool ValidateClaimGroup(KeyValuePair<string, List<Claim>> claims) => claims switch
+            {
+                // The following JWT claims MUST be represented as unique strings.
+                {
+                    Key: Claims.AuthorizedParty or Claims.Issuer or Claims.JwtId or Claims.Subject,
+                    Value: List<Claim> values
+                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.String,
+
+                // The following JWT claims MUST be represented as unique strings or array of strings.
+                {
+                    Key: Claims.Audience,
+                    Value: List<Claim> values
+                } => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+
+                // The following JWT claims MUST be represented as unique numeric dates.
+                {
+                    Key: Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore,
+                    Value: List<Claim> values
+                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.Integer    or ClaimValueTypes.Integer32 or
+                                                                 ClaimValueTypes.Integer64  or ClaimValueTypes.Double    or
+                                                                 ClaimValueTypes.UInteger32 or ClaimValueTypes.UInteger64,
+
+                // Claims that are not in the well-known list can be of any type.
+                _ => true
+            };
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the issuer contained in the client assertion principal.
+    /// </summary>
+    public sealed class ValidateClientAssertionIssuer : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireClientAssertionPrincipal>()
+                .UseSingletonHandler<ValidateClientAssertionIssuer>()
+                .SetOrder(ValidateClientAssertionWellknownClaims.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Ensure the subject represented by the client assertion matches its issuer.
+            var (issuer, subject) = (
+                context.ClientAssertionPrincipal.GetClaim(Claims.Issuer),
+                context.ClientAssertionPrincipal.GetClaim(Claims.Subject));
+
+            if (!string.Equals(issuer, subject, StringComparison.Ordinal))
+            {
+                context.Reject(
+                    error: Errors.InvalidGrant,
+                    description: SR.FormatID2173(Claims.Subject),
+                    uri: SR.FormatID8000(SR.ID2173));
+
+                return default;
+            }
+
+            // If a client identifier was also specified in the request, ensure the
+            // value matches the application represented by the client assertion.
+            if (!string.IsNullOrEmpty(context.ClientId))
+            {
+                if (!string.Equals(context.ClientId, issuer, StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.InvalidGrant,
+                        description: SR.FormatID2173(Claims.Issuer),
+                        uri: SR.FormatID8000(SR.ID2173));
+
+                    return default;
+                }
+
+                if (!string.Equals(context.ClientId, subject, StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.InvalidGrant,
+                        description: SR.FormatID2173(Claims.Subject),
+                        uri: SR.FormatID8000(SR.ID2173));
+
+                    return default;
+                }
+            }
+
+            // Otherwise, use the issuer resolved from the client assertion principal as the client identifier.
+            else if (context.Request is OpenIddictRequest request)
+            {
+                request.ClientId = context.ClientAssertionPrincipal.GetClaim(Claims.Issuer);
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the audience contained in the client assertion principal.
+    /// </summary>
+    public sealed class ValidateClientAssertionAudience : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireClientAssertionPrincipal>()
+                .UseSingletonHandler<ValidateClientAssertionAudience>()
+                .SetOrder(ValidateClientAssertionIssuer.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Ensure at least one non-empty audience was specified (note: in
+            // the most common case, a single audience is generally specified).
+            var audiences = context.ClientAssertionPrincipal.GetClaims(Claims.Audience);
+            if (!audiences.Any(static audience => !string.IsNullOrEmpty(audience)))
+            {
+                context.Reject(
+                    error: Errors.InvalidGrant,
+                    description: SR.FormatID2172(Claims.Audience),
+                    uri: SR.FormatID8000(SR.ID2172));
+
+                return default;
+            }
+
+            // Ensure at least one of the audiences points to the current authorization server.
+            if (!ValidateAudiences(audiences))
+            {
+                context.Reject(
+                    error: Errors.InvalidGrant,
+                    description: SR.FormatID2173(Claims.Audience),
+                    uri: SR.FormatID8000(SR.ID2173));
+
+                return default;
+            }
+
+            return default;
+
+            bool ValidateAudiences(ImmutableArray<string> audiences)
+            {
+                foreach (var audience in audiences)
+                {
+                    // Ignore the iterated audience if it's not a valid absolute URI.
+                    if (!Uri.TryCreate(audience, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        continue;
+                    }
+
+                    // Consider the audience valid if it matches the issuer value assigned to the current instance.
+                    //
+                    // See https://datatracker.ietf.org/doc/html/rfc7523#section-3 for more information.
+                    if (context.Options.Issuer is not null && UriEquals(uri, context.Options.Issuer))
+                    {
+                        return true;
+                    }
+
+                    // At this point, ignore the rest of the validation logic if the current base URI is not known.
+                    if (context.BaseUri is null)
+                    {
+                        continue;
+                    }
+
+                    // Consider the audience valid if it matches the current base URI, unless an explicit issuer was set.
+                    if (context.Options.Issuer is null && UriEquals(uri, context.BaseUri))
+                    {
+                        return true;
+                    }
+
+                    // Consider the audience valid if it matches one of the URIs assigned to the token
+                    // endpoint, independently of whether the request is a token request or not.
+                    if (MatchesAnyUri(uri, context.Options.TokenEndpointUris))
+                    {
+                        return true;
+                    }
+
+                    // If the current request is a device request, consider the audience valid
+                    // if the address matches one of the URIs assigned to the device endpoint.
+                    if (context.EndpointType is OpenIddictServerEndpointType.Device &&
+                        MatchesAnyUri(uri, context.Options.DeviceEndpointUris))
+                    {
+                        return true;
+                    }
+
+                    // If the current request is an introspection request, consider the audience valid
+                    // if the address matches one of the URIs assigned to the introspection endpoint.
+                    else if (context.EndpointType is OpenIddictServerEndpointType.Introspection &&
+                        MatchesAnyUri(uri, context.Options.IntrospectionEndpointUris))
+                    {
+                        return true;
+                    }
+
+                    // If the current request is a revocation request, consider the audience valid
+                    // if the address matches one of the URIs assigned to the revocation endpoint.
+                    else if (context.EndpointType is OpenIddictServerEndpointType.Revocation &&
+                        MatchesAnyUri(uri, context.Options.RevocationEndpointUris))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            bool MatchesAnyUri(Uri uri, List<Uri> uris)
+            {
+                for (var index = 0; index < uris.Count; index++)
+                {
+                    if (UriEquals(uri, OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, uris[index])))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            static bool UriEquals(Uri left, Uri right)
+            {
+                if (string.Equals(left.AbsolutePath, right.AbsolutePath, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                // Consider the two URIs identical if they only differ by the trailing slash.
+
+                if (left.AbsolutePath.Length == right.AbsolutePath.Length + 1 &&
+                    left.AbsolutePath.StartsWith(right.AbsolutePath, StringComparison.Ordinal) &&
+                    left.AbsolutePath[^1] is '/')
+                {
+                    return true;
+                }
+
+                return right.AbsolutePath.Length == left.AbsolutePath.Length + 1 &&
+                       right.AbsolutePath.StartsWith(left.AbsolutePath, StringComparison.Ordinal) &&
+                       right.AbsolutePath[^1] is '/';
+            }
         }
     }
 
@@ -511,7 +985,7 @@ public static partial class OpenIddictServerHandlers
                         new ValidateClientId(provider.GetService<IOpenIddictApplicationManager>() ??
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                 })
-                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 1_000)
+                .SetOrder(ValidateClientAssertionAudience.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -523,7 +997,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Don't validate the client identifier on endpoint that don't support client identification.
+            // Don't validate the client identifier on endpoints that don't support client identification.
             if (context.EndpointType is OpenIddictServerEndpointType.Userinfo or OpenIddictServerEndpointType.Verification)
             {
                 return;
@@ -652,6 +1126,19 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
+                // Reject requests containing a client_assertion when the client is a public application.
+                if (!string.IsNullOrEmpty(context.ClientAssertion))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6226), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: SR.FormatID2053(Parameters.ClientAssertion),
+                        uri: SR.FormatID8000(SR.ID2053));
+
+                    return;
+                }
+
                 // Reject requests containing a client_secret when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientSecret))
                 {
@@ -669,7 +1156,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
-            if (string.IsNullOrEmpty(context.ClientSecret))
+            if (context.ClientAssertionPrincipal is null && string.IsNullOrEmpty(context.ClientSecret))
             {
                 context.Logger.LogInformation(SR.GetResourceString(SR.ID6224), context.ClientId);
 
@@ -1012,7 +1499,18 @@ public static partial class OpenIddictServerHandlers
                 //
                 // Additional token type filtering is made by the endpoint themselves, if needed.
                 // As such, the valid token types list is deliberately left empty in this case.
-                ValidTokenTypes = { }
+                //
+                // Note: tokens not created by the server stack (e.g client assertions)
+                // are deliberately excluded and not present in the following list:
+                ValidTokenTypes =
+                {
+                    TokenTypeHints.AccessToken,
+                    TokenTypeHints.AuthorizationCode,
+                    TokenTypeHints.DeviceCode,
+                    TokenTypeHints.IdToken,
+                    TokenTypeHints.RefreshToken,
+                    TokenTypeHints.UserCode
+                }
             };
 
             await _dispatcher.DispatchAsync(notification);

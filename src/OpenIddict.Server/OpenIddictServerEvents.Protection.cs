@@ -137,9 +137,14 @@ public static partial class OpenIddictServerEvents
         public string Token { get; set; } = default!;
 
         /// <summary>
+        /// Gets or sets the format of the token (e.g JWT or ASP.NET Core Data Protection) to validate, if applicable.
+        /// </summary>
+        public string? TokenFormat { get; set; }
+
+        /// <summary>
         /// Gets or sets the token type hint specified by the client, if applicable.
         /// </summary>
-        public string? TokenTypeHint { get; set; } = default!;
+        public string? TokenTypeHint { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the validated token is a reference token.

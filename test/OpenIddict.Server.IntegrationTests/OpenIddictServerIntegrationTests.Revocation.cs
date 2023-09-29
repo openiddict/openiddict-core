@@ -152,6 +152,95 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientAssertionIsSpecifiedWithoutType()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = null,
+            ClientId = "Fabrikam",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2037(Parameters.ClientAssertionType, Parameters.ClientAssertion), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientAssertionTypeIsSpecifiedWithoutAssertion()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientAssertion = null,
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
+            ClientId = "Fabrikam",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2037(Parameters.ClientAssertion, Parameters.ClientAssertionType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateRevocationRequest_RequestIsRejectedWhenUnsupportedClientAssertionTypeIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = "unknown",
+            ClientId = "Fabrikam",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2032(Parameters.ClientAssertionType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateRevocationRequest_RequestIsRejectedWhenMultipleCredentialsAreSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
+            ClientId = "Fabrikam",
+            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2087), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2087), response.ErrorUri);
+    }
+
+    [Fact]
     public async Task ValidateRevocationRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
     {
         // Arrange
@@ -398,7 +487,6 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(TokenTypeHints.DeviceCode)]
     [InlineData(TokenTypeHints.IdToken)]
     [InlineData(TokenTypeHints.UserCode)]
-    [InlineData("custom_token")]
     public async Task ValidateRevocationRequest_UnsupportedTokenTypeCausesAnError(string type)
     {
         // Arrange

@@ -63,9 +63,9 @@ public static partial class OpenIddictClientHandlers
         ResolveTokenEndpoint.Descriptor,
         EvaluateTokenRequest.Descriptor,
         AttachTokenRequestParameters.Descriptor,
-        EvaluateGeneratedClientAssertionToken.Descriptor,
-        PrepareClientAssertionTokenPrincipal.Descriptor,
-        GenerateClientAssertionToken.Descriptor,
+        EvaluateGeneratedClientAssertion.Descriptor,
+        PrepareClientAssertionPrincipal.Descriptor,
+        GenerateClientAssertion.Descriptor,
         AttachTokenRequestClientCredentials.Descriptor,
         SendTokenRequest.Descriptor,
 
@@ -118,9 +118,9 @@ public static partial class OpenIddictClientHandlers
         ResolveDeviceAuthorizationEndpoint.Descriptor,
         EvaluateDeviceAuthorizationRequest.Descriptor,
         AttachDeviceAuthorizationRequestParameters.Descriptor,
-        EvaluateGeneratedChallengeClientAssertionToken.Descriptor,
-        PrepareChallengeClientAssertionTokenPrincipal.Descriptor,
-        GenerateChallengeClientAssertionToken.Descriptor,
+        EvaluateGeneratedChallengeClientAssertion.Descriptor,
+        PrepareChallengeClientAssertionPrincipal.Descriptor,
+        GenerateChallengeClientAssertion.Descriptor,
         AttachDeviceAuthorizationRequestClientCredentials.Descriptor,
         SendDeviceAuthorizationRequest.Descriptor,
 
@@ -2307,7 +2307,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for selecting the token types that should
     /// be generated and optionally sent as part of the authentication demand.
     /// </summary>
-    public sealed class EvaluateGeneratedClientAssertionToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateGeneratedClientAssertion : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2315,7 +2315,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenRequest>()
-                .UseSingletonHandler<EvaluateGeneratedClientAssertionToken>()
+                .UseSingletonHandler<EvaluateGeneratedClientAssertion>()
                 .SetOrder(AttachTokenRequestParameters.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -2328,8 +2328,8 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            (context.GenerateClientAssertionToken,
-             context.IncludeClientAssertionToken) = context.Registration.SigningCredentials.Count switch
+            (context.GenerateClientAssertion,
+             context.IncludeClientAssertion) = context.Registration.SigningCredentials.Count switch
             {
                 // If a token request is going to be sent and if at least one signing key was
                 // attached to the client registration, generate and include a client assertion
@@ -2346,18 +2346,18 @@ public static partial class OpenIddictClientHandlers
 
     /// <summary>
     /// Contains the logic responsible for preparing and attaching the claims principal
-    /// used to generate the client assertion token, if one is going to be sent.
+    /// used to generate the client assertion, if one is going to be sent.
     /// </summary>
-    public sealed class PrepareClientAssertionTokenPrincipal : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class PrepareClientAssertionPrincipal : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireClientAssertionTokenGenerated>()
-                .UseSingletonHandler<PrepareClientAssertionTokenPrincipal>()
-                .SetOrder(EvaluateGeneratedClientAssertionToken.Descriptor.Order + 1_000)
+                .AddFilter<RequireClientAssertionGenerated>()
+                .UseSingletonHandler<PrepareClientAssertionPrincipal>()
+                .SetOrder(EvaluateGeneratedClientAssertion.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -2375,7 +2375,7 @@ public static partial class OpenIddictClientHandlers
             var principal = new ClaimsPrincipal(new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType));
             principal.SetCreationDate(DateTimeOffset.UtcNow);
 
-            var lifetime = context.Options.ClientAssertionTokenLifetime;
+            var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
@@ -2407,7 +2407,7 @@ public static partial class OpenIddictClientHandlers
             // Use a random GUID as the JWT unique identifier.
             principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
 
-            context.ClientAssertionTokenPrincipal = principal;
+            context.ClientAssertionPrincipal = principal;
 
             return default;
         }
@@ -2415,13 +2415,13 @@ public static partial class OpenIddictClientHandlers
 
     /// <summary>
     /// Contains the logic responsible for generating a client
-    /// assertion token for the current authentication operation.
+    /// assertion for the current authentication operation.
     /// </summary>
-    public sealed class GenerateClientAssertionToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class GenerateClientAssertion : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public GenerateClientAssertionToken(IOpenIddictClientDispatcher dispatcher)
+        public GenerateClientAssertion(IOpenIddictClientDispatcher dispatcher)
             => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
@@ -2429,9 +2429,9 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireClientAssertionTokenGenerated>()
-                .UseScopedHandler<GenerateClientAssertionToken>()
-                .SetOrder(PrepareClientAssertionTokenPrincipal.Descriptor.Order + 1_000)
+                .AddFilter<RequireClientAssertionGenerated>()
+                .UseScopedHandler<GenerateClientAssertion>()
+                .SetOrder(PrepareClientAssertionPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -2448,9 +2448,9 @@ public static partial class OpenIddictClientHandlers
                 CreateTokenEntry = false,
                 IsReferenceToken = false,
                 PersistTokenPayload = false,
-                Principal = context.ClientAssertionTokenPrincipal!,
+                Principal = context.ClientAssertionPrincipal!,
                 TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.ClientAssertionToken
+                TokenType = TokenTypeHints.ClientAssertion
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -2476,8 +2476,8 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            context.ClientAssertionToken = notification.Token;
-            context.ClientAssertionTokenType = notification.TokenFormat switch
+            context.ClientAssertion = notification.Token;
+            context.ClientAssertionType = notification.TokenFormat switch
             {
                 TokenFormats.Jwt   => ClientAssertionTypes.JwtBearer,
                 TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
@@ -2499,7 +2499,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenRequest>()
                 .UseSingletonHandler<AttachTokenRequestClientCredentials>()
-                .SetOrder(GenerateClientAssertionToken.Descriptor.Order + 1_000)
+                .SetOrder(GenerateClientAssertion.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -2518,10 +2518,10 @@ public static partial class OpenIddictClientHandlers
             // Note: client authentication methods are mutually exclusive so the client_assertion
             // and client_secret parameters MUST never be sent at the same time. For more information,
             // see https://datatracker.ietf.org/doc/html/rfc6749#section-2.3.
-            if (context.IncludeClientAssertionToken)
+            if (context.IncludeClientAssertion)
             {
-                context.TokenRequest.ClientAssertion = context.ClientAssertionToken;
-                context.TokenRequest.ClientAssertionType = context.ClientAssertionTokenType;
+                context.TokenRequest.ClientAssertion = context.ClientAssertion;
+                context.TokenRequest.ClientAssertionType = context.ClientAssertionType;
             }
 
             // Note: the client_secret may be null at this point (e.g for a public
@@ -5332,7 +5332,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for selecting the token types that should
     /// be generated and optionally sent as part of the challenge demand.
     /// </summary>
-    public sealed class EvaluateGeneratedChallengeClientAssertionToken : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class EvaluateGeneratedChallengeClientAssertion : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -5340,7 +5340,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireDeviceAuthorizationRequest>()
-                .UseSingletonHandler<EvaluateGeneratedChallengeClientAssertionToken>()
+                .UseSingletonHandler<EvaluateGeneratedChallengeClientAssertion>()
                 .SetOrder(AttachDeviceAuthorizationRequestParameters.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -5353,8 +5353,8 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            (context.GenerateClientAssertionToken,
-             context.IncludeClientAssertionToken) = context.Registration.SigningCredentials.Count switch
+            (context.GenerateClientAssertion,
+             context.IncludeClientAssertion) = context.Registration.SigningCredentials.Count switch
             {
                 // If a device authorization request is going to be sent and if at least one signing key
                 // was attached to the client registration, generate and include a client assertion
@@ -5371,18 +5371,18 @@ public static partial class OpenIddictClientHandlers
 
     /// <summary>
     /// Contains the logic responsible for preparing and attaching the claims principal
-    /// used to generate the client assertion token, if one is going to be sent.
+    /// used to generate the client assertion, if one is going to be sent.
     /// </summary>
-    public sealed class PrepareChallengeClientAssertionTokenPrincipal : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class PrepareChallengeClientAssertionPrincipal : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireChallengeClientAssertionTokenGenerated>()
-                .UseSingletonHandler<PrepareChallengeClientAssertionTokenPrincipal>()
-                .SetOrder(EvaluateGeneratedChallengeClientAssertionToken.Descriptor.Order + 1_000)
+                .AddFilter<RequireChallengeClientAssertionGenerated>()
+                .UseSingletonHandler<PrepareChallengeClientAssertionPrincipal>()
+                .SetOrder(EvaluateGeneratedChallengeClientAssertion.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -5400,7 +5400,7 @@ public static partial class OpenIddictClientHandlers
             var principal = new ClaimsPrincipal(new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType));
             principal.SetCreationDate(DateTimeOffset.UtcNow);
 
-            var lifetime = context.Options.ClientAssertionTokenLifetime;
+            var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
@@ -5417,7 +5417,7 @@ public static partial class OpenIddictClientHandlers
             // Use a random GUID as the JWT unique identifier.
             principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
 
-            context.ClientAssertionTokenPrincipal = principal;
+            context.ClientAssertionPrincipal = principal;
 
             return default;
         }
@@ -5425,13 +5425,13 @@ public static partial class OpenIddictClientHandlers
 
     /// <summary>
     /// Contains the logic responsible for generating a client
-    /// assertion token for the current challenge operation.
+    /// assertion for the current challenge operation.
     /// </summary>
-    public sealed class GenerateChallengeClientAssertionToken : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class GenerateChallengeClientAssertion : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public GenerateChallengeClientAssertionToken(IOpenIddictClientDispatcher dispatcher)
+        public GenerateChallengeClientAssertion(IOpenIddictClientDispatcher dispatcher)
             => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
@@ -5439,9 +5439,9 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireChallengeClientAssertionTokenGenerated>()
-                .UseScopedHandler<GenerateChallengeClientAssertionToken>()
-                .SetOrder(PrepareChallengeClientAssertionTokenPrincipal.Descriptor.Order + 1_000)
+                .AddFilter<RequireChallengeClientAssertionGenerated>()
+                .UseScopedHandler<GenerateChallengeClientAssertion>()
+                .SetOrder(PrepareChallengeClientAssertionPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -5458,9 +5458,9 @@ public static partial class OpenIddictClientHandlers
                 CreateTokenEntry = false,
                 IsReferenceToken = false,
                 PersistTokenPayload = false,
-                Principal = context.ClientAssertionTokenPrincipal!,
+                Principal = context.ClientAssertionPrincipal!,
                 TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.ClientAssertionToken
+                TokenType = TokenTypeHints.ClientAssertion
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -5486,8 +5486,8 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            context.ClientAssertionToken = notification.Token;
-            context.ClientAssertionTokenType = notification.TokenFormat switch
+            context.ClientAssertion = notification.Token;
+            context.ClientAssertionType = notification.TokenFormat switch
             {
                 TokenFormats.Jwt => ClientAssertionTypes.JwtBearer,
                 TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
@@ -5509,7 +5509,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireDeviceAuthorizationRequest>()
                 .UseSingletonHandler<AttachDeviceAuthorizationRequestClientCredentials>()
-                .SetOrder(GenerateChallengeClientAssertionToken.Descriptor.Order + 1_000)
+                .SetOrder(GenerateChallengeClientAssertion.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -5528,10 +5528,10 @@ public static partial class OpenIddictClientHandlers
             // Note: client authentication methods are mutually exclusive so the client_assertion
             // and client_secret parameters MUST never be sent at the same time. For more information,
             // see https://datatracker.ietf.org/doc/html/rfc6749#section-2.3.
-            if (context.IncludeClientAssertionToken)
+            if (context.IncludeClientAssertion)
             {
-                context.DeviceAuthorizationRequest.ClientAssertion = context.ClientAssertionToken;
-                context.DeviceAuthorizationRequest.ClientAssertionType = context.ClientAssertionTokenType;
+                context.DeviceAuthorizationRequest.ClientAssertion = context.ClientAssertion;
+                context.DeviceAuthorizationRequest.ClientAssertionType = context.ClientAssertionType;
             }
 
             // Note: the client_secret may be null at this point (e.g for a public

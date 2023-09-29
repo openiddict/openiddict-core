@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Abstractions;
 
@@ -235,6 +236,17 @@ public interface IOpenIddictApplicationManager
     /// whose result returns the unique identifier associated with the application.
     /// </returns>
     ValueTask<string?> GetIdAsync(object application, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the JSON Web Key Set associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the JSON Web Key Set associated with the application.
+    /// </returns>
+    ValueTask<JsonWebKeySet?> GetJsonWebKeySetAsync(object application, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the localized display name associated with an application

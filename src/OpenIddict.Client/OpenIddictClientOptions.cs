@@ -66,10 +66,10 @@ public sealed class OpenIddictClientOptions
     public List<SigningCredentials> SigningCredentials { get; } = new();
 
     /// <summary>
-    /// Gets or sets the period of time client assertion tokens remain valid after being issued. The default value is 5 minutes.
-    /// While not recommended, this property can be set to <see langword="null"/> to issue client assertion tokens that never expire.
+    /// Gets or sets the period of time client assertions remain valid after being issued. The default value is 5 minutes.
+    /// While not recommended, this property can be set to <see langword="null"/> to issue client assertions that never expire.
     /// </summary>
-    public TimeSpan? ClientAssertionTokenLifetime { get; set; } = TimeSpan.FromMinutes(5);
+    public TimeSpan? ClientAssertionLifetime { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// Gets or sets the period of time state tokens remain valid after being issued. The default value is 15 minutes.

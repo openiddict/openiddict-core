@@ -1735,7 +1735,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>This client application is not allowed to use the device endpoint.</value>
   </data>
   <data name="ID2057" xml:space="preserve">
-    <value>The '{0}' and '{1}' parameters are required when using the client credentials grant.</value>
+    <value>The '{0}' or '{1}' parameter must be specified when using the client credentials grant.</value>
   </data>
   <data name="ID2058" xml:space="preserve">
     <value>The '{0}' parameter is required when using the device code grant.</value>
@@ -1900,7 +1900,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>Only confidential or public applications are supported by the default application manager.</value>
   </data>
   <data name="ID2113" xml:space="preserve">
-    <value>The client secret cannot be null or empty for a confidential application.</value>
+    <value>The client secret cannot be null or empty for a confidential application. Alternatively, a RSA or ECDSA key (with the key use "sig") can be added to the JSON Web Key Set attached to the application if the client authenticates using client assertions.</value>
   </data>
   <data name="ID2114" xml:space="preserve">
     <value>A client secret cannot be associated with a public application.</value>
@@ -2072,6 +2072,15 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID2170" xml:space="preserve">
     <value>The remote authorization server is currently unavailable or returned an invalid configuration.</value>
+  </data>
+  <data name="ID2171" xml:space="preserve">
+    <value>The '{0}' claim extracted from the specified client assertion is malformed or isn't of the expected type.</value>
+  </data>
+  <data name="ID2172" xml:space="preserve">
+    <value>The mandatory '{0}' claim cannot be found in the specified client assertion.</value>
+  </data>
+  <data name="ID2173" xml:space="preserve">
+    <value>The '{0}' claim returned in the specified client assertion doesn't match the expected value.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2707,10 +2716,13 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The authentication demand was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
   </data>
   <data name="ID6224" xml:space="preserve">
-    <value>The authentication demand was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
+    <value>The authentication demand was rejected because the confidential application '{ClientId}' didn't specify a client secret or a client assertion.</value>
   </data>
   <data name="ID6225" xml:space="preserve">
     <value>The authentication demand was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
+  </data>
+  <data name="ID6226" xml:space="preserve">
+    <value>The authentication demand was rejected because the public application '{ClientId}' was not allowed to send a client assertion.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

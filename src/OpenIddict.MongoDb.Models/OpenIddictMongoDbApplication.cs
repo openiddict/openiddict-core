@@ -73,6 +73,12 @@ public class OpenIddictMongoDbApplication
     public virtual ObjectId Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the JSON Web Key Set associated with the application.
+    /// </summary>
+    [BsonElement("json_web_key_set"), BsonIgnoreIfNull]
+    public virtual BsonDocument? JsonWebKeySet { get; set; }
+
+    /// <summary>
     /// Gets or sets the permissions associated with the current application.
     /// </summary>
     [BsonElement("permissions"), BsonIgnoreIfNull]

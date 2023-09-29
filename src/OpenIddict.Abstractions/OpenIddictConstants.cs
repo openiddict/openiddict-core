@@ -537,7 +537,7 @@ public static class OpenIddictConstants
     {
         public const string AccessToken = "access_token";
         public const string AuthorizationCode = "authorization_code";
-        public const string ClientAssertionToken = "client_assertion_token";
+        public const string ClientAssertion = "client_assertion";
         public const string DeviceCode = "device_code";
         public const string IdToken = "id_token";
         public const string RefreshToken = "refresh_token";

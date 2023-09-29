@@ -332,6 +332,15 @@ public static partial class OpenIddictServerEvents
         public bool ExtractAuthorizationCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a client assertion
+        /// token should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractClientAssertion { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a device
         /// code should be extracted from the current context.
         /// </summary>
@@ -393,6 +402,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RequireAuthorizationCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a client assertion
+        /// must be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireClientAssertion { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a device code
@@ -458,6 +476,15 @@ public static partial class OpenIddictServerEvents
         public bool ValidateAuthorizationCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the client assertion
+        /// token extracted from the current request should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateClientAssertion { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether the device
         /// code extracted from the current request should be validated.
         /// </summary>
@@ -519,6 +546,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RejectAuthorizationCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid client assertion
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectClientAssertion { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid device code
@@ -584,6 +620,21 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the principal extracted from the authorization code, if applicable.
         /// </summary>
         public ClaimsPrincipal? AuthorizationCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client assertion to validate, if applicable.
+        /// </summary>
+        public string? ClientAssertion { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the client assertion to validate, if applicable.
+        /// </summary>
+        public string? ClientAssertionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the client assertion, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? ClientAssertionPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the device code to validate, if applicable.

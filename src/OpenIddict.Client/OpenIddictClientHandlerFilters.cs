@@ -97,9 +97,9 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if no challenge client assertion token is generated.
+    /// Represents a filter that excludes the associated handlers if no challenge client assertion is generated.
     /// </summary>
-    public sealed class RequireChallengeClientAssertionTokenGenerated : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    public sealed class RequireChallengeClientAssertionGenerated : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
     {
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
@@ -109,14 +109,14 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.GenerateClientAssertionToken);
+            return new(context.GenerateClientAssertion);
         }
     }
 
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if no client assertion token is generated.
+    /// Represents a filter that excludes the associated handlers if no client assertion is generated.
     /// </summary>
-    public sealed class RequireClientAssertionTokenGenerated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireClientAssertionGenerated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
@@ -126,7 +126,7 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.GenerateClientAssertionToken);
+            return new(context.GenerateClientAssertion);
         }
     }
 

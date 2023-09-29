@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Security.Cryptography;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -34,6 +36,7 @@ public class Worker : IHostedService
                     // to apply a relaxed redirect_uri validation policy that allows specifying a random port.
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "console",
+                    ClientType = ClientTypes.Public,
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "Console client application",
                     DisplayNames =
@@ -73,12 +76,29 @@ public class Worker : IHostedService
                 {
                     ApplicationType = ApplicationTypes.Web,
                     ClientId = "mvc",
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                    ClientType = ClientTypes.Confidential,
                     ConsentType = ConsentTypes.Explicit,
                     DisplayName = "MVC client application",
                     DisplayNames =
                     {
                         [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente MVC"
+                    },
+                    JsonWebKeySet = new JsonWebKeySet
+                    {
+                        Keys =
+                        {
+                            // Instead of sending a client secret, this application authenticates by
+                            // generating client assertions that are signed using an ECDSA signing key.
+                            //
+                            // Note: while the client needs access to the private key, the server only needs
+                            // to know the public key to be able to validate the client assertions it receives.
+                            JsonWebKeyConverter.ConvertFromECDsaSecurityKey(GetECDsaSigningKey($"""
+                                -----BEGIN PUBLIC KEY-----
+                                MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEI23kaVsRRAWIez/pqEZOByJFmlXd
+                                a6iSQ4QqcH23Ir8aYPPX5lsVnBsExNsl7SOYOiIhgTaX6+PTS7yxTnmvSw==
+                                -----END PUBLIC KEY-----
+                                """))
+                        }
                     },
                     RedirectUris =
                     {
@@ -114,6 +134,7 @@ public class Worker : IHostedService
                 {
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "winforms",
+                    ClientType = ClientTypes.Public,
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "WinForms client application",
                     DisplayNames =
@@ -149,6 +170,7 @@ public class Worker : IHostedService
                 {
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "wpf",
+                    ClientType = ClientTypes.Public,
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "WPF client application",
                     DisplayNames =
@@ -187,6 +209,7 @@ public class Worker : IHostedService
                 {
                     ClientId = "resource_server",
                     ClientSecret = "80B552BB-4CD8-48DA-946E-0815E0147DD2",
+                    ClientType = ClientTypes.Confidential,
                     Permissions =
                     {
                         Permissions.Endpoints.Introspection
@@ -209,6 +232,7 @@ public class Worker : IHostedService
                 {
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "postman",
+                    ClientType = ClientTypes.Public,
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "Postman",
                     RedirectUris =
@@ -235,6 +259,14 @@ public class Worker : IHostedService
                         [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromMinutes(10).ToString("c", CultureInfo.InvariantCulture)
                     }
                 });
+            }
+
+            static ECDsaSecurityKey GetECDsaSigningKey(ReadOnlySpan<char> key)
+            {
+                var algorithm = ECDsa.Create();
+                algorithm.ImportFromPem(key);
+
+                return new ECDsaSecurityKey(algorithm);
             }
         }
 

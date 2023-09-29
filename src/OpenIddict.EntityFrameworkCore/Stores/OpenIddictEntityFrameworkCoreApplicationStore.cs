@@ -15,6 +15,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.EntityFrameworkCore.Models;
 using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
@@ -478,6 +479,33 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
     }
 
     /// <inheritdoc/>
+    public virtual ValueTask<JsonWebKeySet?> GetJsonWebKeySetAsync(TApplication application, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        if (string.IsNullOrEmpty(application.JsonWebKeySet))
+        {
+            return new(result: null);
+        }
+
+        // Note: parsing the stringified JSON Web Key Set is an expensive operation.
+        // To mitigate that, the resulting object is stored in the memory cache.
+        var key = string.Concat("1e0a697d-0623-481a-927a-5e6c31458782", "\x1e", application.JsonWebKeySet);
+        var set = Cache.GetOrCreate(key, entry =>
+        {
+            entry.SetPriority(CacheItemPriority.High)
+                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+            return JsonWebKeySet.Create(application.JsonWebKeySet);
+        })!;
+
+        return new(set);
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask<ImmutableArray<string>> GetPermissionsAsync(TApplication application, CancellationToken cancellationToken)
     {
         if (application is null)
@@ -877,6 +905,19 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
         writer.Flush();
 
         application.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetJsonWebKeySetAsync(TApplication application, JsonWebKeySet? set, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        application.JsonWebKeySet = set is not null ? JsonSerializer.Serialize(set) : null;
 
         return default;
     }

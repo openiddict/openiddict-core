@@ -62,6 +62,12 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     return default;
                 }
 
+                // If a specific token format is expected, return immediately if it doesn't match the expected value.
+                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Private.DataProtection)
+                {
+                    return default;
+                }
+
                 // Note: ASP.NET Core Data Protection tokens created by the default implementation always start
                 // with "CfDJ8", that corresponds to the base64 representation of the "09 F0 C9 F0" value used
                 // by KeyRingBasedDataProtectionProvider as a Data Protection version identifier/magic header.

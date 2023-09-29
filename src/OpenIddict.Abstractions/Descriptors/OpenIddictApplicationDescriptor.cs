@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Abstractions;
 
@@ -45,6 +46,11 @@ public class OpenIddictApplicationDescriptor
     /// Gets the localized display names associated with the application.
     /// </summary>
     public Dictionary<CultureInfo, string> DisplayNames { get; } = new();
+
+    /// <summary>
+    /// Gets or sets the JSON Web Key Set associated with the application.
+    /// </summary>
+    public JsonWebKeySet? JsonWebKeySet { get; set; }
 
     /// <summary>
     /// Gets the permissions associated with the application.

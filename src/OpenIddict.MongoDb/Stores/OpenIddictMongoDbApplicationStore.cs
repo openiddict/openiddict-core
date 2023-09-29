@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.MongoDb.Models;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
@@ -296,6 +297,22 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
     }
 
     /// <inheritdoc/>
+    public virtual ValueTask<JsonWebKeySet?> GetJsonWebKeySetAsync(TApplication application, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        if (application.JsonWebKeySet is null)
+        {
+            return new(result: null);
+        }
+
+        return new(JsonWebKeySet.Create(application.JsonWebKeySet.ToJson()));
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask<ImmutableArray<string>> GetPermissionsAsync(
         TApplication application, CancellationToken cancellationToken)
     {
@@ -574,7 +591,22 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetPermissionsAsync(TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken)
+    public virtual ValueTask SetJsonWebKeySetAsync(TApplication application,
+        JsonWebKeySet? set, CancellationToken cancellationToken)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        application.JsonWebKeySet = set is not null ? BsonDocument.Parse(JsonSerializer.Serialize(set)) : null;
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetPermissionsAsync(TApplication application,
+        ImmutableArray<string> permissions, CancellationToken cancellationToken)
     {
         if (application is null)
         {

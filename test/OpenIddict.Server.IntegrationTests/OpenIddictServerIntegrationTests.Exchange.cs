@@ -166,7 +166,29 @@ public abstract partial class OpenIddictServerIntegrationTests
         });
 
         // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_MissingClientIdCausesAnErrorForClientCredentialsRequests()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientAssertion = null,
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
+            ClientId = null,
+            GrantType = GrantTypes.ClientCredentials
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
         Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
     }
@@ -210,30 +232,6 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(Errors.InvalidRequest, response.Error);
         Assert.Equal(SR.FormatID2029(Parameters.RefreshToken), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
-    }
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData("client_id", null)]
-    [InlineData(null, "client_secret")]
-    public async Task ValidateTokenRequest_MissingClientCredentialsCauseAnError(string identifier, string secret)
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-        {
-            ClientId = identifier,
-            ClientSecret = secret,
-            GrantType = GrantTypes.ClientCredentials
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidRequest, response.Error);
-        Assert.Equal(SR.FormatID2057(Parameters.ClientId, Parameters.ClientSecret), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2057), response.ErrorUri);
     }
 
     [Theory]
@@ -1372,10 +1370,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.NotNull(response.AccessToken);
     }
 
-    [Theory]
-    [InlineData("client_id", "")]
-    [InlineData("", "client_secret")]
-    public async Task ValidateTokenRequest_ClientCredentialsRequestIsRejectedWhenCredentialsAreMissing(string identifier, string secret)
+    [Fact]
+    public async Task ValidateTokenRequest_RequestIsRejectedWhenClientAssertionIsSpecifiedWithoutType()
     {
         // Arrange
         await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
@@ -1384,14 +1380,105 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Act
         var response = await client.PostAsync("/connect/token", new OpenIddictRequest
         {
-            ClientId = identifier,
-            ClientSecret = secret,
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = null,
+            ClientId = "Fabrikam",
             GrantType = GrantTypes.ClientCredentials
         });
 
         // Assert
         Assert.Equal(Errors.InvalidRequest, response.Error);
-        Assert.Equal(SR.FormatID2057(Parameters.ClientId, Parameters.ClientSecret), response.ErrorDescription);
+        Assert.Equal(SR.FormatID2037(Parameters.ClientAssertionType, Parameters.ClientAssertion), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_RequestIsRejectedWhenClientAssertionTypeIsSpecifiedWithoutAssertion()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientAssertion = null,
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.ClientCredentials
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2037(Parameters.ClientAssertion, Parameters.ClientAssertionType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_RequestIsRejectedWhenUnsupportedClientAssertionTypeIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = "unknown",
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.ClientCredentials
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2032(Parameters.ClientAssertionType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_RequestIsRejectedWhenMultipleCredentialsAreSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
+            ClientId = "Fabrikam",
+            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+            GrantType = GrantTypes.ClientCredentials
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2087), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2087), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_ClientCredentialsRequestIsRejectedWhenCredentialsAreMissing()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientAssertion = null,
+            ClientAssertionType = null,
+            ClientId = "Fabrikam",
+            ClientSecret = null,
+            GrantType = GrantTypes.ClientCredentials
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2057(Parameters.ClientSecret, Parameters.ClientAssertion), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2057), response.ErrorUri);
     }
 

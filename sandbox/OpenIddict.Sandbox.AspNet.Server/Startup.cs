@@ -183,6 +183,7 @@ namespace OpenIddict.Sandbox.AspNet.Server
                         ApplicationType = ApplicationTypes.Web,
                         ClientId = "mvc",
                         ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                        ClientType = ClientTypes.Confidential,
                         ConsentType = ConsentTypes.Explicit,
                         DisplayName = "MVC client application",
                         RedirectUris =
@@ -219,6 +220,7 @@ namespace OpenIddict.Sandbox.AspNet.Server
                     {
                         ApplicationType = ApplicationTypes.Native,
                         ClientId = "postman",
+                        ClientType = ClientTypes.Public,
                         ConsentType = ConsentTypes.Systematic,
                         DisplayName = "Postman",
                         RedirectUris =

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
@@ -149,6 +150,95 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(Errors.InvalidRequest, response.Error);
         Assert.Equal(SR.FormatID2029(Parameters.Token), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateIntrospectionRequest_RequestIsRejectedWhenClientAssertionIsSpecifiedWithoutType()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = null,
+            ClientId = "Fabrikam",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2037(Parameters.ClientAssertionType, Parameters.ClientAssertion), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateIntrospectionRequest_RequestIsRejectedWhenClientAssertionTypeIsSpecifiedWithoutAssertion()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+        {
+            ClientAssertion = null,
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
+            ClientId = "Fabrikam",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2037(Parameters.ClientAssertion, Parameters.ClientAssertionType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateIntrospectionRequest_RequestIsRejectedWhenUnsupportedClientAssertionTypeIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = "unknown",
+            ClientId = "Fabrikam",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2032(Parameters.ClientAssertionType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateIntrospectionRequest_RequestIsRejectedWhenMultipleCredentialsAreSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
+            ClientId = "Fabrikam",
+            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2087), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2087), response.ErrorUri);
     }
 
     [Fact]
@@ -457,7 +547,6 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(TokenTypeHints.DeviceCode)]
     [InlineData(TokenTypeHints.IdToken)]
     [InlineData(TokenTypeHints.UserCode)]
-    [InlineData("custom_token")]
     public async Task ValidateIntrospectionRequest_UnsupportedTokenTypeCausesAnError(string type)
     {
         // Arrange
@@ -1163,6 +1252,15 @@ public abstract partial class OpenIddictServerIntegrationTests
                 mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
+                mock.Setup(manager => manager.HasTypeAsync(token, ImmutableArray.Create(
+                    TokenTypeHints.AccessToken,
+                    TokenTypeHints.AuthorizationCode,
+                    TokenTypeHints.DeviceCode,
+                    TokenTypeHints.IdToken,
+                    TokenTypeHints.RefreshToken,
+                    TokenTypeHints.UserCode), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
                 mock.Setup(manager => manager.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
             }));
@@ -1253,6 +1351,15 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(token);
 
                 mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasTypeAsync(token, ImmutableArray.Create(
+                    TokenTypeHints.AccessToken,
+                    TokenTypeHints.AuthorizationCode,
+                    TokenTypeHints.DeviceCode,
+                    TokenTypeHints.IdToken,
+                    TokenTypeHints.RefreshToken,
+                    TokenTypeHints.UserCode), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
@@ -1354,6 +1461,15 @@ public abstract partial class OpenIddictServerIntegrationTests
                 mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
+                mock.Setup(manager => manager.HasTypeAsync(token, ImmutableArray.Create(
+                    TokenTypeHints.AccessToken,
+                    TokenTypeHints.AuthorizationCode,
+                    TokenTypeHints.DeviceCode,
+                    TokenTypeHints.IdToken,
+                    TokenTypeHints.RefreshToken,
+                    TokenTypeHints.UserCode), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
                 mock.Setup(manager => manager.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
             }));
@@ -1407,6 +1523,15 @@ public abstract partial class OpenIddictServerIntegrationTests
 
             mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.HasTypeAsync(token, ImmutableArray.Create(
+                TokenTypeHints.AccessToken,
+                TokenTypeHints.AuthorizationCode,
+                TokenTypeHints.DeviceCode,
+                TokenTypeHints.IdToken,
+                TokenTypeHints.RefreshToken,
+                TokenTypeHints.UserCode), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
         });
 
         await using var server = await CreateServerAsync(options =>

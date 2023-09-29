@@ -235,6 +235,12 @@ public static partial class OpenIddictValidationHandlers
                     return;
                 }
 
+                // If a specific token format is expected, return immediately if it doesn't match the expected value.
+                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Jwt)
+                {
+                    return;
+                }
+
                 // If the token cannot be read, don't return an error to allow another handler to validate it.
                 if (!context.SecurityTokenHandler.CanReadToken(context.Token))
                 {
