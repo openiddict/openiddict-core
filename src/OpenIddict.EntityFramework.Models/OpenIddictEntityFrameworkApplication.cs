@@ -86,6 +86,13 @@ public class OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
     public virtual TKey? Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the JSON Web Key Set associated with
+    /// the application, serialized as a JSON object.
+    /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
+    public virtual string? JsonWebKeySet { get; set; }
+
+    /// <summary>
     /// Gets or sets the permissions associated with the
     /// current application, serialized as a JSON array.
     /// </summary>

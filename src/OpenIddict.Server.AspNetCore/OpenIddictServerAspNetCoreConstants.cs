@@ -29,6 +29,7 @@ public static class OpenIddictServerAspNetCoreConstants
     public static class Properties
     {
         public const string AccessTokenPrincipal = ".access_token_principal";
+        public const string ClientAssertionPrincipal = ".client_assertion_principal";
         public const string AuthorizationCodePrincipal = ".authorization_code_principal";
         public const string DeviceCodePrincipal = ".device_code_principal";
         public const string Error = ".error";
@@ -44,6 +45,7 @@ public static class OpenIddictServerAspNetCoreConstants
     {
         public const string AccessToken = "access_token";
         public const string AuthorizationCode = "authorization_code";
+        public const string ClientAssertion = "client_assertion";
         public const string DeviceCode = "device_code";
         public const string IdentityToken = "id_token";
         public const string RefreshToken = "refresh_token";

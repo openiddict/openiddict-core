@@ -9,7 +9,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
@@ -36,8 +38,8 @@ public static partial class OpenIddictServerHandlers
             ValidateAuthorizationEntry.Descriptor,
 
             /*
-            * Token generation:
-            */
+             * Token generation:
+             */
             AttachSecurityCredentials.Descriptor,
             CreateTokenEntry.Descriptor,
             GenerateIdentityModelToken.Descriptor,
@@ -49,12 +51,27 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ResolveTokenValidationParameters : IOpenIddictServerHandler<ValidateTokenContext>
         {
+            private readonly IOpenIddictApplicationManager? _applicationManager;
+
+            public ResolveTokenValidationParameters(IOpenIddictApplicationManager? applicationManager = null)
+                => _applicationManager = applicationManager;
+
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .UseSingletonHandler<ResolveTokenValidationParameters>()
+                    .UseScopedHandler<ResolveTokenValidationParameters>(static provider =>
+                    {
+                        // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                        // invalid core configuration exceptions are not thrown even if the managers were registered.
+                        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                        return options.EnableDegradedMode ?
+                            new ResolveTokenValidationParameters() :
+                            new ResolveTokenValidationParameters(provider.GetService<IOpenIddictApplicationManager>() ??
+                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                    })
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -67,74 +84,143 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var parameters = context.Options.TokenValidationParameters.Clone();
-
-                parameters.ValidIssuers ??= (context.Options.Issuer ?? context.BaseUri) switch
+                // The OpenIddict server is expected to validate tokens it creates (e.g access tokens)
+                // and tokens that are created by one or multiple clients (e.g client assertions).
+                //
+                // To simplify the token validation parameters selection logic, an exception is thrown
+                // if multiple token types are considered valid and contain tokens issued by the
+                // authorization server and tokens issued by the client (e.g client assertions).
+                if (context.ValidTokenTypes.Count > 1 &&
+                    context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion))
                 {
-                    null => null,
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0308));
+                }
 
-                    // If the issuer URI doesn't contain any query/fragment, allow both http://www.fabrikam.com
-                    // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
-                    // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
-                    { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
-                    {
-                        uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
-                        uri.AbsoluteUri[..^1]
-                    },
+                var parameters = context.ValidTokenTypes.Count switch
+                {
+                    // When only client assertions are considered valid, create dynamic token validation
+                    // parameters using the encryption keys/signing keys attached to the specific client.
+                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                        => GetClientTokenValidationParameters(),
 
-                    // When properly normalized, Uri.AbsolutePath should never be empty and should at least
-                    // contain a leading slash. While dangerous, System.Uri now offers a way to create a URI
-                    // instance without applying the default canonicalization logic. To support such URIs,
-                    // a special case is added here to add back the missing trailing slash when necessary.
-                    { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri => new[]
-                    {
-                        uri.AbsoluteUri,
-                        uri.AbsoluteUri + "/"
-                    },
-
-                    Uri uri => new[] { uri.AbsoluteUri }
+                    // Otherwise, use the token validation parameters of the authorization server.
+                    _ => GetServerTokenValidationParameters()
                 };
 
-                parameters.ValidateIssuer = parameters.ValidIssuers is not null;
-
-                parameters.ValidTypes = context.ValidTokenTypes.Count switch
+                TokenValidationParameters GetClientTokenValidationParameters()
                 {
-                    // If no specific token type is expected, accept all token types at this stage.
-                    // Additional filtering can be made based on the resolved/actual token type.
-                    0 => null,
-
-                    // Otherwise, map the token types to their JWT public or internal representation.
-                    _ => context.ValidTokenTypes.SelectMany(type => type switch
+                    // Note: the audience/issuer/lifetime are manually validated by OpenIddict itself.
+                    var parameters = new TokenValidationParameters
                     {
-                        // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
-                        TokenTypeHints.AccessToken => new[]
+                        ValidateAudience = false,
+                        ValidateIssuer = false,
+                        ValidateLifetime = false
+                    };
+
+                    // Only provide a signing key resolver if the degraded mode was not enabled.
+                    //
+                    // Applications that opt for the degraded mode and need client assertions support
+                    // need to implement a custom event handler thats a issuer signing key resolver.
+                    if (!context.Options.EnableDegradedMode)
+                    {
+                        if (_applicationManager is null)
                         {
-                            JsonWebTokenTypes.AccessToken,
-                            JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                        }
+
+                        parameters.IssuerSigningKeyResolver = (_, token, _, _) => Task.Run(async () =>
+                        {
+                            // Resolve the client application corresponding to the token issuer and retrieve
+                            // the signing keys from to the JSON Web Key set attached to the client application.
+                            //
+                            // Important: at this stage, the issuer isn't guaranteed to be valid or legitimate.
+                            var application = await _applicationManager.FindByClientIdAsync(token.Issuer);
+                            if (application is not null && await _applicationManager.GetJsonWebKeySetAsync(application)
+                                is JsonWebKeySet set)
+                            {
+                                return set.GetSigningKeys();
+                            }
+
+                            return Array.Empty<SecurityKey>();
+                        }).GetAwaiter().GetResult();
+                    }
+
+                    return parameters;
+                }
+
+                TokenValidationParameters GetServerTokenValidationParameters()
+                {
+                    var parameters = context.Options.TokenValidationParameters.Clone();
+
+                    parameters.ValidIssuers ??= (context.Options.Issuer ?? context.BaseUri) switch
+                    {
+                        null => null,
+
+                        // If the issuer URI doesn't contain any query/fragment, allow both http://www.fabrikam.com
+                        // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
+                        // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
+                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
+                        {
+                            uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
+                            uri.AbsoluteUri[..^1]
                         },
 
-                        // For identity tokens, both "JWT" and "application/jwt" are valid.
-                        TokenTypeHints.IdToken => new[]
+                        // When properly normalized, Uri.AbsolutePath should never be empty and should at least
+                        // contain a leading slash. While dangerous, System.Uri now offers a way to create a URI
+                        // instance without applying the default canonicalization logic. To support such URIs,
+                        // a special case is added here to add back the missing trailing slash when necessary.
+                        { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri => new[]
                         {
-                            JsonWebTokenTypes.Jwt,
-                            JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.Jwt
+                            uri.AbsoluteUri,
+                            uri.AbsoluteUri + "/"
                         },
 
-                        // For authorization codes, only the short "oi_auc+jwt" form is valid.
-                        TokenTypeHints.AuthorizationCode => new[] { JsonWebTokenTypes.Private.AuthorizationCode },
+                        Uri uri => new[] { uri.AbsoluteUri }
+                    };
 
-                        // For device codes, only the short "oi_dvc+jwt" form is valid.
-                        TokenTypeHints.DeviceCode => new[] { JsonWebTokenTypes.Private.DeviceCode },
+                    parameters.ValidateIssuer = parameters.ValidIssuers is not null;
 
-                        // For refresh tokens, only the short "oi_reft+jwt" form is valid.
-                        TokenTypeHints.RefreshToken => new[] { JsonWebTokenTypes.Private.RefreshToken },
+                    parameters.ValidTypes = context.ValidTokenTypes.Count switch
+                    {
+                        // If no specific token type is expected, accept all token types at this stage.
+                        // Additional filtering can be made based on the resolved/actual token type.
+                        0 => null,
 
-                        // For user codes, only the short "oi_usrc+jwt" form is valid.
-                        TokenTypeHints.UserCode => new[] { JsonWebTokenTypes.Private.UserCode },
+                        // Otherwise, map the token types to their JWT public or internal representation.
+                        _ => context.ValidTokenTypes.SelectMany(type => type switch
+                        {
+                            // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
+                            TokenTypeHints.AccessToken => new[]
+                            {
+                                JsonWebTokenTypes.AccessToken,
+                                JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
+                            },
 
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                    })
-                };
+                            // For identity tokens, both "JWT" and "application/jwt" are valid.
+                            TokenTypeHints.IdToken => new[]
+                            {
+                                JsonWebTokenTypes.Jwt,
+                                JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.Jwt
+                            },
+
+                            // For authorization codes, only the short "oi_auc+jwt" form is valid.
+                            TokenTypeHints.AuthorizationCode => new[] { JsonWebTokenTypes.Private.AuthorizationCode },
+
+                            // For device codes, only the short "oi_dvc+jwt" form is valid.
+                            TokenTypeHints.DeviceCode => new[] { JsonWebTokenTypes.Private.DeviceCode },
+
+                            // For refresh tokens, only the short "oi_reft+jwt" form is valid.
+                            TokenTypeHints.RefreshToken => new[] { JsonWebTokenTypes.Private.RefreshToken },
+
+                            // For user codes, only the short "oi_usrc+jwt" form is valid.
+                            TokenTypeHints.UserCode => new[] { JsonWebTokenTypes.Private.UserCode },
+
+                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                        })
+                    };
+
+                    return parameters;
+                }
 
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
                 context.TokenValidationParameters = parameters;
@@ -173,6 +259,13 @@ public static partial class OpenIddictServerHandlers
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: reference tokens are never used for client assertions.
+                if (context.ValidTokenTypes.Count is 1 &&
+                    context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion))
+                {
+                    return;
                 }
 
                 var token = context.Token.Length switch
@@ -295,6 +388,12 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
+                // If a specific token format is expected, return immediately if it doesn't match the expected value.
+                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Jwt)
+                {
+                    return;
+                }
+
                 // If the token cannot be read, don't return an error to allow another handler to validate it.
                 if (!context.SecurityTokenHandler.CanReadToken(context.Token))
                 {
@@ -389,6 +488,13 @@ public static partial class OpenIddictServerHandlers
                 // the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity).SetTokenType(result.TokenType switch
                 {
+                    // Client assertions are typically created by client libraries with either a missing "typ" header
+                    // or a generic value like "JWT". Since the type defined by the client cannot be used as-is,
+                    // validation is bypassed and tokens used as client assertions are assumed to be client assertions.
+                    _ when context.ValidTokenTypes.Count is 1 &&
+                           context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                        => TokenTypeHints.ClientAssertion,
+
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
                     // Both at+jwt and application/at+jwt are supported for access tokens.
@@ -602,6 +708,13 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 if (context.Principal is null)
+                {
+                    return;
+                }
+
+                // Note: token entries are never used for client assertions.
+                if (context.ValidTokenTypes.Count is 1 &&
+                    context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion))
                 {
                     return;
                 }

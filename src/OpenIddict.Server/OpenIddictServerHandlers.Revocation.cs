@@ -29,6 +29,7 @@ public static partial class OpenIddictServerHandlers
              * Revocation request validation:
              */
             ValidateTokenParameter.Descriptor,
+            ValidateClientCredentialsParameters.Descriptor,
             ValidateAuthentication.Descriptor,
             ValidateEndpointPermissions.Descriptor,
             ValidateTokenType.Descriptor,
@@ -314,6 +315,85 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting revocation requests that specify invalid client credentials parameters.
+        /// </summary>
+        public sealed class ValidateClientCredentialsParameters : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
+                    .UseSingletonHandler<ValidateClientCredentialsParameters>()
+                    .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateRevocationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Ensure a client_assertion_type is specified when a client_assertion was attached.
+                if (!string.IsNullOrEmpty(context.Request.ClientAssertion) &&
+                     string.IsNullOrEmpty(context.Request.ClientAssertionType))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2037(Parameters.ClientAssertionType, Parameters.ClientAssertion),
+                        uri: SR.FormatID8000(SR.ID2037));
+
+                    return default;
+                }
+
+                // Ensure a client_assertion is specified when a client_assertion_type was attached.
+                if (string.IsNullOrEmpty(context.Request.ClientAssertion) &&
+                   !string.IsNullOrEmpty(context.Request.ClientAssertionType))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2037(Parameters.ClientAssertion, Parameters.ClientAssertionType),
+                        uri: SR.FormatID8000(SR.ID2037));
+
+                    return default;
+                }
+
+                // Ensure the specified client_assertion_type is supported.
+                if (!string.IsNullOrEmpty(context.Request.ClientAssertionType) &&
+                    !string.Equals(context.Request.ClientAssertionType, ClientAssertionTypes.JwtBearer, StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2032(Parameters.ClientAssertionType),
+                        uri: SR.FormatID8000(SR.ID2032));
+
+                    return default;
+                }
+
+                // Reject requests that use multiple client authentication methods.
+                //
+                // See https://tools.ietf.org/html/rfc6749#section-2.3 for more information.
+                if (!string.IsNullOrEmpty(context.Request.ClientAssertion) &&
+                    !string.IsNullOrEmpty(context.Request.ClientSecret))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6140));
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2087),
+                        uri: SR.FormatID8000(SR.ID2087));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for applying the authentication logic to revocation requests.
         /// </summary>
         public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateRevocationRequestContext>
@@ -329,7 +409,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                     .UseScopedHandler<ValidateAuthentication>()
-                    .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateClientCredentialsParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

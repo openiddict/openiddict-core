@@ -1,5 +1,7 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
 using OpenIddict.Sandbox.AspNetCore.Client.Models;
 using Quartz;
@@ -103,11 +105,29 @@ public class Startup
                     ProviderName = "Local",
 
                     ClientId = "mvc",
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                     Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" },
 
                     RedirectUri = new Uri("callback/login/local", UriKind.Relative),
-                    PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative)
+                    PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative),
+
+                    // Instead of sending a client secret, this application authenticates by
+                    // generating client assertions that are signed using a private signing key.
+                    //
+                    // As such, no client secret is set, but an ECDSA key is registered and used by
+                    // the OpenIddict client to automatically generate client assertions when needed.
+                    //
+                    // Note: while the server only needs access to the public key, the client needs
+                    // to know the private key to be able to generate and sign the client assertions.
+                    SigningCredentials =
+                    {
+                        new SigningCredentials(GetECDsaSigningKey($"""
+                            -----BEGIN EC PRIVATE KEY-----
+                            MHcCAQEEIMGxf/eMzKuW2F8KKWPJo3bwlrO68rK5+xCeO1atwja2oAoGCCqGSM49
+                            AwEHoUQDQgAEI23kaVsRRAWIez/pqEZOByJFmlXda6iSQ4QqcH23Ir8aYPPX5lsV
+                            nBsExNsl7SOYOiIhgTaX6+PTS7yxTnmvSw==
+                            -----END EC PRIVATE KEY-----
+                            """), SecurityAlgorithms.EcdsaSha256, SecurityAlgorithms.Sha256)
+                    }
                 });
 
                 // Register the Web providers integrations.
@@ -138,6 +158,14 @@ public class Startup
                                   .SetRedirectUri("callback/login/reddit")
                                   .SetDuration("permanent");
                        });
+
+                static ECDsaSecurityKey GetECDsaSigningKey(ReadOnlySpan<char> key)
+                {
+                    var algorithm = ECDsa.Create();
+                    algorithm.ImportFromPem(key);
+
+                    return new ECDsaSecurityKey(algorithm);
+                }
             });
 
         services.AddHttpClient();

@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
 using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
@@ -136,12 +137,31 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             throw new ArgumentException(SR.GetResourceString(SR.ID0206), nameof(application));
         }
 
-        // If no client type was specified, assume it's a public application if no secret was provided.
+        // If no client type was specified, assume it's a confidential application if a secret was
+        // provided or a JSON Web Key Set was attached and contains at least one RSA/ECDSA signing key.
         var type = await Store.GetClientTypeAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(type))
         {
-            await Store.SetClientTypeAsync(application, string.IsNullOrEmpty(secret) ?
-                ClientTypes.Public : ClientTypes.Confidential, cancellationToken);
+            if (!string.IsNullOrEmpty(secret))
+            {
+                await Store.SetClientTypeAsync(application, ClientTypes.Confidential, cancellationToken);
+            }
+
+            else
+            {
+                var set = await Store.GetJsonWebKeySetAsync(application, cancellationToken);
+                if (set is not null && set.Keys.Any(static key =>
+                    key.Kty is JsonWebAlgorithmsKeyTypes.EllipticCurve or JsonWebAlgorithmsKeyTypes.RSA &&
+                    key.Use is JsonWebKeyUseNames.Sig or null))
+                {
+                    await Store.SetClientTypeAsync(application, ClientTypes.Confidential, cancellationToken);
+                }
+
+                else
+                {
+                    await Store.SetClientTypeAsync(application, ClientTypes.Public, cancellationToken);
+                }
+            }
         }
 
         // If a client secret was provided, obfuscate it.
@@ -610,6 +630,25 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
+    /// Retrieves the JSON Web Key Set associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the JSON Web Key Set associated with the application.
+    /// </returns>
+    public virtual ValueTask<JsonWebKeySet?> GetJsonWebKeySetAsync(TApplication application, CancellationToken cancellationToken = default)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        return Store.GetJsonWebKeySetAsync(application, cancellationToken);
+    }
+
+    /// <summary>
     /// Retrieves the localized display name associated with an application
     /// and corresponding to the current UI culture or one of its parents.
     /// If no matching value can be found, the non-localized value is returned.
@@ -984,6 +1023,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         await Store.SetConsentTypeAsync(application, descriptor.ConsentType, cancellationToken);
         await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
         await Store.SetDisplayNamesAsync(application, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
+        await Store.SetJsonWebKeySetAsync(application, descriptor.JsonWebKeySet, cancellationToken);
         await Store.SetPermissionsAsync(application, descriptor.Permissions.ToImmutableArray(), cancellationToken);
         await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
             descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString)), cancellationToken);
@@ -1023,6 +1063,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         descriptor.ClientType = await Store.GetClientTypeAsync(application, cancellationToken);
         descriptor.ConsentType = await Store.GetConsentTypeAsync(application, cancellationToken);
         descriptor.DisplayName = await Store.GetDisplayNameAsync(application, cancellationToken);
+        descriptor.JsonWebKeySet = await Store.GetJsonWebKeySetAsync(application, cancellationToken);
         descriptor.Permissions.Clear();
         descriptor.Permissions.UnionWith(await Store.GetPermissionsAsync(application, cancellationToken));
         descriptor.Requirements.Clear();
@@ -1260,17 +1301,24 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                     yield return new ValidationResult(SR.GetResourceString(SR.ID2112));
                 }
 
-                // Ensure a client secret was specified if the client is a confidential application.
-                var secret = await Store.GetClientSecretAsync(application, cancellationToken);
-                if (string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
-                {
-                    yield return new ValidationResult(SR.GetResourceString(SR.ID2113));
-                }
-
                 // Ensure no client secret was specified if the client is a public application.
-                else if (!string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                var secret = await Store.GetClientSecretAsync(application, cancellationToken);
+                if (!string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return new ValidationResult(SR.GetResourceString(SR.ID2114));
+                }
+
+                // Ensure a client secret or a JSON Web Key suitable for signing
+                // was specified if the client is a confidential application.
+                if (string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+                {
+                    var set = await Store.GetJsonWebKeySetAsync(application, cancellationToken);
+                    if (set?.Keys is null || !set.Keys.Any(static key =>
+                        key.Kty is JsonWebAlgorithmsKeyTypes.EllipticCurve or JsonWebAlgorithmsKeyTypes.RSA &&
+                        key.Use is JsonWebKeyUseNames.Sig or null))
+                    {
+                        yield return new ValidationResult(SR.GetResourceString(SR.ID2113));
+                    }
                 }
             }
 
@@ -1761,6 +1809,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictApplicationManager.GetIdAsync(object application, CancellationToken cancellationToken)
         => GetIdAsync((TApplication) application, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<JsonWebKeySet?> IOpenIddictApplicationManager.GetJsonWebKeySetAsync(object application, CancellationToken cancellationToken)
+        => GetJsonWebKeySetAsync((TApplication) application, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictApplicationManager.GetLocalizedDisplayNameAsync(object application, CancellationToken cancellationToken)

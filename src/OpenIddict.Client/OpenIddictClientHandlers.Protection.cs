@@ -212,6 +212,13 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                // Note: reference tokens are only used for state tokens.
+                if (context.ValidTokenTypes.Count is not 1 ||
+                   !context.ValidTokenTypes.Contains(TokenTypeHints.StateToken))
+                {
+                    return;
+                }
+
                 // If the reference token cannot be found, don't return an error to allow another handler to validate it.
                 var token = await _tokenManager.FindByReferenceIdAsync(context.Token);
                 if (token is null)
@@ -275,6 +282,12 @@ public static partial class OpenIddictClientHandlers
 
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal is not null)
+                {
+                    return;
+                }
+
+                // If a specific token format is expected, return immediately if it doesn't match the expected value.
+                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Jwt)
                 {
                     return;
                 }
@@ -463,6 +476,13 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 if (context.Principal is null)
+                {
+                    return;
+                }
+
+                // Note: token entries are only used for state tokens.
+                if (context.ValidTokenTypes.Count is not 1 ||
+                   !context.ValidTokenTypes.Contains(TokenTypeHints.StateToken))
                 {
                     return;
                 }
@@ -695,7 +715,7 @@ public static partial class OpenIddictClientHandlers
                 {
                     // For client assertions, use the encryption credentials
                     // configured for the client registration, if available.
-                    TokenTypeHints.ClientAssertionToken
+                    TokenTypeHints.ClientAssertion
                         => context.Registration.EncryptionCredentials.FirstOrDefault(),
 
                     // For other types of tokens, use the global encryption credentials.
@@ -705,7 +725,7 @@ public static partial class OpenIddictClientHandlers
                 context.SigningCredentials = context.TokenType switch
                 {
                     // For client assertions, use the signing credentials configured for the client registration.
-                    TokenTypeHints.ClientAssertionToken
+                    TokenTypeHints.ClientAssertion
                         => context.Registration.SigningCredentials.First(),
 
                     // For other types of tokens, use the global signing credentials.
@@ -816,7 +836,7 @@ public static partial class OpenIddictClientHandlers
                     Claims.Private.Issuer       or Claims.Private.TokenType => false,
 
                     Claims.Private.Audience when context.TokenType is
-                        TokenTypeHints.ClientAssertionToken or TokenTypeHints.StateToken => false,
+                        TokenTypeHints.ClientAssertion or TokenTypeHints.StateToken => false,
 
                     _ => true
                 });
@@ -825,9 +845,9 @@ public static partial class OpenIddictClientHandlers
 
                 var claims = new Dictionary<string, object>(StringComparer.Ordinal);
 
-                // For client assertion tokens, set the public audience claims
+                // For client assertions, set the public audience claims
                 // using the private audience claims from the security principal.
-                if (context.TokenType is TokenTypeHints.ClientAssertionToken)
+                if (context.TokenType is TokenTypeHints.ClientAssertion)
                 {
                     var audiences = context.Principal.GetAudiences();
                     if (audiences.Any())
@@ -853,8 +873,8 @@ public static partial class OpenIddictClientHandlers
                     {
                         null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
-                        // For client assertion tokens, use the generic "JWT" type.
-                        TokenTypeHints.ClientAssertionToken => JsonWebTokenTypes.Jwt,
+                        // For client assertions, use the generic "JWT" type.
+                        TokenTypeHints.ClientAssertion => JsonWebTokenTypes.Jwt,
 
                         // For state tokens, use its private representation.
                         TokenTypeHints.StateToken => JsonWebTokenTypes.Private.StateToken,

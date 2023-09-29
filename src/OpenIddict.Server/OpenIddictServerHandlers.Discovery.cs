@@ -512,24 +512,28 @@ public static partial class OpenIddictServerHandlers
                 {
                     context.DeviceEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                     context.DeviceEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
+                    context.DeviceEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.PrivateKeyJwt);
                 }
 
                 if (context.IntrospectionEndpoint is not null)
                 {
                     context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                     context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
+                    context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.PrivateKeyJwt);
                 }
 
                 if (context.RevocationEndpoint is not null)
                 {
                     context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                     context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
+                    context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.PrivateKeyJwt);
                 }
 
                 if (context.TokenEndpoint is not null)
                 {
                     context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                     context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
+                    context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.PrivateKeyJwt);
                 }
 
                 return default;

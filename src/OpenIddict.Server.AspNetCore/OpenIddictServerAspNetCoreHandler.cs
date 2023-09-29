@@ -221,6 +221,16 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 });
             }
 
+            if (!string.IsNullOrEmpty(context.ClientAssertion))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.ClientAssertion,
+                    Value = context.ClientAssertion
+                });
+            }
+
             if (!string.IsNullOrEmpty(context.DeviceCode))
             {
                 tokens ??= new(capacity: 1);
@@ -269,6 +279,11 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
             if (context.AuthorizationCodePrincipal is not null)
             {
                 properties.SetParameter(Properties.AuthorizationCodePrincipal, context.AuthorizationCodePrincipal);
+            }
+
+            if (context.ClientAssertionPrincipal is not null)
+            {
+                properties.SetParameter(Properties.ClientAssertionPrincipal, context.ClientAssertionPrincipal);
             }
 
             if (context.DeviceCodePrincipal is not null)

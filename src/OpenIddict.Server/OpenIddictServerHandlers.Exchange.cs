@@ -422,17 +422,36 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Reject grant_type=authorization_code requests that don't specify a client_id, as the client
-                // identifier MUST be sent by the client application in the request body if it cannot be
-                // inferred from the client authentication method (e.g the username when using basic).
+                // Reject grant_type=authorization_code requests that don't specify a client_id or a client_assertion,
+                // as the client identifier MUST be sent by the client application in the request body if it cannot
+                // be inferred from the client authentication method (e.g the username when using basic).
                 //
                 // See https://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
-                if (string.IsNullOrEmpty(context.ClientId) && context.Request.IsAuthorizationCodeGrantType())
+                if (context.Request.IsAuthorizationCodeGrantType() &&
+                    string.IsNullOrEmpty(context.Request.ClientId) &&
+                    string.IsNullOrEmpty(context.Request.ClientAssertion))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.ClientId);
 
                     context.Reject(
-                        error: Errors.InvalidClient,
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029(Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return default;
+                }
+
+                // Reject grant_type=client_credentials requests that don't specify a client_id or a client_assertion.
+                //
+                // See https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
+                if (context.Request.IsClientCredentialsGrantType() &&
+                    string.IsNullOrEmpty(context.Request.ClientId) &&
+                    string.IsNullOrEmpty(context.Request.ClientAssertion))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.ClientId);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
                         description: SR.FormatID2029(Parameters.ClientId),
                         uri: SR.FormatID8000(SR.ID2029));
 
@@ -486,8 +505,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting token requests that don't
-        /// specify client credentials for the client credentials grant type.
+        /// Contains the logic responsible for rejecting token requests that specify invalid client credentials parameters.
         /// </summary>
         public sealed class ValidateClientCredentialsParameters : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
@@ -509,14 +527,68 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Reject grant_type=client_credentials requests missing the client credentials.
-                // See https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
-                if (context.Request.IsClientCredentialsGrantType() && (string.IsNullOrEmpty(context.Request.ClientId) ||
-                                                                       string.IsNullOrEmpty(context.Request.ClientSecret)))
+                // Ensure a client_assertion_type is specified when a client_assertion was attached.
+                if (!string.IsNullOrEmpty(context.Request.ClientAssertion) &&
+                     string.IsNullOrEmpty(context.Request.ClientAssertionType))
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2057(Parameters.ClientId, Parameters.ClientSecret),
+                        description: SR.FormatID2037(Parameters.ClientAssertionType, Parameters.ClientAssertion),
+                        uri: SR.FormatID8000(SR.ID2037));
+
+                    return default;
+                }
+
+                // Ensure a client_assertion is specified when a client_assertion_type was attached.
+                if (string.IsNullOrEmpty(context.Request.ClientAssertion) &&
+                   !string.IsNullOrEmpty(context.Request.ClientAssertionType))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2037(Parameters.ClientAssertion, Parameters.ClientAssertionType),
+                        uri: SR.FormatID8000(SR.ID2037));
+
+                    return default;
+                }
+
+                // Ensure the specified client_assertion_type is supported.
+                if (!string.IsNullOrEmpty(context.Request.ClientAssertionType) &&
+                    !string.Equals(context.Request.ClientAssertionType, ClientAssertionTypes.JwtBearer, StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2032(Parameters.ClientAssertionType),
+                        uri: SR.FormatID8000(SR.ID2032));
+
+                    return default;
+                }
+
+                // Reject requests that use multiple client authentication methods.
+                //
+                // See https://tools.ietf.org/html/rfc6749#section-2.3 for more information.
+                if (!string.IsNullOrEmpty(context.Request.ClientAssertion) &&
+                    !string.IsNullOrEmpty(context.Request.ClientSecret))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6140));
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2087),
+                        uri: SR.FormatID8000(SR.ID2087));
+
+                    return default;
+                }
+
+                // Reject grant_type=client_credentials requests missing the client credentials.
+                //
+                // See https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
+                if (context.Request.IsClientCredentialsGrantType() &&
+                    string.IsNullOrEmpty(context.Request.ClientAssertion) &&
+                    string.IsNullOrEmpty(context.Request.ClientSecret))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2057(Parameters.ClientSecret, Parameters.ClientAssertion),
                         uri: SR.FormatID8000(SR.ID2057));
 
                     return default;
