@@ -151,6 +151,12 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 ClientAssertionTypes.JwtBearer, ClientAuthenticationMethods.ClientSecretJwt));
         }
 
+        // Ensure at least one supported subject type is listed.
+        if (options.SubjectTypes.Count is 0)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0421));
+        }
+
         // Ensure reference tokens support was not enabled when token storage is disabled.
         if (options.DisableTokenStorage && (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens))
         {

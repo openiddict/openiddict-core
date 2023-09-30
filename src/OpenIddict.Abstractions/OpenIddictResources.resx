@@ -1569,6 +1569,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0420" xml:space="preserve">
     <value>The '{0}' client assertion type must be configured when enabling the '{1}' client authentication method.</value>
   </data>
+  <data name="ID0421" xml:space="preserve">
+    <value>At least one subject type must be supported.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

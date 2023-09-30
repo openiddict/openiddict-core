@@ -359,6 +359,15 @@ public sealed class OpenIddictServerOptions
     public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets the OpenID Connect subject types enabled for this application.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public HashSet<string> SubjectTypes { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.SubjectTypes.Public
+    };
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.
     /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>

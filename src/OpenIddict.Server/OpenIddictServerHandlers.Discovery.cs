@@ -643,7 +643,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                context.SubjectTypes.Add(SubjectTypes.Public);
+                context.SubjectTypes.UnionWith(context.Options.SubjectTypes);
 
                 return default;
             }
