@@ -696,6 +696,72 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for validating the authentication method used by the client application.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public sealed class ValidateClientAuthenticationMethod<TContext> : IOpenIddictServerHandler<TContext>
+        where TContext : BaseValidatingContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<ValidateClientAuthenticationMethod<TContext>>()
+                .SetOrder(ExtractPostRequest<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            // Reject requests that use client_secret_post if support was explicitly disabled in the options.
+            if (!string.IsNullOrEmpty(context.Transaction.Request.ClientSecret) &&
+                !context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.ClientSecretPost))
+            {
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6227), ClientAuthenticationMethods.ClientSecretPost);
+
+                context.Reject(
+                    error: Errors.InvalidClient,
+                    description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretPost),
+                    uri: SR.FormatID8000(SR.ID2174));
+
+                return default;
+            }
+
+            // Reject requests that use client_secret_basic if support was explicitly disabled in the options.
+            var header = request.Headers[Headers.Authorization];
+            if (!string.IsNullOrEmpty(header) && header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase) &&
+                !context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.ClientSecretBasic))
+            {
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6227, ClientAuthenticationMethods.ClientSecretBasic));
+
+                context.Reject(
+                    error: Errors.InvalidClient,
+                    description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretBasic),
+                    uri: SR.FormatID8000(SR.ID2174));
+
+                return default;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for extracting client credentials from the standard HTTP Authorization header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
@@ -709,7 +775,7 @@ public static partial class OpenIddictServerOwinHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<ExtractBasicAuthenticationCredentials<TContext>>()
-                .SetOrder(ExtractPostRequest<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(ValidateClientAuthenticationMethod<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

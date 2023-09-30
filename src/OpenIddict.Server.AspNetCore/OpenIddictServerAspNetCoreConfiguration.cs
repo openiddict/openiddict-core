@@ -47,6 +47,9 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
 
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core server components.
         options.Handlers.AddRange(OpenIddictServerAspNetCoreHandlers.DefaultHandlers);
+
+        // Enable client_secret_basic support by default.
+        options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
     }
 
     /// <inheritdoc/>

@@ -510,30 +510,22 @@ public static partial class OpenIddictServerHandlers
                 // but is supported by OpenIddict 4.3.0 and higher for consistency with the other endpoints.
                 if (context.DeviceEndpoint is not null)
                 {
-                    context.DeviceEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
-                    context.DeviceEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
-                    context.DeviceEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.PrivateKeyJwt);
+                    context.DeviceEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
                 }
 
                 if (context.IntrospectionEndpoint is not null)
                 {
-                    context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
-                    context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
-                    context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.PrivateKeyJwt);
+                    context.IntrospectionEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
                 }
 
                 if (context.RevocationEndpoint is not null)
                 {
-                    context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
-                    context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
-                    context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.PrivateKeyJwt);
+                    context.RevocationEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
                 }
 
                 if (context.TokenEndpoint is not null)
                 {
-                    context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
-                    context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
-                    context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.PrivateKeyJwt);
+                    context.TokenEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
                 }
 
                 return default;

@@ -17,6 +17,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
              * Token request extraction:
              */
             ExtractPostRequest<ExtractTokenRequestContext>.Descriptor,
+            ValidateClientAuthenticationMethod<ExtractTokenRequestContext>.Descriptor,
             ExtractBasicAuthenticationCredentials<ExtractTokenRequestContext>.Descriptor,
 
             /*

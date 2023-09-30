@@ -26,6 +26,9 @@ public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenId
 
         // Register the built-in event handlers used by the OpenIddict OWIN server components.
         options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
+
+        // Enable client_secret_basic support by default.
+        options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
     }
 
     /// <inheritdoc/>

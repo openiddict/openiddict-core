@@ -17,6 +17,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
              * Revocation request extraction:
              */
             ExtractPostRequest<ExtractRevocationRequestContext>.Descriptor,
+            ValidateClientAuthenticationMethod<ExtractRevocationRequestContext>.Descriptor,
             ExtractBasicAuthenticationCredentials<ExtractRevocationRequestContext>.Descriptor,
 
             /*

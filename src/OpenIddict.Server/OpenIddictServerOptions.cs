@@ -306,8 +306,30 @@ public sealed class OpenIddictServerOptions
     public bool DisableScopeValidation { get; set; }
 
     /// <summary>
+    /// Gets the OAuth 2.0 client assertion types enabled for this application.
+    /// </summary>
+    public HashSet<string> ClientAssertionTypes { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.ClientAssertionTypes.JwtBearer
+    };
+
+    /// <summary>
+    /// Gets the OAuth 2.0 client authentication methods enabled for this application.
+    /// </summary>
+    public HashSet<string> ClientAuthenticationMethods { get; } = new(StringComparer.Ordinal)
+    {
+        // Note: client_secret_basic is deliberately not added here as it requires
+        // a dedicated event handler (typically provided by the host integration)
+        // to extract the client credentials from the standard Authorization header.
+        //
+        // Both the ASP.NET Core and OWIN hosts support the client_secret_basic
+        // authentication method and automatically add it to this list at runtime.
+        OpenIddictConstants.ClientAuthenticationMethods.ClientSecretPost,
+        OpenIddictConstants.ClientAuthenticationMethods.PrivateKeyJwt
+    };
+
+    /// <summary>
     /// Gets the OAuth 2.0 code challenge methods enabled for this application.
-    /// By default, only the S256 method is allowed (if the code flow is enabled).
     /// </summary>
     public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal);
 

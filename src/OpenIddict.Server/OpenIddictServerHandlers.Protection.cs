@@ -298,7 +298,13 @@ public static partial class OpenIddictServerHandlers
                 }))
                 {
                     context.Reject(
-                        error: Errors.InvalidToken,
+                        error: context.ValidTokenTypes.Count switch
+                        {
+                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                                => Errors.InvalidClient,
+
+                            _ => Errors.InvalidToken
+                        },
                         description: context.ValidTokenTypes.Count switch
                         {
                             1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
@@ -422,7 +428,13 @@ public static partial class OpenIddictServerHandlers
                     context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
 
                     context.Reject(
-                        error: Errors.InvalidToken,
+                        error: context.ValidTokenTypes.Count switch
+                        {
+                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                                => Errors.InvalidClient,
+
+                            _ => Errors.InvalidToken
+                        },
                         description: result.Exception switch
                         {
                             SecurityTokenInvalidTypeException => context.ValidTokenTypes.Count switch
@@ -791,7 +803,13 @@ public static partial class OpenIddictServerHandlers
                 if (context.Principal is null)
                 {
                     context.Reject(
-                        error: Errors.InvalidToken,
+                        error: context.ValidTokenTypes.Count switch
+                        {
+                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                                => Errors.InvalidClient,
+
+                            _ => Errors.InvalidToken
+                        },
                         description: context.ValidTokenTypes.Count switch
                         {
                             1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
@@ -874,8 +892,9 @@ public static partial class OpenIddictServerHandlers
                     context.Reject(
                         error: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.DeviceCode => Errors.ExpiredToken,
-                            _                         => Errors.InvalidToken
+                            TokenTypeHints.ClientAssertion => Errors.InvalidClient,
+                            TokenTypeHints.DeviceCode      => Errors.ExpiredToken,
+                            _                              => Errors.InvalidToken
                         },
                         description: context.Principal.GetTokenType() switch
                         {
@@ -953,7 +972,12 @@ public static partial class OpenIddictServerHandlers
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6002), context.TokenId);
 
                         context.Reject(
-                            error: Errors.InvalidToken,
+                            error: context.Principal.GetTokenType() switch
+                            {
+                                TokenTypeHints.ClientAssertion => Errors.InvalidClient,
+
+                                _ => Errors.InvalidToken
+                            },
                             description: context.Principal.GetTokenType() switch
                             {
                                 TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2010),
@@ -1011,7 +1035,12 @@ public static partial class OpenIddictServerHandlers
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), context.TokenId);
 
                     context.Reject(
-                        error: Errors.InvalidToken,
+                        error: context.Principal.GetTokenType() switch
+                        {
+                            TokenTypeHints.ClientAssertion => Errors.InvalidClient,
+
+                            _ => Errors.InvalidToken
+                        },
                         description: context.Principal.GetTokenType() switch
                         {
                             TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2016),
@@ -1123,7 +1152,12 @@ public static partial class OpenIddictServerHandlers
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6006), context.AuthorizationId);
 
                     context.Reject(
-                        error: Errors.InvalidToken,
+                        error: context.Principal.GetTokenType() switch
+                        {
+                            TokenTypeHints.ClientAssertion => Errors.InvalidClient,
+
+                            _ => Errors.InvalidToken
+                        },
                         description: context.Principal.GetTokenType() switch
                         {
                             TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2020),

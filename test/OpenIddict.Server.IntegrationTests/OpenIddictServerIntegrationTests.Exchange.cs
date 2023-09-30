@@ -1418,20 +1418,27 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task ValidateTokenRequest_RequestIsRejectedWhenUnsupportedClientAssertionTypeIsSpecified()
     {
         // Arrange
-        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.Configure(options => options.ClientAuthenticationMethods.Remove(ClientAuthenticationMethods.PrivateKeyJwt));
+            options.Configure(options => options.ClientAssertionTypes.Remove(ClientAssertionTypes.JwtBearer));
+        });
+
         await using var client = await server.CreateClientAsync();
 
         // Act
         var response = await client.PostAsync("/connect/token", new OpenIddictRequest
         {
             ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
-            ClientAssertionType = "unknown",
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
             ClientId = "Fabrikam",
             GrantType = GrantTypes.ClientCredentials
         });
 
         // Assert
-        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(Errors.InvalidClient, response.Error);
         Assert.Equal(SR.FormatID2032(Parameters.ClientAssertionType), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
     }

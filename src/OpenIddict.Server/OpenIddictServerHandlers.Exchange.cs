@@ -551,18 +551,6 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                // Ensure the specified client_assertion_type is supported.
-                if (!string.IsNullOrEmpty(context.Request.ClientAssertionType) &&
-                    !string.Equals(context.Request.ClientAssertionType, ClientAssertionTypes.JwtBearer, StringComparison.Ordinal))
-                {
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2032(Parameters.ClientAssertionType),
-                        uri: SR.FormatID8000(SR.ID2032));
-
-                    return default;
-                }
-
                 // Reject requests that use multiple client authentication methods.
                 //
                 // See https://tools.ietf.org/html/rfc6749#section-2.3 for more information.
@@ -575,6 +563,18 @@ public static partial class OpenIddictServerHandlers
                         error: Errors.InvalidRequest,
                         description: SR.GetResourceString(SR.ID2087),
                         uri: SR.FormatID8000(SR.ID2087));
+
+                    return default;
+                }
+
+                // Ensure the specified client_assertion_type is supported.
+                if (!string.IsNullOrEmpty(context.Request.ClientAssertionType) &&
+                    !context.Options.ClientAssertionTypes.Contains(context.Request.ClientAssertionType))
+                {
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: SR.FormatID2032(Parameters.ClientAssertionType),
+                        uri: SR.FormatID8000(SR.ID2032));
 
                     return default;
                 }
