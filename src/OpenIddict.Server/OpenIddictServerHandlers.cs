@@ -579,7 +579,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.RejectClientAssertion)
                 {
                     context.Reject(
-                        error: notification.Error ?? Errors.InvalidRequest,
+                        error: notification.Error ?? Errors.InvalidClient,
                         description: notification.ErrorDescription,
                         uri: notification.ErrorUri);
                     return;

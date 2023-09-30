@@ -15,6 +15,70 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests;
 public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServerIntegrationTests
 {
     [Fact]
+    public async Task ExtractRevocationRequest_ClientSecretFromRequestCausesAnErrorWhenClientSecretPostIsDisabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.Configure(options => options.ClientAuthenticationMethods.Remove(ClientAuthenticationMethods.ClientSecretPost));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.FormatID2174(ClientAuthenticationMethods.ClientSecretPost), response.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ExtractRevocationRequest_ClientSecretFromHeaderCausesAnErrorWhenClientSecretBasicIsDisabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.Configure(options => options.ClientAuthenticationMethods.Remove(ClientAuthenticationMethods.ClientSecretBasic));
+
+            options.AddEventHandler<ExtractRevocationRequestContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    var request = context.Transaction.GetHttpRequest()!;
+                    request.Headers[HeaderNames.Authorization] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
+
+                    return default;
+                });
+
+                builder.SetOrder(int.MinValue);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Token = "2YotnFZFEjr1zCsicMWpAA"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.FormatID2174(ClientAuthenticationMethods.ClientSecretBasic), response.ErrorDescription);
+    }
+
+    [Fact]
     public async Task ExtractRevocationRequest_MultipleClientCredentialsCauseAnError()
     {
         // Arrange

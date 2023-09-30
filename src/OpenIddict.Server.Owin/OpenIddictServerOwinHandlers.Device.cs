@@ -19,6 +19,7 @@ public static partial class OpenIddictServerOwinHandlers
              * Device request extraction:
              */
             ExtractPostRequest<ExtractDeviceRequestContext>.Descriptor,
+            ValidateClientAuthenticationMethod<ExtractDeviceRequestContext>.Descriptor,
             ExtractBasicAuthenticationCredentials<ExtractDeviceRequestContext>.Descriptor,
 
             /*

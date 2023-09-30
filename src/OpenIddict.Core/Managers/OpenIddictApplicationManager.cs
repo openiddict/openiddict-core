@@ -1401,7 +1401,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         var value = await Store.GetClientSecretAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(value))
         {
-            Logger.LogError(SR.GetResourceString(SR.ID6160), await GetClientIdAsync(application, cancellationToken));
+            Logger.LogInformation(SR.GetResourceString(SR.ID6160), await GetClientIdAsync(application, cancellationToken));
 
             return false;
         }

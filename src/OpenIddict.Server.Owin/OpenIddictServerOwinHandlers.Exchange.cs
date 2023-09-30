@@ -17,6 +17,7 @@ public static partial class OpenIddictServerOwinHandlers
              * Token request extraction:
              */
             ExtractPostRequest<ExtractTokenRequestContext>.Descriptor,
+            ValidateClientAuthenticationMethod<ExtractTokenRequestContext>.Descriptor,
             ExtractBasicAuthenticationCredentials<ExtractTokenRequestContext>.Descriptor,
 
             /*

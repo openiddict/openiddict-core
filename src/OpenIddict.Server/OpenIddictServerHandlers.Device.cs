@@ -433,10 +433,10 @@ public static partial class OpenIddictServerHandlers
 
                 // Ensure the specified client_assertion_type is supported.
                 if (!string.IsNullOrEmpty(context.Request.ClientAssertionType) &&
-                    !string.Equals(context.Request.ClientAssertionType, ClientAssertionTypes.JwtBearer, StringComparison.Ordinal))
+                    !context.Options.ClientAssertionTypes.Contains(context.Request.ClientAssertionType))
                 {
                     context.Reject(
-                        error: Errors.InvalidRequest,
+                        error: Errors.InvalidClient,
                         description: SR.FormatID2032(Parameters.ClientAssertionType),
                         uri: SR.FormatID8000(SR.ID2032));
 

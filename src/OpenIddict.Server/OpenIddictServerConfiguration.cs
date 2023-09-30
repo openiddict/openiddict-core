@@ -127,6 +127,30 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             }
         }
 
+        // Ensure at least one client authentication method is enabled (unless no non-interactive endpoint was enabled).
+        if (options.ClientAuthenticationMethods.Count is 0 && (options.DeviceEndpointUris.Count        is not 0 ||
+                                                               options.IntrospectionEndpointUris.Count is not 0 ||
+                                                               options.RevocationEndpointUris.Count    is not 0 ||
+                                                               options.TokenEndpointUris.Count         is not 0))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0419));
+        }
+
+        // Ensure the client authentication methods/client assertion types configuration is consistent.
+        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+           !options.ClientAssertionTypes.Contains(ClientAssertionTypes.JwtBearer))
+        {
+            throw new InvalidOperationException(SR.FormatID0420(
+                ClientAssertionTypes.JwtBearer, ClientAuthenticationMethods.PrivateKeyJwt));
+        }
+
+        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.ClientSecretJwt) &&
+           !options.ClientAssertionTypes.Contains(ClientAssertionTypes.JwtBearer))
+        {
+            throw new InvalidOperationException(SR.FormatID0420(
+                ClientAssertionTypes.JwtBearer, ClientAuthenticationMethods.ClientSecretJwt));
+        }
+
         // Ensure reference tokens support was not enabled when token storage is disabled.
         if (options.DisableTokenStorage && (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens))
         {

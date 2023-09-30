@@ -1563,6 +1563,12 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0418" xml:space="preserve">
     <value>A client identifier must be specified in the client registration or web provider options when using 'response_type=none', the authorization code/hybrid/implicit flows or the device authorization flow.</value>
   </data>
+  <data name="ID0419" xml:space="preserve">
+    <value>At least one client authentication method must be configured when enabling the device authorization, introspection, revocation or token endpoints.</value>
+  </data>
+  <data name="ID0420" xml:space="preserve">
+    <value>The '{0}' client assertion type must be configured when enabling the '{1}' client authentication method.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2081,6 +2087,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID2173" xml:space="preserve">
     <value>The '{0}' claim returned in the specified client assertion doesn't match the expected value.</value>
+  </data>
+  <data name="ID2174" xml:space="preserve">
+    <value>The '{0}' client authentication method is not supported.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2723,6 +2732,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6226" xml:space="preserve">
     <value>The authentication demand was rejected because the public application '{ClientId}' was not allowed to send a client assertion.</value>
+  </data>
+  <data name="ID6227" xml:space="preserve">
+    <value>The request was rejected because the '{Method}' client authentication method that was used by the client application is not enabled in the server options.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

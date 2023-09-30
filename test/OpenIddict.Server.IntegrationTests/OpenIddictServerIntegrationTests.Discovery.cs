@@ -409,7 +409,12 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenTokenEndpointIsEnabled()
     {
         // Arrange
-        await using var server = await CreateServerAsync();
+        await using var server = await CreateServerAsync(options => options.Configure(options =>
+        {
+            options.ClientAuthenticationMethods.Remove(ClientAuthenticationMethods.ClientSecretBasic);
+            options.ClientAuthenticationMethods.Add("custom");
+        }));
+
         await using var client = await server.CreateClientAsync();
 
         // Act
@@ -418,8 +423,10 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
+        Assert.Equal(3, methods.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
+        Assert.Contains("custom", methods);
     }
 
     [Fact]
@@ -444,7 +451,12 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenIntrospectionEndpointIsEnabled()
     {
         // Arrange
-        await using var server = await CreateServerAsync();
+        await using var server = await CreateServerAsync(options => options.Configure(options =>
+        {
+            options.ClientAuthenticationMethods.Remove(ClientAuthenticationMethods.ClientSecretBasic);
+            options.ClientAuthenticationMethods.Add("custom");
+        }));
+
         await using var client = await server.CreateClientAsync();
 
         // Act
@@ -453,8 +465,10 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
+        Assert.Equal(3, methods.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
+        Assert.Contains("custom", methods);
     }
 
     [Fact]
@@ -479,7 +493,12 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenRevocationEndpointIsEnabled()
     {
         // Arrange
-        await using var server = await CreateServerAsync();
+        await using var server = await CreateServerAsync(options => options.Configure(options =>
+        {
+            options.ClientAuthenticationMethods.Remove(ClientAuthenticationMethods.ClientSecretBasic);
+            options.ClientAuthenticationMethods.Add("custom");
+        }));
+
         await using var client = await server.CreateClientAsync();
 
         // Act
@@ -488,8 +507,10 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
+        Assert.Equal(3, methods.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
+        Assert.Contains("custom", methods);
     }
 
     [Fact]
@@ -515,7 +536,12 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenDeviceEndpointIsEnabled()
     {
         // Arrange
-        await using var server = await CreateServerAsync();
+        await using var server = await CreateServerAsync(options => options.Configure(options =>
+        {
+            options.ClientAuthenticationMethods.Remove(ClientAuthenticationMethods.ClientSecretBasic);
+            options.ClientAuthenticationMethods.Add("custom");
+        }));
+
         await using var client = await server.CreateClientAsync();
 
         // Act
@@ -524,8 +550,10 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
+        Assert.Equal(3, methods.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
+        Assert.Contains("custom", methods);
     }
 
     [Fact]
