@@ -794,7 +794,12 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleConfigurationRequest_SupportedSubjectTypesAreCorrectlyReturned()
     {
         // Arrange
-        await using var server = await CreateServerAsync();
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.SubjectTypes.Remove(SubjectTypes.Public));
+            options.Configure(options => options.SubjectTypes.Add("custom"));
+        });
+
         await using var client = await server.CreateClientAsync();
 
         // Act
@@ -803,7 +808,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.NotNull(types);
-        Assert.Contains(SubjectTypes.Public, types);
+        Assert.Equal("custom", Assert.Single(types));
     }
 
     [Theory]
