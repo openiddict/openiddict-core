@@ -22,6 +22,7 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
     private readonly MemoryCache _cache;
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
     private readonly IOpenIddictTokenStore<TToken> _store;
+    private readonly TimeSpan? _expiration;
 
     public OpenIddictTokenCache(
         IOptionsMonitor<OpenIddictCoreOptions> options,
@@ -31,6 +32,8 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
         {
             SizeLimit = (options ?? throw new ArgumentNullException(nameof(options))).CurrentValue.EntityCacheLimit
         });
+
+        _expiration = options.CurrentValue.EntityCacheExpiration;
 
         _signals = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
         _store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TToken>();
@@ -517,6 +520,11 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
         {
             entry.AddExpirationToken(await CreateExpirationSignalAsync(token, cancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
+
+            if (_expiration is TimeSpan expiration)
+            {
+                entry.SetAbsoluteExpiration(expiration);
+            }
         }
 
         entry.Size = 1L;
@@ -543,6 +551,11 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
         {
             entry.AddExpirationToken(await CreateExpirationSignalAsync(token, cancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
+
+            if (_expiration is TimeSpan expiration)
+            {
+                entry.SetAbsoluteExpiration(expiration);
+            }
         }
 
         entry.Size = tokens.Length;

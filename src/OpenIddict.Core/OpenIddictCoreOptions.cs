@@ -59,4 +59,11 @@ public sealed class OpenIddictCoreOptions
     /// This property is not used when <see cref="DisableEntityCaching"/> is <see langword="true"/>.
     /// </summary>
     public int EntityCacheLimit { get; set; } = 250;
+
+    /// <summary>
+    /// Gets or sets the duration a cached entry remains valid. When this period is elapsed,
+    /// the cache entry is automatically removed when compaction occurred.
+    /// If this value is set to <c>null</c>, the entries will never be expired.
+    /// </summary>
+    public TimeSpan? EntityCacheExpiration { get; set; }
 }
