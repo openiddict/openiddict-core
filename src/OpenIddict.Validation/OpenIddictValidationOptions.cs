@@ -32,6 +32,30 @@ public sealed class OpenIddictValidationOptions
     public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
 
     /// <summary>
+    /// Gets the list of signing credentials used by the OpenIddict validation services.
+    /// Multiple credentials can be added to support key rollover, but if X.509 keys
+    /// are used, at least one of them must have a valid creation/expiration date.
+    /// Note: the signing credentials are not used to protect/unprotect tokens issued
+    /// by ASP.NET Core Data Protection, that uses its own key ring, configured separately.
+    /// </summary>
+    /// <remarks>
+    /// Note: OpenIddict automatically sorts the credentials based on the following algorithm:
+    /// <list type="bullet">
+    ///   <item><description>Symmetric keys are always preferred when they can be used for the operation (e.g token signing).</description></item>
+    ///   <item><description>X.509 keys are always preferred to non-X.509 asymmetric keys.</description></item>
+    ///   <item><description>X.509 keys with the furthest expiration date are preferred.</description></item>
+    ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
+    /// </list>
+    /// </remarks>
+    public List<SigningCredentials> SigningCredentials { get; } = new();
+
+    /// <summary>
+    /// Gets or sets the period of time client assertions remain valid after being issued. The default value is 5 minutes.
+    /// While not recommended, this property can be set to <see langword="null"/> to issue client assertions that never expire.
+    /// </summary>
+    public TimeSpan? ClientAssertionLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// Gets or sets the JWT handler used to protect and unprotect tokens.
     /// </summary>
     public JsonWebTokenHandler JsonWebTokenHandler { get; set; } = new()

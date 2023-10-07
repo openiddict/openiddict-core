@@ -36,12 +36,20 @@ public static partial class OpenIddictValidationEvents
         /// <summary>
         /// Gets or sets the token sent to the introspection endpoint.
         /// </summary>
-        public string? Token { get; set; }
+        public string? Token
+        {
+            get => Request.Token;
+            set => Request.Token = value;
+        }
 
         /// <summary>
         /// Gets or sets the token type sent to the introspection endpoint.
         /// </summary>
-        public string? TokenTypeHint { get; set; }
+        public string? TokenTypeHint
+        {
+            get => Request.TokenTypeHint;
+            set => Request.TokenTypeHint = value;
+        }
     }
 
     /// <summary>

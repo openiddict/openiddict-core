@@ -562,7 +562,7 @@ Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.A
     <value>The client identifier cannot be null or empty when using introspection.</value>
   </data>
   <data name="ID0132" xml:space="preserve">
-    <value>The client secret cannot be null or empty when using introspection.</value>
+    <value>The client secret cannot be null or empty when using introspection. Alternatively, one or multiple signing credentials can be registered and used to produce client assertions if the authorization server supports this client authentication method.</value>
   </data>
   <data name="ID0133" xml:space="preserve">
     <value>Authorization entry validation cannot be enabled when using introspection.</value>

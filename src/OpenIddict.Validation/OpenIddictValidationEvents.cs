@@ -289,6 +289,16 @@ public static partial class OpenIddictValidationEvents
         }
 
         /// <summary>
+        /// Gets or sets the URI of the introspection endpoint, if applicable.
+        /// </summary>
+        public Uri? IntrospectionEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an introspection request should be sent.
+        /// </summary>
+        public bool SendIntrospectionRequest { get; set; }
+
+        /// <summary>
         /// Gets or sets the principal extracted from the access token, if applicable.
         /// </summary>
         public ClaimsPrincipal? AccessTokenPrincipal { get; set; }
@@ -333,6 +343,54 @@ public static partial class OpenIddictValidationEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RejectAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request sent to the introspection endpoint, if applicable.
+        /// </summary>
+        public OpenIddictRequest? IntrospectionRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response returned by the introspection endpoint, if applicable.
+        /// </summary>
+        public OpenIddictResponse? IntrospectionResponse { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a client assertion
+        /// token should be generated (and optionally included in the request).
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool GenerateClientAssertion { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the generated client
+        /// assertion should be included as part of the request.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool IncludeClientAssertion { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generated client assertion, if applicable.
+        /// The client assertion will only be returned if
+        /// <see cref="IncludeClientAssertion"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? ClientAssertion { get; set; }
+
+        /// <summary>
+        /// Gets or sets type of the generated client assertion, if applicable.
+        /// The client assertion type will only be returned if
+        /// <see cref="IncludeClientAssertion"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? ClientAssertionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal containing the claims that will be
+        /// used to create the client assertion, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? ClientAssertionPrincipal { get; set; }
     }
 
     /// <summary>

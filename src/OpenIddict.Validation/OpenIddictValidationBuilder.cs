@@ -344,6 +344,245 @@ public sealed class OpenIddictValidationBuilder
     }
 
     /// <summary>
+    /// Registers signing credentials.
+    /// </summary>
+    /// <param name="credentials">The signing credentials.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCredentials(SigningCredentials credentials)
+    {
+        if (credentials is null)
+        {
+            throw new ArgumentNullException(nameof(credentials));
+        }
+
+        return Configure(options => options.SigningCredentials.Add(credentials));
+    }
+
+    /// <summary>
+    /// Registers a signing key.
+    /// </summary>
+    /// <param name="key">The security key.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningKey(SecurityKey key)
+    {
+        if (key is null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        // If the signing key is an asymmetric security key, ensure it has a private key.
+        if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
+            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+        }
+
+#if SUPPORTS_ECDSA
+        // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha384));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
+        }
+#else
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
+            key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
+            key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
+        }
+#endif
+
+        throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
+    }
+
+    /// <summary>
+    /// Registers a signing certificate.
+    /// </summary>
+    /// <param name="certificate">The signing certificate.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCertificate(X509Certificate2 certificate)
+    {
+        if (certificate is null)
+        {
+            throw new ArgumentNullException(nameof(certificate));
+        }
+
+        // If the certificate is a X.509v3 certificate that specifies at least
+        // one key usage, ensure that the certificate key can be used for signing.
+        if (certificate.Version >= 3)
+        {
+            var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
+            if (extensions.Count is not 0 && !extensions.Exists(static extension =>
+                extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0070));
+            }
+        }
+
+        if (!certificate.HasPrivateKey)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0061));
+        }
+
+        return AddSigningKey(new X509SecurityKey(certificate));
+    }
+
+    /// <summary>
+    /// Registers a signing certificate retrieved from an embedded resource.
+    /// </summary>
+    /// <param name="assembly">The assembly containing the certificate.</param>
+    /// <param name="resource">The name of the embedded resource.</param>
+    /// <param name="password">The password used to open the certificate.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCertificate(Assembly assembly, string resource, string? password)
+#if SUPPORTS_EPHEMERAL_KEY_SETS
+        // Note: ephemeral key sets are currently not supported on macOS.
+        => AddSigningCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            X509KeyStorageFlags.MachineKeySet :
+            X509KeyStorageFlags.EphemeralKeySet);
+#else
+        => AddSigningCertificate(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
+#endif
+
+    /// <summary>
+    /// Registers a signing certificate retrieved from an embedded resource.
+    /// </summary>
+    /// <param name="assembly">The assembly containing the certificate.</param>
+    /// <param name="resource">The name of the embedded resource.</param>
+    /// <param name="password">The password used to open the certificate.</param>
+    /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCertificate(
+        Assembly assembly, string resource,
+        string? password, X509KeyStorageFlags flags)
+    {
+        if (assembly is null)
+        {
+            throw new ArgumentNullException(nameof(assembly));
+        }
+
+        if (string.IsNullOrEmpty(resource))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
+        }
+
+        using var stream = assembly.GetManifestResourceStream(resource) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
+
+        return AddSigningCertificate(stream, password, flags);
+    }
+
+    /// <summary>
+    /// Registers a signing certificate extracted from a stream.
+    /// </summary>
+    /// <param name="stream">The stream containing the certificate.</param>
+    /// <param name="password">The password used to open the certificate.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCertificate(Stream stream, string? password)
+#if SUPPORTS_EPHEMERAL_KEY_SETS
+        // Note: ephemeral key sets are currently not supported on macOS.
+        => AddSigningCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            X509KeyStorageFlags.MachineKeySet :
+            X509KeyStorageFlags.EphemeralKeySet);
+#else
+        => AddSigningCertificate(stream, password, X509KeyStorageFlags.MachineKeySet);
+#endif
+
+    /// <summary>
+    /// Registers a signing certificate extracted from a stream.
+    /// </summary>
+    /// <param name="stream">The stream containing the certificate.</param>
+    /// <param name="password">The password used to open the certificate.</param>
+    /// <param name="flags">
+    /// An enumeration of flags indicating how and where
+    /// to store the private key of the certificate.
+    /// </param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
+    {
+        if (stream is null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+
+        using var buffer = new MemoryStream();
+        stream.CopyTo(buffer);
+
+        return AddSigningCertificate(new X509Certificate2(buffer.ToArray(), password, flags));
+    }
+
+    /// <summary>
+    /// Registers a signing certificate retrieved from the X.509 user or machine store.
+    /// </summary>
+    /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCertificate(string thumbprint)
+    {
+        if (string.IsNullOrEmpty(thumbprint))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
+        }
+
+        return AddSigningCertificate(
+            GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
+            GetCertificate(StoreLocation.LocalMachine, thumbprint) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
+
+        static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
+        {
+            using var store = new X509Store(StoreName.My, location);
+            store.Open(OpenFlags.ReadOnly);
+
+            return store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
+                .OfType<X509Certificate2>()
+                .SingleOrDefault();
+        }
+    }
+
+    /// <summary>
+    /// Registers a signing certificate retrieved from the specified X.509 store.
+    /// </summary>
+    /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+    /// <param name="name">The name of the X.509 store.</param>
+    /// <param name="location">The location of the X.509 store.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCertificate(string thumbprint, StoreName name, StoreLocation location)
+    {
+        if (string.IsNullOrEmpty(thumbprint))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
+        }
+
+        using var store = new X509Store(name, location);
+        store.Open(OpenFlags.ReadOnly);
+
+        return AddSigningCertificate(
+            store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
+                .OfType<X509Certificate2>()
+                .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
+    }
+
+    /// <summary>
     /// Registers the specified values as valid audiences. Setting the audiences is recommended
     /// when the authorization server issues access tokens for multiple distinct resource servers.
     /// </summary>
@@ -383,6 +622,17 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder EnableTokenEntryValidation()
         => Configure(options => options.EnableTokenEntryValidation = true);
+
+    /// <summary>
+    /// Sets the client assertion lifetime, after which backchannel requests
+    /// using an expired client assertion should be automatically rejected by the server.
+    /// Using long-lived client assertion or assertions that never expire is not recommended.
+    /// While discouraged, <see langword="null"/> can be specified to issue assertions that never expire.
+    /// </summary>
+    /// <param name="lifetime">The access token lifetime.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder SetClientAssertionLifetime(TimeSpan? lifetime)
+        => Configure(options => options.ClientAssertionLifetime = lifetime);
 
     /// <summary>
     /// Sets a static OpenID Connect server configuration, that will be used to
