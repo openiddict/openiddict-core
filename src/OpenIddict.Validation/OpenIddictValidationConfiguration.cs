@@ -74,7 +74,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0131));
             }
 
-            if (string.IsNullOrEmpty(options.ClientSecret))
+            if (options.SigningCredentials.Count is 0 && string.IsNullOrEmpty(options.ClientSecret))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0132));
             }
@@ -138,9 +138,38 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
+        // Sort the encryption and signing credentials.
+        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+
         // Attach the encryption credentials to the token validation parameters.
         options.TokenValidationParameters.TokenDecryptionKeys =
             from credentials in options.EncryptionCredentials
             select credentials.Key;
+
+        static int Compare(SecurityKey left, SecurityKey right) => (left, right) switch
+        {
+            // If the two keys refer to the same instances, return 0.
+            (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
+
+            // If one of the keys is a symmetric key, prefer it to the other one.
+            (SymmetricSecurityKey, SymmetricSecurityKey) => 0,
+            (SymmetricSecurityKey, SecurityKey) => -1,
+            (SecurityKey, SymmetricSecurityKey) => 1,
+
+            // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
+            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
+            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => 1,
+
+            // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
+            (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),
+
+            // If one of the keys is backed by a X.509 certificate, prefer the X.509 security key.
+            (X509SecurityKey, SecurityKey) => -1,
+            (SecurityKey, X509SecurityKey) => 1,
+
+            // If the two keys are not backed by a X.509 certificate, none should be preferred to the other.
+            (SecurityKey, SecurityKey) => 0
+        };
     }
 }

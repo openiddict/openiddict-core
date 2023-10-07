@@ -19,78 +19,12 @@ public static partial class OpenIddictValidationHandlers
             /*
              * Introspection response handling:
              */
-            AttachCredentials.Descriptor,
-            AttachToken.Descriptor,
-
-            /*
-             * Introspection response handling:
-             */
             ValidateWellKnownParameters.Descriptor,
             HandleErrorResponse.Descriptor,
             HandleInactiveResponse.Descriptor,
             ValidateIssuer.Descriptor,
             ValidateTokenUsage.Descriptor,
             PopulateClaims.Descriptor);
-
-        /// <summary>
-        /// Contains the logic responsible for attaching the client credentials to the introspection request.
-        /// </summary>
-        public sealed class AttachCredentials : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
-                    .UseSingletonHandler<AttachCredentials>()
-                    .SetOrder(int.MinValue + 100_000)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                context.Request.ClientId = context.Options.ClientId;
-                context.Request.ClientSecret = context.Options.ClientSecret;
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for attaching the token to the introspection request.
-        /// </summary>
-        public sealed class AttachToken : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
-                    .UseSingletonHandler<AttachToken>()
-                    .SetOrder(AttachCredentials.Descriptor.Order + 100_000)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                context.Request.Token = context.Token;
-                context.Request.TokenTypeHint = context.TokenTypeHint;
-
-                return default;
-            }
-        }
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the introspection response.

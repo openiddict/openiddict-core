@@ -544,13 +544,14 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.ClientAssertionPrincipal is not null || string.IsNullOrEmpty(context.ClientAssertion))
+            if (string.IsNullOrEmpty(context.ClientAssertion))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.ClientAssertionPrincipal,
                 Token = context.ClientAssertion,
                 TokenFormat = context.ClientAssertionType switch
                 {
@@ -1268,13 +1269,14 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.AccessTokenPrincipal is not null || string.IsNullOrEmpty(context.AccessToken))
+            if (string.IsNullOrEmpty(context.AccessToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.AccessTokenPrincipal,
                 Token = context.AccessToken,
                 ValidTokenTypes = { TokenTypeHints.AccessToken }
             };
@@ -1340,13 +1342,14 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.AuthorizationCodePrincipal is not null || string.IsNullOrEmpty(context.AuthorizationCode))
+            if (string.IsNullOrEmpty(context.AuthorizationCode))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.AuthorizationCodePrincipal,
                 Token = context.AuthorizationCode,
                 ValidTokenTypes = { TokenTypeHints.AuthorizationCode }
             };
@@ -1412,13 +1415,14 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.DeviceCodePrincipal is not null || string.IsNullOrEmpty(context.DeviceCode))
+            if (string.IsNullOrEmpty(context.DeviceCode))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.DeviceCodePrincipal,
                 Token = context.DeviceCode,
                 ValidTokenTypes = { TokenTypeHints.DeviceCode }
             };
@@ -1484,13 +1488,14 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.GenericTokenPrincipal is not null || string.IsNullOrEmpty(context.GenericToken))
+            if (string.IsNullOrEmpty(context.GenericToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.GenericTokenPrincipal,
                 Token = context.GenericToken,
                 TokenTypeHint = context.GenericTokenTypeHint,
 
@@ -1574,7 +1579,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.IdentityTokenPrincipal is not null || string.IsNullOrEmpty(context.IdentityToken))
+            if (string.IsNullOrEmpty(context.IdentityToken))
             {
                 return;
             }
@@ -1584,6 +1589,7 @@ public static partial class OpenIddictServerHandlers
                 // Don't validate the lifetime of id_tokens used as id_token_hints.
                 DisableLifetimeValidation = context.EndpointType is OpenIddictServerEndpointType.Authorization or
                                                                     OpenIddictServerEndpointType.Logout,
+                Principal = context.IdentityTokenPrincipal,
                 Token = context.IdentityToken,
                 ValidTokenTypes = { TokenTypeHints.IdToken }
             };
@@ -1649,13 +1655,14 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.RefreshTokenPrincipal is not null || string.IsNullOrEmpty(context.RefreshToken))
+            if (string.IsNullOrEmpty(context.RefreshToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.RefreshTokenPrincipal,
                 Token = context.RefreshToken,
                 ValidTokenTypes = { TokenTypeHints.RefreshToken }
             };
@@ -1721,13 +1728,14 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.UserCodePrincipal is not null || string.IsNullOrEmpty(context.UserCode))
+            if (string.IsNullOrEmpty(context.UserCode))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.UserCodePrincipal,
                 Token = context.UserCode,
                 ValidTokenTypes = { TokenTypeHints.UserCode }
             };

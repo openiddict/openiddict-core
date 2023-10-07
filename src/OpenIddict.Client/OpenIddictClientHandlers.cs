@@ -605,14 +605,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.StateTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.StateToken))
+            if (string.IsNullOrEmpty(context.StateToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.StateTokenPrincipal,
                 Token = context.StateToken,
                 ValidTokenTypes = { TokenTypeHints.StateToken }
             };
@@ -1486,14 +1486,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.FrontchannelIdentityTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.FrontchannelIdentityToken))
+            if (string.IsNullOrEmpty(context.FrontchannelIdentityToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.FrontchannelIdentityTokenPrincipal,
                 Token = context.FrontchannelIdentityToken,
                 ValidTokenTypes = { TokenTypeHints.IdToken }
             };
@@ -2011,14 +2011,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.FrontchannelAccessTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.FrontchannelAccessToken))
+            if (string.IsNullOrEmpty(context.FrontchannelAccessToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.FrontchannelAccessTokenPrincipal,
                 Token = context.FrontchannelAccessToken,
                 ValidTokenTypes = { TokenTypeHints.AccessToken }
             };
@@ -2086,14 +2086,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.AuthorizationCodePrincipal is not null ||
-                string.IsNullOrEmpty(context.AuthorizationCode))
+            if (string.IsNullOrEmpty(context.AuthorizationCode))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.AuthorizationCodePrincipal,
                 Token = context.AuthorizationCode,
                 ValidTokenTypes = { TokenTypeHints.AuthorizationCode }
             };
@@ -2822,14 +2822,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.BackchannelIdentityTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.BackchannelIdentityToken))
+            if (string.IsNullOrEmpty(context.BackchannelIdentityToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.BackchannelIdentityTokenPrincipal,
                 Token = context.BackchannelIdentityToken,
                 ValidTokenTypes = { TokenTypeHints.IdToken }
             };
@@ -3311,14 +3311,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.BackchannelAccessTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.BackchannelAccessToken))
+            if (string.IsNullOrEmpty(context.BackchannelAccessToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.BackchannelAccessTokenPrincipal,
                 Token = context.BackchannelAccessToken,
                 ValidTokenTypes = { TokenTypeHints.AccessToken }
             };
@@ -3386,14 +3386,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.RefreshTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.RefreshToken))
+            if (string.IsNullOrEmpty(context.RefreshToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.RefreshTokenPrincipal,
                 Token = context.RefreshToken,
                 ValidTokenTypes = { TokenTypeHints.RefreshToken }
             };
@@ -3738,14 +3738,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.UserinfoTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.UserinfoToken))
+            if (string.IsNullOrEmpty(context.UserinfoToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                Principal = context.UserinfoTokenPrincipal,
                 Token = context.UserinfoToken,
                 ValidTokenTypes = { TokenTypeHints.UserinfoToken }
             };

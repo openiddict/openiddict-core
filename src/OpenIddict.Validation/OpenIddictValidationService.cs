@@ -382,16 +382,27 @@ public sealed class OpenIddictValidationService
     }
 
     /// <summary>
-    /// Sends an introspection request to the specified URI and returns the corresponding principal.
+    /// Sends the introspection request and retrieves the corresponding response.
     /// </summary>
-    /// <param name="uri">The URI of the remote metadata endpoint.</param>
-    /// <param name="token">The token to introspect.</param>
-    /// <param name="hint">The token type to introspect, used as a hint by the authorization server.</param>
+    /// <param name="configuration">The server configuration.</param>
+    /// <param name="request">The token request.</param>
+    /// <param name="uri">The uri of the remote token endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The claims principal created from the claim retrieved from the remote server.</returns>
-    internal async ValueTask<ClaimsPrincipal> IntrospectTokenAsync(
-        Uri uri, string token, string? hint, CancellationToken cancellationToken = default)
+    /// <returns>The response and the principal extracted from the introspection response.</returns>
+    internal async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> SendIntrospectionRequestAsync(
+        OpenIddictConfiguration configuration, OpenIddictRequest request,
+        Uri? uri = null, CancellationToken cancellationToken = default)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (uri is null)
         {
             throw new ArgumentNullException(nameof(uri));
@@ -400,11 +411,6 @@ public sealed class OpenIddictValidationService
         if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
-        }
-
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0156), nameof(token));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -418,33 +424,25 @@ public sealed class OpenIddictValidationService
         // can be disposed of asynchronously if it implements IAsyncDisposable.
         try
         {
-            var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
-            var configuration = await options.CurrentValue.ConfigurationManager
-                .GetConfigurationAsync(cancellationToken)
-                .WaitAsync(cancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
             var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
             var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
             var transaction = await factory.CreateTransactionAsync();
 
-            var request = new OpenIddictRequest();
             request = await PrepareIntrospectionRequestAsync();
             request = await ApplyIntrospectionRequestAsync();
+
             var response = await ExtractIntrospectionResponseAsync();
 
-            return await HandleIntrospectionResponseAsync() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0157));
+            return await HandleIntrospectionResponseAsync();
 
             async ValueTask<OpenIddictRequest> PrepareIntrospectionRequestAsync()
             {
                 var context = new PrepareIntrospectionRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
-                    Request = request,
-                    Token = token,
-                    TokenTypeHint = hint
+                    Request = request
                 };
 
                 await dispatcher.DispatchAsync(context);
@@ -452,7 +450,7 @@ public sealed class OpenIddictValidationService
                 if (context.IsRejected)
                 {
                     throw new ProtocolException(
-                        SR.FormatID0158(context.Error, context.ErrorDescription, context.ErrorUri),
+                        SR.FormatID0320(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
@@ -463,6 +461,7 @@ public sealed class OpenIddictValidationService
             {
                 var context = new ApplyIntrospectionRequestContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Request = request
@@ -473,11 +472,11 @@ public sealed class OpenIddictValidationService
                 if (context.IsRejected)
                 {
                     throw new ProtocolException(
-                        SR.FormatID0159(context.Error, context.ErrorDescription, context.ErrorUri),
+                        SR.FormatID0321(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6190), context.RemoteUri, context.Request);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
 
                 return context.Request;
             }
@@ -486,6 +485,7 @@ public sealed class OpenIddictValidationService
             {
                 var context = new ExtractIntrospectionResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Request = request
@@ -496,26 +496,26 @@ public sealed class OpenIddictValidationService
                 if (context.IsRejected)
                 {
                     throw new ProtocolException(
-                        SR.FormatID0160(context.Error, context.ErrorDescription, context.ErrorUri),
+                        SR.FormatID0322(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6191), context.RemoteUri, context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
 
                 return context.Response;
             }
 
-            async ValueTask<ClaimsPrincipal> HandleIntrospectionResponseAsync()
+            async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> HandleIntrospectionResponseAsync()
             {
                 var context = new HandleIntrospectionResponseContext(transaction)
                 {
+                    CancellationToken = cancellationToken,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Request = request,
-                    Response = response,
-                    Token = token
+                    Response = response
                 };
 
                 await dispatcher.DispatchAsync(context);
@@ -523,13 +523,13 @@ public sealed class OpenIddictValidationService
                 if (context.IsRejected)
                 {
                     throw new ProtocolException(
-                        SR.FormatID0161(context.Error, context.ErrorDescription, context.ErrorUri),
+                        SR.FormatID0323(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                return context.Principal;
+                return (context.Response, context.Principal);
             }
         }
 
