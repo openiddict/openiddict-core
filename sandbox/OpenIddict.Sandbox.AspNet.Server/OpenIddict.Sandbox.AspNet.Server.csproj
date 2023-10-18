@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\src\OpenIddict.Owin\OpenIddict.Owin.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.EntityFramework\OpenIddict.EntityFramework.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.MongoDb\OpenIddict.MongoDb.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Pruning.BackgroundService\OpenIddict.Pruning.BackgroundService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -56,8 +56,10 @@ public class Startup
                 // options.UseMongoDb()
                 //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
 
-                // Enable Quartz.NET integration.
+                // Enable Quartz.NET integration - mutually exclusive with UseBackgroundServicePruning
                 options.UseQuartz();
+                // Enable Background job integration - mutually exclusive with UseQuartz
+                //options.UseBackgroundServicePruning();
             })
 
             // Register the OpenIddict client components.

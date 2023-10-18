@@ -41,6 +41,9 @@ namespace OpenIddict.Sandbox.AspNet.Server
                     // and configure OpenIddict to use the specified MongoDB database:
                     // options.UseMongoDb()
                     //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
+
+                    // Enable Background job integration
+                    options.UseBackgroundServicePruning();
                 })
 
                 // Register the OpenIddict client components.
