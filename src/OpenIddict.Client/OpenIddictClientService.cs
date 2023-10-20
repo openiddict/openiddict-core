@@ -448,6 +448,7 @@ public sealed class OpenIddictClientService
             return new()
             {
                 AccessToken = context.BackchannelAccessToken!,
+                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate!,
                 IdentityToken = context.BackchannelIdentityToken,
                 IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
                 Principal = context.MergedPrincipal,
@@ -846,6 +847,7 @@ public sealed class OpenIddictClientService
             return new()
             {
                 AccessToken = context.BackchannelAccessToken!,
+                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
                 IdentityToken = context.BackchannelIdentityToken,
                 IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
                 Principal = context.MergedPrincipal,
