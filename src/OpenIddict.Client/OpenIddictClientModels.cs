@@ -67,6 +67,11 @@ public static class OpenIddictClientModels
         public required string? BackchannelAccessToken { get; init; }
 
         /// <summary>
+        /// Gets or sets the expiration date of the back channel access token, if available.
+        /// </summary>
+        public required DateTimeOffset? BackchannelAccessTokenExpirationDate { get; init; }
+
+        /// <summary>
         /// Gets or sets the backchannel identity token, if available.
         /// </summary>
         public required string? BackchannelIdentityToken { get; init; }
@@ -81,6 +86,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the frontchannel access token, if available.
         /// </summary>
         public required string? FrontchannelAccessToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the expiration date of the front channel access token, if available.
+        /// </summary>
+        public required DateTimeOffset? FrontchannelAccessTokenExpirationDate { get; init; }
 
         /// <summary>
         /// Gets or sets the frontchannel identity token, if available.
@@ -254,7 +264,7 @@ public static class OpenIddictClientModels
         public required string AccessToken { get; init; }
 
         /// <summary>
-        /// Gets or sets the access token expiration date, if available.
+        /// Gets or sets the expiration date of the access token, if available.
         /// </summary>
         public required DateTimeOffset? AccessTokenExpirationDate { get; init; }
 
@@ -319,7 +329,6 @@ public static class OpenIddictClientModels
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
-
     }
 
     /// <summary>
@@ -399,6 +408,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the access token.
         /// </summary>
         public required string AccessToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the expiration date of the access token, if available.
+        /// </summary>
+        public required DateTimeOffset? AccessTokenExpirationDate { get; init; }
 
         /// <summary>
         /// Gets or sets the identity token, if available.
@@ -612,6 +626,11 @@ public static class OpenIddictClientModels
         public required string AccessToken { get; init; }
 
         /// <summary>
+        /// Gets or sets the expiration date of the access token, if available.
+        /// </summary>
+        public required DateTimeOffset? AccessTokenExpirationDate { get; init; }
+
+        /// <summary>
         /// Gets or sets the identity token, if available.
         /// </summary>
         public required string? IdentityToken { get; init; }
@@ -721,7 +740,7 @@ public static class OpenIddictClientModels
         public required string AccessToken { get; init; }
 
         /// <summary>
-        /// Gets or sets the access token expiration date, if available.
+        /// Gets or sets the expiration date of the access token, if available.
         /// </summary>
         public required DateTimeOffset? AccessTokenExpirationDate { get; init; }
 
