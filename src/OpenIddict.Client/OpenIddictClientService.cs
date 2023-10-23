@@ -265,7 +265,7 @@ public sealed class OpenIddictClientService
                     AuthorizationCode = context.AuthorizationCode,
                     AuthorizationResponse = context.Request is not null ? new(context.Request.GetParameters()) : new(),
                     BackchannelAccessToken = context.BackchannelAccessToken,
-                    BackchannelAccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate!,
+                    BackchannelAccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
                     BackchannelIdentityToken = context.BackchannelIdentityToken,
                     BackchannelIdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
                     FrontchannelAccessToken = context.FrontchannelAccessToken,
@@ -450,7 +450,7 @@ public sealed class OpenIddictClientService
             return new()
             {
                 AccessToken = context.BackchannelAccessToken!,
-                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate!,
+                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
                 IdentityToken = context.BackchannelIdentityToken,
                 IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
                 Principal = context.MergedPrincipal,
@@ -554,7 +554,7 @@ public sealed class OpenIddictClientService
                         return new()
                         {
                             AccessToken = context.BackchannelAccessToken!,
-                            AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate!,
+                            AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
                             IdentityToken = context.BackchannelIdentityToken,
                             IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
                             Principal = context.MergedPrincipal,
@@ -757,7 +757,7 @@ public sealed class OpenIddictClientService
             return new()
             {
                 AccessToken = context.BackchannelAccessToken!,
-                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate!,
+                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
                 IdentityToken = context.BackchannelIdentityToken,
                 IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
                 Principal = context.MergedPrincipal,
