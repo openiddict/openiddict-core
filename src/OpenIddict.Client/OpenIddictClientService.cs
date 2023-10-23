@@ -269,7 +269,7 @@ public sealed class OpenIddictClientService
                     BackchannelIdentityToken = context.BackchannelIdentityToken,
                     BackchannelIdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
                     FrontchannelAccessToken = context.FrontchannelAccessToken,
-                    FrontchannelAccessTokenExpirationDate = context.FrontchannelAccessTokenExpirationDate!,
+                    FrontchannelAccessTokenExpirationDate = context.FrontchannelAccessTokenExpirationDate,
                     FrontchannelIdentityToken = context.FrontchannelIdentityToken,
                     FrontchannelIdentityTokenPrincipal = context.FrontchannelIdentityTokenPrincipal,
                     Principal = context.MergedPrincipal,
