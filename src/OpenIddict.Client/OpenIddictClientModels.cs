@@ -88,7 +88,7 @@ public static class OpenIddictClientModels
         public required string? FrontchannelAccessToken { get; init; }
 
         /// <summary>
-        /// Gets or sets the expiration date of the front channel access token, if available.
+        /// Gets or sets the expiration date of the frontchannel access token, if available.
         /// </summary>
         public required DateTimeOffset? FrontchannelAccessTokenExpirationDate { get; init; }
 
