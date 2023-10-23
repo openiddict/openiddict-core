@@ -67,7 +67,7 @@ public static class OpenIddictClientModels
         public required string? BackchannelAccessToken { get; init; }
 
         /// <summary>
-        /// Gets or sets the expiration date of the back channel access token, if available.
+        /// Gets or sets the expiration date of the backchannel access token, if available.
         /// </summary>
         public required DateTimeOffset? BackchannelAccessTokenExpirationDate { get; init; }
 
