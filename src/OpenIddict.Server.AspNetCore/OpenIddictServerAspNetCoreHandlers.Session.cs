@@ -25,7 +25,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 {
     public static class Session
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Logout request extraction:
              */
@@ -49,7 +49,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,
             ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
             ProcessQueryResponse.Descriptor,
-            ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
+            ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
@@ -112,7 +113,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 var parameters = context.Options.TokenValidationParameters.Clone();
                 parameters.ValidIssuer ??= (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri;
                 parameters.ValidAudience ??= parameters.ValidIssuer;
-                parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.LogoutRequest };
+                parameters.ValidTypes = [JsonWebTokenTypes.Private.LogoutRequest];
 
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenAsync(token, parameters);
                 if (!result.IsValid)
@@ -193,11 +194,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var request = context.Transaction.GetHttpRequest();
-                if (request is null)
-                {
+                var request = context.Transaction.GetHttpRequest() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-                }
 
                 // Don't cache the request if the request doesn't include any parameter.
                 // If a request_id parameter can be found in the logout request,

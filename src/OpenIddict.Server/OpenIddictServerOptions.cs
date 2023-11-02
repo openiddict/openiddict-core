@@ -37,7 +37,7 @@ public sealed class OpenIddictServerOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>
     /// </remarks>
-    public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
+    public List<EncryptingCredentials> EncryptionCredentials { get; } = [];
 
     /// <summary>
     /// Gets the list of signing credentials used by the OpenIddict server services.
@@ -55,64 +55,64 @@ public sealed class OpenIddictServerOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>
     /// </remarks>
-    public List<SigningCredentials> SigningCredentials { get; } = new();
+    public List<SigningCredentials> SigningCredentials { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the authorization endpoint.
     /// </summary>
-    public List<Uri> AuthorizationEndpointUris { get; } = new();
+    public List<Uri> AuthorizationEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the configuration endpoint.
     /// </summary>
-    public List<Uri> ConfigurationEndpointUris { get; } = new()
-    {
+    public List<Uri> ConfigurationEndpointUris { get; } =
+    [
         new Uri(".well-known/openid-configuration", UriKind.Relative),
         new Uri(".well-known/oauth-authorization-server", UriKind.Relative)
-    };
+    ];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the cryptography endpoint.
     /// </summary>
-    public List<Uri> CryptographyEndpointUris { get; } = new()
-    {
+    public List<Uri> CryptographyEndpointUris { get; } =
+    [
         new Uri(".well-known/jwks", UriKind.Relative)
-    };
+    ];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the device endpoint.
     /// </summary>
-    public List<Uri> DeviceEndpointUris { get; } = new();
+    public List<Uri> DeviceEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the introspection endpoint.
     /// </summary>
-    public List<Uri> IntrospectionEndpointUris { get; } = new();
+    public List<Uri> IntrospectionEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the logout endpoint.
     /// </summary>
-    public List<Uri> LogoutEndpointUris { get; } = new();
+    public List<Uri> LogoutEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the revocation endpoint.
     /// </summary>
-    public List<Uri> RevocationEndpointUris { get; } = new();
+    public List<Uri> RevocationEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the token endpoint.
     /// </summary>
-    public List<Uri> TokenEndpointUris { get; } = new();
+    public List<Uri> TokenEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the userinfo endpoint.
     /// </summary>
-    public List<Uri> UserinfoEndpointUris { get; } = new();
+    public List<Uri> UserinfoEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the verification endpoint.
     /// </summary>
-    public List<Uri> VerificationEndpointUris { get; } = new();
+    public List<Uri> VerificationEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets or sets the JWT handler used to protect and unprotect tokens.

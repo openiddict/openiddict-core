@@ -21,7 +21,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Token validation:
              */
@@ -31,7 +31,8 @@ public static partial class OpenIddictServerDataProtectionHandlers
              * Token generation:
              */
             OverrideGeneratedTokenFormat.Descriptor,
-            GenerateDataProtectionToken.Descriptor);
+            GenerateDataProtectionToken.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using Data Protection.
@@ -209,29 +210,29 @@ public static partial class OpenIddictServerDataProtectionHandlers
                         (type, context.IsReferenceToken) switch
                         {
                             (TokenTypeHints.AccessToken, true)
-                                => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
+                                => [Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server],
                             (TokenTypeHints.AccessToken, false)
-                                => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
+                                => [Handlers.Server, Formats.AccessToken, Schemes.Server],
 
                             (TokenTypeHints.AuthorizationCode, true)
-                                => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
+                                => [Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server],
                             (TokenTypeHints.AuthorizationCode, false)
-                                => new[] { Handlers.Server, Formats.AuthorizationCode, Schemes.Server },
+                                => [Handlers.Server, Formats.AuthorizationCode, Schemes.Server],
 
                             (TokenTypeHints.DeviceCode, true)
-                                => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server },
+                                => [Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server],
                             (TokenTypeHints.DeviceCode, false)
-                                => new[] { Handlers.Server, Formats.DeviceCode, Schemes.Server },
+                                => [Handlers.Server, Formats.DeviceCode, Schemes.Server],
 
                             (TokenTypeHints.RefreshToken, true)
-                                => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server },
+                                => [Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server],
                             (TokenTypeHints.RefreshToken, false)
-                                => new[] { Handlers.Server, Formats.RefreshToken, Schemes.Server },
+                                => [Handlers.Server, Formats.RefreshToken, Schemes.Server],
 
                             (TokenTypeHints.UserCode, true)
-                                => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server },
+                                => [Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server],
                             (TokenTypeHints.UserCode, false)
-                                => new[] { Handlers.Server, Formats.UserCode, Schemes.Server },
+                                => [Handlers.Server, Formats.UserCode, Schemes.Server],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                         });
@@ -357,29 +358,29 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     (context.TokenType, context.IsReferenceToken) switch
                     {
                         (TokenTypeHints.AccessToken, true)
-                            => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
+                            => [Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server],
                         (TokenTypeHints.AccessToken, false)
-                            => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
+                            => [Handlers.Server, Formats.AccessToken, Schemes.Server],
 
                         (TokenTypeHints.AuthorizationCode, true)
-                            => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
+                            => [Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server],
                         (TokenTypeHints.AuthorizationCode, false)
-                            => new[] { Handlers.Server, Formats.AuthorizationCode, Schemes.Server },
+                            => [Handlers.Server, Formats.AuthorizationCode, Schemes.Server],
 
                         (TokenTypeHints.DeviceCode, true)
-                            => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server },
+                            => [Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server],
                         (TokenTypeHints.DeviceCode, false)
-                            => new[] { Handlers.Server, Formats.DeviceCode, Schemes.Server },
+                            => [Handlers.Server, Formats.DeviceCode, Schemes.Server],
 
                         (TokenTypeHints.RefreshToken, true)
-                            => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server },
+                            => [Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server],
                         (TokenTypeHints.RefreshToken, false)
-                            => new[] { Handlers.Server, Formats.RefreshToken, Schemes.Server },
+                            => [Handlers.Server, Formats.RefreshToken, Schemes.Server],
 
                         (TokenTypeHints.UserCode, true)
-                            => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server },
+                            => [Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server],
                         (TokenTypeHints.UserCode, false)
-                            => new[] { Handlers.Server, Formats.UserCode, Schemes.Server },
+                            => [Handlers.Server, Formats.UserCode, Schemes.Server],
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                     });

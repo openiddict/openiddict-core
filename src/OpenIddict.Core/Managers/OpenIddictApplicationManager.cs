@@ -1025,11 +1025,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         await Store.SetDisplayNamesAsync(application, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
         await Store.SetJsonWebKeySetAsync(application, descriptor.JsonWebKeySet, cancellationToken);
         await Store.SetPermissionsAsync(application, descriptor.Permissions.ToImmutableArray(), cancellationToken);
-        await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
-            descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString)), cancellationToken);
+        await Store.SetPostLogoutRedirectUrisAsync(application, [..descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString)], cancellationToken);
         await Store.SetPropertiesAsync(application, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
-        await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
-            descriptor.RedirectUris.Select(uri => uri.OriginalString)), cancellationToken);
+        await Store.SetRedirectUrisAsync(application, [..descriptor.RedirectUris.Select(uri => uri.OriginalString)], cancellationToken);
         await Store.SetRequirementsAsync(application, descriptor.Requirements.ToImmutableArray(), cancellationToken);
         await Store.SetSettingsAsync(application, descriptor.Settings.ToImmutableDictionary(), cancellationToken);
     }

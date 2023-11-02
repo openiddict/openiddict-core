@@ -1038,7 +1038,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                         {
                                             { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
 
-                                            _ => (IList<string>) Array.Empty<string>()
+                                            _ => []
                                         },
 
                                         GrantTypesSupported = configuration.Elements("GrantType").ToList() switch
@@ -1046,7 +1046,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                             { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
 
                                             // If no explicit grant type was set, assume the provider only supports the code flow.
-                                            _ => (IList<string>) new[] { GrantTypes.AuthorizationCode }
+                                            _ => [GrantTypes.AuthorizationCode]
                                         },
 
                                         ResponseModesSupported = configuration.Elements("ResponseMode").ToList() switch
@@ -1054,7 +1054,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                             { Count: > 0 } modes => modes.Select(type => (string?) type.Attribute("Value")).ToList(),
 
                                             // If no explicit response mode was set, assume the provider only supports the query response mode.
-                                            _ => (IList<string>) new[] { ResponseModes.Query }
+                                            _ => [ResponseModes.Query]
                                         },
 
                                         ResponseTypesSupported = configuration.Elements("ResponseType").ToList() switch
@@ -1062,14 +1062,14 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                             { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
 
                                             // If no explicit response type was set, assume the provider only supports the code flow.
-                                            _ => (IList<string>) new[] { ResponseTypes.Code }
+                                            _ => [ResponseTypes.Code]
                                         },
 
                                         ScopesSupported = configuration.Elements("Scope").ToList() switch
                                         {
                                             { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
 
-                                            _ => (IList<string>) Array.Empty<string>()
+                                            _ => []
                                         },
 
                                         DeviceAuthorizationEndpointAuthMethodsSupported = configuration.Elements("DeviceAuthorizationEndpointAuthMethodsSupported").ToList() switch
@@ -1078,7 +1078,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                             // If no explicit client authentication method was set, assume the provider only supports
                                             // flowing the client credentials as part of the device authorization request payload.
-                                            _ => (IList<string>) new[] { ClientAuthenticationMethods.ClientSecretPost }
+                                            _ => [ClientAuthenticationMethods.ClientSecretPost]
                                         },
 
                                         TokenEndpointAuthMethodsSupported = configuration.Elements("TokenEndpointAuthMethod").ToList() switch
@@ -1087,7 +1087,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                             // If no explicit client authentication method was set, assume the provider only
                                             // supports flowing the client credentials as part of the token request payload.
-                                            _ => (IList<string>) new[] { ClientAuthenticationMethods.ClientSecretPost }
+                                            _ => [ClientAuthenticationMethods.ClientSecretPost]
                                         }
                                     },
 

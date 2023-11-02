@@ -323,7 +323,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if (application.Permissions is not { Count: > 0 })
         {
-            return new(ImmutableArray.Create<string>());
+            return new([]);
         }
 
         return new(application.Permissions.ToImmutableArray());
@@ -340,7 +340,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if (application.PostLogoutRedirectUris is not { Count: > 0 })
         {
-            return new(ImmutableArray.Create<string>());
+            return new([]);
         }
 
         return new(application.PostLogoutRedirectUris.ToImmutableArray());
@@ -381,7 +381,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if (application.RedirectUris is not { Count: > 0 })
         {
-            return new(ImmutableArray.Create<string>());
+            return new([]);
         }
 
         return new(application.RedirectUris.ToImmutableArray());
@@ -397,7 +397,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if (application.Requirements is not { Count: > 0 })
         {
-            return new(ImmutableArray.Create<string>());
+            return new([]);
         }
 
         return new(application.Requirements.ToImmutableArray());

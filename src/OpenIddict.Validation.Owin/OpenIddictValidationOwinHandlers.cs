@@ -22,7 +22,7 @@ namespace OpenIddict.Validation.Owin;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictValidationOwinHandlers
 {
-    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
         /*
          * Request top-level processing:
          */
@@ -56,7 +56,8 @@ public static partial class OpenIddictValidationOwinHandlers
         SuppressFormsAuthenticationRedirect<ProcessErrorContext>.Descriptor,
         AttachCacheControlHeader<ProcessErrorContext>.Descriptor,
         AttachWwwAuthenticateHeader<ProcessErrorContext>.Descriptor,
-        ProcessChallengeErrorResponse<ProcessErrorContext>.Descriptor);
+        ProcessChallengeErrorResponse<ProcessErrorContext>.Descriptor
+    ];
 
     /// <summary>
     /// Contains the logic responsible for resolving the request URI from the OWIN environment.
@@ -540,7 +541,7 @@ public static partial class OpenIddictValidationOwinHandlers
                 response.Context.Authentication.AuthenticationResponseChallenge is null)
             {
                 response.Context.Authentication.AuthenticationResponseChallenge =
-                    new AuthenticationResponseChallenge(new[] { Guid.NewGuid().ToString() }, null);
+                    new AuthenticationResponseChallenge([Guid.NewGuid().ToString()], null);
             }
 
             return default;

@@ -109,7 +109,7 @@ public static class OpenIddictExceptions
         /// </summary>
         /// <param name="message">The exception message.</param>
         public ValidationException(string? message)
-            : this(message, ImmutableArray.Create<ValidationResult>())
+            : this(message, [])
         {
         }
 

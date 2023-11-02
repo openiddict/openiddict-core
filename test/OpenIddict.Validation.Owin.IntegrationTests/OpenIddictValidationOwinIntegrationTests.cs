@@ -39,7 +39,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
@@ -79,7 +79,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)

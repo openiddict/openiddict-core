@@ -45,7 +45,7 @@ public sealed class OpenIddictClientOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>
     /// </remarks>
-    public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
+    public List<EncryptingCredentials> EncryptionCredentials { get; } = [];
 
     /// <summary>
     /// Gets the list of signing credentials used by the OpenIddict client services.
@@ -63,7 +63,7 @@ public sealed class OpenIddictClientOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>
     /// </remarks>
-    public List<SigningCredentials> SigningCredentials { get; } = new();
+    public List<SigningCredentials> SigningCredentials { get; } = [];
 
     /// <summary>
     /// Gets or sets the period of time client assertions remain valid after being issued. The default value is 5 minutes.
@@ -88,17 +88,17 @@ public sealed class OpenIddictClientOptions
     /// <summary>
     /// Gets the absolute and relative URIs associated to the redirection endpoint.
     /// </summary>
-    public List<Uri> RedirectionEndpointUris { get; } = new();
+    public List<Uri> RedirectionEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the post-logout redirection endpoint.
     /// </summary>
-    public List<Uri> PostLogoutRedirectionEndpointUris { get; } = new();
+    public List<Uri> PostLogoutRedirectionEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the static client registrations used by the OpenIddict client services.
     /// </summary>
-    public List<OpenIddictClientRegistration> Registrations { get; } = new();
+    public List<OpenIddictClientRegistration> Registrations { get; } = [];
 
     /// <summary>
     /// Gets the token validation parameters used by the OpenIddict client services.

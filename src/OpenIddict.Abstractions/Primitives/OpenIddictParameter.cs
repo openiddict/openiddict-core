@@ -1119,13 +1119,13 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             string?[] value => value,
 
             // When the parameter is a string value, return an array with a single entry.
-            string value => new string?[] { value },
+            string value => [value],
 
             // When the parameter is a boolean value, return an array with its string representation.
-            bool value => new string?[] { value ? bool.TrueString : bool.FalseString },
+            bool value => [value ? bool.TrueString : bool.FalseString],
 
             // When the parameter is an integer, return an array with its string representation.
-            long value => new string?[] { value.ToString(CultureInfo.InvariantCulture) },
+            long value => [value.ToString(CultureInfo.InvariantCulture)],
 
             // When the parameter is a JsonElement, try to convert it if it's of a supported type.
             JsonElement value => ConvertFromJsonElement(value),
@@ -1136,18 +1136,18 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
 
             // When the parameter is a JsonValue wrapping a string, return an array with a single entry.
-            JsonValue value when value.TryGetValue(out string? result) => new string?[] { result },
+            JsonValue value when value.TryGetValue(out string? result) => [result],
 
             // When the parameter is a JsonValue wrapping a boolean, return an array with its string representation.
             JsonValue value when value.TryGetValue(out bool result)
-                => new string?[] { result ? bool.TrueString : bool.FalseString },
+                => [result ? bool.TrueString : bool.FalseString],
 
             // When the parameter is a JsonValue wrapping an integer, return an array with its string representation.
             JsonValue value when value.TryGetValue(out int result)
-                => new string?[] { result.ToString(CultureInfo.InvariantCulture) },
+                => [result.ToString(CultureInfo.InvariantCulture)],
 
             JsonValue value when value.TryGetValue(out long result)
-                => new string?[] { result.ToString(CultureInfo.InvariantCulture) },
+                => [result.ToString(CultureInfo.InvariantCulture)],
 
             // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
             // serialize it to a JsonElement first to determine its actual JSON representation
@@ -1165,7 +1165,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // or a boolean, return an 1-item array with its string representation.
             JsonValueKind.String or JsonValueKind.Number or
             JsonValueKind.True   or JsonValueKind.False
-                => new string?[] { element.ToString() },
+                => [element.ToString()],
 
             // When the parameter is a JsonElement representing an array, return the elements as strings.
             JsonValueKind.Array => CreateArrayFromJsonElement(element),

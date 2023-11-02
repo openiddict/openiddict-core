@@ -586,7 +586,7 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
 
             foreach (var element in source)
             {
-                buffer ??= new List<TSource>(capacity: 1);
+                buffer ??= [];
                 buffer.Add(element);
 
                 if (buffer.Count == count)

@@ -24,7 +24,7 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Session
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Logout request extraction:
              */
@@ -49,7 +49,8 @@ public static partial class OpenIddictServerOwinHandlers
             ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
             ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
             ProcessQueryResponse.Descriptor,
-            ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
+            ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
@@ -112,7 +113,7 @@ public static partial class OpenIddictServerOwinHandlers
                 var parameters = context.Options.TokenValidationParameters.Clone();
                 parameters.ValidIssuer ??= (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri;
                 parameters.ValidAudience ??= parameters.ValidIssuer;
-                parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.LogoutRequest };
+                parameters.ValidTypes = [JsonWebTokenTypes.Private.LogoutRequest];
 
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenAsync(token, parameters);
                 if (!result.IsValid)
@@ -331,11 +332,8 @@ public static partial class OpenIddictServerOwinHandlers
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                 {
@@ -394,11 +392,8 @@ public static partial class OpenIddictServerOwinHandlers
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 // Note: this handler only executes if no post_logout_redirect_uri was specified
                 // and if the response doesn't correspond to an error, that must be handled locally.

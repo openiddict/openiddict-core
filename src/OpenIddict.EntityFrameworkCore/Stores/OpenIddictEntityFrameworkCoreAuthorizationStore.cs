@@ -544,7 +544,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         if (string.IsNullOrEmpty(authorization.Scopes))
         {
-            return new(ImmutableArray.Create<string>());
+            return new([]);
         }
 
         // Note: parsing the stringified scopes is an expensive operation.
@@ -738,7 +738,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                exceptions ??= new List<Exception>(capacity: 1);
+                exceptions ??= [];
                 exceptions.Add(exception);
             }
         }

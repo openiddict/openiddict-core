@@ -31,7 +31,7 @@ public sealed class OpenIddictClientHandlerDescriptor
     /// Gets the list of filters responsible for excluding the handler
     /// from the activated handlers if it doesn't meet the criteria.
     /// </summary>
-    public ImmutableArray<Type> FilterTypes { get; private set; } = ImmutableArray.Create<Type>();
+    public ImmutableArray<Type> FilterTypes { get; private set; } = [];
 
     /// <summary>
     /// Gets the order assigned to the handler.
@@ -63,7 +63,7 @@ public sealed class OpenIddictClientHandlerDescriptor
     public sealed class Builder<TContext> where TContext : BaseContext
     {
         private ServiceDescriptor? _descriptor;
-        private readonly List<Type> _filters = new();
+        private readonly List<Type> _filters = [];
         private int _order;
         private OpenIddictClientHandlerType _type;
 

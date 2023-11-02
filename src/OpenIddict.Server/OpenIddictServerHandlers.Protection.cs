@@ -22,7 +22,7 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Token validation:
              */
@@ -44,7 +44,8 @@ public static partial class OpenIddictServerHandlers
             CreateTokenEntry.Descriptor,
             GenerateIdentityModelToken.Descriptor,
             AttachTokenPayload.Descriptor,
-            BeautifyToken.Descriptor);
+            BeautifyToken.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
@@ -159,23 +160,23 @@ public static partial class OpenIddictServerHandlers
                         // If the issuer URI doesn't contain any query/fragment, allow both http://www.fabrikam.com
                         // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
                         // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
-                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
-                        {
+                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri =>
+                        [
                             uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
                             uri.AbsoluteUri[..^1]
-                        },
+                        ],
 
                         // When properly normalized, Uri.AbsolutePath should never be empty and should at least
                         // contain a leading slash. While dangerous, System.Uri now offers a way to create a URI
                         // instance without applying the default canonicalization logic. To support such URIs,
                         // a special case is added here to add back the missing trailing slash when necessary.
-                        { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri => new[]
-                        {
+                        { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri =>
+                        [
                             uri.AbsoluteUri,
                             uri.AbsoluteUri + "/"
-                        },
+                        ],
 
-                        Uri uri => new[] { uri.AbsoluteUri }
+                        Uri uri => [uri.AbsoluteUri]
                     };
 
                     parameters.ValidateIssuer = parameters.ValidIssuers is not null;
@@ -187,33 +188,33 @@ public static partial class OpenIddictServerHandlers
                         0 => null,
 
                         // Otherwise, map the token types to their JWT public or internal representation.
-                        _ => context.ValidTokenTypes.SelectMany(type => type switch
+                        _ => context.ValidTokenTypes.SelectMany<string, string>(type =>type switch
                         {
                             // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
-                            TokenTypeHints.AccessToken => new[]
-                            {
+                            TokenTypeHints.AccessToken =>
+                            [
                                 JsonWebTokenTypes.AccessToken,
                                 JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
-                            },
+                            ],
 
                             // For identity tokens, both "JWT" and "application/jwt" are valid.
-                            TokenTypeHints.IdToken => new[]
-                            {
+                            TokenTypeHints.IdToken =>
+                            [
                                 JsonWebTokenTypes.Jwt,
                                 JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.Jwt
-                            },
+                            ],
 
                             // For authorization codes, only the short "oi_auc+jwt" form is valid.
-                            TokenTypeHints.AuthorizationCode => new[] { JsonWebTokenTypes.Private.AuthorizationCode },
+                            TokenTypeHints.AuthorizationCode => [JsonWebTokenTypes.Private.AuthorizationCode],
 
                             // For device codes, only the short "oi_dvc+jwt" form is valid.
-                            TokenTypeHints.DeviceCode => new[] { JsonWebTokenTypes.Private.DeviceCode },
+                            TokenTypeHints.DeviceCode => [JsonWebTokenTypes.Private.DeviceCode],
 
                             // For refresh tokens, only the short "oi_reft+jwt" form is valid.
-                            TokenTypeHints.RefreshToken => new[] { JsonWebTokenTypes.Private.RefreshToken },
+                            TokenTypeHints.RefreshToken => [JsonWebTokenTypes.Private.RefreshToken],
 
                             // For user codes, only the short "oi_usrc+jwt" form is valid.
-                            TokenTypeHints.UserCode => new[] { JsonWebTokenTypes.Private.UserCode },
+                            TokenTypeHints.UserCode => [JsonWebTokenTypes.Private.UserCode],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                         })

@@ -15,7 +15,7 @@ public static partial class OpenIddictValidationHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Introspection response handling:
              */
@@ -24,7 +24,8 @@ public static partial class OpenIddictValidationHandlers
             HandleInactiveResponse.Descriptor,
             ValidateIssuer.Descriptor,
             ValidateTokenUsage.Descriptor,
-            PopulateClaims.Descriptor);
+            PopulateClaims.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the introspection response.

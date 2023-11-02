@@ -14,12 +14,13 @@ public static partial class OpenIddictClientHandlers
 {
     public static class Exchange
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Token response handling:
              */
             ValidateWellKnownParameters.Descriptor,
-            HandleErrorResponse.Descriptor);
+            HandleErrorResponse.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the token response.

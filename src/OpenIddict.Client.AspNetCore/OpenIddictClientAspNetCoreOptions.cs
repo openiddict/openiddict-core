@@ -26,7 +26,7 @@ public sealed class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOpti
     /// <summary>
     /// Gets the forwarded authentication schemes that are managed by the OpenIddict ASP.NET Core client host.
     /// </summary>
-    public List<AuthenticationScheme> ForwardedAuthenticationSchemes { get; } = new();
+    public List<AuthenticationScheme> ForwardedAuthenticationSchemes { get; } = [];
 
     /// <summary>
     /// Gets or sets a boolean indicating whether incoming requests arriving on insecure endpoints should be

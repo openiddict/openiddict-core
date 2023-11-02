@@ -1882,7 +1882,7 @@ public class OpenIddictServerBuilderTests
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
-        string[] claims = { claim };
+        string[] claims = [claim];
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.RegisterClaims(claims));
@@ -1928,7 +1928,7 @@ public class OpenIddictServerBuilderTests
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
-        string[] scopes = { scope };
+        string[] scopes = [scope];
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.RegisterScopes(scopes));

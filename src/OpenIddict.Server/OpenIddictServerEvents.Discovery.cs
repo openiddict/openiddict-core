@@ -325,7 +325,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets the list of JSON Web Keys exposed by the JWKS endpoint.
         /// </summary>
-        public List<JsonWebKey> Keys { get; } = new List<JsonWebKey>();
+        public List<JsonWebKey> Keys { get; } = [];
     }
 
     /// <summary>

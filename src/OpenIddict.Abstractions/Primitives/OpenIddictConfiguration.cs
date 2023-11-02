@@ -99,7 +99,7 @@ public sealed class OpenIddictConfiguration
     /// <summary>
     /// Gets the signing keys extracted from the JSON Web Key set.
     /// </summary>
-    public List<SecurityKey> SigningKeys { get; } = new();
+    public List<SecurityKey> SigningKeys { get; } = [];
 
     /// <summary>
     /// Gets or sets the URI of the token endpoint.

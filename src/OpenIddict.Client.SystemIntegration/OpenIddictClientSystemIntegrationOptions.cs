@@ -37,7 +37,7 @@ public sealed class OpenIddictClientSystemIntegrationOptions
     /// If this property is not explicitly set, a port in the 49152-65535
     /// dynamic ports range is automatically chosen by OpenIddict at runtime.
     /// </remarks>
-    public List<int> AllowedEmbeddedWebServerPorts { get; } = new();
+    public List<int> AllowedEmbeddedWebServerPorts { get; } = [];
 
     /// <summary>
     /// Gets or sets a boolean indicating whether protocol activation processing should be enabled.

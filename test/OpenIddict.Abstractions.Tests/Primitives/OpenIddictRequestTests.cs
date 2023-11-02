@@ -41,7 +41,7 @@ public class OpenIddictRequestTests
             {
                 /* property: */ nameof(OpenIddictRequest.Audiences),
                 /* name: */ Parameters.Audience,
-                /* value: */ new OpenIddictParameter(new[] { "Fabrikam", "Contoso" })
+                /* value: */ new OpenIddictParameter(["Fabrikam", "Contoso"])
             };
 
             yield return new object[]
@@ -244,7 +244,7 @@ public class OpenIddictRequestTests
             {
                 /* property: */ nameof(OpenIddictRequest.Resources),
                 /* name: */ Parameters.Resource,
-                /* value: */ new OpenIddictParameter(new[] { "https://fabrikam.com/", "https://contoso.com/" })
+                /* value: */ new OpenIddictParameter(["https://fabrikam.com/", "https://contoso.com/"])
             };
 
             yield return new object[]

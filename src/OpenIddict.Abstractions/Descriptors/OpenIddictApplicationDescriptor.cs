@@ -45,7 +45,7 @@ public class OpenIddictApplicationDescriptor
     /// <summary>
     /// Gets the localized display names associated with the application.
     /// </summary>
-    public Dictionary<CultureInfo, string> DisplayNames { get; } = new();
+    public Dictionary<CultureInfo, string> DisplayNames { get; } = [];
 
     /// <summary>
     /// Gets or sets the JSON Web Key Set associated with the application.
@@ -60,7 +60,7 @@ public class OpenIddictApplicationDescriptor
     /// <summary>
     /// Gets the post-logout redirect URIs associated with the application.
     /// </summary>
-    public HashSet<Uri> PostLogoutRedirectUris { get; } = new();
+    public HashSet<Uri> PostLogoutRedirectUris { get; } = [];
 
     /// <summary>
     /// Gets the additional properties associated with the application.
@@ -70,7 +70,7 @@ public class OpenIddictApplicationDescriptor
     /// <summary>
     /// Gets the redirect URIs associated with the application.
     /// </summary>
-    public HashSet<Uri> RedirectUris { get; } = new();
+    public HashSet<Uri> RedirectUris { get; } = [];
 
     /// <summary>
     /// Gets the requirements associated with the application.

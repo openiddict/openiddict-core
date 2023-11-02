@@ -33,7 +33,7 @@ public sealed class OpenIddictClientOwinOptions : AuthenticationOptions
     /// <summary>
     /// Gets the forwarded authentication types that are managed by the OpenIddict OWIN client host.
     /// </summary>
-    public List<AuthenticationDescription> ForwardedAuthenticationTypes { get; } = new();
+    public List<AuthenticationDescription> ForwardedAuthenticationTypes { get; } = [];
 
     /// <summary>
     /// Gets or sets a boolean indicating whether incoming requests arriving on insecure endpoints should be

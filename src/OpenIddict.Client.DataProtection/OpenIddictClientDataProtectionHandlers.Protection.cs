@@ -21,7 +21,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Token validation:
              */
@@ -31,7 +31,8 @@ public static partial class OpenIddictClientDataProtectionHandlers
              * Token generation:
              */
             OverrideGeneratedTokenFormat.Descriptor,
-            GenerateDataProtectionToken.Descriptor);
+            GenerateDataProtectionToken.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using Data Protection.
@@ -124,9 +125,9 @@ public static partial class OpenIddictClientDataProtectionHandlers
                         (type, context.IsReferenceToken) switch
                         {
                             (TokenTypeHints.StateToken, true)
-                                => new[] { Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server },
+                                => [Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server],
                             (TokenTypeHints.StateToken, false)
-                                => new[] { Handlers.Client, Formats.StateToken, Schemes.Server },
+                                => [Handlers.Client, Formats.StateToken, Schemes.Server],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                         });
@@ -240,9 +241,9 @@ public static partial class OpenIddictClientDataProtectionHandlers
                     (context.TokenType, context.IsReferenceToken) switch
                     {
                         (TokenTypeHints.StateToken, true)
-                            => new[] { Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server },
+                            => [Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server],
                         (TokenTypeHints.StateToken, false)
-                            => new[] { Handlers.Client, Formats.StateToken, Schemes.Server },
+                            => [Handlers.Client, Formats.StateToken, Schemes.Server],
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                     });

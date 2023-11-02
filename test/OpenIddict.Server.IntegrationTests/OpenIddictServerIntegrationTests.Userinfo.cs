@@ -387,7 +387,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(3, response.Count);
         Assert.Equal("http://localhost/", (string?) response[Claims.Issuer]);
         Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
-        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) response[Claims.Audience]);
+        Assert.Equal(["Fabrikam", "Contoso"], (string[]?) response[Claims.Audience]);
     }
 
     [Fact]
@@ -808,6 +808,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
     }
 }

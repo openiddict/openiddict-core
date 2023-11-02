@@ -1051,7 +1051,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Null(response.ErrorUri);
         Assert.NotNull(response.DeviceCode);
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]
@@ -1136,7 +1136,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
     }
 
     [Theory]
@@ -1449,7 +1449,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("WDJB-MJHT", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.UserCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.UserCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                         .SetTokenType(TokenTypeHints.UserCode);
@@ -1496,7 +1496,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]

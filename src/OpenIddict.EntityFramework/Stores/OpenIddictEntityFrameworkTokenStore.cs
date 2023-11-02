@@ -640,7 +640,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                exceptions ??= new List<Exception>(capacity: 1);
+                exceptions ??= [];
                 exceptions.Add(exception);
             }
         }

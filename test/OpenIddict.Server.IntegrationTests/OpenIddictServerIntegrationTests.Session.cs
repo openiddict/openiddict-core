@@ -415,7 +415,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(application);
 
             mock.Setup(manager => manager.GetPostLogoutRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray.Create("http://www.fabrikam.com/path"));
+                .ReturnsAsync(["http://www.fabrikam.com/path"]);
 
             mock.Setup(manager => manager.HasPermissionAsync(application,
                 Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
@@ -531,7 +531,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("id_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.IdToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.IdToken)
@@ -605,7 +605,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("id_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.IdToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.IdToken)
@@ -670,7 +670,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("id_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.IdToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.IdToken)
@@ -933,7 +933,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]
@@ -1015,7 +1015,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]
