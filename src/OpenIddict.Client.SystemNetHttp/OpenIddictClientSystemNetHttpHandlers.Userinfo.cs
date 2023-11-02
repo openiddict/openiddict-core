@@ -16,7 +16,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Userinfo
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Userinfo request processing:
              */
@@ -39,7 +39,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractJsonHttpResponse<ExtractUserinfoResponseContext>.Descriptor,
             ExtractWwwAuthenticateHeader<ExtractUserinfoResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractUserinfoResponseContext>.Descriptor,
-            DisposeHttpResponse<ExtractUserinfoResponseContext>.Descriptor);
+            DisposeHttpResponse<ExtractUserinfoResponseContext>.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for attaching the access token to the HTTP Authorization header.

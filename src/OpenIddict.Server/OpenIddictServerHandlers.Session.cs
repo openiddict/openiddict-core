@@ -18,7 +18,7 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Session
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Logout request top-level processing:
              */
@@ -47,7 +47,8 @@ public static partial class OpenIddictServerHandlers
              * Logout response processing:
              */
             AttachPostLogoutRedirectUri.Descriptor,
-            AttachResponseState.Descriptor);
+            AttachResponseState.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for extracting logout requests and invoking the corresponding event handlers.

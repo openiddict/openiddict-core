@@ -49,7 +49,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
@@ -100,7 +100,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
@@ -205,7 +205,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["json_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["json_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["json_parameter"]).ValueKind);
     }
 
@@ -430,7 +430,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["json_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["json_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["json_parameter"]).ValueKind);
     }
 

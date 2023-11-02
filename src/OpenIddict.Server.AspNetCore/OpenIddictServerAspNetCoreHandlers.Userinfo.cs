@@ -12,7 +12,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 {
     public static class Userinfo
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Userinfo request extraction:
              */
@@ -30,6 +30,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             AttachHttpResponseCode<ApplyUserinfoResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyUserinfoResponseContext>.Descriptor,
             ProcessChallengeErrorResponse<ApplyUserinfoResponseContext>.Descriptor,
-            ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor);
+            ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor
+        ];
     }
 }

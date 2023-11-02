@@ -566,7 +566,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
@@ -673,7 +673,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("id_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.IdToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.IdToken)
@@ -784,7 +784,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("authorization_code", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AuthorizationCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -896,7 +896,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("refresh_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.RefreshToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
@@ -1229,13 +1229,13 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["array_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
         Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
         Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
 
 #if SUPPORTS_JSON_NODES
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["node_array_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["node_array_parameter"]);
         Assert.IsType<JsonArray>((JsonNode?) response["node_array_parameter"]);
         Assert.Equal("value", (string?) response["node_object_parameter"]?["parameter"]);
         Assert.IsType<JsonObject>((JsonNode?) response["node_object_parameter"]);
@@ -1469,7 +1469,7 @@ public abstract partial class OpenIddictServerIntegrationTests
             options.AddEventHandler<ProcessSignInContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
-                    Assert.Equal(new[] { Scopes.OpenId }, context.Principal!.GetScopes());
+                    Assert.Equal([Scopes.OpenId], context.Principal!.GetScopes(), StringComparer.Ordinal);
 
                     return default;
                 }));
@@ -1512,7 +1512,7 @@ public abstract partial class OpenIddictServerIntegrationTests
             options.AddEventHandler<ProcessSignInContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
-                    Assert.Equal(new[] { "http://www.fabrikam.com/" }, context.Principal!.GetResources());
+                    Assert.Equal(["http://www.fabrikam.com/"], context.Principal!.GetResources(), StringComparer.Ordinal);
 
                     return default;
                 }));
@@ -1713,7 +1713,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AuthorizationCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -1767,7 +1767,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.DeviceCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.DeviceCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                         .SetTokenType(TokenTypeHints.DeviceCode)
@@ -1833,7 +1833,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("8xLOxBtZp8", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.RefreshToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
@@ -2113,7 +2113,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("8xLOxBtZp8", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.RefreshToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
@@ -2130,7 +2130,7 @@ public abstract partial class OpenIddictServerIntegrationTests
             {
                 builder.UseInlineHandler(context =>
                 {
-                    Assert.Equal(new[] { Scopes.Profile }, context.AccessTokenPrincipal!.GetScopes());
+                    Assert.Equal([Scopes.Profile], context.AccessTokenPrincipal!.GetScopes(), StringComparer.Ordinal);
 
                     return default;
                 });
@@ -2211,7 +2211,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AuthorizationCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -2266,7 +2266,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.DeviceCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.DeviceCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                         .SetTokenType(TokenTypeHints.DeviceCode)
@@ -2333,7 +2333,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("8xLOxBtZp8", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.RefreshToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
@@ -2619,7 +2619,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AuthorizationCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -2674,7 +2674,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.DeviceCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.DeviceCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                         .SetTokenType(TokenTypeHints.DeviceCode)
@@ -2741,7 +2741,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("8xLOxBtZp8", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.RefreshToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
@@ -2973,7 +2973,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("8xLOxBtZp8", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.RefreshToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
@@ -2990,7 +2990,7 @@ public abstract partial class OpenIddictServerIntegrationTests
             options.AddEventHandler<ProcessSignInContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
-                    Assert.Equal(new[] { Scopes.OpenId, Scopes.OfflineAccess }, context.Principal!.GetScopes());
+                    Assert.Equal([Scopes.OpenId, Scopes.OfflineAccess], context.Principal!.GetScopes(), StringComparer.Ordinal);
                     Assert.Equal("value", context.Principal!.GetClaim(Claims.Prefixes.Private + "_private_claim"));
 
                     return default;
@@ -3045,7 +3045,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AuthorizationCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -3132,7 +3132,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("8xLOxBtZp8", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.RefreshToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
@@ -3199,7 +3199,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("8xLOxBtZp8", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.RefreshToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
@@ -3603,13 +3603,13 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["array_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
         Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
         Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
 
 #if SUPPORTS_JSON_NODES
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["node_array_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["node_array_parameter"]);
         Assert.IsType<JsonArray>((JsonNode?) response["node_array_parameter"]);
         Assert.Equal("value", (string?) response["node_object_parameter"]?["parameter"]);
         Assert.IsType<JsonObject>((JsonNode?) response["node_object_parameter"]);

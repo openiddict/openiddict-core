@@ -21,11 +21,12 @@ public static partial class OpenIddictValidationDataProtectionHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Token validation:
              */
-            ValidateDataProtectionToken.Descriptor);
+            ValidateDataProtectionToken.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using Data Protection.
@@ -118,9 +119,9 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                         (type, context.IsReferenceToken) switch
                         {
                             (TokenTypeHints.AccessToken, true)
-                                => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
+                                => [Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server],
                             (TokenTypeHints.AccessToken, false)
-                                => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
+                                => [Handlers.Server, Formats.AccessToken, Schemes.Server],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                         });

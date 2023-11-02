@@ -31,7 +31,7 @@ namespace OpenIddict.Client.SystemIntegration;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientSystemIntegrationHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
         /*
          * Top-level request processing:
          */
@@ -79,8 +79,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         /*
          * Error processing:
          */
-        AbortAuthenticationDemand.Descriptor)
-        .AddRange(Authentication.DefaultHandlers);
+        AbortAuthenticationDemand.Descriptor,
+
+        ..Authentication.DefaultHandlers
+    ];
 
     /// <summary>
     /// Contains the logic responsible for resolving the request URI from the HTTP listener request.

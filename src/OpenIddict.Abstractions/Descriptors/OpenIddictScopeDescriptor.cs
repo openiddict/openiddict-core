@@ -16,7 +16,7 @@ public class OpenIddictScopeDescriptor
     /// <summary>
     /// Gets the localized descriptions associated with the scope.
     /// </summary>
-    public Dictionary<CultureInfo, string> Descriptions { get; } = new();
+    public Dictionary<CultureInfo, string> Descriptions { get; } = [];
 
     /// <summary>
     /// Gets or sets the display name associated with the scope.
@@ -26,7 +26,7 @@ public class OpenIddictScopeDescriptor
     /// <summary>
     /// Gets the localized display names associated with the scope.
     /// </summary>
-    public Dictionary<CultureInfo, string> DisplayNames { get; } = new();
+    public Dictionary<CultureInfo, string> DisplayNames { get; } = [];
 
     /// <summary>
     /// Gets or sets the unique name associated with the scope.

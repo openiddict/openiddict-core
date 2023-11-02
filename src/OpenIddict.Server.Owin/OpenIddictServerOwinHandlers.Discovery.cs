@@ -12,7 +12,7 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Discovery
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Configuration request extraction:
              */
@@ -39,6 +39,7 @@ public static partial class OpenIddictServerOwinHandlers
             AttachOwinResponseChallenge<ApplyCryptographyResponseContext>.Descriptor,
             SuppressFormsAuthenticationRedirect<ApplyCryptographyResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyCryptographyResponseContext>.Descriptor,
-            ProcessJsonResponse<ApplyCryptographyResponseContext>.Descriptor);
+            ProcessJsonResponse<ApplyCryptographyResponseContext>.Descriptor
+        ];
     }
 }

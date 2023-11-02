@@ -17,7 +17,7 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Authentication
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Authorization request top-level processing:
              */
@@ -64,7 +64,8 @@ public static partial class OpenIddictServerHandlers
             AttachRedirectUri.Descriptor,
             InferResponseMode.Descriptor,
             AttachResponseState.Descriptor,
-            AttachIssuer.Descriptor);
+            AttachIssuer.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for extracting authorization requests and invoking the corresponding event handlers.

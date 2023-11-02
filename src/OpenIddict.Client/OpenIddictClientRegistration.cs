@@ -54,14 +54,14 @@ public sealed class OpenIddictClientRegistration
     /// Multiple credentials can be added to support key rollover, but if X.509 keys
     /// are used, at least one of them must have a valid creation/expiration date.
     /// </summary>
-    public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
+    public List<EncryptingCredentials> EncryptionCredentials { get; } = [];
 
     /// <summary>
     /// Gets the list of signing credentials used to create tokens for this client.
     /// Multiple credentials can be added to support key rollover, but if X.509 keys
     /// are used, at least one of them must have a valid creation/expiration date.
     /// </summary>
-    public List<SigningCredentials> SigningCredentials { get; } = new();
+    public List<SigningCredentials> SigningCredentials { get; } = [];
 
     /// <summary>
     /// Gets the code challenge methods allowed by the client instance.

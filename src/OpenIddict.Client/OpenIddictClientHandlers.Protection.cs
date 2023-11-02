@@ -19,7 +19,7 @@ public static partial class OpenIddictClientHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Token validation:
              */
@@ -38,7 +38,8 @@ public static partial class OpenIddictClientHandlers
             AttachSecurityCredentials.Descriptor,
             CreateTokenEntry.Descriptor,
             GenerateIdentityModelToken.Descriptor,
-            AttachTokenPayload.Descriptor);
+            AttachTokenPayload.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
@@ -104,29 +105,29 @@ public static partial class OpenIddictClientHandlers
                         // If the client URI doesn't contain any query/fragment, allow both http://www.fabrikam.com
                         // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
                         // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
-                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
-                        {
+                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri =>
+                        [
                             uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
                             uri.AbsoluteUri[..^1]
-                        },
+                        ],
 
                         // When properly normalized, Uri.AbsolutePath should never be empty and should at least
                         // contain a leading slash. While dangerous, System.Uri now offers a way to create a URI
                         // instance without applying the default canonicalization logic. To support such URIs,
                         // a special case is added here to add back the missing trailing slash when necessary.
-                        { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri => new[]
-                        {
+                        { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri =>
+                        [
                             uri.AbsoluteUri,
                             uri.AbsoluteUri + "/"
-                        },
+                        ],
 
-                        Uri uri => new[] { uri.AbsoluteUri }
+                        Uri uri => [uri.AbsoluteUri]
                     };
 
                     parameters.ValidateIssuer = parameters.ValidIssuers is not null;
 
                     // For state tokens, only the short "oi_stet+jwt" form is valid.
-                    parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.StateToken };
+                    parameters.ValidTypes = [JsonWebTokenTypes.Private.StateToken];
 
                     return parameters;
                 }
@@ -142,23 +143,23 @@ public static partial class OpenIddictClientHandlers
                         // If the issuer URI doesn't contain any query/fragment, allow both http://www.fabrikam.com
                         // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
                         // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
-                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
-                        {
+                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri =>
+                        [
                             uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
                             uri.AbsoluteUri[..^1]
-                        },
+                        ],
 
                         // When properly normalized, Uri.AbsolutePath should never be empty and should at least
                         // contain a leading slash. While dangerous, System.Uri now offers a way to create a URI
                         // instance without applying the default canonicalization logic. To support such URIs,
                         // a special case is added here to add back the missing trailing slash when necessary.
-                        { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri => new[]
-                        {
+                        { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri =>
+                        [
                             uri.AbsoluteUri,
                             uri.AbsoluteUri + "/"
-                        },
+                        ],
 
-                        Uri uri => new[] { uri.AbsoluteUri }
+                        Uri uri => [uri.AbsoluteUri]
                     };
 
                     parameters.ValidateIssuer = parameters.ValidIssuers is not null;

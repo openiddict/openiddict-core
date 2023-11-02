@@ -55,7 +55,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
@@ -106,7 +106,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
@@ -211,13 +211,13 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["array_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
         Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
         Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
 
 #if SUPPORTS_JSON_NODES
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["node_array_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["node_array_parameter"]);
         Assert.IsType<JsonArray>((JsonNode?) response["node_array_parameter"]);
         Assert.Equal("value", (string?) response["node_object_parameter"]?["parameter"]);
         Assert.IsType<JsonObject>((JsonNode?) response["node_object_parameter"]);
@@ -445,13 +445,13 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["array_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
         Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
         Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
 
 #if SUPPORTS_JSON_NODES
-        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["node_array_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["node_array_parameter"]);
         Assert.IsType<JsonArray>((JsonNode?) response["node_array_parameter"]);
         Assert.Equal("value", (string?) response["node_object_parameter"]?["parameter"]);
         Assert.IsType<JsonObject>((JsonNode?) response["node_object_parameter"]);

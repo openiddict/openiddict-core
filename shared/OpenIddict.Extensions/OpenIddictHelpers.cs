@@ -3,11 +3,9 @@ using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Extensions;
 
@@ -527,7 +525,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] ComputeSha256MessageAuthenticationCode(byte[] key, byte[] data)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict HMAC SHA-256 Cryptographic Provider", new[] { key }) switch
+        var algorithm = CryptoConfig.CreateFromName("OpenIddict HMAC SHA-256 Cryptographic Provider", [key]) switch
         {
             HMACSHA256 result => result,
             null => null,
@@ -894,7 +892,7 @@ internal static class OpenIddictHelpers
         // Warning: the type and order of the arguments specified here MUST exactly match the parameters used with
         // Rfc2898DeriveBytes(string password, byte[] salt, int iterations, HashAlgorithmName hashAlgorithm).
         using var generator = CryptoConfig.CreateFromName("OpenIddict PBKDF2 Cryptographic Provider",
-            args: new object?[] { secret, salt, iterations, algorithm }) switch
+            args: [secret, salt, iterations, algorithm]) switch
         {
             Rfc2898DeriveBytes result => result,
 

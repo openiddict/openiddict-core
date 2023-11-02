@@ -16,13 +16,14 @@ public static partial class OpenIddictClientHandlers
 {
     public static class Userinfo
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Userinfo response handling:
              */
             ValidateWellKnownParameters.Descriptor,
             HandleErrorResponse.Descriptor,
-            PopulateClaims.Descriptor);
+            PopulateClaims.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the userinfo response.

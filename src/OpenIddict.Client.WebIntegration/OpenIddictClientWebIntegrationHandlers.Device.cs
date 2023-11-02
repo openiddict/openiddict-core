@@ -13,11 +13,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Token response extraction:
              */
-            MapNonStandardResponseParameters.Descriptor);
+            MapNonStandardResponseParameters.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for mapping non-standard response parameters

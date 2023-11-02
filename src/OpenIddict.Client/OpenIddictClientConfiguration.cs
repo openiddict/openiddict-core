@@ -81,7 +81,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                     TransformBlock(algorithm, registration.ProviderName);
                 }
 
-                algorithm.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                algorithm.TransformFinalBlock([], 0, 0);
 
                 registration.RegistrationId = Base64UrlEncoder.Encode(algorithm.Hash);
             }

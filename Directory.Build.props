@@ -93,6 +93,10 @@
     <Serviceable>false</Serviceable>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" $(RepoRelativeProjectDir.Contains('src')) Or $(RepoRelativeProjectDir.Contains('test')) ">
+    <IncludeInternalExtensions Condition=" '$(IncludeInternalExtensions)' == '' ">true</IncludeInternalExtensions>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PolySharpIncludeRuntimeSupportedAttributes>true</PolySharpIncludeRuntimeSupportedAttributes>
   </PropertyGroup>
@@ -100,6 +104,10 @@
   <ItemGroup>
     <ProjectCapability Include="DynamicDependentFile" />
     <ProjectCapability Include="DynamicFileNesting" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IncludeInternalExtensions)' == 'true' ">
+    <Compile Include="$(MSBuildThisFileDirectory)shared\OpenIddict.Extensions\*.cs" Visible="false" />
   </ItemGroup>
 
 </Project>

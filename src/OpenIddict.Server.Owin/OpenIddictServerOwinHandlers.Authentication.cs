@@ -26,7 +26,7 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Authentication
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Authorization request extraction:
              */
@@ -51,7 +51,8 @@ public static partial class OpenIddictServerOwinHandlers
             ProcessQueryResponse.Descriptor,
             ProcessFragmentResponse.Descriptor,
             ProcessPassthroughErrorResponse<ApplyAuthorizationResponseContext, RequireAuthorizationEndpointPassthroughEnabled>.Descriptor,
-            ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor);
+            ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
@@ -114,7 +115,7 @@ public static partial class OpenIddictServerOwinHandlers
                 var parameters = context.Options.TokenValidationParameters.Clone();
                 parameters.ValidIssuer ??= (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri;
                 parameters.ValidAudience ??= parameters.ValidIssuer;
-                parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.AuthorizationRequest };
+                parameters.ValidTypes = [JsonWebTokenTypes.Private.AuthorizationRequest];
 
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenAsync(token, parameters);
                 if (!result.IsValid)
@@ -338,11 +339,8 @@ public static partial class OpenIddictServerOwinHandlers
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal))
@@ -427,11 +425,8 @@ public static partial class OpenIddictServerOwinHandlers
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
@@ -491,11 +486,8 @@ public static partial class OpenIddictServerOwinHandlers
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))

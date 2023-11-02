@@ -29,7 +29,7 @@ public sealed class OpenIddictValidationOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>
     /// </remarks>
-    public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
+    public List<EncryptingCredentials> EncryptionCredentials { get; } = [];
 
     /// <summary>
     /// Gets the list of signing credentials used by the OpenIddict validation services.
@@ -47,7 +47,7 @@ public sealed class OpenIddictValidationOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>
     /// </remarks>
-    public List<SigningCredentials> SigningCredentials { get; } = new();
+    public List<SigningCredentials> SigningCredentials { get; } = [];
 
     /// <summary>
     /// Gets or sets the period of time client assertions remain valid after being issued. The default value is 5 minutes.

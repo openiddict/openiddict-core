@@ -414,7 +414,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
 
         if (authorization.Scopes is not { Count: > 0 })
         {
-            return new(ImmutableArray.Create<string>());
+            return new([]);
         }
 
         return new(authorization.Scopes.ToImmutableArray());
@@ -549,7 +549,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
 
             foreach (var element in source)
             {
-                buffer ??= new List<TSource>(capacity: 1);
+                buffer ??= [];
                 buffer.Add(element);
 
                 if (buffer.Count == count)

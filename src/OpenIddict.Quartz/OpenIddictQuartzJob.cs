@@ -66,19 +66,13 @@ public sealed class OpenIddictQuartzJob : IJob
 
             if (!_options.CurrentValue.DisableTokenPruning)
             {
-                var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>();
-                if (manager is null)
-                {
-                    // Inform Quartz.NET that the triggers associated with this job should be removed,
-                    // as the future invocations will always fail until the application is correctly
-                    // re-configured to register the OpenIddict core services in the DI container.
+                var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>() ??
                     throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
                     {
                         RefireImmediately = false,
                         UnscheduleAllTriggers = true,
                         UnscheduleFiringTrigger = true
                     };
-                }
 
                 var threshold = DateTimeOffset.UtcNow - _options.CurrentValue.MinimumTokenLifespan;
 
@@ -102,7 +96,7 @@ public sealed class OpenIddictQuartzJob : IJob
                 // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
                 catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
-                    exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
+                    exceptions ??= [];
                     exceptions.AddRange(exception.InnerExceptions);
                 }
 
@@ -110,26 +104,20 @@ public sealed class OpenIddictQuartzJob : IJob
                 // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
-                    exceptions ??= new List<Exception>(capacity: 1);
+                    exceptions ??= [];
                     exceptions.Add(exception);
                 }
             }
 
             if (!_options.CurrentValue.DisableAuthorizationPruning)
             {
-                var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>();
-                if (manager is null)
-                {
-                    // Inform Quartz.NET that the triggers associated with this job should be removed,
-                    // as the future invocations will always fail until the application is correctly
-                    // re-configured to register the OpenIddict core services in the DI container.
+                var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>() ??
                     throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
                     {
                         RefireImmediately = false,
                         UnscheduleAllTriggers = true,
                         UnscheduleFiringTrigger = true
                     };
-                }
 
                 var threshold = DateTimeOffset.UtcNow - _options.CurrentValue.MinimumAuthorizationLifespan;
 
@@ -153,7 +141,7 @@ public sealed class OpenIddictQuartzJob : IJob
                 // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
                 catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
-                    exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
+                    exceptions ??= [];
                     exceptions.AddRange(exception.InnerExceptions);
                 }
 
@@ -161,7 +149,7 @@ public sealed class OpenIddictQuartzJob : IJob
                 // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
-                    exceptions ??= new List<Exception>(capacity: 1);
+                    exceptions ??= [];
                     exceptions.Add(exception);
                 }
             }

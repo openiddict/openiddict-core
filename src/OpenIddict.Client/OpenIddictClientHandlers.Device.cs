@@ -14,13 +14,14 @@ public static partial class OpenIddictClientHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Device authorization response handling:
              */
             ValidateWellKnownParameters.Descriptor,
             HandleErrorResponse.Descriptor,
-            ValidateVerificationEndpointUri.Descriptor);
+            ValidateVerificationEndpointUri.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the device authorization response.

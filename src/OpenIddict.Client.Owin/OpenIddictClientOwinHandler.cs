@@ -399,7 +399,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                         }
 
                         return new AuthenticationResponseChallenge(
-                            authenticationTypes: new[] { OpenIddictClientOwinDefaults.AuthenticationType },
+                            authenticationTypes: [OpenIddictClientOwinDefaults.AuthenticationType],
                             properties         : new AuthenticationProperties(dictionary: new Dictionary<string, string>(
                                 Context.Authentication.AuthenticationResponseChallenge.Properties.Dictionary ??
                                 ImmutableDictionary.Create<string, string>())
@@ -437,7 +437,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                         }
 
                         return new AuthenticationResponseRevoke(
-                            authenticationTypes: new[] { OpenIddictClientOwinDefaults.AuthenticationType },
+                            authenticationTypes: [OpenIddictClientOwinDefaults.AuthenticationType],
                             properties         : new AuthenticationProperties(dictionary: new Dictionary<string, string>(
                                 Context.Authentication.AuthenticationResponseRevoke.Properties.Dictionary ??
                                 ImmutableDictionary.Create<string, string>())

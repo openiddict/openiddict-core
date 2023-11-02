@@ -15,7 +15,7 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Revocation
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Revocation request top-level processing:
              */
@@ -44,7 +44,8 @@ public static partial class OpenIddictServerHandlers
             /*
              * Revocation response handling:
              */
-            NormalizeErrorResponse.Descriptor);
+            NormalizeErrorResponse.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for extracting revocation requests and invoking the corresponding event handlers.

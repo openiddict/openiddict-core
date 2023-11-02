@@ -23,7 +23,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 {
     public static class Exchange
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Token request preparation:
              */
@@ -36,7 +36,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Token response extraction:
              */
-            MapNonStandardResponseParameters.Descriptor);
+            MapNonStandardResponseParameters.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for mapping non-standard request parameters

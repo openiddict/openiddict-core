@@ -21,12 +21,12 @@ namespace OpenIddict.Client.SystemNetHttp;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientSystemNetHttpHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; }
-        = ImmutableArray.Create<OpenIddictClientHandlerDescriptor>()
-            .AddRange(Device.DefaultHandlers)
-            .AddRange(Discovery.DefaultHandlers)
-            .AddRange(Exchange.DefaultHandlers)
-            .AddRange(Userinfo.DefaultHandlers);
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        ..Device.DefaultHandlers,
+        ..Discovery.DefaultHandlers,
+        ..Exchange.DefaultHandlers,
+        ..Userinfo.DefaultHandlers
+    ];
 
     /// <summary>
     /// Contains the logic responsible for creating and attaching a <see cref="HttpClient"/>.

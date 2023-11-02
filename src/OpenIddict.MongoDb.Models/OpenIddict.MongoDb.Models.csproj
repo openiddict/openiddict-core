@@ -9,6 +9,7 @@
     <DisablePolySharp>true</DisablePolySharp>
     <SignAssembly>false</SignAssembly>
     <PublicSign>false</PublicSign>
+    <IncludeInternalExtensions>false</IncludeInternalExtensions>
   </PropertyGroup>
 
   <PropertyGroup>

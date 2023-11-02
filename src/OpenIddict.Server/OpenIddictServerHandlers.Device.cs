@@ -18,7 +18,7 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Device request top-level processing:
              */
@@ -60,7 +60,8 @@ public static partial class OpenIddictServerHandlers
             /*
              * Verification request handling:
              */
-            AttachUserCodePrincipal.Descriptor);
+            AttachUserCodePrincipal.Descriptor
+        ];
 
         /// <summary>
         /// Contains the logic responsible for extracting device requests and invoking the corresponding event handlers.

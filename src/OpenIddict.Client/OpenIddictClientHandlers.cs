@@ -21,7 +21,7 @@ namespace OpenIddict.Client;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
         /*
          * Top-level request processing:
          */
@@ -148,15 +148,16 @@ public static partial class OpenIddictClientHandlers
          * Error processing:
          */
         AttachErrorParameters.Descriptor,
-        AttachCustomErrorParameters.Descriptor)
+        AttachCustomErrorParameters.Descriptor,
 
-        .AddRange(Authentication.DefaultHandlers)
-        .AddRange(Device.DefaultHandlers)
-        .AddRange(Discovery.DefaultHandlers)
-        .AddRange(Exchange.DefaultHandlers)
-        .AddRange(Protection.DefaultHandlers)
-        .AddRange(Session.DefaultHandlers)
-        .AddRange(Userinfo.DefaultHandlers);
+        ..Authentication.DefaultHandlers,
+        ..Device.DefaultHandlers,
+        ..Discovery.DefaultHandlers,
+        ..Exchange.DefaultHandlers,
+        ..Protection.DefaultHandlers,
+        ..Session.DefaultHandlers,
+        ..Userinfo.DefaultHandlers
+    ];
 
     /// <summary>
     /// Contains the logic responsible for inferring the endpoint type from the request URI.

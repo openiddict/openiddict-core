@@ -25,7 +25,7 @@ namespace OpenIddict.Client.Owin;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientOwinHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
         /*
          * Top-level request processing:
          */
@@ -64,9 +64,11 @@ public static partial class OpenIddictClientOwinHandlers
         // Errors returned by an OpenIddict endpoint are handled via the Apply*Response events.
         AttachHttpResponseCode<ProcessErrorContext>.Descriptor,
         AttachCacheControlHeader<ProcessErrorContext>.Descriptor,
-        ProcessLocalErrorResponse<ProcessErrorContext>.Descriptor)
-        .AddRange(Authentication.DefaultHandlers)
-        .AddRange(Session.DefaultHandlers);
+        ProcessLocalErrorResponse<ProcessErrorContext>.Descriptor,
+
+        ..Authentication.DefaultHandlers,
+        ..Session.DefaultHandlers
+    ];
 
     /// <summary>
     /// Contains the logic responsible for resolving the request URI from the OWIN environment.
@@ -1197,7 +1199,7 @@ public static partial class OpenIddictClientOwinHandlers
                 response.Context.Authentication.AuthenticationResponseChallenge is null)
             {
                 response.Context.Authentication.AuthenticationResponseChallenge =
-                    new AuthenticationResponseChallenge(new[] { Guid.NewGuid().ToString() }, null);
+                    new AuthenticationResponseChallenge([Guid.NewGuid().ToString()], null);
             }
 
             return default;

@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <IncludeInternalExtensions>false</IncludeInternalExtensions>
     <PolySharpIncludeGeneratedTypes>System.Diagnostics.CodeAnalysis.StringSyntaxAttribute</PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
 

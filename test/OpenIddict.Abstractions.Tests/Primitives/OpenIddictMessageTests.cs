@@ -101,7 +101,7 @@ public class OpenIddictMessageTests
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
+        Assert.Equal(["Fabrikam", "Contoso"], (string[]?) message.GetParameter("parameter"));
     }
 
     [Fact]
@@ -110,12 +110,12 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(new[]
         {
-            new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam", "Contoso" })
+            new KeyValuePair<string, string?[]?>("parameter", ["Fabrikam", "Contoso"])
         });
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
+        Assert.Equal(["Fabrikam", "Contoso"], (string[]?) message.GetParameter("parameter"));
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(new[]
         {
-            new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam" })
+            new KeyValuePair<string, string?[]?>("parameter", ["Fabrikam"])
         });
 
         // Assert

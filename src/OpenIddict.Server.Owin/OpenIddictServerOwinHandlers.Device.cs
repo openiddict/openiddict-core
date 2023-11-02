@@ -14,7 +14,7 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Device request extraction:
              */
@@ -52,7 +52,8 @@ public static partial class OpenIddictServerOwinHandlers
             ProcessHostRedirectionResponse.Descriptor,
             ProcessPassthroughErrorResponse<ApplyVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,
             ProcessLocalErrorResponse<ApplyVerificationResponseContext>.Descriptor,
-            ProcessEmptyResponse<ApplyVerificationResponseContext>.Descriptor);
+            ProcessEmptyResponse<ApplyVerificationResponseContext>.Descriptor
+        ];
     }
 
     /// <summary>

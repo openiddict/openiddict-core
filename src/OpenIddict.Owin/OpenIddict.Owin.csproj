@@ -4,6 +4,7 @@
     <TargetFrameworks>$(NetFrameworkTargetFrameworks)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
+    <IncludeInternalExtensions>false</IncludeInternalExtensions>
   </PropertyGroup>
 
   <PropertyGroup>
