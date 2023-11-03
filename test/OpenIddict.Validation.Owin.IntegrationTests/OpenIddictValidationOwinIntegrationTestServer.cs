@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Owin.Testing;
 using OpenIddict.Validation.IntegrationTests;
 

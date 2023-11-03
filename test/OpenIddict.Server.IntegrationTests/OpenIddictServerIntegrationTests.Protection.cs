@@ -6,7 +6,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Immutable;
 using System.Security.Claims;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;

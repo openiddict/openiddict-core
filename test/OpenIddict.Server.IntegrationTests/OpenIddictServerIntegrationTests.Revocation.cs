@@ -7,7 +7,6 @@
 using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
