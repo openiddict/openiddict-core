@@ -2100,7 +2100,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ProcessSignIn_ScopesCanBeOverridenForRefreshTokenRequests()
+    public async Task ProcessSignIn_ScopesCanBeOverriddenForRefreshTokenRequests()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>

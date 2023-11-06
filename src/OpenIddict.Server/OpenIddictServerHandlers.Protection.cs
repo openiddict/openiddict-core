@@ -142,7 +142,7 @@ public static partial class OpenIddictServerHandlers
                                 return set.GetSigningKeys();
                             }
 
-                            return Array.Empty<SecurityKey>();
+                            return [];
                         }).GetAwaiter().GetResult();
                     }
 

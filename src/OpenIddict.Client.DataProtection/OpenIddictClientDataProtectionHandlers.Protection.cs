@@ -185,7 +185,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
                 // of the default token format (typically, JSON Web Token). By default, Data Protection
                 // is automatically used for all the supported token types once the integration is enabled
                 // but the default token format can be re-enabled in the options. Alternatively, the token
-                // format can be overriden manually using a custom event handler registered after this one.
+                // format can be overridden manually using a custom event handler registered after this one.
 
                 context.TokenFormat = context.TokenType switch
                 {
