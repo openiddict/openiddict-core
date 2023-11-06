@@ -1072,7 +1072,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                             _ => []
                                         },
 
-                                        DeviceAuthorizationEndpointAuthMethodsSupported = configuration.Elements("DeviceAuthorizationEndpointAuthMethodsSupported").ToList() switch
+                                        DeviceAuthorizationEndpointAuthMethodsSupported = configuration.Elements("DeviceAuthorizationEndpointAuthMethod").ToList() switch
                                         {
                                             { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
 

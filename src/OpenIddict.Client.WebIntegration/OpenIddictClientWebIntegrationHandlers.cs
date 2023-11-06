@@ -1067,8 +1067,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                          context.UserinfoResponse?.HasParameter("lastName")  is true
                     => $"{(string?) context.UserinfoResponse?["firstName"]} {(string?) context.UserinfoResponse?["lastName"]}",
 
-                // Spotify and StackExchange return the username as a custom "display_name" node:
-                ProviderTypes.Spotify or ProviderTypes.StackExchange
+                // These providers return return the username as a custom "display_name" node:
+                ProviderTypes.Spotify or ProviderTypes.StackExchange or ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["display_name"],
 
                 // Strava returns the username as a custom "athlete/username" node in token responses:
@@ -1097,7 +1097,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Facebook or ProviderTypes.GitHub        or ProviderTypes.Harvest    or
                 ProviderTypes.Kroger   or ProviderTypes.Lichess       or ProviderTypes.Nextcloud  or
                 ProviderTypes.Patreon  or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
-                ProviderTypes.Spotify  or ProviderTypes.SubscribeStar or ProviderTypes.Twitter
+                ProviderTypes.Spotify  or ProviderTypes.SubscribeStar or ProviderTypes.Twitter    or
+                ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:

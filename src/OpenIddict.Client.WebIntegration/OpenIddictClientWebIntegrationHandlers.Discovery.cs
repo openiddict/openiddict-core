@@ -251,7 +251,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 // Google doesn't properly implement the device authorization grant, doesn't support
-                // client authentication method for the device authorization endpoint and returns a
+                // basic client authentication for the device authorization endpoint and returns a
                 // generic "invalid_request" request when using "client_secret_basic" instead of
                 // sending the client identifier in the request form. To work around this limitation,
                 // "client_secret_post" is listed as the only supported client authentication method.
@@ -352,10 +352,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // While PayPal supports OpenID Connect discovery, the configuration document returned
                 // by the sandbox environment always contains the production endpoints, which would
                 // prevent the OpenIddict integration from working properly when using the sandbox mode.
-                // To work around that, the endpoints are manually overriden when this environment is used.
+                // To work around that, the endpoints are manually overridden when this environment is used.
                 else if (context.Registration.ProviderType is ProviderTypes.PayPal &&
-                    context.Registration.GetPayPalSettings() is { Environment: string environment } &&
-                    string.Equals(environment, PayPal.Environments.Sandbox, StringComparison.OrdinalIgnoreCase))
+                    context.Registration.GetPayPalSettings() is { Environment: PayPal.Environments.Sandbox })
                 {
                     context.Configuration.AuthorizationEndpoint =
                         new Uri("https://www.sandbox.paypal.com/signin/authorize", UriKind.Absolute);
