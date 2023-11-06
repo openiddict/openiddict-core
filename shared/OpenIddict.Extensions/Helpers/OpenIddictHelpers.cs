@@ -478,7 +478,7 @@ internal static class OpenIddictHelpers
 
         // Note: on .NET Framework, the RSA.Create() overload uses CryptoConfig.CreateFromName()
         // and always returns a RSACryptoServiceProvider instance unless the default name mapping was
-        // explicitly overriden in machine.config or via CryptoConfig.AddAlgorithm(). Unfortunately,
+        // explicitly overridden in machine.config or via CryptoConfig.AddAlgorithm(). Unfortunately,
         // RSACryptoServiceProvider still uses 1024-bit keys by default and doesn't support changing
         // the key size via RSACryptoServiceProvider.KeySize (setting it has no effect on the object).
         //
