@@ -123,7 +123,7 @@
   
   <!--
     Note: Arcade always generates .resx backing files with internal static methods/constants.
-    To ensure the OpenIddict resources are public, the default visibility is manually overriden.
+    To ensure the OpenIddict resources are public, the default visibility is manually overridden.
   -->
 
   <Target Name="OverrideResourcesVisibility" Condition=" @(EmbeddedResourceSGResx) != '' " AfterTargets="_GenerateResxSource">

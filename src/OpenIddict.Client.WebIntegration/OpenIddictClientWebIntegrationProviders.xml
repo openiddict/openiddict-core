@@ -1431,4 +1431,29 @@
     <Environment Issuer="https://api.login.yahoo.com/" />
   </Provider>
 
+  <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▄ ██ ▄▄▄ ██ ▄▄▄ ██ ▄▀▄ ██
+                                              ██▀▀▀▄▄██ ███ ██ ███ ██ █ █ ██
+                                              ██ ▀▀▀ ██ ▀▀▀ ██ ▀▀▀ ██ ███ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Zoom" Id="2aa63549-8bb3-426d-a95d-dbc2479167e6"
+            Documentation="https://developers.zoom.us/docs/integrations/oauth/">
+    <Environment Issuer="https://zoom.us/">
+      <Configuration AuthorizationEndpoint="https://zoom.us/oauth/authorize"
+                     TokenEndpoint="https://zoom.us/oauth/token"
+                     UserinfoEndpoint="https://api.zoom.us/v2/users/me">
+        <CodeChallengeMethod Value="plain" />
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
 </Providers>

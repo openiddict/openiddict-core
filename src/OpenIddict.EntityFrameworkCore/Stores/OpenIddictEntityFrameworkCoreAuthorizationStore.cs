@@ -234,7 +234,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
         // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-        // this method is overriden to use an explicit join before applying the equality check.
+        // this method is overridden to use an explicit join before applying the equality check.
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(client);
@@ -268,7 +268,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
         // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-        // this method is overriden to use an explicit join before applying the equality check.
+        // this method is overridden to use an explicit join before applying the equality check.
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(client);
@@ -307,7 +307,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
         // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-        // this method is overriden to use an explicit join before applying the equality check.
+        // this method is overridden to use an explicit join before applying the equality check.
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(client);
@@ -353,7 +353,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
         {
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-            // this method is overriden to use an explicit join before applying the equality check.
+            // this method is overridden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
             var key = ConvertIdentifierFromString(client);
@@ -389,7 +389,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
         // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-        // this method is overriden to use an explicit join before applying the equality check.
+        // this method is overridden to use an explicit join before applying the equality check.
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(identifier);
