@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -162,15 +163,10 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
                 _ => null
             };
 
-            if (principal is null)
-            {
-                return AuthenticateResult.NoResult();
-            }
-
             var properties = new AuthenticationProperties
             {
-                ExpiresUtc = principal.GetExpirationDate(),
-                IssuedUtc = principal.GetCreationDate()
+                ExpiresUtc = principal?.GetExpirationDate(),
+                IssuedUtc = principal?.GetCreationDate()
             };
 
             List<AuthenticationToken>? tokens = null;
@@ -198,7 +194,8 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
                 properties.StoreTokens(tokens);
             }
 
-            return AuthenticateResult.Success(new AuthenticationTicket(principal, properties,
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                principal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
                 OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme));
         }
     }

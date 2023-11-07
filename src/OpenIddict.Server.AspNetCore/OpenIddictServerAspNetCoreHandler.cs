@@ -186,15 +186,10 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 _ => null
             };
 
-            if (principal is null)
-            {
-                return AuthenticateResult.NoResult();
-            }
-
             // Restore or create a new authentication properties collection and populate it.
             var properties = CreateProperties(principal);
-            properties.ExpiresUtc = principal.GetExpirationDate();
-            properties.IssuedUtc = principal.GetCreationDate();
+            properties.ExpiresUtc = principal?.GetExpirationDate();
+            properties.IssuedUtc = principal?.GetCreationDate();
 
             List<AuthenticationToken>? tokens = null;
 
@@ -311,7 +306,8 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 properties.StoreTokens(tokens);
             }
 
-            return AuthenticateResult.Success(new AuthenticationTicket(principal, properties,
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                principal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
                 OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
         }
 
