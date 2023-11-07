@@ -170,15 +170,10 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Open
                 _ => null
             };
 
-            if (principal is null)
-            {
-                return null;
-            }
-
             var properties = new AuthenticationProperties
             {
-                ExpiresUtc = principal.GetExpirationDate(),
-                IssuedUtc = principal.GetCreationDate()
+                ExpiresUtc = principal?.GetExpirationDate(),
+                IssuedUtc = principal?.GetCreationDate()
             };
 
             // Attach the tokens to allow any OWIN/Katana component (e.g a controller)
@@ -189,14 +184,14 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Open
                 properties.Dictionary[TokenTypeHints.AccessToken] = context.AccessToken;
             }
 
-            return new AuthenticationTicket((ClaimsIdentity) principal.Identity, properties);
+            return new AuthenticationTicket(principal?.Identity as ClaimsIdentity, properties);
         }
     }
 
     /// <inheritdoc/>
     protected override async Task TeardownCoreAsync()
     {
-        // Note: OWIN authentication handlers cannot reliabily write to the response stream
+        // Note: OWIN authentication handlers cannot reliably write to the response stream
         // from ApplyResponseGrantAsync() or ApplyResponseChallengeAsync() because these methods
         // are susceptible to be invoked from AuthenticationHandler.OnSendingHeaderCallback(),
         // where calling Write() or WriteAsync() on the response stream may result in a deadlock

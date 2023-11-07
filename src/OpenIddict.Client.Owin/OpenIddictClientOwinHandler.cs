@@ -168,11 +168,6 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
 
         else
         {
-            if (context.MergedPrincipal is not ClaimsPrincipal principal)
-            {
-                return null;
-            }
-
             // Restore or create a new authentication properties collection and populate it.
             var properties = CreateProperties(context.StateTokenPrincipal);
             properties.ExpiresUtc = context.StateTokenPrincipal?.GetExpirationDate();
@@ -240,7 +235,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                 properties.Dictionary[Tokens.UserinfoToken] = context.UserinfoToken;
             }
 
-            return new AuthenticationTicket((ClaimsIdentity) principal.Identity, properties);
+            return new AuthenticationTicket(context.MergedPrincipal?.Identity as ClaimsIdentity, properties);
 
             static AuthenticationProperties CreateProperties(ClaimsPrincipal? principal)
             {
@@ -270,7 +265,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
     /// <inheritdoc/>
     protected override async Task TeardownCoreAsync()
     {
-        // Note: OWIN authentication handlers cannot reliabily write to the response stream
+        // Note: OWIN authentication handlers cannot reliably write to the response stream
         // from ApplyResponseGrantAsync() or ApplyResponseChallengeAsync() because these methods
         // are susceptible to be invoked from AuthenticationHandler.OnSendingHeaderCallback(),
         // where calling Write() or WriteAsync() on the response stream may result in a deadlock

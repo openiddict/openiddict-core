@@ -192,15 +192,10 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
                 _ => null
             };
 
-            if (principal is null)
-            {
-                return null;
-            }
-
             // Restore or create a new authentication properties collection and populate it.
             var properties = CreateProperties(principal);
-            properties.ExpiresUtc = principal.GetExpirationDate();
-            properties.IssuedUtc = principal.GetCreationDate();
+            properties.ExpiresUtc = principal?.GetExpirationDate();
+            properties.IssuedUtc = principal?.GetCreationDate();
 
             // Attach the tokens to allow any OWIN component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
@@ -240,7 +235,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
                 properties.Dictionary[Tokens.UserCode] = context.UserCode;
             }
 
-            return new AuthenticationTicket((ClaimsIdentity) principal.Identity, properties);
+            return new AuthenticationTicket(principal?.Identity as ClaimsIdentity, properties);
         }
 
         static AuthenticationProperties CreateProperties(ClaimsPrincipal? principal)
@@ -270,7 +265,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
     /// <inheritdoc/>
     protected override async Task TeardownCoreAsync()
     {
-        // Note: OWIN authentication handlers cannot reliabily write to the response stream
+        // Note: OWIN authentication handlers cannot reliably write to the response stream
         // from ApplyResponseGrantAsync() or ApplyResponseChallengeAsync() because these methods
         // are susceptible to be invoked from AuthenticationHandler.OnSendingHeaderCallback(),
         // where calling Write() or WriteAsync() on the response stream may result in a deadlock

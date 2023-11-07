@@ -135,6 +135,14 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
 
         else if (context.IsRejected)
         {
+            // Note: the missing_token error is special-cased to indicate to ASP.NET Core
+            // that no authentication result could be produced due to the lack of token.
+            // This also helps reducing the logging noise when no token is specified.
+            if (string.Equals(context.Error, Errors.MissingToken, StringComparison.Ordinal))
+            {
+                return AuthenticateResult.NoResult();
+            }
+
             var properties = new AuthenticationProperties(new Dictionary<string, string?>
             {
                 [Properties.Error] = context.Error,
@@ -147,11 +155,6 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
 
         else
         {
-            if (context.MergedPrincipal is not ClaimsPrincipal principal)
-            {
-                return AuthenticateResult.NoResult();
-            }
-
             // Restore or create a new authentication properties collection and populate it.
             var properties = CreateProperties(context.StateTokenPrincipal);
             properties.ExpiresUtc = context.StateTokenPrincipal?.GetExpirationDate();
@@ -314,7 +317,8 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 properties.SetParameter(Properties.UserinfoTokenPrincipal, context.UserinfoTokenPrincipal);
             }
 
-            return AuthenticateResult.Success(new AuthenticationTicket(principal, properties,
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                context.MergedPrincipal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
                 OpenIddictClientAspNetCoreDefaults.AuthenticationScheme));
 
             static AuthenticationProperties CreateProperties(ClaimsPrincipal? principal)
