@@ -160,6 +160,7 @@ namespace OpenIddict.Sandbox.AspNet.Server
             };
 
             configuration.MapHttpAttributeRoutes();
+            configuration.SuppressDefaultHostAuthentication();
 
             // Register the Autofac Web API integration and Web API middleware.
             app.UseAutofacWebApi(configuration);
