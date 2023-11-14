@@ -43,13 +43,16 @@
     </NetFrameworkTargetFrameworks>
     <NetCoreTargetFrameworks Condition=" '$(NetCoreTargetFrameworks)' == '' ">
       net6.0;
-      net7.0
+      net7.0;
+      net8.0
     </NetCoreTargetFrameworks>
     <NetCoreWindowsTargetFrameworks Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' ">
       net6.0-windows7.0;
       net6.0-windows10.0.17763;
       net7.0-windows7.0;
-      net7.0-windows10.0.17763
+      net7.0-windows10.0.17763;
+      net8.0-windows7.0;
+      net8.0-windows10.0.17763
     </NetCoreWindowsTargetFrameworks>
     <NetStandardTargetFrameworks Condition=" '$(NetStandardTargetFrameworks)' == '' ">
       netstandard2.0;
