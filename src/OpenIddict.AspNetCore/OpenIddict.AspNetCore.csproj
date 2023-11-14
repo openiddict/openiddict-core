@@ -28,6 +28,7 @@
     <None Include="_._" Pack="true" PackagePath="lib\netcoreapp3.1\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\net6.0\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\net7.0\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\net8.0\_._" />
   </ItemGroup>
 
 </Project>

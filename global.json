@@ -1,18 +1,19 @@
 {
   "sdk": {
-    "version": "7.0.302",
+    "version": "8.0.100",
     "allowPrerelease": true,
     "rollForward": "major"
   },
 
   "tools": {
-    "dotnet": "7.0.302",
+    "dotnet": "8.0.100",
 
     "runtimes": {
       "aspnetcore": [
         "3.1.32",
         "6.0.16",
-        "7.0.5"
+        "7.0.5",
+        "8.0.0"
       ]
     }
   },

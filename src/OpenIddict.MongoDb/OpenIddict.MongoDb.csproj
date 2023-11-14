@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" NoWarn="NU1902" />
+    <PackageReference Include="MongoDB.Driver" NoWarn="NU1901;NU1902;NU1903;NU1904" />
   </ItemGroup>
 
   <ItemGroup>
