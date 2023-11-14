@@ -27,6 +27,19 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationAspNetCoreHandler"/> class.
     /// </summary>
+#if SUPPORTS_TIME_PROVIDER
+    public OpenIddictValidationAspNetCoreHandler(
+        IOpenIddictValidationDispatcher dispatcher,
+        IOpenIddictValidationFactory factory,
+        IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder)
+        : base(options, logger, encoder)
+    {
+        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+    }
+#else
     public OpenIddictValidationAspNetCoreHandler(
         IOpenIddictValidationDispatcher dispatcher,
         IOpenIddictValidationFactory factory,
@@ -39,6 +52,7 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
+#endif
 
     /// <inheritdoc/>
     public async Task<bool> HandleRequestAsync()
