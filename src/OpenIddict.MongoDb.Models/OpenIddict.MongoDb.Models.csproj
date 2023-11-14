@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Bson" NoWarn="NU1902" />
+    <PackageReference Include="MongoDB.Bson" />
   </ItemGroup>
 
   <ItemGroup
