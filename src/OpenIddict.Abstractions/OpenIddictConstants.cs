@@ -155,6 +155,15 @@ public static class OpenIddictConstants
             public const string UserCodeLifetime = "oi_usrc_lft";
         }
     }
+ 
+    public static class ClaimsParameters
+    {
+       public const string Essential = "essential";
+       public const string IdToken = "id_token";
+       public const string Userinfo = "userinfo";
+       public const string Value = "value";
+       public const string Values = "values";
+    }
 
     public static class ClientAssertionTypes
     {
@@ -363,15 +372,6 @@ public static class OpenIddictConstants
         public const string Username = "username";
         public const string VerificationUri = "verification_uri";
         public const string VerificationUriComplete = "verification_uri_complete";
-    }
-
-    public static class ClaimsParameters
-    {
-       public const string UserInfo = "userinfo";
-       public const string IdToken = "id_token";
-       public const string Essential = "essential";
-       public const string Value = "value";
-       public const string Values = "values";
     }
 
     public static class Permissions
