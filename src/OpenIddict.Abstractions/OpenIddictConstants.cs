@@ -4,6 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
+using static System.Net.WebRequestMethods;
+
 namespace OpenIddict.Abstractions;
 
 public static class OpenIddictConstants
@@ -156,13 +158,26 @@ public static class OpenIddictConstants
         }
     }
  
-    public static class ClaimsParameters
+    public static class ClaimRequestMembers
     {
-       public const string Essential = "essential";
-       public const string IdToken = "id_token";
-       public const string Userinfo = "userinfo";
-       public const string Value = "value";
-       public const string Values = "values";
+        /// <summary>
+        /// Individual claims requests members, as per <see href="https://openid.net/specs/openid-connect-core-1_0.html#IndividualClaimsRequests"/>.
+        /// </summary>
+        public static class Individual
+        {
+            public const string Essential = "essential";
+            public const string Value = "value";
+            public const string Values = "values";
+        }
+        
+        /// <summary>
+        /// Top level request members, as per <see href="https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter"/>.
+        /// </summary>
+        public static class TopLevel
+        {
+            public const string Userinfo = "userinfo";
+            public const string IdToken = "id_token";
+        }
     }
 
     public static class ClientAssertionTypes
