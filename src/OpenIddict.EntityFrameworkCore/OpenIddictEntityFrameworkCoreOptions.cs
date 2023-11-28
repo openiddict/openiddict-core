@@ -18,4 +18,12 @@ public sealed class OpenIddictEntityFrameworkCoreOptions
     /// an exception is thrown at runtime when trying to use the stores.
     /// </summary>
     public Type? DbContextType { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether bulk operations should be disabled.
+    /// </summary>
+    /// <remarks>
+    /// Note: bulk operations are only supported when targeting .NET 7.0 and higher.
+    /// </remarks>
+    public bool DisableBulkOperations { get; set; }
 }

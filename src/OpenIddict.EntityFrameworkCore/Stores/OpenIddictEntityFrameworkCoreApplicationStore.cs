@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -17,7 +18,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.EntityFrameworkCore.Models;
-using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFrameworkCore;
@@ -153,101 +153,129 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
             throw new ArgumentNullException(nameof(application));
         }
 
-        async ValueTask<IDbContextTransaction?> CreateTransactionAsync()
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+        if (!Options.CurrentValue.DisableBulkOperations)
         {
-            // Note: transactions that specify an explicit isolation level are only supported by
-            // relational providers and trying to use them with a different provider results in
-            // an invalid operation exception being thrown at runtime. To prevent that, a manual
-            // check is made to ensure the underlying transaction manager is relational.
-            var manager = Context.Database.GetService<IDbContextTransactionManager>();
-            if (manager is IRelationalTransactionManager)
+            var strategy = Context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
+                // To prevent an SQL exception from being thrown if a new associated entity is
+                // created after the existing entries have been listed, the following logic is
+                // executed in a serializable transaction, that will lock the affected tables.
+                using var transaction = await Context.CreateTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+
+                // Remove all the tokens associated with the application.
+                await (from token in Tokens
+                       where token.Application!.Id!.Equals(application.Id)
+                       select token).ExecuteDeleteAsync(cancellationToken);
+
+                // Remove all the authorizations associated with the application and
+                // the tokens attached to these implicit or explicit authorizations.
+                await (from authorization in Authorizations
+                       where authorization.Application!.Id!.Equals(application.Id)
+                       select authorization).ExecuteDeleteAsync(cancellationToken);
+
+                // Note: calling DbContext.SaveChangesAsync() is not necessary
+                // with bulk delete operations as they are executed immediately.
+
+                Context.Remove(application);
+
                 try
                 {
-                    return await Context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+                    await Context.SaveChangesAsync(cancellationToken);
+                    transaction?.Commit();
                 }
 
-                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                catch (DbUpdateConcurrencyException exception)
                 {
-                    return null;
+                    // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                    Context.Entry(application).State = EntityState.Unchanged;
+
+                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
                 }
-            }
-
-            return null;
+            });
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-        // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-        // this local method uses an explicit join before applying the equality check.
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-        Task<List<TAuthorization>> ListAuthorizationsAsync()
-            => (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
-                join element in Applications.AsTracking() on authorization.Application!.Id equals element.Id
-                where element.Id!.Equals(application.Id)
-                select authorization).ToListAsync(cancellationToken);
-
-        // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
-        // filtered using token.Application.Id.Equals(key). To work around this issue,
-        // this local method uses an explicit join before applying the equality check.
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-        Task<List<TToken>> ListTokensAsync()
-            => (from token in Tokens.AsTracking()
-                where token.Authorization == null
-                join element in Applications.AsTracking() on token.Application!.Id equals element.Id
-                where element.Id!.Equals(application.Id)
-                select token).ToListAsync(cancellationToken);
-
-        // To prevent an SQL exception from being thrown if a new associated entity is
-        // created after the existing entries have been listed, the following logic is
-        // executed in a serializable transaction, that will lock the affected tables.
-        using var transaction = await CreateTransactionAsync();
-
-        // Remove all the authorizations associated with the application and
-        // the tokens attached to these implicit or explicit authorizations.
-        var authorizations = await ListAuthorizationsAsync();
-        foreach (var authorization in authorizations)
+        else
+#endif
         {
-            foreach (var token in authorization.Tokens)
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
+            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
+            // this local method uses an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            Task<List<TAuthorization>> ListAuthorizationsAsync()
+                => (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
+                    join element in Applications.AsTracking() on authorization.Application!.Id equals element.Id
+                    where element.Id!.Equals(application.Id)
+                    select authorization).ToListAsync(cancellationToken);
+
+            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
+            // filtered using token.Application.Id.Equals(key). To work around this issue,
+            // this local method uses an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            Task<List<TToken>> ListTokensAsync()
+                => (from token in Tokens.AsTracking()
+                    where token.Authorization == null
+                    join element in Applications.AsTracking() on token.Application!.Id equals element.Id
+                    where element.Id!.Equals(application.Id)
+                    select token).ToListAsync(cancellationToken);
+
+            var strategy = Context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                Context.Remove(token);
-            }
+                // To prevent an SQL exception from being thrown if a new associated entity is
+                // created after the existing entries have been listed, the following logic is
+                // executed in a serializable transaction, that will lock the affected tables.
+                using var transaction = await Context.CreateTransactionAsync(IsolationLevel.Serializable, cancellationToken);
 
-            Context.Remove(authorization);
-        }
+                // Remove all the authorizations associated with the application and
+                // the tokens attached to these implicit or explicit authorizations.
+                var authorizations = await ListAuthorizationsAsync();
+                foreach (var authorization in authorizations)
+                {
+                    foreach (var token in authorization.Tokens)
+                    {
+                        Context.Remove(token);
+                    }
 
-        // Remove all the tokens associated with the application.
-        var tokens = await ListTokensAsync();
-        foreach (var token in tokens)
-        {
-            Context.Remove(token);
-        }
+                    Context.Remove(authorization);
+                }
 
-        Context.Remove(application);
+                // Remove all the tokens associated with the application.
+                var tokens = await ListTokensAsync();
+                foreach (var token in tokens)
+                {
+                    Context.Remove(token);
+                }
 
-        try
-        {
-            await Context.SaveChangesAsync(cancellationToken);
-            transaction?.Commit();
-        }
+                Context.Remove(application);
 
-        catch (DbUpdateConcurrencyException exception)
-        {
-            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-            Context.Entry(application).State = EntityState.Unchanged;
+                try
+                {
+                    await Context.SaveChangesAsync(cancellationToken);
+                    transaction?.Commit();
+                }
 
-            foreach (var authorization in authorizations)
-            {
-                Context.Entry(authorization).State = EntityState.Unchanged;
-            }
+                catch (DbUpdateConcurrencyException exception)
+                {
+                    // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                    Context.Entry(application).State = EntityState.Unchanged;
 
-            foreach (var token in tokens)
-            {
-                Context.Entry(token).State = EntityState.Unchanged;
-            }
+                    foreach (var authorization in authorizations)
+                    {
+                        Context.Entry(authorization).State = EntityState.Unchanged;
+                    }
 
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
+                    foreach (var token in tokens)
+                    {
+                        Context.Entry(token).State = EntityState.Unchanged;
+                    }
+
+                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
+                }
+            });
         }
     }
 

@@ -327,6 +327,14 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Revokes all the tokens associated with the specified authorization identifier.
+    /// </summary>
+    /// <param name="identifier">The authorization identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified authorization that were marked as revoked.</returns>
+    ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Sets the application identifier associated with a token.
     /// </summary>
     /// <param name="token">The token.</param>
