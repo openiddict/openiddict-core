@@ -155,6 +155,15 @@ public static class OpenIddictConstants
             public const string UserCodeLifetime = "oi_usrc_lft";
         }
     }
+ 
+    public static class ClaimRequestMembers
+    {
+        public const string Essential = "essential";
+        public const string IdToken = "id_token";
+        public const string Userinfo = "userinfo";
+        public const string Value = "value";
+        public const string Values = "values";
+    }
 
     public static class ClientAssertionTypes
     {
