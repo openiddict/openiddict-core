@@ -574,13 +574,15 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
         // Note: Entity Framework 6.x doesn't support set-based deletes, which prevents removing
         // entities in a single command without having to retrieve and materialize them first.
         // To work around this limitation, entities are manually listed and deleted using a batch logic.
 
         List<Exception>? exceptions = null;
+
+        var result = 0L;
 
         DbContextTransaction? CreateTransaction()
         {
@@ -642,13 +644,19 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
             {
                 exceptions ??= [];
                 exceptions.Add(exception);
+
+                continue;
             }
+
+            result += tokens.Count;
         }
 
         if (exceptions is not null)
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -663,7 +671,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
 
         List<Exception>? exceptions = null;
 
-        long count = 0;
+        var result = 0L;
 
         foreach (var token in await (from token in Tokens
                                      where token.Authorization!.Id!.Equals(key)
@@ -687,7 +695,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
                 continue;
             }
 
-            count++;
+            result++;
         }
 
         if (exceptions is not null)
@@ -695,7 +703,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
 
-        return count;
+        return result;
     }
 
     /// <inheritdoc/>

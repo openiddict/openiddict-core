@@ -519,10 +519,12 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+        var result = 0L;
 
         // Note: directly deleting the resulting set of an aggregate query is not supported by MongoDB.
         // To work around this limitation, the authorization identifiers are stored in an intermediate
@@ -541,8 +543,10 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
         // maximum number of elements that can be removed by a single call to PruneAsync() is deliberately limited.
         foreach (var buffer in identifiers.Take(1_000_000).Buffer(1_000))
         {
-            await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id), cancellationToken);
+            result += (await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id), cancellationToken)).DeletedCount;
         }
+
+        return result;
     }
 
     /// <inheritdoc/>

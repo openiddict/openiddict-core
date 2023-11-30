@@ -624,9 +624,11 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
         List<Exception>? exceptions = null;
+
+        var result = 0L;
 
         // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
         // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
@@ -661,6 +663,8 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
                     // Note: calling DbContext.SaveChangesAsync() is not necessary
                     // with bulk delete operations as they are executed immediately.
+
+                    result += count;
                 }
 
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
@@ -715,6 +719,8 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                 {
                     break;
                 }
+
+                result += count;
             }
         }
 
@@ -722,6 +728,8 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -749,7 +757,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 #endif
         List<Exception>? exceptions = null;
 
-        long count = 0;
+        var result = 0L;
 
         foreach (var token in await (from token in Tokens
                                      where token.Authorization!.Id!.Equals(key)
@@ -773,7 +781,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                 continue;
             }
 
-            count++;
+            result++;
         }
 
         if (exceptions is not null)
@@ -781,7 +789,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
 
-        return count;
+        return result;
     }
 
     /// <inheritdoc/>

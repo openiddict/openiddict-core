@@ -276,8 +276,8 @@ public interface IOpenIddictAuthorizationStore<TAuthorization> where TAuthorizat
     /// </remarks>
     /// <param name="threshold">The date before which authorizations are not pruned.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
+    /// <returns>The number of authorizations that were removed.</returns>
+    ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the application identifier associated with an authorization.

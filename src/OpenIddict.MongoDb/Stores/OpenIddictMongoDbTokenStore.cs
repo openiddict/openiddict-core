@@ -555,10 +555,12 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+        var result = 0L;
 
         // Note: directly deleting the resulting set of an aggregate query is not supported by MongoDB.
         // To work around this limitation, the token identifiers are stored in an intermediate list
@@ -578,8 +580,10 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
         // maximum number of elements that can be removed by a single call to PruneAsync() is deliberately limited.
         foreach (var buffer in identifiers.Take(1_000_000).Buffer(1_000))
         {
-            await collection.DeleteManyAsync(token => buffer.Contains(token.Id), cancellationToken);
+            result += (await collection.DeleteManyAsync(token => buffer.Contains(token.Id), cancellationToken)).DeletedCount;
         }
+
+        return result;
     }
 
     /// <inheritdoc/>

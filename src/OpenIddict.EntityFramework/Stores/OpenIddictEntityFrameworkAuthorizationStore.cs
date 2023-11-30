@@ -591,13 +591,15 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
         // Note: Entity Framework 6.x doesn't support set-based deletes, which prevents removing
         // entities in a single command without having to retrieve and materialize them first.
         // To work around this limitation, entities are manually listed and deleted using a batch logic.
 
         List<Exception>? exceptions = null;
+
+        var result = 0L;
 
         DbContextTransaction? CreateTransaction()
         {
@@ -662,13 +664,19 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
             {
                 exceptions ??= [];
                 exceptions.Add(exception);
+
+                continue;
             }
+
+            result += authorizations.Count;
         }
 
         if (exceptions is not null)
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0243), exceptions);
         }
+
+        return result;
     }
 
     /// <inheritdoc/>

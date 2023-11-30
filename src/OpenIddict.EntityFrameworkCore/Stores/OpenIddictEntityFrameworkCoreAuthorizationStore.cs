@@ -681,9 +681,11 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
         List<Exception>? exceptions = null;
+
+        var result = 0L;
 
         // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
         // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
@@ -717,6 +719,8 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
                     // Note: calling DbContext.SaveChangesAsync() is not necessary
                     // with bulk delete operations as they are executed immediately.
+
+                    result += count;
                 }
 
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
@@ -774,6 +778,8 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
                 {
                     break;
                 }
+
+                result += count;
             }
         }
 
@@ -781,6 +787,8 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0243), exceptions);
         }
+
+        return result;
     }
 
     /// <inheritdoc/>
