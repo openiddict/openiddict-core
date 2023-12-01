@@ -150,71 +150,93 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        async ValueTask<IDbContextTransaction?> CreateTransactionAsync()
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+        if (!Options.CurrentValue.DisableBulkOperations)
         {
-            // Note: transactions that specify an explicit isolation level are only supported by
-            // relational providers and trying to use them with a different provider results in
-            // an invalid operation exception being thrown at runtime. To prevent that, a manual
-            // check is made to ensure the underlying transaction manager is relational.
-            var manager = Context.Database.GetService<IDbContextTransactionManager>();
-            if (manager is IRelationalTransactionManager)
+            var strategy = Context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
+                // To prevent an SQL exception from being thrown if a new associated entity is
+                // created after the existing entries have been listed, the following logic is
+                // executed in a serializable transaction, that will lock the affected tables.
+                using var transaction = await Context.CreateTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+
+                // Remove all the tokens associated with the authorization.
+                await (from token in Tokens.AsTracking()
+                       where token.Authorization!.Id!.Equals(authorization.Id)
+                       select token).ExecuteDeleteAsync(cancellationToken);
+
+                // Note: calling DbContext.SaveChangesAsync() is not necessary
+                // with bulk delete operations as they are executed immediately.
+
+                Context.Remove(authorization);
+
                 try
                 {
-                    return await Context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+                    await Context.SaveChangesAsync(cancellationToken);
+                    transaction?.Commit();
                 }
 
-                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                catch (DbUpdateConcurrencyException exception)
                 {
-                    return null;
+                    // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                    Context.Entry(authorization).State = EntityState.Unchanged;
+
+                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0241), exception);
                 }
-            }
-
-            return null;
+            });
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
-        // filtered using token.Application.Id.Equals(key). To work around this issue,
-        // this local method uses an explicit join before applying the equality check.
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-        Task<List<TToken>> ListTokensAsync()
-            => (from token in Tokens.AsTracking()
-                join element in Authorizations.AsTracking() on token.Authorization!.Id equals element.Id
-                where element.Id!.Equals(authorization.Id)
-                select token).ToListAsync(cancellationToken);
-
-        // To prevent an SQL exception from being thrown if a new associated entity is
-        // created after the existing entries have been listed, the following logic is
-        // executed in a serializable transaction, that will lock the affected tables.
-        using var transaction = await CreateTransactionAsync();
-
-        // Remove all the tokens associated with the authorization.
-        var tokens = await ListTokensAsync();
-        foreach (var token in tokens)
+        else
+#endif
         {
-            Context.Remove(token);
-        }
+            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
+            // filtered using token.Application.Id.Equals(key). To work around this issue,
+            // this local method uses an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-        Context.Remove(authorization);
+            Task<List<TToken>> ListTokensAsync()
+                => (from token in Tokens.AsTracking()
+                    join element in Authorizations.AsTracking() on token.Authorization!.Id equals element.Id
+                    where element.Id!.Equals(authorization.Id)
+                    select token).ToListAsync(cancellationToken);
 
-        try
-        {
-            await Context.SaveChangesAsync(cancellationToken);
-            transaction?.Commit();
-        }
-
-        catch (DbUpdateConcurrencyException exception)
-        {
-            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-            Context.Entry(authorization).State = EntityState.Unchanged;
-
-            foreach (var token in tokens)
+            var strategy = Context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                Context.Entry(token).State = EntityState.Unchanged;
-            }
+                // To prevent an SQL exception from being thrown if a new associated entity is
+                // created after the existing entries have been listed, the following logic is
+                // executed in a serializable transaction, that will lock the affected tables.
+                using var transaction = await Context.CreateTransactionAsync(IsolationLevel.Serializable, cancellationToken);
 
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0241), exception);
+                // Remove all the tokens associated with the authorization.
+                var tokens = await ListTokensAsync();
+                foreach (var token in tokens)
+                {
+                    Context.Remove(token);
+                }
+
+                Context.Remove(authorization);
+
+                try
+                {
+                    await Context.SaveChangesAsync(cancellationToken);
+                    transaction?.Commit();
+                }
+
+                catch (DbUpdateConcurrencyException exception)
+                {
+                    // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                    Context.Entry(authorization).State = EntityState.Unchanged;
+
+                    foreach (var token in tokens)
+                    {
+                        Context.Entry(token).State = EntityState.Unchanged;
+                    }
+
+                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0241), exception);
+                }
+            });
         }
     }
 
@@ -659,39 +681,17 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
-        // Note: Entity Framework Core doesn't support set-based deletes, which prevents removing
-        // entities in a single command without having to retrieve and materialize them first.
-        // To work around this limitation, entities are manually listed and deleted using a batch logic.
-
         List<Exception>? exceptions = null;
 
-        async ValueTask<IDbContextTransaction?> CreateTransactionAsync()
-        {
-            // Note: transactions that specify an explicit isolation level are only supported by
-            // relational providers and trying to use them with a different provider results in
-            // an invalid operation exception being thrown at runtime. To prevent that, a manual
-            // check is made to ensure the underlying transaction manager is relational.
-            var manager = Context.Database.GetService<IDbContextTransactionManager>();
-            if (manager is IRelationalTransactionManager)
-            {
-                // Note: relational providers like Sqlite are known to lack proper support
-                // for repeatable read transactions. To ensure this method can be safely used
-                // with such providers, the database transaction is created in a try/catch block.
-                try
-                {
-                    return await Context.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
-                }
+        var result = 0L;
 
-                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-                {
-                    return null;
-                }
-            }
-
-            return null;
-        }
+        // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
+        // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
+        // To work around this limitation, the threshold represented as a DateTimeOffset
+        // instance is manually converted to a UTC DateTime instance outside the query.
+        var date = threshold.UtcDateTime;
 
         // Note: to avoid sending too many queries, the maximum number of elements
         // that can be removed by a single call to PruneAsync() is deliberately limited.
@@ -699,47 +699,87 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // To prevent concurrency exceptions from being thrown if an entry is modified
-            // after it was retrieved from the database, the following logic is executed in
-            // a repeatable read transaction, that will put a lock on the retrieved entries
-            // and thus prevent them from being concurrently modified outside this block.
-            using var transaction = await CreateTransactionAsync();
-
-            // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
-            // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
-            // To work around this limitation, the threshold represented as a DateTimeOffset
-            // instance is manually converted to a UTC DateTime instance outside the query.
-            var date = threshold.UtcDateTime;
-
-            var authorizations =
-                await (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
-                       where authorization.CreationDate < date
-                       where authorization.Status != Statuses.Valid ||
-                            (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
-                       orderby authorization.Id
-                       select authorization).Take(1_000).ToListAsync(cancellationToken);
-
-            if (authorizations.Count is 0)
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+            if (!Options.CurrentValue.DisableBulkOperations)
             {
-                break;
+                try
+                {
+                    var count = await
+                        (from authorization in Authorizations
+                         where authorization.CreationDate < date
+                         where authorization.Status != Statuses.Valid ||
+                              (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
+                         orderby authorization.Id
+                         select authorization).Take(1_000).ExecuteDeleteAsync(cancellationToken);
+
+                    if (count is 0)
+                    {
+                        break;
+                    }
+
+                    // Note: calling DbContext.SaveChangesAsync() is not necessary
+                    // with bulk delete operations as they are executed immediately.
+
+                    result += count;
+                }
+
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                {
+                    exceptions ??= new List<Exception>(capacity: 1);
+                    exceptions.Add(exception);
+                }
             }
 
-            // Note: new tokens may be attached after the authorizations were retrieved
-            // from the database since the transaction level is deliberately limited to
-            // repeatable read instead of serializable for performance reasons). In this
-            // case, the operation will fail, which is considered an acceptable risk.
-            Context.RemoveRange(authorizations);
-
-            try
+            else
+#endif
             {
-                await Context.SaveChangesAsync(cancellationToken);
-                transaction?.Commit();
-            }
+                var strategy = Context.Database.CreateExecutionStrategy();
+                var count = await strategy.ExecuteAsync(async () =>
+                {
+                    // To prevent concurrency exceptions from being thrown if an entry is modified
+                    // after it was retrieved from the database, the following logic is executed in
+                    // a repeatable read transaction, that will put a lock on the retrieved entries
+                    // and thus prevent them from being concurrently modified outside this block.
+                    using var transaction = await Context.CreateTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
 
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                exceptions ??= [];
-                exceptions.Add(exception);
+                    var authorizations = await
+                        (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
+                         where authorization.CreationDate < date
+                         where authorization.Status != Statuses.Valid ||
+                              (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
+                         orderby authorization.Id
+                         select authorization).Take(1_000).ToListAsync(cancellationToken);
+
+                    if (authorizations.Count is not 0)
+                    {
+                        // Note: new tokens may be attached after the authorizations were retrieved
+                        // from the database since the transaction level is deliberately limited to
+                        // repeatable read instead of serializable for performance reasons). In this
+                        // case, the operation will fail, which is considered an acceptable risk.
+                        Context.RemoveRange(authorizations);
+
+                        try
+                        {
+                            await Context.SaveChangesAsync(cancellationToken);
+                            transaction?.Commit();
+                        }
+
+                        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                        {
+                            exceptions ??= [];
+                            exceptions.Add(exception);
+                        }
+                    }
+
+                    return authorizations.Count;
+                });
+
+                if (count is 0)
+                {
+                    break;
+                }
+
+                result += count;
             }
         }
 
@@ -747,6 +787,8 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0243), exceptions);
         }
+
+        return result;
     }
 
     /// <inheritdoc/>

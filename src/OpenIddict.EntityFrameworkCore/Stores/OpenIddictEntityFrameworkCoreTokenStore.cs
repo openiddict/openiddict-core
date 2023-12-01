@@ -624,39 +624,17 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
-        // Note: Entity Framework Core doesn't support set-based deletes, which prevents removing
-        // entities in a single command without having to retrieve and materialize them first.
-        // To work around this limitation, entities are manually listed and deleted using a batch logic.
-
         List<Exception>? exceptions = null;
 
-        async ValueTask<IDbContextTransaction?> CreateTransactionAsync()
-        {
-            // Note: transactions that specify an explicit isolation level are only supported by
-            // relational providers and trying to use them with a different provider results in
-            // an invalid operation exception being thrown at runtime. To prevent that, a manual
-            // check is made to ensure the underlying transaction manager is relational.
-            var manager = Context.Database.GetService<IDbContextTransactionManager>();
-            if (manager is IRelationalTransactionManager)
-            {
-                // Note: relational providers like Sqlite are known to lack proper support
-                // for repeatable read transactions. To ensure this method can be safely used
-                // with such providers, the database transaction is created in a try/catch block.
-                try
-                {
-                    return await Context.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
-                }
+        var result = 0L;
 
-                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-                {
-                    return null;
-                }
-            }
-
-            return null;
-        }
+        // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
+        // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
+        // To work around this limitation, the threshold represented as a DateTimeOffset
+        // instance is manually converted to a UTC DateTime instance outside the query.
+        var date = threshold.UtcDateTime;
 
         // Note: to avoid sending too many queries, the maximum number of elements
         // that can be removed by a single call to PruneAsync() is deliberately limited.
@@ -664,44 +642,85 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // To prevent concurrency exceptions from being thrown if an entry is modified
-            // after it was retrieved from the database, the following logic is executed in
-            // a repeatable read transaction, that will put a lock on the retrieved entries
-            // and thus prevent them from being concurrently modified outside this block.
-            using var transaction = await CreateTransactionAsync();
-
-            // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
-            // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
-            // To work around this limitation, the threshold represented as a DateTimeOffset
-            // instance is manually converted to a UTC DateTime instance outside the query.
-            var date = threshold.UtcDateTime;
-
-            var tokens = await
-                (from token in Tokens.AsTracking()
-                 where token.CreationDate < date
-                 where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
-                       (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
-                        token.ExpirationDate < DateTime.UtcNow
-                 orderby token.Id
-                 select token).Take(1_000).ToListAsync(cancellationToken);
-
-            if (tokens.Count is 0)
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+            if (!Options.CurrentValue.DisableBulkOperations)
             {
-                break;
+                try
+                {
+                    var count = await
+                        (from token in Tokens
+                         where token.CreationDate < date
+                         where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
+                               (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
+                                token.ExpirationDate < DateTime.UtcNow
+                         orderby token.Id
+                         select token).Take(1_000).ExecuteDeleteAsync(cancellationToken);
+
+                    if (count is 0)
+                    {
+                        break;
+                    }
+
+                    // Note: calling DbContext.SaveChangesAsync() is not necessary
+                    // with bulk delete operations as they are executed immediately.
+
+                    result += count;
+                }
+
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                {
+                    exceptions ??= new List<Exception>(capacity: 1);
+                    exceptions.Add(exception);
+                }
             }
 
-            Context.RemoveRange(tokens);
-
-            try
+            else
+#endif
             {
-                await Context.SaveChangesAsync(cancellationToken);
-                transaction?.Commit();
-            }
+                var strategy = Context.Database.CreateExecutionStrategy();
+                var count = await strategy.ExecuteAsync(async () =>
+                {
+                    // To prevent concurrency exceptions from being thrown if an entry is modified
+                    // after it was retrieved from the database, the following logic is executed in
+                    // a repeatable read transaction, that will put a lock on the retrieved entries
+                    // and thus prevent them from being concurrently modified outside this block.
+                    using var transaction = await Context.CreateTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
 
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                exceptions ??= [];
-                exceptions.Add(exception);
+                    var tokens = await
+                        (from token in Tokens.AsTracking()
+                         where token.CreationDate < date
+                         where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
+                               (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
+                                token.ExpirationDate < DateTime.UtcNow
+                         orderby token.Id
+                         select token).Take(1_000).ToListAsync(cancellationToken);
+
+                    if (tokens.Count is not 0)
+                    {
+                        Context.RemoveRange(tokens);
+
+                        try
+                        {
+                            await Context.SaveChangesAsync(cancellationToken);
+                            transaction?.Commit();
+                        }
+
+                        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                        {
+                            exceptions ??= [];
+                            exceptions.Add(exception);
+                        }
+                    }
+
+                    return tokens.Count;
+                });
+
+                if (count is 0)
+                {
+                    break;
+                }
+
+                result += count;
             }
         }
 
@@ -709,6 +728,68 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        var key = ConvertIdentifierFromString(identifier);
+
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+        if (!Options.CurrentValue.DisableBulkOperations)
+        {
+            return await (
+                from token in Tokens
+                where token.Authorization!.Id!.Equals(key)
+                select token).ExecuteUpdateAsync(entity => entity.SetProperty(
+                    token => token.Status, Statuses.Revoked), cancellationToken);
+
+            // Note: calling DbContext.SaveChangesAsync() is not necessary
+            // with bulk update operations as they are executed immediately.
+        }
+#endif
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        foreach (var token in await (from token in Tokens
+                                     where token.Authorization!.Id!.Equals(key)
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
     }
 
     /// <inheritdoc/>

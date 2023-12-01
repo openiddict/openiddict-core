@@ -574,13 +574,15 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
         // Note: Entity Framework 6.x doesn't support set-based deletes, which prevents removing
         // entities in a single command without having to retrieve and materialize them first.
         // To work around this limitation, entities are manually listed and deleted using a batch logic.
 
         List<Exception>? exceptions = null;
+
+        var result = 0L;
 
         DbContextTransaction? CreateTransaction()
         {
@@ -642,13 +644,66 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
             {
                 exceptions ??= [];
                 exceptions.Add(exception);
+
+                continue;
             }
+
+            result += tokens.Count;
         }
 
         if (exceptions is not null)
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        var key = ConvertIdentifierFromString(identifier);
+
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        foreach (var token in await (from token in Tokens
+                                     where token.Authorization!.Id!.Equals(key)
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
     }
 
     /// <inheritdoc/>

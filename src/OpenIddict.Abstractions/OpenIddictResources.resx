@@ -2739,6 +2739,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6227" xml:space="preserve">
     <value>The request was rejected because the '{Method}' client authentication method that was used by the client application is not enabled in the server options.</value>
   </data>
+  <data name="ID6228" xml:space="preserve">
+    <value>{Count} tokens associated with the authorization '{Identifier}' were revoked to prevent a potential token replay attack.</value>
+  </data>
+  <data name="ID6229" xml:space="preserve">
+    <value>An error occurred while trying to revoke the tokens associated with the authorization '{Identifier}'.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>

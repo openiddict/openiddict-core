@@ -962,7 +962,8 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
 
                 // If the token is already marked as redeemed, this may indicate that it was compromised.
-                // In this case, revoke the entire chain of tokens associated with the authorization.
+                // In this case, revoke the entire chain of tokens associated with the authorization, if one was attached to the token.
+                //
                 // Special logic is used to avoid revoking refresh tokens already marked as redeemed to allow for a small leeway.
                 // Note: the authorization itself is not revoked to allow the legitimate client to start a new flow.
                 // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
@@ -970,6 +971,26 @@ public static partial class OpenIddictServerHandlers
                 {
                     if (!context.Principal.HasTokenType(TokenTypeHints.RefreshToken) || !await IsReusableAsync(token))
                     {
+                        if (!string.IsNullOrEmpty(context.AuthorizationId))
+                        {
+                            long? count = null;
+
+                            try
+                            {
+                                count = await _tokenManager.RevokeByAuthorizationIdAsync(context.AuthorizationId);
+                            }
+
+                            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                            {
+                                context.Logger.LogWarning(exception, SR.GetResourceString(SR.ID6229), context.AuthorizationId);
+                            }
+
+                            if (count is not null)
+                            {
+                                context.Logger.LogWarning(SR.GetResourceString(SR.ID6228), count, context.AuthorizationId);
+                            }
+                        }
+
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6002), context.TokenId);
 
                         context.Reject(
@@ -995,9 +1016,6 @@ public static partial class OpenIddictServerHandlers
 
                                 _ => SR.FormatID8000(SR.ID2013)
                             });
-
-                        // Revoke all the token entries associated with the authorization.
-                        await TryRevokeChainAsync(context.AuthorizationId);
 
                         return;
                     }
@@ -1078,34 +1096,6 @@ public static partial class OpenIddictServerHandlers
                     }
 
                     return false;
-                }
-
-                async ValueTask TryRevokeChainAsync(string? identifier)
-                {
-                    if (string.IsNullOrEmpty(identifier))
-                    {
-                        return;
-                    }
-
-                    // Revoke all the token entries associated with the authorization,
-                    // including the redeemed token that was used in the token request.
-
-                    // Note: the tokens are deliberately buffered before being marked
-                    // as revoked to prevent issues with providers that try to reuse the
-                    // connection opened to iterate the tokens instead of opening a new one.
-                    //
-                    // See https://github.com/openiddict/openiddict-core/issues/1658 for more information.
-                    List<object> tokens = new(capacity: 1);
-
-                    await foreach (var token in _tokenManager.FindByAuthorizationIdAsync(identifier))
-                    {
-                        tokens.Add(token);
-                    }
-
-                    for (var index = 0; index < tokens.Count; index++)
-                    {
-                        await _tokenManager.TryRevokeAsync(tokens[index]);
-                    }
                 }
             }
         }

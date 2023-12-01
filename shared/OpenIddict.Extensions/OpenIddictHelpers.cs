@@ -15,6 +15,36 @@ namespace OpenIddict.Extensions;
 internal static class OpenIddictHelpers
 {
     /// <summary>
+    /// Generates a sequence of non-overlapping adjacent buffers over the source sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The source sequence element type.</typeparam>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="count">The number of elements for allocated buffers.</param>
+    /// <returns>A sequence of buffers containing source sequence elements.</returns>
+    public static IEnumerable<List<TSource>> Buffer<TSource>(this IEnumerable<TSource> source, int count)
+    {
+        List<TSource>? buffer = null;
+
+        foreach (var element in source)
+        {
+            buffer ??= [];
+            buffer.Add(element);
+
+            if (buffer.Count == count)
+            {
+                yield return buffer;
+
+                buffer = null;
+            }
+        }
+
+        if (buffer is not null)
+        {
+            yield return buffer;
+        }
+    }
+
+    /// <summary>
     /// Finds the first base type that matches the specified generic type definition.
     /// </summary>
     /// <param name="type">The type to introspect.</param>

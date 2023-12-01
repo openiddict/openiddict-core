@@ -406,10 +406,16 @@ public interface IOpenIddictTokenManager
     /// </summary>
     /// <param name="threshold">The date before which tokens are not pruned.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-    /// </returns>
-    ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default);
+    /// <returns>The number of tokens that were removed.</returns>
+    ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Revokes all the tokens associated with the specified authorization identifier.
+    /// </summary>
+    /// <param name="identifier">The authorization identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified authorization that were marked as revoked.</returns>
+    ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Tries to redeem a token.

@@ -1020,10 +1020,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// </remarks>
     /// <param name="threshold">The date before which authorizations are not pruned.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-    /// </returns>
-    public virtual ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default)
+    /// <returns>The number of authorizations that were removed.</returns>
+    public virtual ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default)
         => Store.PruneAsync(threshold, cancellationToken);
 
     /// <summary>
@@ -1332,7 +1330,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         => PopulateAsync((TAuthorization) authorization, descriptor, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask IOpenIddictAuthorizationManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    ValueTask<long> IOpenIddictAuthorizationManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
         => PruneAsync(threshold, cancellationToken);
 
     /// <inheritdoc/>

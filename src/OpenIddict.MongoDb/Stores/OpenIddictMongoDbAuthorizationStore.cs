@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 using OpenIddict.MongoDb.Models;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
@@ -518,10 +519,12 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+        var result = 0L;
 
         // Note: directly deleting the resulting set of an aggregate query is not supported by MongoDB.
         // To work around this limitation, the authorization identifiers are stored in an intermediate
@@ -538,33 +541,12 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
 
         // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
         // maximum number of elements that can be removed by a single call to PruneAsync() is deliberately limited.
-        foreach (var buffer in Buffer(identifiers.Take(1_000_000), 1_000))
+        foreach (var buffer in identifiers.Take(1_000_000).Buffer(1_000))
         {
-            await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id), cancellationToken);
+            result += (await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id), cancellationToken)).DeletedCount;
         }
 
-        static IEnumerable<List<TSource>> Buffer<TSource>(IEnumerable<TSource> source, int count)
-        {
-            List<TSource>? buffer = null;
-
-            foreach (var element in source)
-            {
-                buffer ??= [];
-                buffer.Add(element);
-
-                if (buffer.Count == count)
-                {
-                    yield return buffer;
-
-                    buffer = null;
-                }
-            }
-
-            if (buffer is not null)
-            {
-                yield return buffer;
-            }
-        }
+        return result;
     }
 
     /// <inheritdoc/>

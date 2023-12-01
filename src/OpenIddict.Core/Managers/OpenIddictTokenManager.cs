@@ -1051,11 +1051,26 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// </summary>
     /// <param name="threshold">The date before which tokens are not pruned.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-    /// </returns>
-    public virtual ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default)
+    /// <returns>The number of tokens that were removed.</returns>
+    public virtual ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default)
         => Store.PruneAsync(threshold, cancellationToken);
+
+    /// <summary>
+    /// Revokes all the tokens associated with the specified authorization identifier.
+    /// </summary>
+    /// <param name="identifier">The authorization identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified authorization that were marked as revoked.</returns>
+    public virtual ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        return Store.RevokeByAuthorizationIdAsync(identifier, cancellationToken);
+    }
+
     /// <summary>
     /// Tries to redeem a token.
     /// </summary>
@@ -1479,8 +1494,12 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         => PopulateAsync((TToken) token, descriptor, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask IOpenIddictTokenManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    ValueTask<long> IOpenIddictTokenManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
         => PruneAsync(threshold, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<long> IOpenIddictTokenManager.RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
+        => RevokeByAuthorizationIdAsync(identifier, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<bool> IOpenIddictTokenManager.TryRedeemAsync(object token, CancellationToken cancellationToken)
