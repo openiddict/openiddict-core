@@ -84,6 +84,8 @@ Instead, **developers are encouraged to execute the conformance tests against th
 
 **Looking for additional resources to help you get started with OpenIddict?** Don't miss these interesting blog posts:
 
+- **[Introducing native applications, per-client token lifetimes and client assertions support in OpenIddict 5.0 preview1](https://kevinchalet.com/2023/10/20/introducing-native-applications-per-client-token-lifetimes-and-client-assertions-support-in-openiddict-5-0-preview1/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Can you use the ASP.NET Core Identity API endpoints with OpenIddict?](https://kevinchalet.com/2023/10/04/can-you-use-the-asp-net-core-identity-api-endpoints-with-openiddict/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[OpenID Connect and OAuth 2.0 server in ASP.NET Core using OpenIddict](https://medium.com/@sergeygoodgood/openid-connect-and-oauth2-0-server-in-aspnetcore-using-openiddict-c463c6ebc082)** by [Siarhei Kharlap](https://medium.com/@sergeygoodgood)
 - **[Transparent Auth Gateway](https://alex-klaus.com/transparent-auth-gateway-1/)** by [Alex Klaus](https://github.com/aklaus)
 - **[Introducing system integration support for the OpenIddict client](https://kevinchalet.com/2023/02/27/introducing-system-integration-support-for-the-openiddict-client/)** by [Kévin Chalet](https://github.com/kevinchalet)
