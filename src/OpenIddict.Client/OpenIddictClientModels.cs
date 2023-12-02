@@ -20,11 +20,6 @@ public static class OpenIddictClientModels
     public sealed record class InteractiveAuthenticationRequest
     {
         /// <summary>
-        /// Gets or sets the parameters that will be added to the token request.
-        /// </summary>
-        public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
-
-        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -39,11 +34,6 @@ public static class OpenIddictClientModels
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
-
-        /// <summary>
-        /// Gets the scopes that will be sent to the authorization server.
-        /// </summary>
-        public List<string>? Scopes { get; init; }
     }
 
     /// <summary>
