@@ -325,6 +325,14 @@ public sealed class OpenIddictClientService
                 Nonce = request.Nonce
             };
 
+            if (request.Properties is { Count: > 0 })
+            {
+                foreach (var property in request.Properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
             await dispatcher.DispatchAsync(context);
 
             if (context.IsRejected)
@@ -733,7 +741,7 @@ public sealed class OpenIddictClientService
                         Issuer = request.Issuer,
                         ProviderName = request.ProviderName,
                         RegistrationId = request.RegistrationId,
-                        Request = request.AdditionalTokenRequestParameters
+                        TokenRequest = request.AdditionalTokenRequestParameters
                             is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
                     };
 
@@ -912,13 +920,13 @@ public sealed class OpenIddictClientService
             var context = new ProcessChallengeContext(transaction)
             {
                 CancellationToken = request.CancellationToken,
+                DeviceAuthorizationRequest = request.AdditionalDeviceAuthorizationRequestParameters
+                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
                 GrantType = GrantTypes.DeviceCode,
                 Issuer = request.Issuer,
                 Principal = new ClaimsPrincipal(new ClaimsIdentity()),
                 ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                Request = request.AdditionalDeviceAuthorizationRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                RegistrationId = request.RegistrationId
             };
 
             if (request.Scopes is { Count: > 0 })

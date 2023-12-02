@@ -22,6 +22,7 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets the parameters that will be added to the token request.
         /// </summary>
+        [Obsolete("This property is no longer supported and will be removed in a future version.")]
         public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
 
         /// <summary>
@@ -43,6 +44,7 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
         /// </summary>
+        [Obsolete("This property is no longer supported and will be removed in a future version.")]
         public List<string>? Scopes { get; init; }
     }
 
