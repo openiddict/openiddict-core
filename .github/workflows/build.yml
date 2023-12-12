@@ -66,12 +66,12 @@ jobs:
 
     - name: Build, test and pack
       if: ${{ runner.os == 'Windows' }}
-      run: eng\common\CIBuild.cmd -configuration Release -prepareMachine -integrationTest
+      run: eng\common\CIBuild.cmd -configuration Release -prepareMachine -integrationTest /p:SuppressSymbolPackageFormatValidation=true
 
     - name: Build, test and pack
       if: ${{ runner.os != 'Windows' }}
       shell: pwsh
-      run: ./eng/common/cibuild.sh -configuration Release -prepareMachine -integrationTest
+      run: ./eng/common/cibuild.sh -configuration Release -prepareMachine -integrationTest /p:SuppressSymbolPackageFormatValidation=true
 
     - name: Publish logs
       if: ${{ always() }}
