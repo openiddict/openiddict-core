@@ -14,13 +14,11 @@ body:
     - label: "I'm not interested in submitting a pull request and understand that this provider may not be fixed in the near future without my contribution."
       required: false
 
-- type: dropdown
+- type: input
   id: version
   attributes:
     label: Version
     description: What version of OpenIddict are you running?
-    options:
-      - 4.x
   validations:
     required: true
 
