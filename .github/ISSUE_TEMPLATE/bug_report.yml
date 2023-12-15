@@ -11,16 +11,11 @@ body:
     - label: I confirm I'm a sponsor or a contributor
       required: true
 
-- type: dropdown
+- type: input
   id: version
   attributes:
     label: Version
     description: What version of OpenIddict are you running?
-    options:
-      - 1.x (no longer supported)
-      - 2.x (no longer supported)
-      - 3.x (no longer supported)
-      - 4.x
   validations:
     required: true
 
