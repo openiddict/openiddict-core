@@ -143,7 +143,7 @@ public sealed class OpenIddictClientRegistration
     /// <summary>
     /// Gets or sets the configuration manager used to retrieve and cache the server configuration.
     /// </summary>
-    public IConfigurationManager<OpenIddictConfiguration> ConfigurationManager { get; set; } = default!;
+    public IConfigurationManager<OpenIddictConfiguration>? ConfigurationManager { get; set; }
 
     /// <summary>
     /// Gets or sets the URI of the configuration endpoint exposed by the server.
