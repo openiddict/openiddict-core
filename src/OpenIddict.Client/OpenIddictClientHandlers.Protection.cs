@@ -305,7 +305,8 @@ public static partial class OpenIddictClientHandlers
                     // If validation failed because of an unrecognized key identifier and a client
                     // registration is available, inform the configuration manager that the configuration
                     // MAY have be refreshed by sending a new discovery request to the authorization server.
-                    if (context.Registration is not null && result.Exception is SecurityTokenSignatureKeyNotFoundException)
+                    if (result.Exception is SecurityTokenSignatureKeyNotFoundException &&
+                        context.Registration.ConfigurationManager is not null)
                     {
                         context.Registration.ConfigurationManager.RequestRefresh();
                     }

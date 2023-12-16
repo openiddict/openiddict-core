@@ -154,6 +154,11 @@ public sealed class OpenIddictClientService
         }
 
         var registration = await GetClientRegistrationAsync(issuer, cancellationToken);
+        if (registration.ConfigurationManager is null)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0422));
+        }
+
         return await registration.ConfigurationManager
             .GetConfigurationAsync(cancellationToken)
             .WaitAsync(cancellationToken) ??
@@ -182,6 +187,11 @@ public sealed class OpenIddictClientService
         }
 
         var registration = await GetClientRegistrationAsync(provider, cancellationToken);
+        if (registration.ConfigurationManager is null)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0422));
+        }
+
         return await registration.ConfigurationManager
             .GetConfigurationAsync(cancellationToken)
             .WaitAsync(cancellationToken) ??
@@ -207,6 +217,11 @@ public sealed class OpenIddictClientService
         }
 
         var registration = await GetClientRegistrationByIdAsync(identifier, cancellationToken);
+        if (registration.ConfigurationManager is null)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0422));
+        }
+
         return await registration.ConfigurationManager
             .GetConfigurationAsync(cancellationToken)
             .WaitAsync(cancellationToken) ??
