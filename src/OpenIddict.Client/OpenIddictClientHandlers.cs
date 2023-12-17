@@ -392,11 +392,11 @@ public static partial class OpenIddictClientHandlers
                     => await _service.GetClientRegistrationByIdAsync(identifier, context.CancellationToken),
 
                 // If specified, resolve the registration using the attached issuer URI.
-                { Issuer: Uri issuer } => await _service.GetClientRegistrationAsync(issuer, context.CancellationToken),
+                { Issuer: Uri uri } => await _service.GetClientRegistrationByIssuerAsync(uri, context.CancellationToken),
 
                 // If specified, resolve the registration using the attached provider name.
-                { ProviderName: string provider } when !string.IsNullOrEmpty(provider)
-                    => await _service.GetClientRegistrationAsync(provider, context.CancellationToken),
+                { ProviderName: string name } when !string.IsNullOrEmpty(name)
+                    => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
 
                 // Otherwise, default to the unique registration available, if possible.
                 { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
@@ -4195,11 +4195,11 @@ public static partial class OpenIddictClientHandlers
                     => await _service.GetClientRegistrationByIdAsync(identifier, context.CancellationToken),
 
                 // If specified, resolve the registration using the attached issuer URI.
-                { Issuer: Uri issuer } => await _service.GetClientRegistrationAsync(issuer, context.CancellationToken),
+                { Issuer: Uri uri } => await _service.GetClientRegistrationByIssuerAsync(uri, context.CancellationToken),
 
                 // If specified, resolve the registration using the attached provider name.
-                { ProviderName: string provider } when !string.IsNullOrEmpty(provider)
-                    => await _service.GetClientRegistrationAsync(provider, context.CancellationToken),
+                { ProviderName: string name } when !string.IsNullOrEmpty(name)
+                    => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
 
                 // Otherwise, default to the unique registration available, if possible.
                 { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
@@ -5846,11 +5846,11 @@ public static partial class OpenIddictClientHandlers
                     => await _service.GetClientRegistrationByIdAsync(identifier, context.CancellationToken),
 
                 // If specified, resolve the registration using the attached issuer URI.
-                { Issuer: Uri issuer } => await _service.GetClientRegistrationAsync(issuer, context.CancellationToken),
+                { Issuer: Uri uri } => await _service.GetClientRegistrationByIssuerAsync(uri, context.CancellationToken),
 
                 // If specified, resolve the registration using the attached provider name.
-                { ProviderName: string provider } when !string.IsNullOrEmpty(provider)
-                    => await _service.GetClientRegistrationAsync(provider, context.CancellationToken),
+                { ProviderName: string name } when !string.IsNullOrEmpty(name)
+                    => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
 
                 // Otherwise, default to the unique registration available, if possible.
                 { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,

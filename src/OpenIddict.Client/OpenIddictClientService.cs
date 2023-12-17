@@ -16,7 +16,10 @@ using static OpenIddict.Client.OpenIddictClientModels;
 
 namespace OpenIddict.Client;
 
-public sealed class OpenIddictClientService
+/// <summary>
+/// Provides high-level APIs for performing various authentication operations.
+/// </summary>
+public class OpenIddictClientService
 {
     private readonly IServiceProvider _provider;
 
@@ -28,24 +31,24 @@ public sealed class OpenIddictClientService
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
-    /// Resolves the client registration associated with the specified <paramref name="issuer"/>.
+    /// Resolves the client registration associated with the specified issuer <paramref name="uri"/>.
     /// </summary>
-    /// <param name="issuer">The issuer.</param>
+    /// <param name="uri">The issuer.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The <see cref="OpenIddictClientRegistration"/> associated with the specified <paramref name="issuer"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="issuer"/> is <see langword="null"/>.</exception>
+    /// <returns>The <see cref="OpenIddictClientRegistration"/> associated with the specified issuer <paramref name="uri"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
-    /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified <paramref name="issuer"/>.
+    /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified issuer <paramref name="uri"/>.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Multiple <see cref="OpenIddictClientRegistration"/> instances share the same <paramref name="issuer"/>.
+    /// Multiple <see cref="OpenIddictClientRegistration"/> instances share the same issuer <paramref name="uri"/>.
     /// </exception>
-    public ValueTask<OpenIddictClientRegistration> GetClientRegistrationAsync(
-        Uri issuer, CancellationToken cancellationToken = default)
+    public virtual ValueTask<OpenIddictClientRegistration> GetClientRegistrationByIssuerAsync(
+        Uri uri, CancellationToken cancellationToken = default)
     {
-        if (issuer is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(issuer));
+            throw new ArgumentNullException(nameof(uri));
         }
 
         if (cancellationToken.IsCancellationRequested)
@@ -55,7 +58,7 @@ public sealed class OpenIddictClientService
 
         var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
 
-        return options.CurrentValue.Registrations.FindAll(registration => registration.Issuer == issuer) switch
+        return options.CurrentValue.Registrations.FindAll(registration => registration.Issuer == uri) switch
         {
             [var registration] => new(registration),
 
@@ -68,21 +71,24 @@ public sealed class OpenIddictClientService
     }
 
     /// <summary>
-    /// Resolves the client registration associated with the specified <paramref name="provider"/>.
+    /// Resolves the client registration associated with the specified provider <paramref name="name"/>.
     /// </summary>
-    /// <param name="provider">The provider name.</param>
+    /// <param name="name">The provider name.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The <see cref="OpenIddictClientRegistration"/> associated with the specified <paramref name="provider"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="provider"/> is <see langword="null"/>.</exception>
+    /// <returns>The <see cref="OpenIddictClientRegistration"/> associated with the specified provider <paramref name="name"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
-    /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified <paramref name="provider"/>.
+    /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified provider <paramref name="name"/>.
     /// </exception>
-    public ValueTask<OpenIddictClientRegistration> GetClientRegistrationAsync(
-        string provider, CancellationToken cancellationToken = default)
+    /// <exception cref="InvalidOperationException">
+    /// Multiple <see cref="OpenIddictClientRegistration"/> instances share the same provider <paramref name="name"/>.
+    /// </exception>
+    public virtual ValueTask<OpenIddictClientRegistration> GetClientRegistrationByProviderNameAsync(
+        string name, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(provider))
+        if (string.IsNullOrEmpty(name))
         {
-            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
+            throw new ArgumentException(SR.FormatID0366(nameof(name)), nameof(name));
         }
 
         if (cancellationToken.IsCancellationRequested)
@@ -93,7 +99,7 @@ public sealed class OpenIddictClientService
         var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
 
         return options.CurrentValue.Registrations.FindAll(registration => string.Equals(
-            registration.ProviderName, provider, StringComparison.Ordinal)) switch
+            registration.ProviderName, name, StringComparison.Ordinal)) switch
         {
             [var registration] => new(registration),
 
@@ -115,7 +121,7 @@ public sealed class OpenIddictClientService
     /// <exception cref="InvalidOperationException">
     /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified <paramref name="identifier"/>.
     /// </exception>
-    public ValueTask<OpenIddictClientRegistration> GetClientRegistrationByIdAsync(
+    public virtual ValueTask<OpenIddictClientRegistration> GetClientRegistrationByIdAsync(
         string identifier, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(identifier))
@@ -136,24 +142,27 @@ public sealed class OpenIddictClientService
     }
 
     /// <summary>
-    /// Resolves the server configuration associated with the specified <paramref name="issuer"/>.
+    /// Resolves the server configuration associated with the specified issuer <paramref name="uri"/>.
     /// </summary>
-    /// <param name="issuer">The issuer.</param>
+    /// <param name="uri">The issuer.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The <see cref="OpenIddictConfiguration"/> associated with the specified <paramref name="issuer"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="issuer"/> is <see langword="null"/>.</exception>
+    /// <returns>The <see cref="OpenIddictConfiguration"/> associated with the specified issuer <paramref name="uri"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
-    /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified <paramref name="issuer"/>.
+    /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified issuer <paramref name="uri"/>.
     /// </exception>
-    public async ValueTask<OpenIddictConfiguration> GetServerConfigurationAsync(
-        Uri issuer, CancellationToken cancellationToken = default)
+    /// <exception cref="InvalidOperationException">
+    /// Multiple <see cref="OpenIddictClientRegistration"/> instances share the same issuer <paramref name="uri"/>.
+    /// </exception>
+    public virtual async ValueTask<OpenIddictConfiguration> GetServerConfigurationByIssuerAsync(
+        Uri uri, CancellationToken cancellationToken = default)
     {
-        if (issuer is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(issuer));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        var registration = await GetClientRegistrationAsync(issuer, cancellationToken);
+        var registration = await GetClientRegistrationByIssuerAsync(uri, cancellationToken);
         if (registration.ConfigurationManager is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0422));
@@ -166,27 +175,27 @@ public sealed class OpenIddictClientService
     }
 
     /// <summary>
-    /// Resolves the server configuration associated with the specified <paramref name="provider"/>.
+    /// Resolves the server configuration associated with the specified provider <paramref name="name"/>.
     /// </summary>
-    /// <param name="provider">The provider name.</param>
+    /// <param name="name">The provider name.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The <see cref="OpenIddictConfiguration"/> associated with the specified <paramref name="provider"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="provider"/> is <see langword="null"/>.</exception>
+    /// <returns>The <see cref="OpenIddictConfiguration"/> associated with the specified provider <paramref name="name"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
-    /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified <paramref name="provider"/>.
+    /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified provider <paramref name="name"/>.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Multiple <see cref="OpenIddictClientRegistration"/> instances share the same <paramref name="provider"/>.
+    /// Multiple <see cref="OpenIddictClientRegistration"/> instances share the same provider <paramref name="name"/>.
     /// </exception>
-    public async ValueTask<OpenIddictConfiguration> GetServerConfigurationAsync(
-        string provider, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<OpenIddictConfiguration> GetServerConfigurationByProviderNameAsync(
+        string name, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(provider))
+        if (string.IsNullOrEmpty(name))
         {
-            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
+            throw new ArgumentException(SR.FormatID0366(nameof(name)), nameof(name));
         }
 
-        var registration = await GetClientRegistrationAsync(provider, cancellationToken);
+        var registration = await GetClientRegistrationByProviderNameAsync(name, cancellationToken);
         if (registration.ConfigurationManager is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0422));
@@ -208,7 +217,7 @@ public sealed class OpenIddictClientService
     /// <exception cref="InvalidOperationException">
     /// No <see cref="OpenIddictClientRegistration"/> was registered with the specified <paramref name="identifier"/>.
     /// </exception>
-    public async ValueTask<OpenIddictConfiguration> GetServerConfigurationByRegistrationIdAsync(
+    public virtual async ValueTask<OpenIddictConfiguration> GetServerConfigurationByRegistrationIdAsync(
         string identifier, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(identifier))
