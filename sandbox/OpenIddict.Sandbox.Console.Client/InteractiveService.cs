@@ -44,7 +44,7 @@ public class InteractiveService : BackgroundService
 
                 // Resolve the server configuration and determine the type of flow
                 // to use depending on the supported grants and the user selection.
-                var configuration = await _service.GetServerConfigurationAsync(provider, stoppingToken);
+                var configuration = await _service.GetServerConfigurationByProviderNameAsync(provider, stoppingToken);
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.DeviceCode) &&
                     configuration.DeviceAuthorizationEndpoint is not null &&
                     await UseDeviceAuthorizationGrantAsync(stoppingToken))

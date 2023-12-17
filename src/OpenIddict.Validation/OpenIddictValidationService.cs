@@ -15,7 +15,10 @@ using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Validation;
 
-public sealed class OpenIddictValidationService
+/// <summary>
+/// Provides high-level APIs for performing various authentication operations.
+/// </summary>
+public class OpenIddictValidationService
 {
     private readonly IServiceProvider _provider;
 
