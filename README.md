@@ -50,13 +50,13 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 | Microsoft.Owin 4.2    | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
 | Microsoft.Owin 4.2    | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      |
 
-> **Warning**
+> [!WARNING]
 > **ASP.NET Core 2.1 on .NET Core 2.1, ASP.NET Core 3.1 and 5.0 are no longer supported by Microsoft. While OpenIddict can still be used
 > on these platforms thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
 >
 > ASP.NET Core 2.1 on .NET Framework 4.6.1 (and higher) is still fully supported.
 
-> **Note**
+> [!TIP]
 > **The following features are not available when targeting .NET Framework 4.6.1**:
 >  - X.509 development encryption/signing certificates: calling `AddDevelopmentEncryptionCertificate()` or `AddDevelopmentSigningCertificate()`
 > will result in a `PlatformNotSupportedException` being thrown at runtime if no valid development certificate can be found and a new one must be generated.
@@ -125,7 +125,7 @@ If you're not a sponsor, you can post your questions on Gitter or StackOverflow:
 - **Gitter: [https://app.gitter.im/#/room/#openiddict_openiddict-core:gitter.im](https://app.gitter.im/#/room/#openiddict_openiddict-core:gitter.im)**
 - **StackOverflow: [https://stackoverflow.com/questions/tagged/openiddict](https://stackoverflow.com/questions/tagged/openiddict)**
 
-> **Note**
+> [!IMPORTANT]
 > With OpenIddict 5.0 being now generally available, the previous version, OpenIddict 4.0, stops being supported and won't receive bug
 > fixes or security updates. As such, it is recommended to migrate to OpenIddict 5.0 to continue receiving bug and security fixes.
 > 
