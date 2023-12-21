@@ -50,7 +50,6 @@ public static partial class OpenIddictValidationHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .AddFilter<RequireLocalValidation>()
                     .UseSingletonHandler<ResolveTokenValidationParameters>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
