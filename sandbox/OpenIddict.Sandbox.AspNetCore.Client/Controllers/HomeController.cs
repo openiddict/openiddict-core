@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Client;
+using OpenIddict.Sandbox.AspNetCore.Client.ViewModels.Home;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants;
 
@@ -23,7 +24,13 @@ public class HomeController : Controller
     }
 
     [HttpGet("~/")]
-    public ActionResult Index() => View();
+    public async Task<ActionResult> Index(CancellationToken cancellationToken) => View(new IndexViewModel
+    {
+        Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+                    where !string.IsNullOrEmpty(registration.ProviderName)
+                    where !string.IsNullOrEmpty(registration.ProviderDisplayName)
+                    select registration
+    });
 
     [Authorize, HttpPost("~/message"), ValidateAntiForgeryToken]
     public async Task<ActionResult> GetMessage(CancellationToken cancellationToken)
@@ -40,7 +47,14 @@ public class HomeController : Controller
         using var response = await client.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        return View("Index", model: await response.Content.ReadAsStringAsync(cancellationToken));
+        return View("Index", new IndexViewModel
+        {
+            Message = await response.Content.ReadAsStringAsync(cancellationToken),
+            Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+                        where !string.IsNullOrEmpty(registration.ProviderName)
+                        where !string.IsNullOrEmpty(registration.ProviderDisplayName)
+                        select registration
+        });
     }
 
     [Authorize, HttpPost("~/refresh-token"), ValidateAntiForgeryToken]
@@ -78,6 +92,13 @@ public class HomeController : Controller
         // authentication options shouldn't be used, a specific scheme can be specified here.
         await HttpContext.SignInAsync(ticket.Principal, properties);
 
-        return View("Index", model: result.AccessToken);
+        return View("Index", new IndexViewModel
+        {
+            Message = result.AccessToken,
+            Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+                        where !string.IsNullOrEmpty(registration.ProviderName)
+                        where !string.IsNullOrEmpty(registration.ProviderDisplayName)
+                        select registration
+        });
     }
 }

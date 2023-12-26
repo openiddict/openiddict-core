@@ -4,7 +4,6 @@ using OpenIddict.Client;
 using Spectre.Console;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
-using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 #if !SUPPORTS_HOST_APPLICATION_LIFETIME
 using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
@@ -143,13 +142,17 @@ public class InteractiveService : BackgroundService
             return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
         }
 
-        static Task<string> GetSelectedProviderAsync(CancellationToken cancellationToken)
+        Task<string> GetSelectedProviderAsync(CancellationToken cancellationToken)
         {
-            static string Prompt() => AnsiConsole.Prompt(new SelectionPrompt<string>()
+            async Task<string> PromptAsync() => AnsiConsole.Prompt(new SelectionPrompt<OpenIddictClientRegistration>()
                 .Title("Select the authentication provider you'd like to log in with.")
-                .AddChoices("Local", Providers.GitHub, Providers.Twitter));
+                .AddChoices(from registration in await _service.GetClientRegistrationsAsync(stoppingToken)
+                            where !string.IsNullOrEmpty(registration.ProviderName)
+                            where !string.IsNullOrEmpty(registration.ProviderDisplayName)
+                            select registration)
+                .UseConverter(registration => registration.ProviderDisplayName!)).ProviderName!;
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return WaitAsync(Task.Run(PromptAsync, cancellationToken), cancellationToken);
         }
 
         static async Task<T> WaitAsync<T>(Task<T> task, CancellationToken cancellationToken)

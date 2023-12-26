@@ -4,7 +4,8 @@
 @using Microsoft.Owin.Security.Cookies
 @using OpenIddict.Abstractions
 @using OpenIddict.Client.Owin
-@model string
+@using OpenIddict.Sandbox.AspNet.Client.ViewModels.Home;
+@model IndexViewModel
 
 <div class="jumbotron">
     @if (User?.Identity is { IsAuthenticated: true })
@@ -18,9 +19,9 @@
             }
         </p>
 
-        if (!string.IsNullOrEmpty(Model))
+        if (!string.IsNullOrEmpty(Model.Message))
         {
-            <h3>Payload returned by the controller: @Model</h3>
+            <h3>Payload returned by the controller: @Model.Message</h3>
         }
 
         if (User is ClaimsPrincipal principal && principal.FindFirst(OpenIddictConstants.Claims.Private.ProviderName)?.Value is "Local")
@@ -61,21 +62,16 @@
 
             <input type="hidden" name="returnUrl" value="@Request.RawUrl" />
 
-            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Local">
-                Sign in using the local OIDC server
-            </button>
-
             <button class="btn btn-lg btn-success" type="submit" name="provider" value="Local+GitHub">
-                Sign in using the local OIDC server (preferred service: GitHub)
+                Sign in using Local OIDC server (preferred service: GitHub)
             </button>
 
-            <button class="btn btn-lg btn-success" type="submit" name="provider" value="GitHub">
-                Sign in using GitHub
-            </button>
-
-            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Google">
-                Sign in using Google
-            </button>
+            @foreach (var provider in Model.Providers)
+            {
+                <button class="btn btn-lg btn-success" type="submit" name="provider" value="@provider.ProviderName">
+                    Sign in using @provider.ProviderDisplayName
+                </button>
+            }
         </form>
     }
 </div>

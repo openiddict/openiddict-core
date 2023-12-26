@@ -103,6 +103,7 @@ public class Startup
                 {
                     Issuer = new Uri("https://localhost:44395/", UriKind.Absolute),
                     ProviderName = "Local",
+                    ProviderDisplayName = "Local OIDC server",
 
                     ClientId = "mvc",
                     Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" },

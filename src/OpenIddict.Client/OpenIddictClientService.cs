@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,27 @@ public class OpenIddictClientService
     /// <param name="provider">The service provider.</param>
     public OpenIddictClientService(IServiceProvider provider)
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+
+    /// <summary>
+    /// Gets all the client registrations that were registered in the client options.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The client registrations that were registered in the client options.</returns>
+    public virtual ValueTask<ImmutableArray<OpenIddictClientRegistration>> GetClientRegistrationsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return new(Task.FromCanceled<ImmutableArray<OpenIddictClientRegistration>>(cancellationToken));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        return new(options.CurrentValue.Registrations switch
+        {
+            [  ]               => ImmutableArray.Create<OpenIddictClientRegistration>(),
+            [..] registrations => registrations.ToImmutableArray()
+        });
+    }
 
     /// <summary>
     /// Resolves the client registration associated with the specified issuer <paramref name="uri"/>.

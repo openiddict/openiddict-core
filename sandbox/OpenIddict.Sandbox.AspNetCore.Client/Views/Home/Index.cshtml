@@ -1,8 +1,9 @@
 ﻿@using System.Security.Claims
 @using Microsoft.AspNetCore.Authentication;
 @using OpenIddict.Client.AspNetCore;
+@using OpenIddict.Sandbox.AspNetCore.Client.ViewModels.Home;
 @using static OpenIddict.Abstractions.OpenIddictConstants;
-@model string
+@model IndexViewModel
 
 <div class="jumbotron">
     @if (User?.Identity is { IsAuthenticated: true })
@@ -16,9 +17,9 @@
             }
         </p>
 
-        if (!string.IsNullOrEmpty(Model))
+        if (!string.IsNullOrEmpty(Model.Message))
         {
-            <h3>Payload returned by the controller: @Model</h3>
+            <h3>Payload returned by the controller: @Model.Message</h3>
         }
 
         if (User.FindFirst(Claims.Private.ProviderName)?.Value is "Local")
@@ -47,25 +48,16 @@
         <form asp-action="Login" asp-controller="Authentication" method="post">
             <input type="hidden" name="returnUrl" value="@(Context.Request.PathBase + Context.Request.Path + Context.Request.QueryString)" />
 
-            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Local">
-                Sign in using the local OIDC server
-            </button>
-
             <button class="btn btn-lg btn-success" type="submit" name="provider" value="Local+GitHub">
-                Sign in using the local OIDC server (preferred service: GitHub)
+                Sign in using Local OIDC server (preferred service: GitHub)
             </button>
 
-            <button class="btn btn-lg btn-success" type="submit" name="provider" value="GitHub">
-                Sign in using GitHub
-            </button>
-
-            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Google">
-                Sign in using Google
-            </button>
-
-            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Reddit">
-                Sign in using Reddit
-            </button>
+            @foreach (var provider in Model.Providers)
+            {
+                <button class="btn btn-lg btn-success" type="submit" name="provider" value="@provider.ProviderName">
+                    Sign in using @provider.ProviderDisplayName
+                </button>
+            }
         </form>
     }
 </div>

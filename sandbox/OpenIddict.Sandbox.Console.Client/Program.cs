@@ -68,6 +68,7 @@ var host = new HostBuilder()
                 {
                     Issuer = new Uri("https://localhost:44395/", UriKind.Absolute),
                     ProviderName = "Local",
+                    ProviderDisplayName = "Local authorization server",
 
                     ClientId = "console",
                     RedirectUri = new Uri("callback/login/local", UriKind.Relative),
