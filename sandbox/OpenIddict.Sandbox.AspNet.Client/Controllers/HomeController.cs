@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -8,6 +9,7 @@ using System.Web.Mvc;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using OpenIddict.Client;
+using OpenIddict.Sandbox.AspNet.Client.ViewModels.Home;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 
@@ -27,11 +29,16 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
         }
 
         [HttpGet, Route("~/")]
-        public ActionResult Index() => View();
+        public async Task<ActionResult> Index(CancellationToken cancellationToken) => View(new IndexViewModel
+        {
+            Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+                        where !string.IsNullOrEmpty(registration.ProviderName)
+                        where !string.IsNullOrEmpty(registration.ProviderDisplayName)
+                        select registration
+        });
 
-        [Authorize, HttpPost, Route("~/message")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Index(CancellationToken cancellationToken)
+        [Authorize, HttpPost, Route("~/message"), ValidateAntiForgeryToken]
+        public async Task<ActionResult> GetMessage(CancellationToken cancellationToken)
         {
             var context = HttpContext.GetOwinContext();
 
@@ -46,7 +53,14 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             using var response = await client.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            return View(model: await response.Content.ReadAsStringAsync());
+            return View("Index", new IndexViewModel
+            {
+                Message = await response.Content.ReadAsStringAsync(),
+                Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+                            where !string.IsNullOrEmpty(registration.ProviderName)
+                            where !string.IsNullOrEmpty(registration.ProviderDisplayName)
+                            select registration
+            });
         }
 
         [Authorize, HttpPost, Route("~/refresh-token")]
@@ -82,7 +96,14 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 
             context.Authentication.SignIn(properties, ticket.Identity);
 
-            return View("Index", model: result.AccessToken);
+            return View("Index", new IndexViewModel
+            {
+                Message = result.AccessToken,
+                Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+                            where !string.IsNullOrEmpty(registration.ProviderName)
+                            where !string.IsNullOrEmpty(registration.ProviderDisplayName)
+                            select registration
+            });
         }
     }
 }

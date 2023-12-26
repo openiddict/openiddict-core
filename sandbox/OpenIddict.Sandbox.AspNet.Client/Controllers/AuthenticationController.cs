@@ -10,7 +10,6 @@ using Microsoft.Owin.Security.Cookies;
 using OpenIddict.Client;
 using OpenIddict.Client.Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 {
@@ -22,19 +21,9 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             => _service = service;
 
         [HttpPost, Route("~/login"), ValidateAntiForgeryToken]
-        public ActionResult LogIn(string provider, string returnUrl)
+        public async Task<ActionResult> LogIn(string provider, string returnUrl)
         {
             var context = HttpContext.GetOwinContext();
-
-            // Note: OpenIddict always validates the specified provider name when handling the challenge operation,
-            // but the provider can also be validated earlier to return an error page or a special HTTP error code.
-            if (!string.Equals(provider, "Local",          StringComparison.Ordinal) &&
-                !string.Equals(provider, "Local+GitHub",   StringComparison.Ordinal) &&
-                !string.Equals(provider, Providers.GitHub, StringComparison.Ordinal) &&
-                !string.Equals(provider, Providers.Google, StringComparison.Ordinal))
-            {
-                return new HttpStatusCodeResult(400);
-            }
 
             // The local authorization server sample allows the client to select the external
             // identity provider that will be used to eventually authenticate the user. For that,
@@ -64,6 +53,14 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 
             else
             {
+                // Note: OpenIddict always validates the specified provider name when handling the challenge operation,
+                // but the provider can also be validated earlier to return an error page or a special HTTP error code.
+                var registrations = await _service.GetClientRegistrationsAsync();
+                if (!registrations.Any(registration => string.Equals(registration.ProviderName, provider, StringComparison.Ordinal)))
+                {
+                    return new HttpStatusCodeResult(400);
+                }
+
                 var properties = new AuthenticationProperties(new Dictionary<string, string>
                 {
                     // Note: when only one client is registered in the client options,
