@@ -30,13 +30,14 @@ partial class MainForm
     {
         this.LocalLogin = new System.Windows.Forms.Button();
         this.GitHubLogin = new System.Windows.Forms.Button();
+        this.LocalLoginWithGitHub = new System.Windows.Forms.Button();
         this.SuspendLayout();
         // 
         // LocalLogin
         // 
-        this.LocalLogin.Location = new System.Drawing.Point(258, 93);
+        this.LocalLogin.Location = new System.Drawing.Point(214, 32);
         this.LocalLogin.Name = "LocalLogin";
-        this.LocalLogin.Size = new System.Drawing.Size(283, 83);
+        this.LocalLogin.Size = new System.Drawing.Size(391, 83);
         this.LocalLogin.TabIndex = 0;
         this.LocalLogin.Text = "Log in using the local server";
         this.LocalLogin.UseVisualStyleBackColor = true;
@@ -44,13 +45,23 @@ partial class MainForm
         // 
         // GitHubLogin
         // 
-        this.GitHubLogin.Location = new System.Drawing.Point(258, 258);
+        this.GitHubLogin.Location = new System.Drawing.Point(214, 321);
         this.GitHubLogin.Name = "GitHubLogin";
-        this.GitHubLogin.Size = new System.Drawing.Size(283, 83);
+        this.GitHubLogin.Size = new System.Drawing.Size(391, 83);
         this.GitHubLogin.TabIndex = 1;
         this.GitHubLogin.Text = "Log in using GitHub";
         this.GitHubLogin.UseVisualStyleBackColor = true;
         this.GitHubLogin.Click += new System.EventHandler(this.GitHubLoginButton_Click);
+        // 
+        // LocalLoginWithGitHub
+        // 
+        this.LocalLoginWithGitHub.Location = new System.Drawing.Point(214, 177);
+        this.LocalLoginWithGitHub.Name = "LocalLoginWithGitHub";
+        this.LocalLoginWithGitHub.Size = new System.Drawing.Size(391, 83);
+        this.LocalLoginWithGitHub.TabIndex = 0;
+        this.LocalLoginWithGitHub.Text = "Log in using the local server (preferred service: GitHub)";
+        this.LocalLoginWithGitHub.UseVisualStyleBackColor = true;
+        this.LocalLoginWithGitHub.Click += new System.EventHandler(this.LocalLoginWithGitHubButton_Click);
         // 
         // MainForm
         // 
@@ -58,6 +69,7 @@ partial class MainForm
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         this.ClientSize = new System.Drawing.Size(800, 450);
         this.Controls.Add(this.GitHubLogin);
+        this.Controls.Add(this.LocalLoginWithGitHub);
         this.Controls.Add(this.LocalLogin);
         this.Name = "MainForm";
         this.Text = "OpenIddict WinForms client";
@@ -69,4 +81,5 @@ partial class MainForm
 
     private Button LocalLogin;
     private Button GitHubLogin;
+    private Button LocalLoginWithGitHub;
 }

@@ -20,40 +20,26 @@ public class Worker : IHostedService
         var context = scope.ServiceProvider.GetRequiredService<DbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        RegistryKey? root = null;
-
         // Create the registry entries necessary to handle URI protocol activations.
+        //
+        // Note: this sample creates the entry under the current user account (as it doesn't
+        // require administrator rights), but the registration can also be added globally
+        // in HKEY_CLASSES_ROOT (in this case, it should be added by a dedicated installer).
         //
         // Alternatively, the application can be packaged and use windows.protocol to
         // register the protocol handler/custom URI scheme with the operation system.
-        try
-        {
-            // Note: this sample creates the entry under the current user account (as it doesn't
-            // require administrator rights), but the registration can also be added globally
-            // in HKEY_CLASSES_ROOT (in this case, it should be added by a dedicated installer).
-            root = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Classes\\com.openiddict.sandbox.winforms.client");
+        using var root = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Classes\\com.openiddict.sandbox.winforms.client");
+        root.SetValue(string.Empty, "URL:com.openiddict.sandbox.winforms.client");
+        root.SetValue("URL Protocol", string.Empty);
 
-            if (root is null)
-            {
-                root = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Classes\\com.openiddict.sandbox.winforms.client");
-                root.SetValue(string.Empty, "URL:com.openiddict.sandbox.winforms.client");
-                root.SetValue("URL Protocol", string.Empty);
-
-                using var command = root.CreateSubKey("shell\\open\\command");
-                command.SetValue(string.Empty, string.Format("\"{0}\" \"%1\"",
+        using var command = root.CreateSubKey("shell\\open\\command");
+        command.SetValue(string.Empty, string.Format("\"{0}\" \"%1\"",
 #if SUPPORTS_ENVIRONMENT_PROCESS_PATH
-                    Environment.ProcessPath
+            Environment.ProcessPath
 #else
-                    Process.GetCurrentProcess().MainModule.FileName
+            Process.GetCurrentProcess().MainModule.FileName
 #endif
-                ));
-            }
-        }
-
-        finally
-        {
-            root?.Dispose();
-        }
+        ));
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
