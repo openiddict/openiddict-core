@@ -71,6 +71,7 @@ public class InteractiveService : BackgroundService
                     // Wait for the user to complete the demand on the other device.
                     principal = (await _service.AuthenticateWithDeviceAsync(new()
                     {
+                        CancellationToken = stoppingToken,
                         DeviceCode = result.DeviceCode,
                         Interval = result.Interval,
                         ProviderName = provider,
@@ -92,6 +93,7 @@ public class InteractiveService : BackgroundService
                     // Wait for the user to complete the authorization process.
                     principal = (await _service.AuthenticateInteractivelyAsync(new()
                     {
+                        CancellationToken = stoppingToken,
                         Nonce = result.Nonce
                     })).Principal;
                 }

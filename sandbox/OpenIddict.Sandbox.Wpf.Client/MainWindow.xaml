@@ -6,7 +6,8 @@
         mc:Ignorable="d"
         Title="OpenIddict WPF client" Height="450" Width="800">
     <Grid>
-        <Button Content="Log in using the local server" HorizontalAlignment="Center" VerticalAlignment="Top" Click="LocalLoginButton_Click" Height="64" Width="252" FontSize="20" Margin="0,130,0,0" />
-        <Button Content="Log in using GitHub" HorizontalAlignment="Center" VerticalAlignment="Top" Click="GitHubLoginButton_Click" Height="64" Width="252" FontSize="20" Margin="0,234,0,0" />
+        <Button Name="LocalLogin" Content="Log in using the local server" HorizontalAlignment="Center" VerticalAlignment="Top" Click="LocalLoginButton_Click" Height="64" Width="540" FontSize="20" Margin="0,50,0,0" />
+        <Button Name="LocalLoginWithGitHub" Content="Log in using the local server (preferred service: GitHub)" HorizontalAlignment="Center" VerticalAlignment="Center" Click="LocalLoginWithGitHubButton_Click" Height="64" Width="539" FontSize="20" />
+        <Button Name="GitHubLogin" Content="Log in using GitHub" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="GitHubLoginButton_Click" Height="64" Width="539" FontSize="20" Margin="0,0,0,50" />
     </Grid>
 </Window>
