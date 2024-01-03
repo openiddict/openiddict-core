@@ -14,13 +14,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
+using OpenIddict.Client;
 using OpenIddict.Client.AspNetCore;
 using OpenIddict.Sandbox.AspNetCore.Server.Helpers;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Authorization;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server;
 
@@ -28,6 +28,7 @@ public class AuthorizationController : Controller
 {
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IOpenIddictAuthorizationManager _authorizationManager;
+    private readonly OpenIddictClientService _clientService;
     private readonly IOpenIddictScopeManager _scopeManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -35,12 +36,14 @@ public class AuthorizationController : Controller
     public AuthorizationController(
         IOpenIddictApplicationManager applicationManager,
         IOpenIddictAuthorizationManager authorizationManager,
+        OpenIddictClientService clientService,
         IOpenIddictScopeManager scopeManager,
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager)
     {
         _applicationManager = applicationManager;
         _authorizationManager = authorizationManager;
+        _clientService = clientService;
         _scopeManager = scopeManager;
         _signInManager = signInManager;
         _userManager = userManager;
@@ -99,7 +102,9 @@ public class AuthorizationController : Controller
             // that will be used to authenticate the user, the identity_provider parameter can be used for that.
             if (!string.IsNullOrEmpty(request.IdentityProvider))
             {
-                if (!string.Equals(request.IdentityProvider, Providers.GitHub, StringComparison.Ordinal))
+                var registrations = await _clientService.GetClientRegistrationsAsync();
+                if (!registrations.Any(registration => string.Equals(registration.ProviderName,
+                    request.IdentityProvider, StringComparison.Ordinal)))
                 {
                     return Forbid(
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,

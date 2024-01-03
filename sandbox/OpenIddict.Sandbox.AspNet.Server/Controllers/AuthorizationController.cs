@@ -16,13 +16,13 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using OpenIddict.Abstractions;
+using OpenIddict.Client;
 using OpenIddict.Client.Owin;
 using OpenIddict.Sandbox.AspNet.Server.Helpers;
 using OpenIddict.Sandbox.AspNet.Server.ViewModels.Authorization;
 using OpenIddict.Server.Owin;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Server.Controllers
 {
@@ -30,15 +30,18 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
     {
         private readonly IOpenIddictApplicationManager _applicationManager;
         private readonly IOpenIddictAuthorizationManager _authorizationManager;
+        private readonly OpenIddictClientService _clientService;
         private readonly IOpenIddictScopeManager _scopeManager;
 
         public AuthorizationController(
             IOpenIddictApplicationManager applicationManager,
             IOpenIddictAuthorizationManager authorizationManager,
+            OpenIddictClientService clientService,
             IOpenIddictScopeManager scopeManager)
         {
             _applicationManager = applicationManager;
             _authorizationManager = authorizationManager;
+            _clientService = clientService;
             _scopeManager = scopeManager;
         }
 
@@ -60,7 +63,9 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                 // that will be used to authenticate the user, the identity_provider parameter can be used for that.
                 if (!string.IsNullOrEmpty(request.IdentityProvider))
                 {
-                    if (!string.Equals(request.IdentityProvider, Providers.GitHub, StringComparison.Ordinal))
+                    var registrations = await _clientService.GetClientRegistrationsAsync();
+                    if (!registrations.Any(registration => string.Equals(registration.ProviderName,
+                        request.IdentityProvider, StringComparison.Ordinal)))
                     {
                         context.Authentication.Challenge(
                             authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
