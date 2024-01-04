@@ -803,7 +803,7 @@ namespace OpenIddict.Client.WebIntegration;
 
 public sealed partial class OpenIddictClientWebIntegrationConfiguration
 {
-    static partial void ConfigureProvider(OpenIddictClientRegistration registration)
+    public static partial void ConfigureProvider(OpenIddictClientRegistration registration)
     {
         {{~ for provider in providers ~}}
         {{~ if for.index == 0 ~}}
