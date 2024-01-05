@@ -66,18 +66,30 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Some providers implement old drafts of the OAuth 2.0 specification that
                 // didn't support the "response_type" parameter but relied on a "type"
                 // parameter to determine the type of request (web server or refresh).
-
+                //
+                // To support these providers, the "grant_type" parameter must be manually mapped
+                // to its equivalent "type" (e.g "web_server") before sending the token request.
                 if (context.Registration.ProviderType is ProviderTypes.Basecamp)
                 {
                     context.Request["type"] = context.Request.GrantType switch
                     {
                         GrantTypes.AuthorizationCode => "web_server",
-                        GrantTypes.RefreshToken => "refresh",
+                        GrantTypes.RefreshToken      => "refresh",
 
                         _ => null
                     };
 
                     context.Request.GrantType = null;
+                }
+
+                // World ID doesn't support the standard and mandatory redirect_uri parameter and returns
+                // a HTTP 500 response when specifying it in a grant_type=authorization_code token request.
+                //
+                // To prevent that, the redirect_uri parameter must be removed from the token request.
+                else if (context.GrantType is GrantTypes.AuthorizationCode &&
+                         context.Registration.ProviderType is ProviderTypes.WorldId)
+                {
+                    context.Request.RedirectUri = null;
                 }
 
                 return default;
