@@ -293,10 +293,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     return default;
                 }
 
-                // Resolve the shop name from the authentication properties stored in the state token principal.
-                if (context.StateTokenPrincipal.FindFirst(Claims.Private.HostProperties)?.Value is not string value ||
-                    JsonSerializer.Deserialize<JsonElement>(value) is not { ValueKind: JsonValueKind.Object } properties ||
-                    !properties.TryGetProperty(Shopify.Properties.ShopName, out JsonElement name))
+                // Resolve the shop name from the authentication properties.
+                if (!context.Properties.TryGetValue(Shopify.Properties.ShopName, out string? name) ||
+                    string.IsNullOrEmpty(name))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0412));
                 }
@@ -352,13 +351,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 //
                 // For more information, see
                 // https://shopify.dev/docs/apps/auth/oauth/getting-started#step-5-get-an-access-token.
-                ProviderTypes.Shopify when context.GrantType is GrantTypes.AuthorizationCode =>
-                    context.StateTokenPrincipal is ClaimsPrincipal principal &&
-                    principal.FindFirst(Claims.Private.HostProperties)?.Value is string value &&
-                    JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Object } properties &&
-                    properties.TryGetProperty(Shopify.Properties.ShopName, out JsonElement name) ?
-                    new Uri($"https://{name}.myshopify.com/admin/oauth/access_token", UriKind.Absolute) :
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0412)),
+                ProviderTypes.Shopify when context.GrantType is GrantTypes.AuthorizationCode &&
+                    context.Properties[Shopify.Properties.ShopName] is var name =>
+                    new Uri($"https://{name}.myshopify.com/admin/oauth/access_token", UriKind.Absolute),
 
                 // Trovo uses a different token endpoint for the refresh token grant.
                 //
@@ -1232,9 +1227,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 //
                 // For more information, see
                 // https://shopify.dev/docs/apps/auth/oauth/getting-started#step-3-ask-for-permission.
-                ProviderTypes.Shopify => context.Properties.TryGetValue(Shopify.Properties.ShopName, out string? name) ?
-                    new Uri($"https://{name}.myshopify.com/admin/oauth/authorize", UriKind.Absolute) :
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0412)),
+                ProviderTypes.Shopify when context.Properties[Shopify.Properties.ShopName] is var name =>
+                    new Uri($"https://{name}.myshopify.com/admin/oauth/authorize", UriKind.Absolute),
 
                 // Stripe uses a different authorization endpoint for express accounts.
                 //

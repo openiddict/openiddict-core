@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -48,6 +49,7 @@ public static partial class OpenIddictServerHandlers
         ValidateIdentityToken.Descriptor,
         ValidateRefreshToken.Descriptor,
         ValidateUserCode.Descriptor,
+        ResolveHostAuthenticationProperties.Descriptor,
 
         /*
          * Challenge processing:
@@ -1770,6 +1772,58 @@ public static partial class OpenIddictServerHandlers
             }
 
             context.UserCodePrincipal = notification.Principal;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the host authentication properties from the principal, if applicable.
+    /// </summary>
+    public sealed class ResolveHostAuthenticationProperties : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<ResolveHostAuthenticationProperties>()
+                .SetOrder(ValidateUserCode.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var principal = context.EndpointType switch
+            {
+                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                    => context.AuthorizationCodePrincipal,
+
+                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                    => context.DeviceCodePrincipal,
+
+                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                    => context.RefreshTokenPrincipal,
+
+                OpenIddictServerEndpointType.Verification => context.UserCodePrincipal,
+
+                _ => null
+            };
+
+            if (principal?.GetClaim(Claims.Private.HostProperties) is string value && !string.IsNullOrEmpty(value))
+            {
+                using var document = JsonDocument.Parse(value);
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    context.Properties[property.Name] = property.Value.GetString();
+                }
+            }
+
+            return default;
         }
     }
 

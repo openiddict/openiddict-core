@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants;
@@ -169,14 +168,20 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
 
         else
         {
-            // Restore or create a new authentication properties collection and populate it.
-            var properties = CreateProperties(context.StateTokenPrincipal);
-            properties.ExpiresUtc = context.StateTokenPrincipal?.GetExpirationDate();
-            properties.IssuedUtc = context.StateTokenPrincipal?.GetCreationDate();
+            var properties = new AuthenticationProperties
+            {
+                ExpiresUtc = context.StateTokenPrincipal?.GetExpirationDate(),
+                IssuedUtc = context.StateTokenPrincipal?.GetCreationDate(),
 
-            // Restore the target link URI that was stored in the state
-            // token when the challenge operation started, if available.
-            properties.RedirectUri = context.StateTokenPrincipal?.GetClaim(Claims.TargetLinkUri);
+                // Restore the target link URI that was stored in the state
+                // token when the challenge operation started, if available.
+                RedirectUri = context.StateTokenPrincipal?.GetClaim(Claims.TargetLinkUri)
+            };
+
+            foreach (var property in context.Properties)
+            {
+                properties.Items[property.Key] = property.Value;
+            }
 
             List<AuthenticationToken>? tokens = null;
 
@@ -334,29 +339,6 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
             return AuthenticateResult.Success(new AuthenticationTicket(
                 context.MergedPrincipal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
                 OpenIddictClientAspNetCoreDefaults.AuthenticationScheme));
-
-            static AuthenticationProperties CreateProperties(ClaimsPrincipal? principal)
-            {
-                // Note: the principal may be null if no value was extracted from the corresponding token.
-                if (principal is not null)
-                {
-                    var value = principal.GetClaim(Claims.Private.HostProperties);
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        var dictionary = new Dictionary<string, string?>(comparer: StringComparer.Ordinal);
-                        using var document = JsonDocument.Parse(value);
-
-                        foreach (var property in document.RootElement.EnumerateObject())
-                        {
-                            dictionary[property.Name] = property.Value.GetString();
-                        }
-
-                        return new AuthenticationProperties(dictionary);
-                    }
-                }
-
-                return new AuthenticationProperties();
-            }
         }
     }
 

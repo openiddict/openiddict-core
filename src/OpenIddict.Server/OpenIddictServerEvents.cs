@@ -314,6 +314,11 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an access
         /// token should be extracted from the current context.
         /// </summary>
