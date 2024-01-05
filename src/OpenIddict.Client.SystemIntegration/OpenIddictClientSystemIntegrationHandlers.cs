@@ -794,8 +794,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for redirecting the Windows protocol activation
-    /// to the instance that initially started the authentication demand, if applicable.
+    /// Contains the logic responsible for redirecting the protocol activation to
+    /// the instance that initially started the authentication demand, if applicable.
     /// Note: this handler is not used when the OpenID Connect request is not a protocol activation.
     /// </summary>
     public sealed class RedirectProtocolActivation : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -919,9 +919,9 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
 
-            // Ensure the authentication demand is tracked by the OpenIddict client Windows marshal
-            // and resolve the corresponding request forgery protection. If it can't be found, this may
-            // indicate a session fixation attack: in this case, reject the authentication demand.
+            // Ensure the authentication demand is tracked by the OpenIddict client system integration
+            // marshal and resolve the corresponding request forgery protection. If it can't be found,
+            // this may indicate a session fixation attack: in this case, reject the authentication demand.
             if (!_marshal.TryGetRequestForgeryProtection(context.Nonce, out string? protection))
             {
                 context.Reject(
