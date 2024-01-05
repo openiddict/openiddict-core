@@ -48,6 +48,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
         RestoreStateTokenFromMarshalledAuthentication.Descriptor,
         RestoreStateTokenPrincipalFromMarshalledAuthentication.Descriptor,
+        RestoreHostAuthenticationPropertiesFromMarshalledAuthentication.Descriptor,
         RestoreClientRegistrationFromMarshalledContext.Descriptor,
 
         RedirectProtocolActivation.Descriptor,
@@ -694,6 +695,53 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // Otherwise, don't alter the current context.
                 _ => context.StateTokenPrincipal
             };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for restoring the host authentication
+    /// properties from the marshalled authentication context, if applicable.
+    /// </summary>
+    public sealed class RestoreHostAuthenticationPropertiesFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public RestoreHostAuthenticationPropertiesFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<RestoreHostAuthenticationPropertiesFromMarshalledAuthentication>()
+                .SetOrder(ResolveHostAuthenticationPropertiesFromStateToken.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            // When the authentication context is marshalled, restore the
+            // host authentication properties from the other instance.
+            if (context.EndpointType is OpenIddictClientEndpointType.Unknown &&
+                _marshal.TryGetResult(context.Nonce, out var notification))
+            {
+                foreach (var property in notification.Properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
 
             return default;
         }

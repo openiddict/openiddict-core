@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
@@ -36,6 +37,7 @@ public static partial class OpenIddictClientHandlers
         ResolveValidatedStateToken.Descriptor,
         ValidateRequiredStateToken.Descriptor,
         ValidateStateToken.Descriptor,
+        ResolveHostAuthenticationPropertiesFromStateToken.Descriptor,
         ResolveNonceFromStateToken.Descriptor,
         RedeemStateTokenEntry.Descriptor,
         ValidateStateTokenEndpointType.Descriptor,
@@ -659,6 +661,47 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for resolving the host authentication properties from the state token principal.
+    /// </summary>
+    public sealed class ResolveHostAuthenticationPropertiesFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
+                .UseSingletonHandler<ResolveHostAuthenticationPropertiesFromStateToken>()
+                .SetOrder(ValidateStateToken.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            var properties = context.StateTokenPrincipal.GetClaim(Claims.Private.HostProperties);
+            if (!string.IsNullOrEmpty(properties))
+            {
+                using var document = JsonDocument.Parse(properties);
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    context.Properties[property.Name] = property.Value.GetString();
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the nonce identifying
     /// the authentication operation from the state token principal.
     /// </summary>
@@ -672,7 +715,7 @@ public static partial class OpenIddictClientHandlers
                 .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ResolveNonceFromStateToken>()
-                .SetOrder(ValidateStateToken.Descriptor.Order + 1_000)
+                .SetOrder(ResolveHostAuthenticationPropertiesFromStateToken.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
