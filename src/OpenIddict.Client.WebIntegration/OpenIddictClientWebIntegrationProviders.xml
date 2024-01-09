@@ -712,6 +712,27 @@
   </Provider>
 
   <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                ██ ▄▄▄ ██ █▀▄█▄▄ ▄▄█ ▄▄▀██
+                                                ██ ███ ██ ▄▀████ ███ ▀▀ ██
+                                                ██ ▀▀▀ ██ ██ ███ ███ ██ ██
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Okta" Id="f225bf31-d16f-4580-b276-79f5fe270562"
+            Documentation="https://developer.okta.com/docs/reference/api/oidc/">
+    <!--
+      Note: Okta is a multitenant identity provider that doesn't have a generic
+      issuer URI. As such, the complete URI must always be set in the options.
+    -->
+
+    <Environment Issuer="{settings.Issuer}" />
+
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
+             Description="The URI used to access the Okta instance (e.g https://fabrikam.okta.com/)" />
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ▄▄ █ ▄▄▀█▄▄ ▄▄██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ ▀██ ██
                                         ██ ▀▀ █ ▀▀ ███ ████ ▀▀▄██ ▄▄▄██ ███ ██ █ █ ██
@@ -1403,8 +1424,8 @@
                                         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="WorldId" Id="cd8724ff-2413-4dd5-a18d-5979c9ddaa14"
-            DisplayName="World ID" Documentation="https://docs.worldcoin.org/reference/sign-in">
+  <Provider Name="WorldId" DisplayName="World ID" Id="cd8724ff-2413-4dd5-a18d-5979c9ddaa14"
+            Documentation="https://docs.worldcoin.org/reference/sign-in">
     <Environment Issuer="https://id.worldcoin.org/" />
   </Provider>
 

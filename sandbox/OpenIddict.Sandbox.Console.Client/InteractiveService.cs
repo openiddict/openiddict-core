@@ -58,15 +58,21 @@ public class InteractiveService : BackgroundService
 
                     if (result.VerificationUriComplete is not null)
                     {
-                        AnsiConsole.MarkupLineInterpolated(
-                            $"[yellow]Please visit [link]{result.VerificationUriComplete}[/] and confirm the displayed code is '{result.UserCode}' to complete the authentication demand.[/]");
+                        AnsiConsole.MarkupLineInterpolated($"""
+                            [yellow]Please visit [link]{result.VerificationUriComplete}[/] and confirm the
+                            displayed code is '{result.UserCode}' to complete the authentication demand.[/]
+                            """);
                     }
 
                     else
                     {
-                        AnsiConsole.MarkupLineInterpolated(
-                            $"[yellow]Please visit [link]{result.VerificationUri}[/] and enter '{result.UserCode}' to complete the authentication demand.[/]");
+                        AnsiConsole.MarkupLineInterpolated($"""
+                            [yellow]Please visit [link]{result.VerificationUri}[/] and enter
+                            '{result.UserCode}' to complete the authentication demand.[/]
+                            """);
                     }
+
+                    AnsiConsole.MarkupLine("[cyan]Waiting for the user to approve the authorization demand.[/]");
 
                     // Wait for the user to complete the demand on the other device.
                     principal = (await _service.AuthenticateWithDeviceAsync(new()
@@ -89,6 +95,8 @@ public class InteractiveService : BackgroundService
                         CancellationToken = stoppingToken,
                         ProviderName = provider
                     });
+
+                    AnsiConsole.MarkupLine("[cyan]Waiting for the user to approve the authorization demand.[/]");
 
                     // Wait for the user to complete the authorization process.
                     principal = (await _service.AuthenticateInteractivelyAsync(new()

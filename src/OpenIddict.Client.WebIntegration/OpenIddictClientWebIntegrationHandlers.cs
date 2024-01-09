@@ -706,6 +706,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => context.SendUserinfoRequest
                 },
 
+                // Note: some providers don't allow querying the userinfo endpoint when the "openid" scope
+                // is not requested or granted. To work around that, userinfo is disabled when the "openid"
+                // scope wasn't requested during the initial authorization request or during the token request.
+                ProviderTypes.Okta => context.GrantType switch
+                {
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                        context.StateTokenPrincipal is ClaimsPrincipal principal && !principal.HasScope(Scopes.OpenId)
+                        => false,
+
+                    GrantTypes.DeviceCode or GrantTypes.RefreshToken when !context.Scopes.Contains(Scopes.OpenId)
+                        => false,
+
+                    _ => context.SendUserinfoRequest
+                },
+
                 _ => context.SendUserinfoRequest
             };
 
