@@ -351,6 +351,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite"                            Version="8.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Hosting"                                    Version="8.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug"                              Version="8.0.0"           />
+    <PackageVersion Include="Microsoft.Maui.Controls.Compatibility"                           Version="8.0.3"           />
     <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.5.0"           />
     <PackageVersion Include="Spectre.Console"                                                 Version="0.46.0"          />
 

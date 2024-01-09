@@ -70,6 +70,42 @@ public class Worker : IHostedService
                 });
             }
 
+            if (await manager.FindByClientIdAsync("maui") is null)
+            {
+                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ApplicationType = ApplicationTypes.Native,
+                    ClientId = "maui",
+                    ClientType = ClientTypes.Public,
+                    ConsentType = ConsentTypes.Systematic,
+                    DisplayName = "MAUI client application",
+                    DisplayNames =
+                    {
+                        [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente MAUI"
+                    },
+                    RedirectUris =
+                    {
+                        new Uri("com.openiddict.sandbox.maui.client:/callback/login/local")
+                    },
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.ResponseTypes.Code,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+                        Permissions.Scopes.Roles,
+                        Permissions.Prefixes.Scope + "demo_api"
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    }
+                });
+            }
+
             if (await manager.FindByClientIdAsync("mvc") is null)
             {
                 await manager.CreateAsync(new OpenIddictApplicationDescriptor

@@ -47,6 +47,10 @@ jobs:
           7.0.302
           8.0.100
 
+    - name: Setup .NET MAUI
+      shell: pwsh
+      run: dotnet workload install maui-windows
+
     # Arcade only allows the revision to contain up to two characters, and GitHub Actions does not roll-over
     # build numbers every day like Azure DevOps does. To balance these two requirements, set the official
     # build ID to be the same format as the built-in default from Arcade, except with the revision number
