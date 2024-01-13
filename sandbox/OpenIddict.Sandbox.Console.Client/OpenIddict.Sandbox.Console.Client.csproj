@@ -3,7 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net48;net8.0</TargetFrameworks>
-    <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <IsShipping>false</IsShipping>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
