@@ -860,6 +860,11 @@ public static partial class OpenIddictClientEvents
         public bool DisableFrontchannelIdentityTokenNonceValidation { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo retrieval should be disabled.
+        /// </summary>
+        public bool DisableUserinfoRetrieval { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether userinfo validation should be disabled.
         /// </summary>
         /// <remarks>

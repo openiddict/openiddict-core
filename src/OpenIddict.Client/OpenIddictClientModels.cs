@@ -283,8 +283,7 @@ public static class OpenIddictClientModels
         /// </summary>
         /// <remarks>
         /// Note: in most cases, an empty principal will be returned, unless the authorization server
-        /// supports returning a non-standard identity token for the client credentials grant or
-        /// allows sending userinfo requests with an access token representing a client application.
+        /// supports returning a non-standard identity token for the client credentials grant.
         /// </remarks>
         public required ClaimsPrincipal Principal { get; init; }
 
@@ -341,6 +340,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the device code that will be sent to the authorization server.
         /// </summary>
         public required string DeviceCode { get; init; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo should be disabled.
+        /// </summary>
+        public bool DisableUserinfo { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum duration during which token requests will be sent
@@ -562,6 +566,11 @@ public static class OpenIddictClientModels
         public CancellationToken CancellationToken { get; init; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo should be disabled.
+        /// </summary>
+        public bool DisableUserinfo { get; set; }
+
+        /// <summary>
         /// Gets or sets the password that will be sent to the authorization server.
         /// </summary>
         public required string Password { get; init; }
@@ -679,6 +688,12 @@ public static class OpenIddictClientModels
         /// used to determine if the operation was aborted.
         /// </summary>
         public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo should be disabled, which may be required
+        /// when sending a refresh token that was acquired using a user-less flow (e.g client credentials).
+        /// </summary>
+        public bool DisableUserinfo { get; set; }
 
         /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
