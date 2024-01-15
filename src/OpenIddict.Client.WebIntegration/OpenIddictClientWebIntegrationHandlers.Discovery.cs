@@ -349,6 +349,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         context.Registration.Issuer, "oidc/logout");
                 }
 
+                // While it exposes a standard OpenID Connect userinfo endpoint, Orange France doesn't list it
+                // in its configuration document. To work around that, the endpoint URI is manually added here.
+                else if (context.Registration.ProviderType is ProviderTypes.OrangeFrance)
+                {
+                    context.Configuration.UserinfoEndpoint ??=
+                        new Uri("https://api.orange.com/openidconnect/fr/v1/userinfo", UriKind.Absolute);
+                }
+
                 // While PayPal supports OpenID Connect discovery, the configuration document returned
                 // by the sandbox environment always contains the production endpoints, which would
                 // prevent the OpenIddict integration from working properly when using the sandbox mode.
