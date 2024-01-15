@@ -733,6 +733,20 @@
   </Provider>
 
   <!--
+                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                        ██ ▄▄▄ ██ ▄▄▀█ ▄▄▀██ ▀██ ██ ▄▄ ██ ▄▄▄████ ▄▄▄██ ▄▄▀█ ▄▄▀██ ▀██ ██ ▄▄▀██ ▄▄▄██
+                        ██ ███ ██ ▀▀▄█ ▀▀ ██ █ █ ██ █▀▀██ ▄▄▄████ ▄▄███ ▀▀▄█ ▀▀ ██ █ █ ██ █████ ▄▄▄██
+                        ██ ▀▀▀ ██ ██ █ ██ ██ ██▄ ██ ▀▀▄██ ▀▀▀████ █████ ██ █ ██ ██ ██▄ ██ ▀▀▄██ ▀▀▀██
+                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="OrangeFrance" DisplayName="Orange France" Id="848d89f4-70e2-4a43-a6e1-d15a0fbedfff"
+            Documentation="https://developer.orange.com/apis/authentication-fr/getting-started">
+    <Environment Issuer="https://openid.orange.fr/"
+                 ConfigurationEndpoint="https://api.orange.com/openidconnect/fr/v1/.well-known/openid-configuration" />
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ▄▄ █ ▄▄▀█▄▄ ▄▄██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ ▀██ ██
                                         ██ ▀▀ █ ▀▀ ███ ████ ▀▀▄██ ▄▄▄██ ███ ██ █ █ ██
