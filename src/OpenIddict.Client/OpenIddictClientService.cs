@@ -571,6 +571,8 @@ public class OpenIddictClientService
                     {
                         CancellationToken = source.Token,
                         DeviceCode = request.DeviceCode,
+                        DisableUserinfoRetrieval = request.DisableUserinfo,
+                        DisableUserinfoValidation = request.DisableUserinfo,
                         GrantType = GrantTypes.DeviceCode,
                         Issuer = request.Issuer,
                         ProviderName = request.ProviderName,
@@ -773,6 +775,8 @@ public class OpenIddictClientService
             var context = new ProcessAuthenticationContext(transaction)
             {
                 CancellationToken = request.CancellationToken,
+                DisableUserinfoRetrieval = request.DisableUserinfo,
+                DisableUserinfoValidation = request.DisableUserinfo,
                 GrantType = GrantTypes.Password,
                 Issuer = request.Issuer,
                 Password = request.Password,
@@ -868,6 +872,8 @@ public class OpenIddictClientService
             var context = new ProcessAuthenticationContext(transaction)
             {
                 CancellationToken = request.CancellationToken,
+                DisableUserinfoRetrieval = request.DisableUserinfo,
+                DisableUserinfoValidation = request.DisableUserinfo,
                 GrantType = GrantTypes.RefreshToken,
                 Issuer = request.Issuer,
                 ProviderName = request.ProviderName,

@@ -2262,7 +2262,7 @@ public static partial class OpenIddictClientHandlers
                 // For client credentials, device authorization, resource owner password
                 // credentials and refresh token requests, always send a token request.
                 GrantTypes.ClientCredentials or GrantTypes.DeviceCode or
-                GrantTypes.Password or GrantTypes.RefreshToken => true,
+                GrantTypes.Password          or GrantTypes.RefreshToken => true,
 
                 _ => false
             };
@@ -3557,8 +3557,8 @@ public static partial class OpenIddictClientHandlers
                 //
                 // Note: the userinfo endpoint is an optional endpoint and may not be supported.
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit or
-                GrantTypes.DeviceCode or GrantTypes.Password or GrantTypes.RefreshToken
-                    when context.UserinfoEndpoint is not null &&
+                GrantTypes.DeviceCode        or GrantTypes.Password or GrantTypes.RefreshToken
+                    when !context.DisableUserinfoRetrieval && context.UserinfoEndpoint is not null &&
                     (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
                      !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
 
@@ -3721,7 +3721,7 @@ public static partial class OpenIddictClientHandlers
              context.RejectUserinfoToken) = context.GrantType switch
             {
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit or
-                GrantTypes.DeviceCode or GrantTypes.Password or GrantTypes.RefreshToken
+                GrantTypes.DeviceCode        or GrantTypes.Password or GrantTypes.RefreshToken
                     when context.SendUserinfoRequest => (true, false, true, true),
 
                 _ => (false, false, false, false)
