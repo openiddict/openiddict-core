@@ -691,19 +691,6 @@ public static partial class OpenIddictServerHandlers
                 return default;
             }
 
-            // Client assertions MUST contain contain an "iat" claim. For more information,
-            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
-            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
-            if (!context.ClientAssertionPrincipal.HasClaim(Claims.IssuedAt))
-            {
-                context.Reject(
-                    error: Errors.InvalidRequest,
-                    description: SR.FormatID2172(Claims.IssuedAt),
-                    uri: SR.FormatID8000(SR.ID2172));
-
-                return default;
-            }
-
             return default;
 
             static bool ValidateClaimGroup(KeyValuePair<string, List<Claim>> claims) => claims switch
