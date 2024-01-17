@@ -332,7 +332,7 @@ public static partial class OpenIddictClientHandlers
                         }
 
                         if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
-                            context.Issuer is null && string.IsNullOrEmpty(context.ProviderName) &&
+                            context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
                             context.Options.Registrations.Count is not 1)
                         {
                             throw context.Options.Registrations.Count is 0 ?
@@ -1618,14 +1618,10 @@ public static partial class OpenIddictClientHandlers
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.FrontchannelIdentityTokenPrincipal.Claims
-                .GroupBy(claim => claim.Type)
-                .ToDictionary(group => group.Key, group => group.ToList()))
+                .GroupBy(static claim => claim.Type)
+                .ToDictionary(static group => group.Key, group => group.ToList())
+                .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
-                if (ValidateClaimGroup(group))
-                {
-                    continue;
-                }
-
                 context.Reject(
                     error: Errors.InvalidRequest,
                     description: SR.FormatID2121(group.Key),
@@ -1696,28 +1692,22 @@ public static partial class OpenIddictClientHandlers
 
             return default;
 
-            static bool ValidateClaimGroup(KeyValuePair<string, List<Claim>> claims) => claims switch
+            static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
             {
-                // The following JWT claims MUST be represented as unique strings.
-                {
-                    Key: Claims.AuthenticationContextReference or Claims.AuthorizedParty or
-                         Claims.Issuer or Claims.Nonce or Claims.Subject,
-                    Value: List<Claim> values
-                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.String,
+                // The following claims MUST be represented as unique strings.
+                Claims.AuthenticationContextReference or Claims.AuthorizedParty or
+                Claims.Issuer                         or Claims.Nonce           or Claims.Subject
+                    => values is [{ ValueType: ClaimValueTypes.String }],
 
-                // The following JWT claims MUST be represented as unique strings or array of strings.
-                {
-                    Key: Claims.Audience or Claims.AuthenticationMethodReference,
-                    Value: List<Claim> values
-                } => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+                // The following claims MUST be represented as unique strings or array of strings.
+                Claims.Audience or Claims.AuthenticationMethodReference
+                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
 
-                // The following JWT claims MUST be represented as unique numeric dates.
-                {
-                    Key: Claims.AuthenticationTime or Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore,
-                    Value: List<Claim> values
-                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.Integer    or ClaimValueTypes.Integer32 or
-                                                                 ClaimValueTypes.Integer64  or ClaimValueTypes.Double    or
-                                                                 ClaimValueTypes.UInteger32 or ClaimValueTypes.UInteger64,
+                // The following claims MUST be represented as unique numeric dates.
+                Claims.AuthenticationTime or Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
+                    => values is [{ ValueType: ClaimValueTypes.Integer    or ClaimValueTypes.Integer32 or
+                                               ClaimValueTypes.Integer64  or ClaimValueTypes.Double    or
+                                               ClaimValueTypes.UInteger32 or ClaimValueTypes.UInteger64 }],
 
                 // Claims that are not in the well-known list can be of any type.
                 _ => true
@@ -2954,14 +2944,10 @@ public static partial class OpenIddictClientHandlers
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.BackchannelIdentityTokenPrincipal.Claims
-                .GroupBy(claim => claim.Type)
-                .ToDictionary(group => group.Key, group => group.ToList()))
+                .GroupBy(static claim => claim.Type)
+                .ToDictionary(static group => group.Key, group => group.ToList())
+                .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
-                if (ValidateClaimGroup(group))
-                {
-                    continue;
-                }
-
                 context.Reject(
                     error: Errors.InvalidRequest,
                     description: SR.FormatID2125(group.Key),
@@ -3032,28 +3018,22 @@ public static partial class OpenIddictClientHandlers
 
             return default;
 
-            static bool ValidateClaimGroup(KeyValuePair<string, List<Claim>> claims) => claims switch
+            static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
             {
-                // The following JWT claims MUST be represented as unique strings.
-                {
-                    Key: Claims.AuthenticationContextReference or Claims.AuthorizedParty or
-                         Claims.Issuer or Claims.Nonce or Claims.Subject,
-                    Value: List<Claim> values
-                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.String,
+                // The following claims MUST be represented as unique strings.
+                Claims.AuthenticationContextReference or Claims.AuthorizedParty or
+                Claims.Issuer                         or Claims.Nonce           or Claims.Subject
+                    => values is [{ ValueType: ClaimValueTypes.String }],
 
-                // The following JWT claims MUST be represented as unique strings or array of strings.
-                {
-                    Key: Claims.Audience or Claims.AuthenticationMethodReference,
-                    Value: List<Claim> values
-                } => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+                // The following claims MUST be represented as unique strings or array of strings.
+                Claims.Audience or Claims.AuthenticationMethodReference
+                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
 
-                // The following JWT claims MUST be represented as unique numeric dates.
-                {
-                    Key: Claims.AuthenticationTime or Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore,
-                    Value: List<Claim> values
-                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.Integer    or ClaimValueTypes.Integer32 or
-                                                                 ClaimValueTypes.Integer64  or ClaimValueTypes.Double    or
-                                                                 ClaimValueTypes.UInteger32 or ClaimValueTypes.UInteger64,
+                // The following claims MUST be represented as unique numeric dates.
+                Claims.AuthenticationTime or Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
+                    => values is [{ ValueType: ClaimValueTypes.Integer    or ClaimValueTypes.Integer32 or
+                                               ClaimValueTypes.Integer64  or ClaimValueTypes.Double    or
+                                               ClaimValueTypes.UInteger32 or ClaimValueTypes.UInteger64 }],
 
                 // Claims that are not in the well-known list can be of any type.
                 _ => true
@@ -3871,14 +3851,10 @@ public static partial class OpenIddictClientHandlers
             Debug.Assert(context.UserinfoTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.UserinfoTokenPrincipal.Claims
-                .GroupBy(claim => claim.Type)
-                .ToDictionary(group => group.Key, group => group.ToList()))
+                .GroupBy(static claim => claim.Type)
+                .ToDictionary(static group => group.Key, group => group.ToList())
+                .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
-                if (ValidateClaimGroup(group))
-                {
-                    continue;
-                }
-
                 context.Reject(
                     error: Errors.InvalidRequest,
                     description: SR.FormatID2131(group.Key),
@@ -3889,13 +3865,10 @@ public static partial class OpenIddictClientHandlers
 
             return default;
 
-            static bool ValidateClaimGroup(KeyValuePair<string, List<Claim>> claims) => claims switch
+            static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
             {
-                // The following JWT claims MUST be represented as unique strings.
-                {
-                    Key: Claims.Subject,
-                    Value: List<Claim> values
-                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.String,
+                // The following claims MUST be represented as unique strings.
+                Claims.Subject => values is [{ ValueType: ClaimValueTypes.String }],
 
                 // Claims that are not in the well-known list can be of any type.
                 _ => true
@@ -4191,13 +4164,52 @@ public static partial class OpenIddictClientHandlers
             }
 
             if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
-                context.Issuer is null && string.IsNullOrEmpty(context.ProviderName) &&
+                context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
                 context.Options.Registrations.Count is not 1)
             {
                 throw context.Options.Registrations.Count is 0 ?
                     new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
                     new InvalidOperationException(SR.GetResourceString(SR.ID0305));
             }
+
+            if (context.Principal is not { Identity: ClaimsIdentity })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0011));
+            }
+
+            if (context.Principal.Identity.IsAuthenticated)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0425));
+            }
+
+            if (context.Principal.HasClaim(Claims.Subject))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0426));
+            }
+
+            foreach (var group in context.Principal.Claims
+                .GroupBy(static claim => claim.Type)
+                .ToDictionary(static group => group.Key, static group => group.ToList())
+                .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
+            {
+                throw new InvalidOperationException(SR.FormatID0424(group.Key));
+            }
+
+            static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
+            {
+                // The following claims MUST be represented as unique strings or array of strings.
+                Claims.Private.Audience or Claims.Private.Resource or Claims.Private.Presenter
+                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+
+                // The following claims MUST be represented as unique integers.
+                Claims.Private.StateTokenLifetime
+                    => values is [{ ValueType: ClaimValueTypes.Integer   or ClaimValueTypes.Integer32  or
+                                               ClaimValueTypes.Integer64 or ClaimValueTypes.UInteger32 or
+                                               ClaimValueTypes.UInteger64 }],
+
+                // Claims that are not in the well-known list can be of any type.
+                _ => true
+            };
 
             return default;
         }
@@ -5842,13 +5854,52 @@ public static partial class OpenIddictClientHandlers
             }
 
             if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
-                context.Issuer is null && string.IsNullOrEmpty(context.ProviderName) &&
+                context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
                 context.Options.Registrations.Count is not 1)
             {
                 throw context.Options.Registrations.Count is 0 ?
                     new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
                     new InvalidOperationException(SR.GetResourceString(SR.ID0341));
             }
+
+            if (context.Principal is not { Identity: ClaimsIdentity })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0011));
+            }
+
+            if (context.Principal.Identity.IsAuthenticated)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0425));
+            }
+
+            if (context.Principal.HasClaim(Claims.Subject))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0426));
+            }
+
+            foreach (var group in context.Principal.Claims
+                .GroupBy(static claim => claim.Type)
+                .ToDictionary(static group => group.Key, static group => group.ToList())
+                .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
+            {
+                throw new InvalidOperationException(SR.FormatID0424(group.Key));
+            }
+
+            static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
+            {
+                // The following claims MUST be represented as unique strings or array of strings.
+                Claims.Private.Audience or Claims.Private.Resource or Claims.Private.Presenter
+                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+
+                // The following claims MUST be represented as unique integers.
+                Claims.Private.StateTokenLifetime
+                    => values is [{ ValueType: ClaimValueTypes.Integer   or ClaimValueTypes.Integer32  or
+                                               ClaimValueTypes.Integer64 or ClaimValueTypes.UInteger32 or
+                                               ClaimValueTypes.UInteger64 }],
+
+                // Claims that are not in the well-known list can be of any type.
+                _ => true
+            };
 
             return default;
         }

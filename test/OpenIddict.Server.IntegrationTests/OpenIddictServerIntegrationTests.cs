@@ -1450,6 +1450,40 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ProcessSignIn_InvalidClaimValueTypeCausesAnException()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, 42);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+        {
+            return client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+        });
+
+        Assert.Equal(SR.FormatID0424(Claims.Subject), exception.Message);
+    }
+
+    [Fact]
     public async Task ProcessSignIn_ScopeDefaultsToOpenId()
     {
         // Arrange
