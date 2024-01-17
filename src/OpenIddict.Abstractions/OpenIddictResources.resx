@@ -1578,6 +1578,15 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0423" xml:space="preserve">
     <value>Multiple claims of the same type are present in the identity or principal.</value>
   </data>
+  <data name="ID0424" xml:space="preserve">
+    <value>The '{0}' claim present in the specified principal is malformed or isn't of the expected type.</value>
+  </data>
+  <data name="ID0425" xml:space="preserve">
+    <value>The specified principal contains an authenticated identity, which is not valid for this operation. Make sure that 'ClaimsPrincipal.Identity.AuthenticationType' is null and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'false'.</value>
+  </data>
+  <data name="ID0426" xml:space="preserve">
+    <value>The specified principal contains a subject claim, which is not valid for this operation.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

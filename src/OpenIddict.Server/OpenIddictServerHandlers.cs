@@ -623,14 +623,10 @@ public static partial class OpenIddictServerHandlers
             Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.ClientAssertionPrincipal.Claims
-                .GroupBy(claim => claim.Type)
-                .ToDictionary(group => group.Key, group => group.ToList()))
+                .GroupBy(static claim => claim.Type)
+                .ToDictionary(static group => group.Key, group => group.ToList())
+                .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
-                if (ValidateClaimGroup(group))
-                {
-                    continue;
-                }
-
                 context.Reject(
                     error: Errors.InvalidRequest,
                     description: SR.FormatID2171(group.Key),
@@ -706,27 +702,20 @@ public static partial class OpenIddictServerHandlers
 
             return default;
 
-            static bool ValidateClaimGroup(KeyValuePair<string, List<Claim>> claims) => claims switch
+            static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
             {
-                // The following JWT claims MUST be represented as unique strings.
-                {
-                    Key: Claims.AuthorizedParty or Claims.Issuer or Claims.JwtId or Claims.Subject,
-                    Value: List<Claim> values
-                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.String,
+                // The following claims MUST be represented as unique strings.
+                Claims.AuthorizedParty or Claims.Issuer or Claims.JwtId or Claims.Subject
+                    => values is [{ ValueType: ClaimValueTypes.String }],
 
-                // The following JWT claims MUST be represented as unique strings or array of strings.
-                {
-                    Key: Claims.Audience,
-                    Value: List<Claim> values
-                } => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+                // The following claims MUST be represented as unique strings or array of strings.
+                Claims.Audience => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
 
-                // The following JWT claims MUST be represented as unique numeric dates.
-                {
-                    Key: Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore,
-                    Value: List<Claim> values
-                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.Integer    or ClaimValueTypes.Integer32 or
-                                                                 ClaimValueTypes.Integer64  or ClaimValueTypes.Double    or
-                                                                 ClaimValueTypes.UInteger32 or ClaimValueTypes.UInteger64,
+                // The following claims MUST be represented as unique numeric dates.
+                Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
+                    => values is [{ ValueType: ClaimValueTypes.Integer    or ClaimValueTypes.Integer32 or
+                                               ClaimValueTypes.Integer64  or ClaimValueTypes.Double    or
+                                               ClaimValueTypes.UInteger32 or ClaimValueTypes.UInteger64 }],
 
                 // Claims that are not in the well-known list can be of any type.
                 _ => true
@@ -2123,7 +2112,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0012));
                 }
 
-                if (!string.IsNullOrEmpty(context.Principal.GetClaim(Claims.Subject)))
+                if (context.Principal.HasClaim(Claims.Subject))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0013));
                 }
@@ -2142,7 +2131,47 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
+            foreach (var group in context.Principal.Claims
+                .GroupBy(static claim => claim.Type)
+                .ToDictionary(static group => group.Key, static group => group.ToList())
+                .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
+            {
+                throw new InvalidOperationException(SR.FormatID0424(group.Key));
+            }
+
             return default;
+
+            static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
+            {
+                // The following claims MUST be represented as unique strings.
+                Claims.AuthenticationContextReference or Claims.Subject                or
+                Claims.Private.AuthorizationId        or Claims.Private.CreationDate   or
+                Claims.Private.DeviceCodeId           or Claims.Private.ExpirationDate or
+                Claims.Private.TokenId
+                    => values is [{ ValueType: ClaimValueTypes.String }],
+
+                // The following claims MUST be represented as unique strings or array of strings.
+                Claims.AuthenticationMethodReference or Claims.Private.Audience or
+                Claims.Private.Presenter             or Claims.Private.Resource
+                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+
+                // The following claims MUST be represented as unique integers.
+                Claims.Private.AccessTokenLifetime  or Claims.Private.AuthorizationCodeLifetime or
+                Claims.Private.DeviceCodeLifetime   or Claims.Private.IdentityTokenLifetime     or
+                Claims.Private.RefreshTokenLifetime or Claims.Private.RefreshTokenLifetime
+                    => values is [{ ValueType: ClaimValueTypes.Integer   or ClaimValueTypes.Integer32  or
+                                               ClaimValueTypes.Integer64 or ClaimValueTypes.UInteger32 or
+                                               ClaimValueTypes.UInteger64 }],
+
+                // The following claims MUST be represented as unique numeric dates.
+                Claims.AuthenticationTime
+                    => values is [{ ValueType: ClaimValueTypes.Integer    or ClaimValueTypes.Integer32 or
+                                               ClaimValueTypes.Integer64  or ClaimValueTypes.Double    or
+                                               ClaimValueTypes.UInteger32 or ClaimValueTypes.UInteger64 }],
+
+                // Claims that are not in the well-known list can be of any type.
+                _ => true
+            };
         }
     }
 
