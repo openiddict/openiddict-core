@@ -1575,6 +1575,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0422" xml:space="preserve">
     <value>A configuration manager must be attached to the client registration to be able to resolve the server configuration.</value>
   </data>
+  <data name="ID0423" xml:space="preserve">
+    <value>Multiple claims of the same type are present in the identity or principal.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

@@ -2413,6 +2413,40 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void ClaimsIdentity_GetClaim_ThrowsAnExceptionForDuplicateClaimType()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim(Claims.Name, "Bob le Bricoleur");
+        identity.AddClaim(Claims.Name, "Bob le Bricoleur");
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            identity.GetClaim(Claims.Name);
+        });
+
+        Assert.Equal(SR.GetResourceString(SR.ID0423), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_GetClaim_ThrowsAnExceptionForDuplicateClaimType()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim(Claims.Name, "Bob le Bricoleur");
+        principal.AddClaim(Claims.Name, "Bob le Bricoleur");
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            principal.GetClaim(Claims.Name);
+        });
+
+        Assert.Equal(SR.GetResourceString(SR.ID0423), exception.Message);
+    }
+
+    [Fact]
     public void ClaimsIdentity_GetClaim_ReturnsNullForMissingClaims()
     {
         // Arrange

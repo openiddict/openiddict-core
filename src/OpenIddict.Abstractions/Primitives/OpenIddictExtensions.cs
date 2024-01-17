@@ -1462,10 +1462,13 @@ public static class OpenIddictExtensions
     }
 
     /// <summary>
-    /// Gets the claim value corresponding to the given type.
+    /// Gets the unique claim value corresponding to the given type.
     /// </summary>
     /// <param name="identity">The identity.</param>
     /// <param name="type">The type associated with the claim.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Multiple claims using the same <paramref name="type"/> are present in the identity.
+    /// </exception>
     /// <returns>The claim value.</returns>
     public static string? GetClaim(this ClaimsIdentity identity, string type)
     {
@@ -1479,14 +1482,43 @@ public static class OpenIddictExtensions
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
         }
 
-        return identity.FindFirst(type)?.Value;
+        var claims = identity.FindAll(type);
+        if (claims is IList<Claim> list)
+        {
+            return list switch
+            {
+                [Claim claim] => claim.Value,
+                [           ] => null,
+                [     ..    ] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0423))
+            };
+        }
+
+        else
+        {
+            using var enumerator = claims.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                var claim = enumerator.Current;
+                if (!enumerator.MoveNext())
+                {
+                    return claim.Value;
+                }
+
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0423));
+            }
+
+            return null;
+        }
     }
 
     /// <summary>
-    /// Gets the claim value corresponding to the given type.
+    /// Gets the unique claim value corresponding to the given type.
     /// </summary>
     /// <param name="principal">The principal.</param>
     /// <param name="type">The type associated with the claim.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Multiple claims using the same <paramref name="type"/> are present in the principal.
+    /// </exception>
     /// <returns>The claim value.</returns>
     public static string? GetClaim(this ClaimsPrincipal principal, string type)
     {
@@ -1500,11 +1532,37 @@ public static class OpenIddictExtensions
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
         }
 
-        return principal.FindFirst(type)?.Value;
+        var claims = principal.FindAll(type);
+        if (claims is IList<Claim> list)
+        {
+            return list switch
+            {
+                [Claim claim] => claim.Value,
+                [           ] => null,
+                [     ..    ] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0423))
+            };
+        }
+
+        else
+        {
+            using var enumerator = claims.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                var claim = enumerator.Current;
+                if (!enumerator.MoveNext())
+                {
+                    return claim.Value;
+                }
+
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0423));
+            }
+
+            return null;
+        }
     }
 
     /// <summary>
-    /// Gets the claim values corresponding to the given type.
+    /// Gets all the claim values corresponding to the given type.
     /// </summary>
     /// <param name="identity">The claims identity.</param>
     /// <param name="type">The type associated with the claims.</param>
@@ -1525,7 +1583,7 @@ public static class OpenIddictExtensions
     }
 
     /// <summary>
-    /// Gets the claim values corresponding to the given type.
+    /// Gets all the claim values corresponding to the given type.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <param name="type">The type associated with the claims.</param>
