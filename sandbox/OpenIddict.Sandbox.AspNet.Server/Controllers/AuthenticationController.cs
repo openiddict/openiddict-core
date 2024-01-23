@@ -79,20 +79,13 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
 
             // Build the authentication properties based on the properties that were added when the challenge was triggered.
             var properties = new AuthenticationProperties(result.Properties.Dictionary
-                .Where(item => item switch
-                {
+                .Where(item => item.Key is
                     // Preserve the return URL.
-                    { Key: ".redirect" } => true,
+                    ".redirect" or
 
                     // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
-                    {
-                        Key: OpenIddictClientOwinConstants.Tokens.BackchannelAccessToken or
-                             OpenIddictClientOwinConstants.Tokens.RefreshToken
-                    } => true,
-
-                    // Don't add the other properties to the external cookie.
-                    _ => false
-                })
+                    OpenIddictClientOwinConstants.Tokens.BackchannelAccessToken or
+                    OpenIddictClientOwinConstants.Tokens.RefreshToken)
                 .ToDictionary(pair => pair.Key, pair => pair.Value));
 
             context.Authentication.SignIn(properties, identity);
