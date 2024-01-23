@@ -160,7 +160,10 @@ public class AuthenticationController : Controller
         }
 
         // Build an identity based on the external claims and that will be used to create the authentication cookie.
-        var identity = new ClaimsIdentity(authenticationType: "ExternalLogin");
+        var identity = new ClaimsIdentity(
+            authenticationType: "ExternalLogin",
+            nameType: ClaimTypes.Name,
+            roleType: ClaimTypes.Role);
 
         // By default, OpenIddict will automatically try to map the email/name and name identifier claims from
         // their standard OpenID Connect or provider-specific equivalent, if available. If needed, additional
@@ -182,18 +185,11 @@ public class AuthenticationController : Controller
         // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
         //
         // To make cookies less heavy, tokens that are not used are filtered out before creating the cookie.
-        properties.StoreTokens(result.Properties.GetTokens().Where(token => token switch
-        {
+        properties.StoreTokens(result.Properties.GetTokens().Where(token => token.Name is
             // Preserve the access, identity and refresh tokens returned in the token response, if available.
-            {
-                Name: OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken   or
-                      OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken or
-                      OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken
-            } => true,
-
-            // Ignore the other tokens.
-            _ => false
-        }));
+            OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken   or
+            OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken or
+            OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken));
 
         // Ask the default sign-in handler to return a new cookie and redirect the
         // user agent to the return URL stored in the authentication properties.

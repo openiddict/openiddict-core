@@ -4091,7 +4091,8 @@ public static partial class OpenIddictClientHandlers
                 .SetClaim(ClaimTypes.Email,          context.MergedPrincipal.GetClaim(Claims.Email),             issuer)
                 .SetClaim(ClaimTypes.Gender,         context.MergedPrincipal.GetClaim(Claims.Gender),            issuer)
                 .SetClaim(ClaimTypes.GivenName,      context.MergedPrincipal.GetClaim(Claims.GivenName),         issuer)
-                .SetClaim(ClaimTypes.Name,           context.MergedPrincipal.GetClaim(Claims.PreferredUsername), issuer)
+                .SetClaim(ClaimTypes.Name,           context.MergedPrincipal.GetClaim(Claims.PreferredUsername) ??
+                                                     context.MergedPrincipal.GetClaim(Claims.Name),              issuer)
                 .SetClaim(ClaimTypes.NameIdentifier, context.MergedPrincipal.GetClaim(Claims.Subject),           issuer)
                 .SetClaim(ClaimTypes.OtherPhone,     context.MergedPrincipal.GetClaim(Claims.PhoneNumber),       issuer)
                 .SetClaim(ClaimTypes.Surname,        context.MergedPrincipal.GetClaim(Claims.FamilyName),        issuer);
