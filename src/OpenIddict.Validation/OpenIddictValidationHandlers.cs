@@ -350,7 +350,11 @@ public static partial class OpenIddictValidationHandlers
             Debug.Assert(context.Configuration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
             // Create a new principal that will be used to store the client assertion claims.
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType));
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role));
+
             principal.SetCreationDate(DateTimeOffset.UtcNow);
 
             var lifetime = context.Options.ClientAssertionLifetime;
