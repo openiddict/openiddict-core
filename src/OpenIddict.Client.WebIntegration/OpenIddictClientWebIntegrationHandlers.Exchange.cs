@@ -63,13 +63,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                // Amazon doesn't support the standard "urn:ietf:params:oauth:grant-type:device_code"
+                // grant type and requires using the non-standard "device_code" grant type instead.
+                if (context.GrantType is GrantTypes.DeviceCode &&
+                    context.Registration.ProviderType is ProviderTypes.Amazon)
+                {
+                    context.Request.GrantType = "device_code";
+                }
+
                 // Some providers implement old drafts of the OAuth 2.0 specification that
                 // didn't support the "response_type" parameter but relied on a "type"
                 // parameter to determine the type of request (web server or refresh).
                 //
                 // To support these providers, the "grant_type" parameter must be manually mapped
                 // to its equivalent "type" (e.g "web_server") before sending the token request.
-                if (context.Registration.ProviderType is ProviderTypes.Basecamp)
+                else if (context.Registration.ProviderType is ProviderTypes.Basecamp)
                 {
                     context.Request["type"] = context.Request.GrantType switch
                     {

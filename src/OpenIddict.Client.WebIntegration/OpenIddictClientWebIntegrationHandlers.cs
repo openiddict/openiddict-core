@@ -27,6 +27,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         ValidateNonStandardParameters.Descriptor,
         OverrideTokenEndpoint.Descriptor,
         AttachNonStandardClientAssertionClaims.Descriptor,
+        AttachAdditionalTokenRequestParameters.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
         AdjustRedirectUriInTokenRequest.Descriptor,
         OverrideValidatedBackchannelTokens.Descriptor,
@@ -408,6 +409,55 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.ClientAssertionPrincipal.SetClaim(Claims.Private.Issuer, settings.TeamId);
                 context.ClientAssertionPrincipal.SetAudiences("https://appleid.apple.com");
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching additional parameters
+    /// to the token request for the providers that require it.
+    /// </summary>
+    public sealed class AttachAdditionalTokenRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<AttachAdditionalTokenRequestParameters>()
+                .SetOrder(AttachTokenRequestParameters.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // When using the device authorization code grant, Amazon requires sending a non-standard
+            // "user_code" node containing the user code returned by the device authorization endpoint.
+            //
+            // As the user code is not a standard concept for token requests, the user code is expected
+            // to be attached as an Amazon-specific authentication property. If no user code or an empty
+            // value was attached, an exception is thrown to abort the authentication process.
+            if (context.GrantType is GrantTypes.DeviceCode &&
+                context.Registration.ProviderType is ProviderTypes.Amazon)
+            {
+                if (!context.Properties.TryGetValue(Amazon.Properties.UserCode, out string? code) ||
+                    string.IsNullOrEmpty(code))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0427));
+                }
+
+                context.TokenRequest.UserCode = code;
             }
 
             return default;

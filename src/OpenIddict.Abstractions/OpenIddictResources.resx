@@ -1587,6 +1587,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0426" xml:space="preserve">
     <value>The specified principal contains a subject claim, which is not valid for this operation.</value>
   </data>
+  <data name="ID0427" xml:space="preserve">
+    <value>The Amazon integration requires sending the user code to the token endpoint when using the device authorization code grant. For that, attach a ".user_code" authentication property containing the user code returned by the device authorization endpoint.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
