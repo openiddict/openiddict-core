@@ -4418,7 +4418,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Authorization code flow with grant_type=authorization_code and response_type=code:
                 (var client, var server) when
-                    // Ensure grant_type=authorization_code is - explicitly or implicitly - supported.
+                    // Ensure grant_type=authorization_code is supported.
                     client.GrantTypes.Contains(GrantTypes.AuthorizationCode) &&
                    (server.GrantTypes.Count is 0 || // If empty, assume the code grant is supported by the server.
                     server.GrantTypes.Contains(GrantTypes.AuthorizationCode)) &&
@@ -4431,7 +4431,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Hybrid flow with grant_type=authorization_code/implicit and response_type=code id_token:
                 (var client, var server) when
-                    // Ensure grant_type=authorization_code is - explicitly or implicitly - supported.
+                    // Ensure grant_type=authorization_code and grant_type=implicit are supported.
                     (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
                     (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
                     (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
@@ -4446,7 +4446,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Implicit flow with grant_type=implicit and response_type=id_token:
                 (var client, var server) when
-                    // Ensure grant_type=implicit is - explicitly or implicitly - supported.
+                    // Ensure grant_type=implicit is supported.
                     client.GrantTypes.Contains(GrantTypes.Implicit) &&
                    (server.GrantTypes.Count is 0 || // If empty, assume the implicit grant is supported by the server.
                     server.GrantTypes.Contains(GrantTypes.Implicit)) &&
@@ -4467,7 +4467,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Hybrid flow with grant_type=authorization_code/implicit and response_type=code id_token token.
                 (var client, var server) when
-                    // Ensure grant_type=authorization_code is - explicitly or implicitly - supported.
+                    // Ensure grant_type=authorization_code and grant_type=implicit are supported.
                     (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
                     (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
                     (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
@@ -4484,7 +4484,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Hybrid flow with grant_type=authorization_code/implicit and response_type=code token.
                 (var client, var server) when
-                    // Ensure grant_type=authorization_code is - explicitly or implicitly - supported.
+                    // Ensure grant_type=authorization_code and grant_type=implicit are supported.
                     (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
                     (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
                     (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
@@ -4500,7 +4500,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Implicit flow with grant_type=implicit and response_type=id_token token.
                 (var client, var server) when
-                    // Ensure grant_type=implicit is - explicitly or implicitly - supported.
+                    // Ensure grant_type=implicit is supported.
                     client.GrantTypes.Contains(GrantTypes.Implicit) &&
                    (server.GrantTypes.Count is 0 || // If empty, assume the implicit grant is supported by the server.
                     server.GrantTypes.Contains(GrantTypes.Implicit)) &&

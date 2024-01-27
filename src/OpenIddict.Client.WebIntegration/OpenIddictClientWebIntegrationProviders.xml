@@ -45,6 +45,42 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              █ ▄▄▀██ ▄▀▄ █ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▀██ ██
+                                              █ ▀▀ ██ █ █ █ ▀▀ ██▀▀▀▄▄██ ███ ██ █ █ ██
+                                              █ ██ ██ ███ █ ██ ██ ▀▀▀ ██ ▀▀▀ ██ ██▄ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Amazon" Id="178b9d90-6711-4083-becb-90d90afd8d50"
+            Documentation="https://developer.amazon.com/docs/login-with-amazon/authorization-code-grant.html">
+    <Environment Issuer="https://www.amazon.com/">
+      <Configuration AuthorizationEndpoint="https://www.amazon.com/ap/oa"
+                     DeviceAuthorizationEndpoint="https://api.amazon.com/auth/o2/create/codepair"
+                     TokenEndpoint="https://api.amazon.com/auth/o2/token"
+                     UserinfoEndpoint="https://api.amazon.com/user/profile">
+        <CodeChallengeMethod Value="plain" />
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+        <GrantType Value="urn:ietf:params:oauth:grant-type:device_code" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+        <TokenEndpointAuthMethod Value="client_secret_post" />
+      </Configuration>
+
+      <!--
+        Note: Amazon requires sending the "profile" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="profile" Default="true" Required="true" />
+    </Environment>
+
+    <Property Name="UserCode" DictionaryKey=".user_code" />
+  </Provider>
+
+  <!--
                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                               █ ▄▄▀██ ▄▄▀██ ▄▄▀██ ▄▄ █▄ ▄██ ▄▄▄ ████ ▄▄▄ ██ ▀██ ██ ████▄ ▄██ ▀██ ██ ▄▄▄██
                               █ ▀▀ ██ ▀▀▄██ █████ █▀▀██ ███▄▄▄▀▀████ ███ ██ █ █ ██ █████ ███ █ █ ██ ▄▄▄██
