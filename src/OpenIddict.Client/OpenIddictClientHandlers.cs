@@ -3978,20 +3978,12 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
-            context.MergedPrincipal = context.EndpointType switch
-            {
-                // Create a composite principal containing claims resolved from the frontchannel
-                // and backchannel identity tokens and the userinfo token principal, if available.
-                OpenIddictClientEndpointType.Redirection => CreateMergedPrincipal(
-                    context.FrontchannelIdentityTokenPrincipal,
-                    context.BackchannelIdentityTokenPrincipal,
-                    context.UserinfoTokenPrincipal),
-
-                OpenIddictClientEndpointType.PostLogoutRedirection
-                    => context.StateTokenPrincipal?.Clone() ?? new ClaimsPrincipal(new ClaimsIdentity()),
-
-                _ => new ClaimsPrincipal(new ClaimsIdentity())
-            };
+            // Create a composite principal containing claims resolved from the frontchannel
+            // and backchannel identity tokens and the userinfo token principal, if available.
+            context.MergedPrincipal = CreateMergedPrincipal(
+                context.FrontchannelIdentityTokenPrincipal,
+                context.BackchannelIdentityTokenPrincipal,
+                context.UserinfoTokenPrincipal);
 
             // Attach the registration identifier and identity of the authorization server to the returned principal to allow
             // resolving it even if no other claim was added (e.g if no id_token was returned/no userinfo endpoint is available).
