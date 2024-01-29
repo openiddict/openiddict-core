@@ -369,6 +369,29 @@
   </Provider>
 
   <!--
+                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                              ██ ▄▄▄█▄▀█▀▄█ ▄▄▀██ ▄▄▀█▄▄ ▄▄████ ▄▄▄ ██ ▀██ ██ ████▄ ▄██ ▀██ ██ ▄▄▄██
+                              ██ ▄▄▄███ ███ ▀▀ ██ ██████ ██████ ███ ██ █ █ ██ █████ ███ █ █ ██ ▄▄▄██
+                              ██ ▀▀▀█▀▄█▄▀█ ██ ██ ▀▀▄███ ██████ ▀▀▀ ██ ██▄ ██ ▀▀ █▀ ▀██ ██▄ ██ ▀▀▀██
+                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="ExactOnline" DisplayName="Exact Online" Id="7fbc91df-e1c0-4f7e-9c65-f86b1d173ab9"
+            Documentation="https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-oauth-eol-oauth-dev-impleovervw">
+    <Environment Issuer="{settings.Issuer}">
+      <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/oauth2/auth')}"
+                     TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/oauth2/token')}"
+                     UserinfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/v1/current/Me')}">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true" DefaultValue="https://start.exactonline.com/"
+             Description="The URI used to access the region-specific Exact Online server (by default, https://start.exactonline.com/)" />
+  </Provider>
+
+  <!--
                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                       ██ ▄▄▄█ ▄▄▀██ ▄▄▀██ ▄▄▄██ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ █▀▄██
                                       ██ ▄▄██ ▀▀ ██ █████ ▄▄▄██ ▄▄▀██ ███ ██ ███ ██ ▄▀███
@@ -639,7 +662,8 @@
 
   <Provider Name="LinkedIn" Id="eb3bc226-ed25-4258-8a37-2bfcc4d628a2"
             Documentation="https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2">
-    <Environment Issuer="https://www.linkedin.com/" ConfigurationEndpoint="https://www.linkedin.com/oauth/.well-known/openid-configuration">
+    <Environment Issuer="https://www.linkedin.com/"
+                 ConfigurationEndpoint="https://www.linkedin.com/oauth/.well-known/openid-configuration">
       <!--
         Note: LinkedIn requires sending the "profile" scope to be able to use the userinfo endpoint.
       -->

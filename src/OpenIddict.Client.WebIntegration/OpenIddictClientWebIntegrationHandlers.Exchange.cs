@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -361,6 +362,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Response[Parameters.ExpiresIn] = context.Response["expires"];
                     context.Response["expires"] = null;
+                }
+
+                // Note: Exact Online returns a non-standard "expires_in"
+                // parameter formatted as a string instead of a numeric type.
+                else if (context.Registration.ProviderType is ProviderTypes.ExactOnline &&
+                    long.TryParse((string?) context.Response[Parameters.ExpiresIn],
+                        NumberStyles.Integer, CultureInfo.InvariantCulture, out long value))
+                {
+                    context.Response.ExpiresIn = value;
                 }
 
                 // Note: Tumblr returns a non-standard "id_token: false" node that collides

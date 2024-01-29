@@ -374,6 +374,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ["accounts"] = context.Response["accounts"]
                     },
 
+                    // Exact Online returns a "results" array nested in a "d" node and containing a single element.
+                    ProviderTypes.ExactOnline => new(context.Response["d"]?["results"]?[0]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),
+
                     // Fitbit returns a nested "user" object.
                     ProviderTypes.Fitbit => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
