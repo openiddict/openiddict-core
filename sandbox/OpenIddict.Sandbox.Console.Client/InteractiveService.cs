@@ -39,8 +39,6 @@ public class InteractiveService : BackgroundService
 
             try
             {
-                ClaimsPrincipal principal;
-
                 // Resolve the server configuration and determine the type of flow
                 // to use depending on the supported grants and the user selection.
                 var configuration = await _service.GetServerConfigurationByProviderNameAsync(provider, stoppingToken);
@@ -75,14 +73,30 @@ public class InteractiveService : BackgroundService
                     AnsiConsole.MarkupLine("[cyan]Waiting for the user to approve the authorization demand.[/]");
 
                     // Wait for the user to complete the demand on the other device.
-                    principal = (await _service.AuthenticateWithDeviceAsync(new()
+                    var response = await _service.AuthenticateWithDeviceAsync(new()
                     {
                         CancellationToken = stoppingToken,
                         DeviceCode = result.DeviceCode,
                         Interval = result.Interval,
                         ProviderName = provider,
                         Timeout = result.ExpiresIn < TimeSpan.FromMinutes(5) ? result.ExpiresIn : TimeSpan.FromMinutes(5)
-                    })).Principal;
+                    });
+
+                    AnsiConsole.MarkupLine("[green]Device authentication successful:[/]");
+                    AnsiConsole.Write(CreateClaimTable(response.Principal));
+
+                    // If a refresh token was returned by the authorization server, ask the user
+                    // if the access token should be refreshed using the refresh_token grant.
+                    if (!string.IsNullOrEmpty(response.RefreshToken) && await UseRefreshTokenGrantAsync(stoppingToken))
+                    {
+                        AnsiConsole.MarkupLine("[green]Token refreshing successful:[/]");
+                        AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            RefreshToken = response.RefreshToken
+                        })).Principal));
+                    }
                 }
 
                 else
@@ -99,29 +113,28 @@ public class InteractiveService : BackgroundService
                     AnsiConsole.MarkupLine("[cyan]Waiting for the user to approve the authorization demand.[/]");
 
                     // Wait for the user to complete the authorization process.
-                    principal = (await _service.AuthenticateInteractivelyAsync(new()
+                    var response = await _service.AuthenticateInteractivelyAsync(new()
                     {
                         CancellationToken = stoppingToken,
                         Nonce = result.Nonce
-                    })).Principal;
+                    });
+
+                    AnsiConsole.MarkupLine("[green]Interactive authentication successful:[/]");
+                    AnsiConsole.Write(CreateClaimTable(response.Principal));
+
+                    // If a refresh token was returned by the authorization server, ask the user
+                    // if the access token should be refreshed using the refresh_token grant.
+                    if (!string.IsNullOrEmpty(response.RefreshToken) && await UseRefreshTokenGrantAsync(stoppingToken))
+                    {
+                        AnsiConsole.MarkupLine("[green]Token refreshing successful:[/]");
+                        AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            RefreshToken = response.RefreshToken
+                        })).Principal));
+                    }
                 }
-
-                AnsiConsole.MarkupLine("[green]Authentication successful:[/]");
-
-                var table = new Table()
-                    .AddColumn(new TableColumn("Claim type").Centered())
-                    .AddColumn(new TableColumn("Claim value type").Centered())
-                    .AddColumn(new TableColumn("Claim value").Centered());
-
-                foreach (var claim in principal.Claims)
-                {
-                    table.AddRow(
-                        claim.Type.EscapeMarkup(),
-                        claim.ValueType.EscapeMarkup(),
-                        claim.Value.EscapeMarkup());
-                }
-
-                AnsiConsole.Write(table);
             }
 
             catch (OperationCanceledException)
@@ -140,10 +153,41 @@ public class InteractiveService : BackgroundService
             }
         }
 
+        static Table CreateClaimTable(ClaimsPrincipal principal)
+        {
+            var table = new Table()
+                .LeftAligned()
+                .AddColumn("Claim type")
+                .AddColumn("Claim value type")
+                .AddColumn("Claim value");
+
+            foreach (var claim in principal.Claims)
+            {
+                table.AddRow(
+                    claim.Type.EscapeMarkup(),
+                    claim.ValueType.EscapeMarkup(),
+                    claim.Value.EscapeMarkup());
+            }
+
+            return table;
+        }
+
         static Task<bool> UseDeviceAuthorizationGrantAsync(CancellationToken cancellationToken)
         {
             static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
                 "Would you like to authenticate using the device authorization grant?")
+            {
+                DefaultValue = false,
+                ShowDefaultValue = true
+            });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        static Task<bool> UseRefreshTokenGrantAsync(CancellationToken cancellationToken)
+        {
+            static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
+                "Would you like to refresh the user authentication using the refresh token grant?")
             {
                 DefaultValue = false,
                 ShowDefaultValue = true
