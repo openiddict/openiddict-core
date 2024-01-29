@@ -1150,6 +1150,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
             {
+                // These providers return the user identifier as a custom "user_id" node:
+                ProviderTypes.Amazon or ProviderTypes.HubSpot or ProviderTypes.StackExchange
+                    => (string?) context.UserinfoResponse?["user_id"],
+
                 // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
                 ProviderTypes.ArcGisOnline or ProviderTypes.Trakt
                     => (string?) context.UserinfoResponse?["username"],
@@ -1171,10 +1175,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Fitbit returns the user identifier as a custom "encodedId" node:
                 ProviderTypes.Fitbit => (string?) context.UserinfoResponse?["encodedId"],
-
-                // HubSpot and StackExchange return the user identifier as a custom "user_id" node:
-                ProviderTypes.HubSpot or ProviderTypes.StackExchange
-                    => (string?) context.UserinfoResponse?["user_id"],
 
                 // Mailchimp returns the user identifier as a custom "login/login_id" node:
                 ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["login"]?["login_id"],
