@@ -1078,7 +1078,7 @@ public static partial class OpenIddictServerHandlers
 
             Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-            // Don't validate the client type on endpoint that don't support client authentication.
+            // Don't validate the client type on endpoints that don't support client authentication.
             if (context.EndpointType is OpenIddictServerEndpointType.Authorization or
                                         OpenIddictServerEndpointType.Logout        or
                                         OpenIddictServerEndpointType.Userinfo      or
@@ -1187,7 +1187,7 @@ public static partial class OpenIddictServerHandlers
             Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
             Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID4000(Parameters.ClientSecret));
 
-            // Don't validate the client secret on endpoint that don't support client authentication.
+            // Don't validate the client secret on endpoints that don't support client authentication.
             if (context.EndpointType is OpenIddictServerEndpointType.Authorization or
                                         OpenIddictServerEndpointType.Logout        or
                                         OpenIddictServerEndpointType.Userinfo      or

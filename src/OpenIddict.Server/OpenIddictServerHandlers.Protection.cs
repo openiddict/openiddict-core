@@ -132,7 +132,7 @@ public static partial class OpenIddictServerHandlers
                         parameters.IssuerSigningKeyResolver = (_, token, _, _) => Task.Run(async () =>
                         {
                             // Resolve the client application corresponding to the token issuer and retrieve
-                            // the signing keys from to the JSON Web Key set attached to the client application.
+                            // the signing keys from the JSON Web Key set attached to the client application.
                             //
                             // Important: at this stage, the issuer isn't guaranteed to be valid or legitimate.
                             var application = await _applicationManager.FindByClientIdAsync(token.Issuer);
