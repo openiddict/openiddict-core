@@ -818,11 +818,18 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             }
 
             {{~ for setting in provider.settings ~}}
-            {{~ if setting.default_value && setting.type == 'String' ~}} 
+            {{~ if setting.default_value ~}}
+            {{~ if setting.type == 'String' ~}} 
             if (string.IsNullOrEmpty(settings.{{ setting.property_name }}))
             {
                 settings.{{ setting.property_name }} = ""{{ setting.default_value }}"";
             }
+            {{~ else if setting.type == 'Uri' ~}} 
+            if (settings.{{ setting.property_name }} is null)
+            {
+                settings.{{ setting.property_name }} = new Uri(""{{ setting.default_value }}"", UriKind.RelativeOrAbsolute);
+            }
+            {{~ end ~}}
             {{~ end ~}}
 
             {{~ if setting.collection ~}}
