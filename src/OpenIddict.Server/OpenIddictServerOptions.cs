@@ -298,6 +298,10 @@ public sealed class OpenIddictServerOptions
     /// returned by OpenIddict. Using this option is generally NOT recommended
     /// as it prevents the tokens and codes from being revoked (if needed).
     /// </summary>
+    /// <remarks>
+    /// Note: disabling token storage prevents the device authorization flow
+    /// from being used and automatically turns sliding expiration off.
+    /// </remarks>
     public bool DisableTokenStorage { get; set; }
 
     /// <summary>
