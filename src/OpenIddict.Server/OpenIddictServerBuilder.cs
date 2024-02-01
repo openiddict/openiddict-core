@@ -1546,9 +1546,11 @@ public sealed class OpenIddictServerBuilder
     /// for the tokens and codes returned by the OpenIddict server.
     /// Using this option is generally NOT recommended as it prevents
     /// the tokens and codes from being revoked (if needed).
-    /// Note: disabling token storage requires disabling sliding
-    /// expiration or enabling rolling tokens.
     /// </summary>
+    /// <remarks>
+    /// Note: disabling token storage prevents the device authorization flow
+    /// from being used and automatically turns sliding expiration off.
+    /// </remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder DisableTokenStorage()
         => Configure(options => options.DisableTokenStorage = true);
