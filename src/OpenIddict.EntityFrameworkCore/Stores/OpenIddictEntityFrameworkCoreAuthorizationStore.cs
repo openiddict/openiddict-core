@@ -802,14 +802,27 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         if (!string.IsNullOrEmpty(identifier))
         {
+#if SUPPORTS_DBSET_VALUETASK_FINDASYNC
+            authorization.Application = await Applications.FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken);
+#else
+            // Warning: when targeting older TFMs, FindAsync() is deliberately not used to work around a breaking
+            // change introduced in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
+
             var key = ConvertIdentifierFromString(identifier);
 
-            // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
-            // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
-            authorization.Application = await Applications.AsQueryable()
-                .AsTracking()
-                .FirstOrDefaultAsync(application => application.Id!.Equals(key), cancellationToken) ??
+            authorization.Application = GetTrackedEntity() ?? await QueryAsync() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
+
+            TApplication? GetTrackedEntity() =>
+                (from entry in Context.ChangeTracker.Entries<TApplication>()
+                 where entry.Entity.Id is TKey identifier && identifier.Equals(key)
+                 select entry.Entity).FirstOrDefault();
+
+            Task<TApplication?> QueryAsync() =>
+                (from application in Applications.AsTracking()
+                 where application.Id!.Equals(key)
+                 select application).FirstOrDefaultAsync(cancellationToken);
+#endif
         }
 
         else
