@@ -146,7 +146,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+    public virtual ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
         {
@@ -155,22 +155,38 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
 
         var key = ConvertIdentifierFromString(identifier);
 
-        return await (from scope in Scopes.AsTracking()
-                      where scope.Id!.Equals(key)
-                      select scope).FirstOrDefaultAsync(cancellationToken);
+        return GetTrackedEntity() is TScope scope ? new(scope) : new(QueryAsync());
+
+        TScope? GetTrackedEntity() =>
+            (from entry in Context.ChangeTracker.Entries<TScope>()
+             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
+             select entry.Entity).FirstOrDefault();
+
+        Task<TScope?> QueryAsync() =>
+            (from scope in Scopes.AsTracking()
+             where scope.Id!.Equals(key)
+             select scope).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
+    public virtual ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(name))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
         }
 
-        return await (from scope in Scopes.AsTracking()
-                      where scope.Name == name
-                      select scope).FirstOrDefaultAsync(cancellationToken);
+        return GetTrackedEntity() is TScope scope ? new(scope) : new(QueryAsync());
+
+        TScope? GetTrackedEntity() =>
+            (from entry in Context.ChangeTracker.Entries<TScope>()
+             where string.Equals(entry.Entity.Name, name, StringComparison.Ordinal)
+             select entry.Entity).FirstOrDefault();
+
+        Task<TScope?> QueryAsync() =>
+            (from scope in Scopes.AsTracking()
+             where scope.Name == name
+             select scope).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>

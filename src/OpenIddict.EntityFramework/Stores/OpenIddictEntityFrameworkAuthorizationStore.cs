@@ -336,7 +336,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<TAuthorization?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+    public virtual ValueTask<TAuthorization?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
         {
@@ -345,9 +345,17 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
 
         var key = ConvertIdentifierFromString(identifier);
 
-        return await (from authorization in Authorizations.Include(authorization => authorization.Application)
-                      where authorization.Id!.Equals(key)
-                      select authorization).FirstOrDefaultAsync(cancellationToken);
+        return GetTrackedEntity() is TAuthorization authorization ? new(authorization) : new(QueryAsync());
+
+        TAuthorization? GetTrackedEntity() =>
+            (from entry in Context.ChangeTracker.Entries<TAuthorization>()
+             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
+             select entry.Entity).FirstOrDefault();
+
+        Task<TAuthorization?> QueryAsync() =>
+            (from authorization in Authorizations.Include(authorization => authorization.Application)
+             where authorization.Id!.Equals(key)
+             select authorization).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>

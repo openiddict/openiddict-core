@@ -311,7 +311,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+    public virtual ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
         {
@@ -320,22 +320,38 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
         var key = ConvertIdentifierFromString(identifier);
 
-        return await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
-                      where token.Id!.Equals(key)
-                      select token).FirstOrDefaultAsync(cancellationToken);
+        return GetTrackedEntity() is TToken token ? new(token) : new(QueryAsync());
+
+        TToken? GetTrackedEntity() =>
+            (from entry in Context.ChangeTracker.Entries<TToken>()
+             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
+             select entry.Entity).FirstOrDefault();
+
+        Task<TToken?> QueryAsync() =>
+            (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+             where token.Id!.Equals(key)
+             select token).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken)
+    public virtual ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        return await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
-                      where token.ReferenceId == identifier
-                      select token).FirstOrDefaultAsync(cancellationToken);
+        return GetTrackedEntity() is TToken token ? new(token) : new(QueryAsync());
+
+        TToken? GetTrackedEntity() =>
+            (from entry in Context.ChangeTracker.Entries<TToken>()
+             where string.Equals(entry.Entity.ReferenceId, identifier, StringComparison.Ordinal)
+             select entry.Entity).FirstOrDefault();
+
+        Task<TToken?> QueryAsync() =>
+            (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+             where token.ReferenceId == identifier
+             select token).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
