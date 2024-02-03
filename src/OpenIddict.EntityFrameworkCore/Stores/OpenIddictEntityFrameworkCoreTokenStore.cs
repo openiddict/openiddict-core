@@ -802,14 +802,27 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
         if (!string.IsNullOrEmpty(identifier))
         {
+#if SUPPORTS_DBSET_VALUETASK_FINDASYNC
+            token.Application = await Applications.FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken);
+#else
+            // Warning: when targeting older TFMs, FindAsync() is deliberately not used to work around a breaking
+            // change introduced in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
+
             var key = ConvertIdentifierFromString(identifier);
 
-            // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
-            // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
-            token.Application = await Applications.AsQueryable()
-                .AsTracking()
-                .FirstOrDefaultAsync(application => application.Id!.Equals(key), cancellationToken) ??
+            token.Application = GetTrackedEntity() ?? await QueryAsync() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0250));
+
+            TApplication? GetTrackedEntity() =>
+                (from entry in Context.ChangeTracker.Entries<TApplication>()
+                 where entry.Entity.Id is TKey identifier && identifier.Equals(key)
+                 select entry.Entity).FirstOrDefault();
+
+            Task<TApplication?> QueryAsync() =>
+                (from application in Applications.AsTracking()
+                 where application.Id!.Equals(key)
+                 select application).FirstOrDefaultAsync(cancellationToken);
+#endif
         }
 
         else
@@ -840,14 +853,27 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
         if (!string.IsNullOrEmpty(identifier))
         {
+#if SUPPORTS_DBSET_VALUETASK_FINDASYNC
+            token.Authorization = await Authorizations.FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken);
+#else
+            // Warning: when targeting older TFMs, FindAsync() is deliberately not used to work around a breaking
+            // change introduced in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
+
             var key = ConvertIdentifierFromString(identifier);
 
-            // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
-            // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
-            token.Authorization = await Authorizations.AsQueryable()
-                .AsTracking()
-                .FirstOrDefaultAsync(authorization => authorization.Id!.Equals(key), cancellationToken) ??
+            token.Authorization = GetTrackedEntity() ?? await QueryAsync() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
+
+            TAuthorization? GetTrackedEntity() =>
+                (from entry in Context.ChangeTracker.Entries<TAuthorization>()
+                 where entry.Entity.Id is TKey identifier && identifier.Equals(key)
+                 select entry.Entity).FirstOrDefault();
+
+            Task<TAuthorization?> QueryAsync() =>
+                (from authorization in Authorizations.AsTracking()
+                 where authorization.Id!.Equals(key)
+                 select authorization).FirstOrDefaultAsync(cancellationToken);
+#endif
         }
 
         else
