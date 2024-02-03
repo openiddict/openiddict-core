@@ -210,7 +210,28 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+    public virtual ValueTask<TApplication?> FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        return GetTrackedEntity() is TApplication application ? new(application) : new(QueryAsync());
+
+        TApplication? GetTrackedEntity() =>
+            (from entry in Context.ChangeTracker.Entries<TApplication>()
+             where string.Equals(entry.Entity.ClientId, identifier, StringComparison.Ordinal)
+             select entry.Entity).FirstOrDefault();
+
+        Task<TApplication?> QueryAsync() =>
+            (from application in Applications
+             where application.ClientId == identifier
+             select application).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
         {
@@ -219,22 +240,17 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
         var key = ConvertIdentifierFromString(identifier);
 
-        return await (from application in Applications
-                      where application.Id!.Equals(key)
-                      select application).FirstOrDefaultAsync(cancellationToken);
-    }
+        return GetTrackedEntity() is TApplication application ? new(application) : new(QueryAsync());
 
-    /// <inheritdoc/>
-    public virtual async ValueTask<TApplication?> FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        TApplication? GetTrackedEntity() =>
+            (from entry in Context.ChangeTracker.Entries<TApplication>()
+             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
+             select entry.Entity).FirstOrDefault();
 
-        return await (from application in Applications
-                      where application.ClientId == identifier
-                      select application).FirstOrDefaultAsync(cancellationToken);
+        Task<TApplication?> QueryAsync() =>
+            (from application in Applications
+             where application.Id!.Equals(key)
+             select application).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
