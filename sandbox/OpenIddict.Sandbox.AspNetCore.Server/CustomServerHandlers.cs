@@ -22,9 +22,6 @@ namespace OpenIddict.Sandbox.AspNetCore.Server
             {
             }
 
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireRefreshTokenGenerated>()
@@ -37,7 +34,7 @@ namespace OpenIddict.Sandbox.AspNetCore.Server
                     .Build();
 
 
-            public async ValueTask HandleAsync(OpenIddictServerEvents.ProcessSignInContext context)
+            public ValueTask HandleAsync(OpenIddictServerEvents.ProcessSignInContext context)
             {
                 if (context is null)
                 {
@@ -51,30 +48,25 @@ namespace OpenIddict.Sandbox.AspNetCore.Server
 
                 var principal = context.RefreshTokenPrincipal.Clone(claim =>
                 {
-                    // Never include the public or internal token identifiers to ensure the identifiers
-                    // that are automatically inherited from the parent token are not reused for the new token.
                     if (
-                        // string.Equals(claim.Type, Claims.Private.TokenType, StringComparison.OrdinalIgnoreCase) || // we need this for meta data
-                        string.Equals(claim.Type, Claims.Private.CreationDate, StringComparison.OrdinalIgnoreCase) || // we need this for meta data
-                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) || // we need this for meta data
-                        string.Equals(claim.Type, Claims.Private.ExpirationDate, StringComparison.OrdinalIgnoreCase)  // we need this for meta data
+                        string.Equals(claim.Type, Claims.Private.CreationDate, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.ExpirationDate, StringComparison.OrdinalIgnoreCase)
                         )
                     {
                         return true;
                     }
-                    //we dont need the authorization id, its contained on the meta for the refresh token.
-
                     return false;
                 });
 
                 foreach (Claim claim in principal.Claims)
                 {
-                    claim.SetDestinations(null);
+                    claim.SetDestinations(null);//clean out the destionations,  these are contributing to the bloated token size.
                 }
 
                 context.RefreshTokenPrincipal = principal;
 
-                await Task.FromResult(0);
+                return default;
             }
 
         }
@@ -88,7 +80,7 @@ namespace OpenIddict.Sandbox.AspNetCore.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
                     .AddFilter<RequireJsonWebTokenFormat>()
                     .UseSingletonHandler<RemoveRefreshTokenEncryption>()
-                    .SetOrder(CreateTokenEntry.Descriptor.Order + 999) //I need this right before GenerateIdentityModelToken
+                    .SetOrder(CreateTokenEntry.Descriptor.Order + 999) //THIS must run right before GenerateIdentityModelToken
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -105,12 +97,12 @@ namespace OpenIddict.Sandbox.AspNetCore.Server
 
         public sealed class RehydrateRefreshToken : IOpenIddictServerHandler<ValidateTokenContext>
         {
-
             IOpenIddictAuthorizationManager _authorizationManager { get; }
             public RehydrateRefreshToken(IOpenIddictAuthorizationManager authorizationManager)
             {
                 _authorizationManager = authorizationManager;
             }
+
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -124,8 +116,6 @@ namespace OpenIddict.Sandbox.AspNetCore.Server
                     .SetOrder(ValidateReferenceTokenIdentifier.Descriptor.Order + 999)//this should put it just ahead of:  ValidateIdentityModelToken
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
-
-            
             
             public async ValueTask HandleAsync(ValidateTokenContext context)
             {
@@ -134,7 +124,8 @@ namespace OpenIddict.Sandbox.AspNetCore.Server
                     return;
                 }
 
-                //ease of the validation rules because we dont have issuer, adn we dont have an audience.
+                //ease of the validation rules because we dont have issuer, and we dont have an audience.
+                //we are however accepting it when the token is correctly signed, and the validatetokenasync isnt failing
                 var validation = context.TokenValidationParameters.Clone();
                 validation.ValidateIssuer = false;
                 validation.ValidateAudience = false;
@@ -143,6 +134,11 @@ namespace OpenIddict.Sandbox.AspNetCore.Server
                 if (token==null)
                 {
                     return;
+                }
+
+                if(!token.IsValid)
+                {
+                    throw new InvalidOperationException("Invalid token");
                 }
                 
                 //build the claims back up with metadata.
