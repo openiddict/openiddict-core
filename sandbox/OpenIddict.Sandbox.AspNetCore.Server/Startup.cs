@@ -158,7 +158,6 @@ public class Startup
                 //        .IgnoreResponseTypePermissions()
                 //        .IgnoreScopePermissions();
                // options.UseReferenceRefreshTokens();
-               //options.encr
                
                 options.DisableRollingRefreshTokens();
                 options.SetRefreshTokenLifetime(new TimeSpan(10, 0, 0, 0)); //10 days
