@@ -100,6 +100,10 @@ public class Startup
             // Register the OpenIddict server components.
             .AddServer(options =>
             {
+                options.AddEventHandler(CustomServerHandlers.RehydrateRefreshToken.Descriptor);
+                options.AddEventHandler(CustomServerHandlers.StarveRefreshTokenPrincipal.Descriptor);
+                options.AddEventHandler(CustomServerHandlers.RemoveRefreshTokenEncryption.Descriptor);
+
                 // Enable the authorization, device, introspection,
                 // logout, token, userinfo and verification endpoints.
                 options.SetAuthorizationEndpointUris("connect/authorize")
@@ -153,7 +157,12 @@ public class Startup
                 //        .IgnoreGrantTypePermissions()
                 //        .IgnoreResponseTypePermissions()
                 //        .IgnoreScopePermissions();
-
+               // options.UseReferenceRefreshTokens();
+               //options.encr
+               
+                options.DisableRollingRefreshTokens();
+                options.SetRefreshTokenLifetime(new TimeSpan(10, 0, 0, 0)); //10 days
+                options.SetAccessTokenLifetime(new TimeSpan(2, 0, 0)); //two horus
                 // Note: when issuing access tokens used by third-party APIs
                 // you don't own, you can disable access token encryption:
                 //
