@@ -50,6 +50,8 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenValidated>();
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenPrincipal>();
         builder.Services.TryAddSingleton<RequireInteractiveGrantType>();
+        builder.Services.TryAddSingleton<RequireIntrospectionClientAssertionGenerated>();
+        builder.Services.TryAddSingleton<RequireIntrospectionRequest>();
         builder.Services.TryAddSingleton<RequireLoginStateTokenGenerated>();
         builder.Services.TryAddSingleton<RequireLogoutStateTokenGenerated>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenFormat>();

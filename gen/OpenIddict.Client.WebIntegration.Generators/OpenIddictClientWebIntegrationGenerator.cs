@@ -931,6 +931,10 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     DeviceAuthorizationEndpoint = new Uri($""{{ environment.configuration.device_authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
+                    {{~ if environment.configuration.introspection_endpoint ~}}
+                    IntrospectionEndpoint = new Uri($""{{ environment.configuration.introspection_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    {{~ end ~}}
+
                     {{~ if environment.configuration.token_endpoint ~}}
                     TokenEndpoint = new Uri($""{{ environment.configuration.token_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
@@ -977,6 +981,13 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     DeviceAuthorizationEndpointAuthMethodsSupported =
                     {
                         {{~ for method in environment.configuration.device_authorization_endpoint_auth_methods_supported ~}}
+                        ""{{ method }}"",
+                        {{~ end ~}}
+                    },
+
+                    IntrospectionEndpointAuthMethodsSupported =
+                    {
+                        {{~ for method in environment.configuration.introspection_endpoint_auth_methods_supported ~}}
                         ""{{ method }}"",
                         {{~ end ~}}
                     },
@@ -1038,6 +1049,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                     {
                                         AuthorizationEndpoint = (string?) configuration.Attribute("AuthorizationEndpoint"),
                                         DeviceAuthorizationEndpoint = (string?) configuration.Attribute("DeviceAuthorizationEndpoint"),
+                                        IntrospectionEndpoint = (string?) configuration.Attribute("IntrospectionEndpoint"),
                                         TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
                                         UserinfoEndpoint = (string?) configuration.Attribute("UserinfoEndpoint"),
 
@@ -1085,6 +1097,15 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                             // If no explicit client authentication method was set, assume the provider only supports
                                             // flowing the client credentials as part of the device authorization request payload.
+                                            _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                        },
+
+                                        IntrospectionEndpointAuthMethodsSupported = configuration.Elements("IntrospectionEndpointAuthMethod").ToList() switch
+                                        {
+                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                            // If no explicit client authentication method was set, assume the provider only
+                                            // supports flowing the client credentials as part of the introspection request payload.
                                             _ => [ClientAuthenticationMethods.ClientSecretPost]
                                         },
 

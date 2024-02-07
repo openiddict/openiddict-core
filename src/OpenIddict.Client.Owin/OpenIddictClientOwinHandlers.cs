@@ -1018,12 +1018,12 @@ public static partial class OpenIddictClientOwinHandlers
 
             if (string.IsNullOrEmpty(context.Nonce))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0353));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
             }
 
             if (string.IsNullOrEmpty(context.RequestForgeryProtection))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0344));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0343));
             }
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));

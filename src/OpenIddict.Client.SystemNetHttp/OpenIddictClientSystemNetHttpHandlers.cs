@@ -25,6 +25,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         ..Device.DefaultHandlers,
         ..Discovery.DefaultHandlers,
         ..Exchange.DefaultHandlers,
+        ..Introspection.DefaultHandlers,
         ..Userinfo.DefaultHandlers
     ];
 

@@ -453,7 +453,7 @@ public class OpenIddictValidationService
                 if (context.IsRejected)
                 {
                     throw new ProtocolException(
-                        SR.FormatID0320(context.Error, context.ErrorDescription, context.ErrorUri),
+                        SR.FormatID0158(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
@@ -475,7 +475,7 @@ public class OpenIddictValidationService
                 if (context.IsRejected)
                 {
                     throw new ProtocolException(
-                        SR.FormatID0321(context.Error, context.ErrorDescription, context.ErrorUri),
+                        SR.FormatID0159(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
@@ -499,7 +499,7 @@ public class OpenIddictValidationService
                 if (context.IsRejected)
                 {
                     throw new ProtocolException(
-                        SR.FormatID0322(context.Error, context.ErrorDescription, context.ErrorUri),
+                        SR.FormatID0160(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
@@ -526,7 +526,7 @@ public class OpenIddictValidationService
                 if (context.IsRejected)
                 {
                     throw new ProtocolException(
-                        SR.FormatID0323(context.Error, context.ErrorDescription, context.ErrorUri),
+                        SR.FormatID0161(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 

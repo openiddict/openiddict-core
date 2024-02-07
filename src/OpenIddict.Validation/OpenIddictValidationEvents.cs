@@ -394,7 +394,7 @@ public static partial class OpenIddictValidationEvents
     }
 
     /// <summary>
-    /// Represents an event called when processing a challenge response.
+    /// Represents an event called when processing a challenge operation.
     /// </summary>
     public sealed class ProcessChallengeContext : BaseValidatingContext
     {

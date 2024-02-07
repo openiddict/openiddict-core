@@ -69,6 +69,7 @@ public class Worker : IHostedService
                     {
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.Device,
+                        Permissions.Endpoints.Introspection,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.DeviceCode,
