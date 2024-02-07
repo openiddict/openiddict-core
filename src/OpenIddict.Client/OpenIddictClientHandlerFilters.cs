@@ -257,6 +257,40 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no introspection client assertion is generated.
+    /// </summary>
+    public sealed class RequireIntrospectionClientAssertionGenerated : IOpenIddictClientHandlerFilter<ProcessIntrospectionContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessIntrospectionContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateClientAssertion);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no introspection request is expected to be sent.
+    /// </summary>
+    public sealed class RequireIntrospectionRequest : IOpenIddictClientHandlerFilter<ProcessIntrospectionContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessIntrospectionContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.SendIntrospectionRequest);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the selected token format is not JSON Web Token.
     /// </summary>
     public sealed class RequireJsonWebTokenFormat : IOpenIddictClientHandlerFilter<GenerateTokenContext>
@@ -548,10 +582,24 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the WS-Federation claim mapping feature was disabled.
     /// </summary>
-    public sealed class RequireWebServicesFederationClaimMappingEnabled : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireWebServicesFederationClaimMappingEnabled :
+        IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>,
+        IOpenIddictClientHandlerFilter<BaseContext>
     {
         /// <inheritdoc/>
+        [Obsolete("This method is obsolete and will be removed in a future version.")]
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.Options.DisableWebServicesFederationClaimMapping);
+        }
+
+        /// <inheritdoc/>
+        ValueTask<bool> IOpenIddictClientHandlerFilter<BaseContext>.IsActiveAsync(BaseContext context)
         {
             if (context is null)
             {

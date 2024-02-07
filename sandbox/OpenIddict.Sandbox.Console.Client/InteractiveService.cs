@@ -85,11 +85,24 @@ public class InteractiveService : BackgroundService
                     AnsiConsole.MarkupLine("[green]Device authentication successful:[/]");
                     AnsiConsole.Write(CreateClaimTable(response.Principal));
 
+                    // If introspection is supported by the server, ask the user if the access token should be introspected.
+                    if (configuration.IntrospectionEndpoint is not null && await IntrospectAccessTokenAsync(stoppingToken))
+                    {
+                        AnsiConsole.MarkupLine("[steelblue]Claims extracted from the token introspection response:[/]");
+                        AnsiConsole.Write(CreateClaimTable((await _service.IntrospectTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            Token = response.AccessToken,
+                            TokenTypeHint = TokenTypeHints.AccessToken
+                        })).Principal));
+                    }
+
                     // If a refresh token was returned by the authorization server, ask the user
                     // if the access token should be refreshed using the refresh_token grant.
                     if (!string.IsNullOrEmpty(response.RefreshToken) && await UseRefreshTokenGrantAsync(stoppingToken))
                     {
-                        AnsiConsole.MarkupLine("[green]Token refreshing successful:[/]");
+                        AnsiConsole.MarkupLine("[steelblue]Claims extracted from the refreshed identity:[/]");
                         AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
                         {
                             CancellationToken = stoppingToken,
@@ -122,11 +135,27 @@ public class InteractiveService : BackgroundService
                     AnsiConsole.MarkupLine("[green]Interactive authentication successful:[/]");
                     AnsiConsole.Write(CreateClaimTable(response.Principal));
 
+                    // If an access token was returned by the authorization server and introspection is
+                    // supported by the server, ask the user if the access token should be introspected.
+                    if (!string.IsNullOrEmpty(response.BackchannelAccessToken) &&
+                        configuration.IntrospectionEndpoint is not null &&
+                        await IntrospectAccessTokenAsync(stoppingToken))
+                    {
+                        AnsiConsole.MarkupLine("[steelblue]Claims extracted from the token introspection response:[/]");
+                        AnsiConsole.Write(CreateClaimTable((await _service.IntrospectTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            Token = response.BackchannelAccessToken,
+                            TokenTypeHint = TokenTypeHints.AccessToken
+                        })).Principal));
+                    }
+
                     // If a refresh token was returned by the authorization server, ask the user
                     // if the access token should be refreshed using the refresh_token grant.
                     if (!string.IsNullOrEmpty(response.RefreshToken) && await UseRefreshTokenGrantAsync(stoppingToken))
                     {
-                        AnsiConsole.MarkupLine("[green]Token refreshing successful:[/]");
+                        AnsiConsole.MarkupLine("[steelblue]Claims extracted from the refreshed identity:[/]");
                         AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
                         {
                             CancellationToken = stoppingToken,
@@ -172,11 +201,25 @@ public class InteractiveService : BackgroundService
             return table;
         }
 
+        static Task<bool> IntrospectAccessTokenAsync(CancellationToken cancellationToken)
+        {
+            static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
+                "Would you like to introspect the access token?")
+            {
+                Comparer = StringComparer.CurrentCultureIgnoreCase,
+                DefaultValue = false,
+                ShowDefaultValue = true
+            });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
         static Task<bool> UseDeviceAuthorizationGrantAsync(CancellationToken cancellationToken)
         {
             static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
                 "Would you like to authenticate using the device authorization grant?")
             {
+                Comparer = StringComparer.CurrentCultureIgnoreCase,
                 DefaultValue = false,
                 ShowDefaultValue = true
             });
@@ -189,6 +232,7 @@ public class InteractiveService : BackgroundService
             static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
                 "Would you like to refresh the user authentication using the refresh token grant?")
             {
+                Comparer = StringComparer.CurrentCultureIgnoreCase,
                 DefaultValue = false,
                 ShowDefaultValue = true
             });

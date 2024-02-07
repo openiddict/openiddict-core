@@ -550,6 +550,87 @@ public static class OpenIddictClientModels
     }
 
     /// <summary>
+    /// Represents an introspection request.
+    /// </summary>
+    public sealed record class IntrospectionRequest
+    {
+        /// <summary>
+        /// Gets or sets the parameters that will be added to the introspection request.
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? AdditionalIntrospectionRequestParameters { get; init; }
+
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations use the same provider name.
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the token that will be sent to the authorization server.
+        /// </summary>
+        public required string Token { get; init; }
+
+        /// <summary>
+        /// Gets the token type hint that will be sent to the authorization server.
+        /// </summary>
+        public string? TokenTypeHint { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+    }
+
+    /// <summary>
+    /// Represents an introspection result.
+    /// </summary>
+    public sealed record class IntrospectionResult
+    {
+        /// <summary>
+        /// Gets or sets a merged principal containing all the claims
+        /// extracted from the identity token and userinfo token principals.
+        /// </summary>
+        /// <remarks>
+        /// Note: in most cases, an empty principal will be returned, unless the authorization server
+        /// supports returning a non-standard identity token for the client credentials grant.
+        /// </remarks>
+        public required ClaimsPrincipal Principal { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that were present in the context.
+        /// </summary>
+        public required Dictionary<string, string?> Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the introspection response.
+        /// </summary>
+        public required OpenIddictResponse IntrospectionResponse { get; init; }
+    }
+
+    /// <summary>
     /// Represents a resource owner password credentials authentication request.
     /// </summary>
     public sealed record class PasswordAuthenticationRequest

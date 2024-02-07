@@ -544,7 +544,7 @@ public static partial class OpenIddictValidationHandlers
                 (context.IntrospectionResponse, context.AccessTokenPrincipal) =
                     await _service.SendIntrospectionRequestAsync(
                         context.Configuration, context.IntrospectionRequest,
-                        context.IntrospectionEndpoint);
+                        context.IntrospectionEndpoint, context.CancellationToken);
             }
 
             catch (ProtocolException exception)

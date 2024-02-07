@@ -5,17 +5,18 @@
  */
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace OpenIddict.Validation;
+namespace OpenIddict.Client;
 
-public static partial class OpenIddictValidationHandlers
+public static partial class OpenIddictClientHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
             /*
              * Introspection response handling:
              */
@@ -30,16 +31,16 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the introspection response.
         /// </summary>
-        public sealed class ValidateWellKnownParameters : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<ValidateWellKnownParameters>()
                     .SetOrder(int.MinValue + 100_000)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
@@ -119,16 +120,16 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the introspection response.
         /// </summary>
-        public sealed class HandleErrorResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class HandleErrorResponse : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<HandleErrorResponse>()
                     .SetOrder(ValidateWellKnownParameters.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
@@ -165,16 +166,16 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the active: false marker from the response.
         /// </summary>
-        public sealed class HandleInactiveResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class HandleInactiveResponse : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<HandleInactiveResponse>()
                     .SetOrder(HandleErrorResponse.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
@@ -218,16 +219,16 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the issuer from the introspection response.
         /// </summary>
-        public sealed class ValidateIssuer : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class ValidateIssuer : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<ValidateIssuer>()
                     .SetOrder(ValidateWellKnownParameters.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
@@ -272,16 +273,16 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting and validating the token usage from the introspection response.
         /// </summary>
-        public sealed class ValidateTokenUsage : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class ValidateTokenUsage : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<ValidateTokenUsage>()
                     .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
@@ -325,16 +326,16 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the claims from the introspection response.
         /// </summary>
-        public sealed class PopulateClaims : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class PopulateClaims : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<PopulateClaims>()
                     .SetOrder(ValidateTokenUsage.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
@@ -345,16 +346,14 @@ public static partial class OpenIddictValidationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
                 // Create a new claims-based identity using the same authentication type
                 // and the name/role claims as the one used by IdentityModel for JWT tokens.
                 var identity = new ClaimsIdentity(
-                    context.Options.TokenValidationParameters.AuthenticationType,
-                    context.Options.TokenValidationParameters.NameClaimType,
-                    context.Options.TokenValidationParameters.RoleClaimType);
-
-                // Resolve the issuer that will be attached to the claims created by this handler.
-                var issuer = context.Configuration.Issuer?.AbsoluteUri ??
-                             context.BaseUri?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
+                    context.Registration.TokenValidationParameters.AuthenticationType,
+                    context.Registration.TokenValidationParameters.NameClaimType,
+                    context.Registration.TokenValidationParameters.RoleClaimType);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -389,11 +388,11 @@ public static partial class OpenIddictValidationHandlers
                         // Top-level claims represented as arrays are split and mapped to multiple CLR claims
                         // to match the logic implemented by IdentityModel for JWT token deserialization.
                         case { ValueKind: JsonValueKind.Array } value:
-                            identity.AddClaims(parameter.Key, value, issuer);
+                            identity.AddClaims(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
                             break;
 
                         case { ValueKind: _ } value:
-                            identity.AddClaim(parameter.Key, value, issuer);
+                            identity.AddClaim(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
                             break;
                     }
                 }

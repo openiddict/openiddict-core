@@ -938,6 +938,87 @@ public class OpenIddictClientService
     }
 
     /// <summary>
+    /// Introspects the specified token.
+    /// </summary>
+    /// <param name="request">The introspection request.</param>
+    /// <returns>The introspection result.</returns>
+    public async ValueTask<IntrospectionResult> IntrospectTokenAsync(IntrospectionRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessIntrospectionContext(transaction)
+            {
+                CancellationToken = request.CancellationToken,
+                IntrospectionRequest = request.AdditionalIntrospectionRequestParameters
+                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                Issuer = request.Issuer,
+                ProviderName = request.ProviderName,
+                RegistrationId = request.RegistrationId,
+                Token = request.Token,
+                TokenTypeHint = request.TokenTypeHint
+            };
+
+            if (request.Properties is { Count: > 0 })
+            {
+                foreach (var property in request.Properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0428(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.IntrospectionResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            return new()
+            {
+                IntrospectionResponse = context.IntrospectionResponse,
+                Principal = context.Principal!,
+                Properties = context.Properties
+            };
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
     /// Retrieves the OpenID Connect server configuration from the specified uri.
     /// </summary>
     /// <param name="registration">The client registration.</param>
@@ -1429,6 +1510,177 @@ public class OpenIddictClientService
     }
 
     /// <summary>
+    /// Sends the introspection request and retrieves the corresponding response.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="configuration">The server configuration.</param>
+    /// <param name="request">The token request.</param>
+    /// <param name="uri">The uri of the remote token endpoint.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and the principal extracted from the introspection response.</returns>
+    internal async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> SendIntrospectionRequestAsync(
+        OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
+        OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
+    {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (uri is null)
+        {
+            throw new ArgumentNullException(nameof(uri));
+        }
+
+        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            request = await PrepareIntrospectionRequestAsync();
+            request = await ApplyIntrospectionRequestAsync();
+
+            var response = await ExtractIntrospectionResponseAsync();
+
+            return await HandleIntrospectionResponseAsync();
+
+            async ValueTask<OpenIddictRequest> PrepareIntrospectionRequestAsync()
+            {
+                var context = new PrepareIntrospectionRequestContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0158(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Request;
+            }
+
+            async ValueTask<OpenIddictRequest> ApplyIntrospectionRequestAsync()
+            {
+                var context = new ApplyIntrospectionRequestContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0159(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+
+                return context.Request;
+            }
+
+            async ValueTask<OpenIddictResponse> ExtractIntrospectionResponseAsync()
+            {
+                var context = new ExtractIntrospectionResponseContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0160(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+
+                return context.Response;
+            }
+
+            async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> HandleIntrospectionResponseAsync()
+            {
+                var context = new HandleIntrospectionResponseContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request,
+                    Response = response
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0161(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                return (context.Response, context.Principal);
+            }
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
     /// Sends the token request and retrieves the corresponding response.
     /// </summary>
     /// <param name="registration">The client registration.</param>
@@ -1439,7 +1691,7 @@ public class OpenIddictClientService
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri? uri = null, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
@@ -1493,9 +1745,9 @@ public class OpenIddictClientService
                 var context = new PrepareTokenRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
-                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
+                    RemoteUri = uri,
                     Request = request
                 };
 
@@ -1516,9 +1768,9 @@ public class OpenIddictClientService
                 var context = new ApplyTokenRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
-                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
+                    RemoteUri = uri,
                     Request = request
                 };
 
@@ -1541,9 +1793,9 @@ public class OpenIddictClientService
                 var context = new ExtractTokenResponseContext(transaction)
                 {
                     CancellationToken = cancellationToken,
-                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
+                    RemoteUri = uri,
                     Request = request
                 };
 
@@ -1568,9 +1820,9 @@ public class OpenIddictClientService
                 var context = new HandleTokenResponseContext(transaction)
                 {
                     CancellationToken = cancellationToken,
-                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
+                    RemoteUri = uri,
                     Request = request,
                     Response = response
                 };
@@ -1662,8 +1914,8 @@ public class OpenIddictClientService
                 var context = new PrepareUserinfoRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
-                    RemoteUri = uri,
                     Configuration = configuration,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -1685,8 +1937,8 @@ public class OpenIddictClientService
                 var context = new ApplyUserinfoRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
-                    RemoteUri = uri,
                     Configuration = configuration,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -1710,8 +1962,8 @@ public class OpenIddictClientService
                 var context = new ExtractUserinfoResponseContext(transaction)
                 {
                     CancellationToken = cancellationToken,
-                    RemoteUri = uri,
                     Configuration = configuration,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -1737,9 +1989,9 @@ public class OpenIddictClientService
                 var context = new HandleUserinfoResponseContext(transaction)
                 {
                     CancellationToken = cancellationToken,
-                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
+                    RemoteUri = uri,
                     Request = request,
                     Response = response,
                     UserinfoToken = token

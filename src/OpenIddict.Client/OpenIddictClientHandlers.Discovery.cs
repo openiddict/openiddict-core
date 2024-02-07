@@ -25,6 +25,7 @@ public static partial class OpenIddictClientHandlers
             ExtractAuthorizationEndpoint.Descriptor,
             ExtractCryptographyEndpoint.Descriptor,
             ExtractDeviceAuthorizationEndpoint.Descriptor,
+            ExtractIntrospectionEndpoint.Descriptor,
             ExtractLogoutEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
             ExtractUserinfoEndpoint.Descriptor,
@@ -35,6 +36,7 @@ public static partial class OpenIddictClientHandlers
             ExtractScopes.Descriptor,
             ExtractIssuerParameterRequirement.Descriptor,
             ExtractDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor,
+            ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor,
             ExtractTokenEndpointClientAuthenticationMethods.Descriptor,
 
             /*
@@ -395,6 +397,49 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for extracting the introspection endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractIntrospectionEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractIntrospectionEndpoint>()
+                    .SetOrder(ExtractDeviceAuthorizationEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var endpoint = (string?) context.Response[Metadata.IntrospectionEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
+                {
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2100(Metadata.IntrospectionEndpoint),
+                            uri: SR.FormatID8000(SR.ID2100));
+
+                        return default;
+                    }
+
+                    context.Configuration.IntrospectionEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the logout endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractLogoutEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -405,7 +450,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractLogoutEndpoint>()
-                    .SetOrder(ExtractDeviceAuthorizationEndpoint.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractIntrospectionEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -812,6 +857,49 @@ public static partial class OpenIddictClientHandlers
 
         /// <summary>
         /// Contains the logic responsible for extracting the authentication methods
+        /// supported by the introspection endpoint from the discovery document.
+        /// </summary>
+        public sealed class ExtractIntrospectionEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractIntrospectionEndpointClientAuthenticationMethods>()
+                    .SetOrder(ExtractDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Resolve the client authentication methods supported by the introspection endpoint, if available.
+                var methods = context.Response[Metadata.IntrospectionEndpointAuthMethodsSupported]?.GetUnnamedParameters();
+                if (methods is { Count: > 0 })
+                {
+                    for (var index = 0; index < methods.Count; index++)
+                    {
+                        // Note: custom values are allowed in this case.
+                        var method = (string?) methods[index];
+                        if (!string.IsNullOrEmpty(method))
+                        {
+                            context.Configuration.IntrospectionEndpointAuthMethodsSupported.Add(method);
+                        }
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the authentication methods
         /// supported by the token endpoint from the discovery document.
         /// </summary>
         public sealed class ExtractTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -822,7 +910,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractTokenEndpointClientAuthenticationMethods>()
-                    .SetOrder(ExtractDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
