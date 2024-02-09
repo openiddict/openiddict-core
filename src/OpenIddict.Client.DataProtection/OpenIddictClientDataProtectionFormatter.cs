@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -31,6 +32,8 @@ public sealed class OpenIddictClientDataProtectionFormatter : IOpenIddictClientD
         // can be reused, well-known properties are manually mapped to their claims equivalents.
 
         return principal
+            .SetClaim(Claims.Private.StateTokenLifetime, GetIntegerProperty(properties, Properties.StateTokenLifetime))
+
             .SetClaims(Claims.Private.Audience,  GetJsonProperty(properties, Properties.Audiences))
             .SetClaims(Claims.Private.Presenter, GetJsonProperty(properties, Properties.Presenters))
             .SetClaims(Claims.Private.Resource,  GetJsonProperty(properties, Properties.Resources))
@@ -38,13 +41,12 @@ public sealed class OpenIddictClientDataProtectionFormatter : IOpenIddictClientD
 
             .SetClaim(Claims.Private.HostProperties, GetJsonProperty(properties, Properties.HostProperties))
 
-            .SetClaim(Claims.Private.CodeVerifier,       GetProperty(properties, Properties.CodeVerifier))
-            .SetClaim(Claims.Private.CreationDate,       GetProperty(properties, Properties.Issued))
-            .SetClaim(Claims.Private.ExpirationDate,     GetProperty(properties, Properties.Expires))
-            .SetClaim(Claims.Private.Nonce,              GetProperty(properties, Properties.Nonce))
-            .SetClaim(Claims.Private.RedirectUri,        GetProperty(properties, Properties.OriginalRedirectUri))
-            .SetClaim(Claims.Private.StateTokenLifetime, GetProperty(properties, Properties.StateTokenLifetime))
-            .SetClaim(Claims.Private.TokenId,            GetProperty(properties, Properties.InternalTokenId));
+            .SetClaim(Claims.Private.CodeVerifier,   GetStringProperty(properties, Properties.CodeVerifier))
+            .SetClaim(Claims.Private.CreationDate,   GetStringProperty(properties, Properties.Issued))
+            .SetClaim(Claims.Private.ExpirationDate, GetStringProperty(properties, Properties.Expires))
+            .SetClaim(Claims.Private.Nonce,          GetStringProperty(properties, Properties.Nonce))
+            .SetClaim(Claims.Private.RedirectUri,    GetStringProperty(properties, Properties.OriginalRedirectUri))
+            .SetClaim(Claims.Private.TokenId,        GetStringProperty(properties, Properties.InternalTokenId));
 
         static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
         {
@@ -159,8 +161,9 @@ public sealed class OpenIddictClientDataProtectionFormatter : IOpenIddictClientD
             return value;
         }
 
-        static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
-            => properties.TryGetValue(name, out var value) ? value : null;
+        static long? GetIntegerProperty(IReadOnlyDictionary<string, string> properties, string name)
+            => properties.TryGetValue(name, out var value) && long.TryParse(value,
+            NumberStyles.Integer, CultureInfo.InvariantCulture, out long result) ? result : null;
 
         static JsonElement GetJsonProperty(IReadOnlyDictionary<string, string> properties, string name)
         {
@@ -172,6 +175,9 @@ public sealed class OpenIddictClientDataProtectionFormatter : IOpenIddictClientD
 
             return default;
         }
+
+        static string? GetStringProperty(IReadOnlyDictionary<string, string> properties, string name)
+            => properties.TryGetValue(name, out var value) ? value : null;
     }
 
     public void WriteToken(BinaryWriter writer, ClaimsPrincipal principal)

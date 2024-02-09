@@ -35,21 +35,10 @@ public sealed class OpenIddictValidationDataProtectionFormatter : IOpenIddictVal
 
             .SetClaim(Claims.Private.HostProperties, GetJsonProperty(properties, Properties.HostProperties))
 
-            .SetClaim(Claims.Private.AccessTokenLifetime,       GetProperty(properties, Properties.AccessTokenLifetime))
-            .SetClaim(Claims.Private.AuthorizationCodeLifetime, GetProperty(properties, Properties.AuthorizationCodeLifetime))
-            .SetClaim(Claims.Private.AuthorizationId,           GetProperty(properties, Properties.InternalAuthorizationId))
-            .SetClaim(Claims.Private.CodeChallenge,             GetProperty(properties, Properties.CodeChallenge))
-            .SetClaim(Claims.Private.CodeChallengeMethod,       GetProperty(properties, Properties.CodeChallengeMethod))
-            .SetClaim(Claims.Private.CreationDate,              GetProperty(properties, Properties.Issued))
-            .SetClaim(Claims.Private.DeviceCodeId,              GetProperty(properties, Properties.DeviceCodeId))
-            .SetClaim(Claims.Private.DeviceCodeLifetime,        GetProperty(properties, Properties.DeviceCodeLifetime))
-            .SetClaim(Claims.Private.IdentityTokenLifetime,     GetProperty(properties, Properties.IdentityTokenLifetime))
-            .SetClaim(Claims.Private.ExpirationDate,            GetProperty(properties, Properties.Expires))
-            .SetClaim(Claims.Private.Nonce,                     GetProperty(properties, Properties.Nonce))
-            .SetClaim(Claims.Private.RedirectUri,               GetProperty(properties, Properties.OriginalRedirectUri))
-            .SetClaim(Claims.Private.RefreshTokenLifetime,      GetProperty(properties, Properties.RefreshTokenLifetime))
-            .SetClaim(Claims.Private.TokenId,                   GetProperty(properties, Properties.InternalTokenId))
-            .SetClaim(Claims.Private.UserCodeLifetime,          GetProperty(properties, Properties.UserCodeLifetime));
+            .SetClaim(Claims.Private.AuthorizationId, GetStringProperty(properties, Properties.InternalAuthorizationId))
+            .SetClaim(Claims.Private.CreationDate,    GetStringProperty(properties, Properties.Issued))
+            .SetClaim(Claims.Private.ExpirationDate,  GetStringProperty(properties, Properties.Expires))
+            .SetClaim(Claims.Private.TokenId,         GetStringProperty(properties, Properties.InternalTokenId));
 
         static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
         {
@@ -164,9 +153,6 @@ public sealed class OpenIddictValidationDataProtectionFormatter : IOpenIddictVal
             return value;
         }
 
-        static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
-            => properties.TryGetValue(name, out var value) ? value : null;
-
         static JsonElement GetJsonProperty(IReadOnlyDictionary<string, string> properties, string name)
         {
             if (properties.TryGetValue(name, out var value))
@@ -177,5 +163,8 @@ public sealed class OpenIddictValidationDataProtectionFormatter : IOpenIddictVal
 
             return default;
         }
+
+        static string? GetStringProperty(IReadOnlyDictionary<string, string> properties, string name)
+            => properties.TryGetValue(name, out var value) ? value : null;
     }
 }
