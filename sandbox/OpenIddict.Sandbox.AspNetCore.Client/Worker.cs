@@ -11,10 +11,26 @@ public class Worker : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await using var scope = _serviceProvider.CreateAsyncScope();
+        var scope = _serviceProvider.CreateScope();
 
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await context.Database.EnsureCreatedAsync(cancellationToken);
+        try
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await context.Database.EnsureCreatedAsync(cancellationToken);
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

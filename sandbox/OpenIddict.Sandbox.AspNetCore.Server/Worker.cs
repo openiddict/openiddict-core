@@ -16,13 +16,29 @@ public class Worker : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await using var scope = _serviceProvider.CreateAsyncScope();
+        var scope = _serviceProvider.CreateScope();
 
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await context.Database.EnsureCreatedAsync(cancellationToken);
+        try
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await context.Database.EnsureCreatedAsync(cancellationToken);
 
-        await RegisterApplicationsAsync(scope.ServiceProvider);
-        await RegisterScopesAsync(scope.ServiceProvider);
+            await RegisterApplicationsAsync(scope.ServiceProvider);
+            await RegisterScopesAsync(scope.ServiceProvider);
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
 
         static async Task RegisterApplicationsAsync(IServiceProvider provider)
         {
@@ -76,6 +92,7 @@ public class Worker : IHostedService
                 {
                     ApplicationType = ApplicationTypes.Web,
                     ClientId = "mvc",
+                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                     ClientType = ClientTypes.Confidential,
                     ConsentType = ConsentTypes.Explicit,
                     DisplayName = "MVC client application",
@@ -83,12 +100,13 @@ public class Worker : IHostedService
                     {
                         [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente MVC"
                     },
+#if SUPPORTS_PEM_ENCODED_KEY_IMPORT
                     JsonWebKeySet = new JsonWebKeySet
                     {
                         Keys =
                         {
-                            // Instead of sending a client secret, this application authenticates by
-                            // generating client assertions that are signed using an ECDSA signing key.
+                            // On supported platforms, this application authenticates by generating JWT client
+                            // assertions that are signed using a signing key instead of using a client secret.
                             //
                             // Note: while the client needs access to the private key, the server only needs
                             // to know the public key to be able to validate the client assertions it receives.
@@ -100,6 +118,7 @@ public class Worker : IHostedService
                                 """))
                         }
                     },
+#endif
                     RedirectUris =
                     {
                         new Uri("https://localhost:44381/callback/login/local")
@@ -261,6 +280,7 @@ public class Worker : IHostedService
                 });
             }
 
+#if SUPPORTS_PEM_ENCODED_KEY_IMPORT
             static ECDsaSecurityKey GetECDsaSigningKey(ReadOnlySpan<char> key)
             {
                 var algorithm = ECDsa.Create();
@@ -268,6 +288,7 @@ public class Worker : IHostedService
 
                 return new ECDsaSecurityKey(algorithm);
             }
+#endif
         }
 
         static async Task RegisterScopesAsync(IServiceProvider provider)

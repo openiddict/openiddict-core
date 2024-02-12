@@ -191,12 +191,19 @@ public class AuthenticationController : Controller
             OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken or
             OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken));
 
+#if SUPPORTS_REDIRECTION_ON_SIGN_IN
         // Ask the default sign-in handler to return a new cookie and redirect the
         // user agent to the return URL stored in the authentication properties.
         //
         // For scenarios where the default sign-in handler configured in the ASP.NET Core
         // authentication options shouldn't be used, a specific scheme can be specified here.
         return SignIn(new ClaimsPrincipal(identity), properties);
+#else
+        // Note: "return SignIn(...)" cannot be directly used as-is on ASP.NET Core <7.0, as the cookies handler
+        // doesn't allow redirecting from an endpoint that doesn't match the path set in the cookie options.
+        await HttpContext.SignInAsync(new ClaimsPrincipal(identity), properties);
+        return Redirect(properties.RedirectUri ?? "/");
+#endif
     }
 
     // Note: this controller uses the same callback action for all providers

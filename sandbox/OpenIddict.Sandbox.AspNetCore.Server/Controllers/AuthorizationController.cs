@@ -96,7 +96,7 @@ public class AuthorizationController : Controller
                 Request.Form.Where(parameter => parameter.Key != Parameters.Prompt).ToList() :
                 Request.Query.Where(parameter => parameter.Key != Parameters.Prompt).ToList();
 
-            parameters.Add(KeyValuePair.Create(Parameters.Prompt, new StringValues(prompt)));
+            parameters.Add(new(Parameters.Prompt, new StringValues(prompt)));
 
             // For applications that want to allow the client to select the external authentication provider
             // that will be used to authenticate the user, the identity_provider parameter can be used for that.

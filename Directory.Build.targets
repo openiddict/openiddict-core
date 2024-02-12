@@ -70,6 +70,8 @@
 
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHORIZATION_MIDDLEWARE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ENDPOINT_ROUTING</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HOST_APPLICATION_LIFETIME</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HOST_ENVIRONMENT</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION</DefineConstants>
@@ -109,6 +111,7 @@
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '7.0'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_HANDLER_SELECTION_FALLBACK</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_BULK_DBSET_OPERATIONS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_REDIRECTION_ON_SIGN_IN</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
