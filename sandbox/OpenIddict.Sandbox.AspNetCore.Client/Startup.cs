@@ -111,8 +111,9 @@ public class Startup
                     RedirectUri = new Uri("callback/login/local", UriKind.Relative),
                     PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative),
 
-                    // Instead of sending a client secret, this application authenticates by
-                    // generating client assertions that are signed using a private signing key.
+#if SUPPORTS_PEM_ENCODED_KEY_IMPORT
+                    // On supported platforms, this application authenticates by generating JWT client
+                    // assertions that are signed using a signing key instead of using a client secret.
                     //
                     // As such, no client secret is set, but an ECDSA key is registered and used by
                     // the OpenIddict client to automatically generate client assertions when needed.
@@ -129,6 +130,9 @@ public class Startup
                             -----END EC PRIVATE KEY-----
                             """), SecurityAlgorithms.EcdsaSha256, SecurityAlgorithms.Sha256)
                     }
+#else
+                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
+#endif
                 });
 
                 // Register the Web providers integrations.
@@ -160,6 +164,7 @@ public class Startup
                                   .SetDuration("permanent");
                        });
 
+#if SUPPORTS_PEM_ENCODED_KEY_IMPORT
                 static ECDsaSecurityKey GetECDsaSigningKey(ReadOnlySpan<char> key)
                 {
                     var algorithm = ECDsa.Create();
@@ -167,11 +172,12 @@ public class Startup
 
                     return new ECDsaSecurityKey(algorithm);
                 }
+#endif
             });
 
         services.AddHttpClient();
 
-        services.AddControllersWithViews();
+        services.AddMvc();
 
         // Register the worker responsible for creating the database used to store tokens.
         // Note: in a real world application, this step should be part of a setup script.
@@ -186,15 +192,23 @@ public class Startup
 
         app.UseStatusCodePagesWithReExecute("/error");
 
+#if SUPPORTS_ENDPOINT_ROUTING
         app.UseRouting();
-
+#endif
         app.UseAuthentication();
-        app.UseAuthorization();
 
+#if SUPPORTS_AUTHORIZATION_MIDDLEWARE
+        app.UseAuthorization();
+#endif
+
+#if SUPPORTS_ENDPOINT_ROUTING
         app.UseEndpoints(options =>
         {
             options.MapControllers();
             options.MapDefaultControllerRoute();
         });
+#else
+        app.UseMvcWithDefaultRoute();
+#endif
     }
 }

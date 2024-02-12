@@ -6,7 +6,7 @@
 @model IndexViewModel
 
 <div class="jumbotron">
-    @if (User?.Identity is { IsAuthenticated: true })
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <h1>Welcome, @User.Identity.Name</h1>
 

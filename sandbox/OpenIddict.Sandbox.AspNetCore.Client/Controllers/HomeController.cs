@@ -49,7 +49,7 @@ public class HomeController : Controller
 
         return View("Index", new IndexViewModel
         {
-            Message = await response.Content.ReadAsStringAsync(cancellationToken),
+            Message = await response.Content.ReadAsStringAsync(),
             Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
                         where !string.IsNullOrEmpty(registration.ProviderName)
                         where !string.IsNullOrEmpty(registration.ProviderDisplayName)

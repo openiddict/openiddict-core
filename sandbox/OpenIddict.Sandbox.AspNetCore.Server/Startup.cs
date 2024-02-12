@@ -11,7 +11,7 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddControllersWithViews();
+        services.AddMvc();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -212,8 +212,9 @@ public class Startup
 
         app.UseStatusCodePagesWithReExecute("/error");
 
+#if SUPPORTS_ENDPOINT_ROUTING
         app.UseRouting();
-
+#endif
         app.UseRequestLocalization(options =>
         {
             options.AddSupportedCultures("en-US", "fr-FR");
@@ -222,12 +223,19 @@ public class Startup
         });
 
         app.UseAuthentication();
-        app.UseAuthorization();
 
+#if SUPPORTS_AUTHORIZATION_MIDDLEWARE
+        app.UseAuthorization();
+#endif
+
+#if SUPPORTS_ENDPOINT_ROUTING
         app.UseEndpoints(options =>
         {
             options.MapControllers();
             options.MapDefaultControllerRoute();
         });
+#else
+        app.UseMvcWithDefaultRoute();
+#endif
     }
 }
