@@ -116,6 +116,7 @@
 
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_RESILIENCE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_IMMUTABLE_COLLECTIONS_MARSHAL</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TIME_PROVIDER</DefineConstants>
   </PropertyGroup>

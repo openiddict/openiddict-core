@@ -42,6 +42,11 @@
     <PackageReference Include="System.Net.Http.Json" />
   </ItemGroup>
 
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))) ">
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="System.Net.Http.Json" />
     <Using Include="OpenIddict.Abstractions" />

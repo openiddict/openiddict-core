@@ -11,6 +11,10 @@ using System.Net.Mail;
 using Polly;
 using Polly.Extensions.Http;
 
+#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+using Microsoft.Extensions.Http.Resilience;
+#endif
+
 namespace OpenIddict.Client.SystemNetHttp;
 
 /// <summary>
@@ -21,10 +25,37 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// <summary>
     /// Gets or sets the HTTP Polly error policy used by the internal OpenIddict HTTP clients.
     /// </summary>
+    /// <remarks>
+    /// Note: on .NET 8.0 and higher, this property is set to <see langword="null"/> by default.
+    /// </remarks>
     public IAsyncPolicy<HttpResponseMessage>? HttpErrorPolicy { get; set; }
+#if !SUPPORTS_HTTP_CLIENT_RESILIENCE
         = HttpPolicyExtensions.HandleTransientHttpError()
-            .OrResult(response => response.StatusCode == HttpStatusCode.NotFound)
-            .WaitAndRetryAsync(4, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
+            .OrResult(static response => response.StatusCode is HttpStatusCode.NotFound)
+            .WaitAndRetryAsync(4, static attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
+#endif
+
+#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+    /// <summary>
+    /// Gets or sets the HTTP resilience pipeline used by the internal OpenIddict HTTP clients.
+    /// </summary>
+    /// <remarks>
+    /// Note: this property is not used when <see cref="HttpErrorPolicy"/>
+    /// is explicitly set to a non-<see langword="null"/> value.
+    /// </remarks>
+    public ResiliencePipeline<HttpResponseMessage>? HttpResiliencePipeline { get; set; }
+        = new ResiliencePipelineBuilder<HttpResponseMessage>()
+            .AddRetry(new HttpRetryStrategyOptions
+            {
+                DelayGenerator = static arguments => new(
+                    TimeSpan.FromSeconds(Math.Pow(2, arguments.AttemptNumber))),
+                MaxRetryAttempts = 4,
+                ShouldHandle = static arguments => new(
+                    HttpClientResiliencePredicates.IsTransient(arguments.Outcome) ||
+                    arguments.Outcome.Result?.StatusCode is HttpStatusCode.NotFound)
+            })
+            .Build();
+#endif
 
     /// <summary>
     /// Gets or sets the contact mail address used in the "From" header that is
