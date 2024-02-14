@@ -326,6 +326,7 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="8.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="8.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly"                                 Version="8.0.1"           />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience"                            Version="8.2.0"           />
     <PackageVersion Include="Microsoft.Extensions.Logging"                                    Version="8.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="8.0.1"           />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="8.0.0"           />

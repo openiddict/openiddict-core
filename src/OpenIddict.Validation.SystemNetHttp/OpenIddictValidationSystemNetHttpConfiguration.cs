@@ -11,6 +11,10 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Polly;
 
+#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+using Microsoft.Extensions.Http.Resilience;
+#endif
+
 namespace OpenIddict.Validation.SystemNetHttp;
 
 /// <summary>
@@ -98,12 +102,23 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
             // To avoid that, cookies support is explicitly disabled here, for security reasons.
             handler.UseCookies = false;
 
-            // Unless the HTTP error policy was explicitly disabled in the options,
-            // add the HTTP handler responsible for replaying failed HTTP requests.
+            // If applicable, add the handler responsible for replaying failed HTTP requests.
+            //
+            // Note: on .NET 8.0 and higher, the HTTP error policy is always set
+            // to null by default and an HTTP resilience pipeline is used instead.
             if (options.CurrentValue.HttpErrorPolicy is IAsyncPolicy<HttpResponseMessage> policy)
             {
                 builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
             }
+
+#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+            else if (options.CurrentValue.HttpResiliencePipeline is ResiliencePipeline<HttpResponseMessage> pipeline)
+            {
+#pragma warning disable EXTEXP0001
+                builder.AdditionalHandlers.Add(new ResilienceHandler(pipeline));
+#pragma warning restore EXTEXP0001
+            }
+#endif
         });
 
         // Register the user-defined HTTP client handler actions.

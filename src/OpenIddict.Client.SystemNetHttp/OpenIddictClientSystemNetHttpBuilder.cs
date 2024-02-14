@@ -241,6 +241,52 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
         return Configure(options => options.HttpErrorPolicy = policy);
     }
 
+#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+    /// <summary>
+    /// Replaces the default HTTP resilience pipeline used by the OpenIddict client services.
+    /// </summary>
+    /// <param name="configuration">
+    /// The delegate used to configure the <see cref="ResiliencePipeline{HttpResponseMessage}"/>.
+    /// </param>
+    /// <remarks>
+    /// Note: this option has no effect when an HTTP error policy was explicitly configured
+    /// using <see cref="SetHttpErrorPolicy(IAsyncPolicy{HttpResponseMessage})"/>.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictClientSystemNetHttpBuilder SetHttpResiliencePipeline(
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>> configuration)
+    {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        var builder = new ResiliencePipelineBuilder<HttpResponseMessage>();
+        configuration(builder);
+
+        return SetHttpResiliencePipeline(builder.Build());
+    }
+
+    /// <summary>
+    /// Replaces the default HTTP resilience pipeline used by the OpenIddict client services.
+    /// </summary>
+    /// <param name="pipeline">The HTTP resilience pipeline.</param>
+    /// <remarks>
+    /// Note: this option has no effect when an HTTP error policy was explicitly configured
+    /// using <see cref="SetHttpErrorPolicy(IAsyncPolicy{HttpResponseMessage})"/>.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictClientSystemNetHttpBuilder SetHttpResiliencePipeline(ResiliencePipeline<HttpResponseMessage> pipeline)
+    {
+        if (pipeline is null)
+        {
+            throw new ArgumentNullException(nameof(pipeline));
+        }
+
+        return Configure(options => options.HttpResiliencePipeline = pipeline);
+    }
+#endif
+
     /// <summary>
     /// Sets the product information used in the "User-Agent" header that is attached
     /// to the backchannel HTTP requests sent to the authorization server.
