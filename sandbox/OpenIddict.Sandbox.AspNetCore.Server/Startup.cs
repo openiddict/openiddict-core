@@ -100,12 +100,13 @@ public class Startup
             // Register the OpenIddict server components.
             .AddServer(options =>
             {
-                // Enable the authorization, device, introspection,
-                // logout, token, userinfo and verification endpoints.
+                // Enable the authorization, device, introspection, logout,
+                // token, revocation, userinfo and verification endpoints.
                 options.SetAuthorizationEndpointUris("connect/authorize")
                        .SetDeviceEndpointUris("connect/device")
                        .SetIntrospectionEndpointUris("connect/introspect")
                        .SetLogoutEndpointUris("connect/logout")
+                       .SetRevocationEndpointUris("connect/revoke")
                        .SetTokenEndpointUris("connect/token")
                        .SetUserinfoEndpointUris("connect/userinfo")
                        .SetVerificationEndpointUris("connect/verify");

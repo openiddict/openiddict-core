@@ -147,6 +147,21 @@ public static partial class OpenIddictClientHandlers
         MapIntrospectionParametersToWebServicesFederationClaims.Descriptor,
 
         /*
+         * Revocation processing:
+         */
+        ValidateRevocationDemand.Descriptor,
+        ResolveClientRegistrationFromRevocationContext.Descriptor,
+        AttachClientIdToRevocationContext.Descriptor,
+        ResolveRevocationEndpoint.Descriptor,
+        EvaluateRevocationRequest.Descriptor,
+        AttachRevocationRequestParameters.Descriptor,
+        EvaluateGeneratedRevocationClientAssertion.Descriptor,
+        PrepareRevocationClientAssertionPrincipal.Descriptor,
+        GenerateRevocationClientAssertion.Descriptor,
+        AttachRevocationRequestClientCredentials.Descriptor,
+        SendRevocationRequest.Descriptor,
+
+        /*
          * Sign-out processing:
          */
         ValidateSignOutDemand.Descriptor,
@@ -174,6 +189,7 @@ public static partial class OpenIddictClientHandlers
         ..Exchange.DefaultHandlers,
         ..Introspection.DefaultHandlers,
         ..Protection.DefaultHandlers,
+        ..Revocation.DefaultHandlers,
         ..Session.DefaultHandlers,
         ..Userinfo.DefaultHandlers
     ];
@@ -6423,6 +6439,542 @@ public static partial class OpenIddictClientHandlers
                 context.Principal.GetClaim(Claims.Private.ProviderName));
 
             return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for rejecting invalid revocation demands.
+    /// </summary>
+    public sealed class ValidateRevocationDemand : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .UseSingletonHandler<ValidateRevocationDemand>()
+                .SetOrder(int.MinValue + 100_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
+                context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
+                context.Options.Registrations.Count is not 1)
+            {
+                throw context.Options.Registrations.Count is 0 ?
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0305));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the client registration applicable to the revocation demand.
+    /// </summary>
+    public sealed class ResolveClientRegistrationFromRevocationContext : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        private readonly OpenIddictClientService _service;
+
+        public ResolveClientRegistrationFromRevocationContext(OpenIddictClientService service)
+            => _service = service ?? throw new ArgumentNullException(nameof(service));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .UseSingletonHandler<ResolveClientRegistrationFromRevocationContext>()
+                .SetOrder(ValidateRevocationDemand.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.Registration ??= context switch
+            {
+                // If specified, resolve the registration using the attached registration identifier.
+                { RegistrationId: string identifier } when !string.IsNullOrEmpty(identifier)
+                    => await _service.GetClientRegistrationByIdAsync(identifier, context.CancellationToken),
+
+                // If specified, resolve the registration using the attached issuer URI.
+                { Issuer: Uri uri } => await _service.GetClientRegistrationByIssuerAsync(uri, context.CancellationToken),
+
+                // If specified, resolve the registration using the attached provider name.
+                { ProviderName: string name } when !string.IsNullOrEmpty(name)
+                    => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
+
+                // Otherwise, default to the unique registration available, if possible.
+                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+
+                // If no registration was added or multiple registrations are present, throw an exception.
+                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+            };
+
+            if (!string.IsNullOrEmpty(context.RegistrationId) &&
+                !string.Equals(context.RegistrationId, context.Registration.RegistrationId, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+            }
+
+            if (!string.IsNullOrEmpty(context.ProviderName) &&
+                !string.Equals(context.ProviderName, context.Registration.ProviderName, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
+            }
+
+            if (context.Issuer is not null && context.Issuer != context.Registration.Issuer)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0408));
+            }
+
+            // Resolve and attach the server configuration to the context if none has been set already.
+            if (context.Configuration is null)
+            {
+                if (context.Registration.ConfigurationManager is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0422));
+                }
+
+                try
+                {
+                    context.Configuration = await context.Registration.ConfigurationManager
+                        .GetConfigurationAsync(context.CancellationToken)
+                        .WaitAsync(context.CancellationToken) ??
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+                }
+
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
+                    exception is not OperationCanceledException)
+                {
+                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2170),
+                        uri: SR.FormatID8000(SR.ID2170));
+
+                    return;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the client identifier to the revocation request.
+    /// </summary>
+    public sealed class AttachClientIdToRevocationContext : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .UseSingletonHandler<AttachClientIdToRevocationContext>()
+                .SetOrder(ResolveClientRegistrationFromRevocationContext.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.ClientId ??= context.Registration.ClientId;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the revocation endpoint.
+    /// </summary>
+    public sealed class ResolveRevocationEndpoint : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .UseSingletonHandler<ResolveRevocationEndpoint>()
+                .SetOrder(AttachClientIdToRevocationContext.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the URI of the revocation endpoint wasn't explicitly set
+            // at this stage, try to extract it from the server configuration.
+            context.RevocationEndpoint ??= context.Configuration.RevocationEndpoint switch
+            {
+                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for determining whether an revocation request should be sent.
+    /// </summary>
+    public sealed class EvaluateRevocationRequest : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .UseSingletonHandler<EvaluateRevocationRequest>()
+                .SetOrder(ResolveRevocationEndpoint.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.SendRevocationRequest = true;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the parameters to the revocation request, if applicable.
+    /// </summary>
+    public sealed class AttachRevocationRequestParameters : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationRequest>()
+                .UseSingletonHandler<AttachRevocationRequestParameters>()
+                .SetOrder(EvaluateRevocationRequest.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Attach a new request instance if necessary.
+            context.RevocationRequest ??= new OpenIddictRequest();
+            context.RevocationRequest.Token = context.Token;
+            context.RevocationRequest.TokenTypeHint = context.TokenTypeHint;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for selecting the token types that should
+    /// be generated and optionally sent as part of the revocation demand.
+    /// </summary>
+    public sealed class EvaluateGeneratedRevocationClientAssertion : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationRequest>()
+                .UseSingletonHandler<EvaluateGeneratedRevocationClientAssertion>()
+                .SetOrder(AttachRevocationRequestParameters.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            (context.GenerateClientAssertion,
+             context.IncludeClientAssertion) = context.Registration.SigningCredentials.Count switch
+            {
+                // If an revocation request is going to be sent and if at least one signing key
+                // was attached to the client registration, generate and include a client assertion
+                // token if the configuration indicates the server supports private_key_jwt.
+                > 0 when context.Configuration.RevocationEndpointAuthMethodsSupported.Contains(
+                    ClientAuthenticationMethods.PrivateKeyJwt) => (true, true),
+
+                _ => (false, false)
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for preparing and attaching the claims principal
+    /// used to generate the client assertion, if one is going to be sent.
+    /// </summary>
+    public sealed class PrepareRevocationClientAssertionPrincipal : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationClientAssertionGenerated>()
+                .UseSingletonHandler<PrepareRevocationClientAssertionPrincipal>()
+                .SetOrder(EvaluateGeneratedRevocationClientAssertion.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+            // Create a new principal that will be used to store the client assertion claims.
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role));
+
+            principal.SetCreationDate(DateTimeOffset.UtcNow);
+
+            var lifetime = context.Options.ClientAssertionLifetime;
+            if (lifetime.HasValue)
+            {
+                principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
+            }
+
+            // Use the issuer URI as the audience. Applications that need to
+            // use a different value can register a custom event handler.
+            principal.SetAudiences(context.Registration.Issuer.OriginalString);
+
+            // Use the client_id as both the subject and the issuer, as required by the specifications.
+            principal.SetClaim(Claims.Private.Issuer, context.ClientId)
+                     .SetClaim(Claims.Subject, context.ClientId);
+
+            // Use a random GUID as the JWT unique identifier.
+            principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
+
+            context.ClientAssertionPrincipal = principal;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for generating a client
+    /// assertion for the current revocation operation.
+    /// </summary>
+    public sealed class GenerateRevocationClientAssertion : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        private readonly IOpenIddictClientDispatcher _dispatcher;
+
+        public GenerateRevocationClientAssertion(IOpenIddictClientDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationClientAssertionGenerated>()
+                .UseScopedHandler<GenerateRevocationClientAssertion>()
+                .SetOrder(PrepareRevocationClientAssertionPrincipal.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var notification = new GenerateTokenContext(context.Transaction)
+            {
+                CreateTokenEntry = false,
+                IsReferenceToken = false,
+                PersistTokenPayload = false,
+                Principal = context.ClientAssertionPrincipal!,
+                TokenFormat = TokenFormats.Jwt,
+                TokenType = TokenTypeHints.ClientAssertion
+            };
+
+            await _dispatcher.DispatchAsync(notification);
+
+            if (notification.IsRequestHandled)
+            {
+                context.HandleRequest();
+                return;
+            }
+
+            else if (notification.IsRequestSkipped)
+            {
+                context.SkipRequest();
+                return;
+            }
+
+            else if (notification.IsRejected)
+            {
+                context.Reject(
+                    error: notification.Error ?? Errors.InvalidRequest,
+                    description: notification.ErrorDescription,
+                    uri: notification.ErrorUri);
+                return;
+            }
+
+            context.ClientAssertion = notification.Token;
+            context.ClientAssertionType = notification.TokenFormat switch
+            {
+                TokenFormats.Jwt   => ClientAssertionTypes.JwtBearer,
+                TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
+
+                _ => null
+            };
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the client credentials to the revocation request, if applicable.
+    /// </summary>
+    public sealed class AttachRevocationRequestClientCredentials : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationRequest>()
+                .UseSingletonHandler<AttachRevocationRequestClientCredentials>()
+                .SetOrder(GenerateRevocationClientAssertion.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.RevocationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Always attach the client_id to the request, even if an assertion is sent.
+            context.RevocationRequest.ClientId = context.ClientId;
+
+            // Note: client authentication methods are mutually exclusive so the client_assertion
+            // and client_secret parameters MUST never be sent at the same time. For more information,
+            // see https://datatracker.ietf.org/doc/html/rfc6749#section-2.3.
+            if (context.IncludeClientAssertion)
+            {
+                context.RevocationRequest.ClientAssertion = context.ClientAssertion;
+                context.RevocationRequest.ClientAssertionType = context.ClientAssertionType;
+            }
+
+            // Note: the client_secret may be null at this point (e.g for a public
+            // client or if a custom authentication method is used by the application).
+            else
+            {
+                context.RevocationRequest.ClientSecret = context.Registration.ClientSecret;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for sending the revocation request, if applicable.
+    /// </summary>
+    public sealed class SendRevocationRequest : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        private readonly OpenIddictClientService _service;
+
+        public SendRevocationRequest(OpenIddictClientService service)
+            => _service = service ?? throw new ArgumentNullException(nameof(service));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationRequest>()
+                .UseSingletonHandler<SendRevocationRequest>()
+                .SetOrder(AttachRevocationRequestClientCredentials.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.RevocationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Ensure the revocation endpoint is present and is a valid absolute URI.
+            if (context.RevocationEndpoint is not { IsAbsoluteUri: true } ||
+               !context.RevocationEndpoint.IsWellFormedOriginalString())
+            {
+                throw new InvalidOperationException(SR.FormatID0301(Metadata.RevocationEndpoint));
+            }
+
+            try
+            {
+                context.RevocationResponse = await _service.SendRevocationRequestAsync(
+                    context.Registration, context.Configuration,
+                    context.RevocationRequest, context.RevocationEndpoint, context.CancellationToken);
+            }
+
+            catch (ProtocolException exception)
+            {
+                context.Reject(
+                    error: exception.Error,
+                    description: exception.ErrorDescription,
+                    uri: exception.ErrorUri);
+
+                return;
+            }
         }
     }
 

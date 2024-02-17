@@ -873,4 +873,75 @@ public static class OpenIddictClientModels
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
     }
+
+    /// <summary>
+    /// Represents an revocation request.
+    /// </summary>
+    public sealed record class RevocationRequest
+    {
+        /// <summary>
+        /// Gets or sets the parameters that will be added to the revocation request.
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? AdditionalRevocationRequestParameters { get; init; }
+
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations use the same provider name.
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the token that will be sent to the authorization server.
+        /// </summary>
+        public required string Token { get; init; }
+
+        /// <summary>
+        /// Gets the token type hint that will be sent to the authorization server.
+        /// </summary>
+        public string? TokenTypeHint { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+    }
+
+    /// <summary>
+    /// Represents an revocation result.
+    /// </summary>
+    public sealed record class RevocationResult
+    {
+        /// <summary>
+        /// Gets or sets the application-specific properties that were present in the context.
+        /// </summary>
+        public required Dictionary<string, string?> Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the revocation response.
+        /// </summary>
+        public required OpenIddictResponse RevocationResponse { get; init; }
+    }
 }

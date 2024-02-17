@@ -393,6 +393,40 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no revocation client assertion is generated.
+    /// </summary>
+    public sealed class RequireRevocationClientAssertionGenerated : IOpenIddictClientHandlerFilter<ProcessRevocationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateClientAssertion);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no revocation request is expected to be sent.
+    /// </summary>
+    public sealed class RequireRevocationRequest : IOpenIddictClientHandlerFilter<ProcessRevocationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.SendRevocationRequest);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no state token principal is available.
     /// </summary>
     public sealed class RequireStateTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>

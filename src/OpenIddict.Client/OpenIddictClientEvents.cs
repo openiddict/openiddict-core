@@ -1318,6 +1318,133 @@ public static partial class OpenIddictClientEvents
     }
 
     /// <summary>
+    /// Represents an event called when processing an revocation operation.
+    /// </summary>
+    public sealed class ProcessRevocationContext : BaseValidatingContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="ProcessRevocationContext"/> class.
+        /// </summary>
+        public ProcessRevocationContext(OpenIddictClientTransaction transaction)
+            : base(transaction)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        public OpenIddictRequest Request
+        {
+            get => Transaction.Request!;
+            set => Transaction.Request = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the response.
+        /// </summary>
+        public OpenIddictResponse Response
+        {
+            get => Transaction.Response!;
+            set => Transaction.Response = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the token to introspect.
+        /// </summary>
+        public string? Token { get; set; }
+
+        /// <summary>
+        /// Gets or sets the token type of the token to introspect, used as a hint by the remote server.
+        /// </summary>
+        public string? TokenTypeHint { get; set; }
+
+        /// <summary>
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets or sets the identifier that will be used to resolve the client registration, if applicable.
+        /// </summary>
+        public string? RegistrationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the issuer URI of the provider that will be
+        /// used to resolve the client registration, if applicable.
+        /// </summary>
+        public Uri? Issuer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the provider that will be
+        /// used to resolve the client registration, if applicable.
+        /// </summary>
+        public string? ProviderName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URI of the revocation endpoint, if applicable.
+        /// </summary>
+        public Uri? RevocationEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client identifier that will be used for the revocation demand.
+        /// </summary>
+        public string? ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an revocation request should be sent.
+        /// </summary>
+        public bool SendRevocationRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a client assertion
+        /// token should be generated (and optionally included in the request).
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool GenerateClientAssertion { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the generated client
+        /// assertion should be included as part of the request.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool IncludeClientAssertion { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generated client assertion, if applicable.
+        /// The client assertion will only be returned if
+        /// <see cref="IncludeClientAssertion"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? ClientAssertion { get; set; }
+
+        /// <summary>
+        /// Gets or sets type of the generated client assertion, if applicable.
+        /// The client assertion type will only be returned if
+        /// <see cref="IncludeClientAssertion"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? ClientAssertionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal containing the claims that will be
+        /// used to create the client assertion, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? ClientAssertionPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request sent to the revocation endpoint, if applicable.
+        /// </summary>
+        public OpenIddictRequest? RevocationRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response returned by the revocation endpoint, if applicable.
+        /// </summary>
+        public OpenIddictResponse? RevocationResponse { get; set; }
+    }
+
+    /// <summary>
     /// Represents an event called when processing a sign-out response.
     /// </summary>
     public sealed class ProcessSignOutContext : BaseValidatingTicketContext

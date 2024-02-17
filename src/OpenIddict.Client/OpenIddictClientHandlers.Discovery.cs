@@ -27,6 +27,7 @@ public static partial class OpenIddictClientHandlers
             ExtractDeviceAuthorizationEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
             ExtractLogoutEndpoint.Descriptor,
+            ExtractRevocationEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
             ExtractUserinfoEndpoint.Descriptor,
             ExtractGrantTypes.Descriptor,
@@ -37,6 +38,7 @@ public static partial class OpenIddictClientHandlers
             ExtractIssuerParameterRequirement.Descriptor,
             ExtractDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor,
             ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor,
+            ExtractRevocationEndpointClientAuthenticationMethods.Descriptor,
             ExtractTokenEndpointClientAuthenticationMethods.Descriptor,
 
             /*
@@ -483,6 +485,49 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for extracting the revocation endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractRevocationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractRevocationEndpoint>()
+                    .SetOrder(ExtractLogoutEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var endpoint = (string?) context.Response[Metadata.RevocationEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
+                {
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2100(Metadata.RevocationEndpoint),
+                            uri: SR.FormatID8000(SR.ID2100));
+
+                        return default;
+                    }
+
+                    context.Configuration.RevocationEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the token endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractTokenEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -493,7 +538,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractTokenEndpoint>()
-                    .SetOrder(ExtractLogoutEndpoint.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractRevocationEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -900,6 +945,49 @@ public static partial class OpenIddictClientHandlers
 
         /// <summary>
         /// Contains the logic responsible for extracting the authentication methods
+        /// supported by the revocation endpoint from the discovery document.
+        /// </summary>
+        public sealed class ExtractRevocationEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractRevocationEndpointClientAuthenticationMethods>()
+                    .SetOrder(ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Resolve the client authentication methods supported by the revocation endpoint, if available.
+                var methods = context.Response[Metadata.RevocationEndpointAuthMethodsSupported]?.GetUnnamedParameters();
+                if (methods is { Count: > 0 })
+                {
+                    for (var index = 0; index < methods.Count; index++)
+                    {
+                        // Note: custom values are allowed in this case.
+                        var method = (string?) methods[index];
+                        if (!string.IsNullOrEmpty(method))
+                        {
+                            context.Configuration.RevocationEndpointAuthMethodsSupported.Add(method);
+                        }
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the authentication methods
         /// supported by the token endpoint from the discovery document.
         /// </summary>
         public sealed class ExtractTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -910,7 +998,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractTokenEndpointClientAuthenticationMethods>()
-                    .SetOrder(ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractRevocationEndpointClientAuthenticationMethods.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
