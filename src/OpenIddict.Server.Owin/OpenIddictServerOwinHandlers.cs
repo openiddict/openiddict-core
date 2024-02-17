@@ -1038,7 +1038,7 @@ public static partial class OpenIddictServerOwinHandlers
             // are known to aggressively intercept 401 responses even if the request is already considered fully
             // handled. In practice, this behavior is often seen with the cookies authentication middleware,
             // that will rewrite the 401 responses returned by OpenIddict and try to redirect the user agent
-            // to the login page configured in the options. To prevent this undesirable behavior, a fake
+            // to the login page configured in the options. To prevent this undesirable behavior, an explicit
             // response challenge pointing to a non-existent middleware is manually added to the OWIN context
             // to prevent the active authentication middleware from rewriting OpenIddict's 401 HTTP responses.
             //
@@ -1046,10 +1046,11 @@ public static partial class OpenIddictServerOwinHandlers
             // middleware, they are treated the same way as 401 responses to account for custom middleware
             // that may potentially use the same interception logic for both 401 and 403 HTTP responses.
             if (response.StatusCode is 401 or 403 &&
-                response.Context.Authentication.AuthenticationResponseChallenge is null)
+                response.Context.Authentication.AuthenticationResponseChallenge is not { AuthenticationTypes.Length: > 0 })
             {
-                response.Context.Authentication.AuthenticationResponseChallenge =
-                    new AuthenticationResponseChallenge([Guid.NewGuid().ToString()], null);
+                response.Context.Authentication.AuthenticationResponseChallenge = new AuthenticationResponseChallenge(
+                    authenticationTypes: [null],
+                    properties         : response.Context.Authentication.AuthenticationResponseChallenge?.Properties ?? new());
             }
 
             return default;
@@ -1297,7 +1298,7 @@ public static partial class OpenIddictServerOwinHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
-                .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(500_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

@@ -318,7 +318,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessQueryResponse>()
-                    .SetOrder(ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor.Order + 250)
+                    .SetOrder(250_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

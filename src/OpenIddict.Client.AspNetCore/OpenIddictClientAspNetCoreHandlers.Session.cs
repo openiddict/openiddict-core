@@ -53,7 +53,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessQueryRequest>()
-                    .SetOrder(50_000)
+                    .SetOrder(250_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
