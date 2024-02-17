@@ -1019,6 +1019,86 @@ public class OpenIddictClientService
     }
 
     /// <summary>
+    /// Revokes the specified token.
+    /// </summary>
+    /// <param name="request">The revocation request.</param>
+    /// <returns>The revocation result.</returns>
+    public async ValueTask<RevocationResult> RevokeTokenAsync(RevocationRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessRevocationContext(transaction)
+            {
+                CancellationToken = request.CancellationToken,
+                Issuer = request.Issuer,
+                ProviderName = request.ProviderName,
+                RegistrationId = request.RegistrationId,
+                RevocationRequest = request.AdditionalRevocationRequestParameters
+                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                Token = request.Token,
+                TokenTypeHint = request.TokenTypeHint
+            };
+
+            if (request.Properties is { Count: > 0 })
+            {
+                foreach (var property in request.Properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0429(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.RevocationResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            return new()
+            {
+                Properties = context.Properties,
+                RevocationResponse = context.RevocationResponse
+            };
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
     /// Retrieves the OpenID Connect server configuration from the specified uri.
     /// </summary>
     /// <param name="registration">The client registration.</param>
@@ -1663,6 +1743,175 @@ public class OpenIddictClientService
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 return (context.Response, context.Principal);
+            }
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sends the revocation request and retrieves the corresponding response.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="configuration">The server configuration.</param>
+    /// <param name="request">The token request.</param>
+    /// <param name="uri">The uri of the remote token endpoint.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response extracted from the revocation response.</returns>
+    internal async ValueTask<OpenIddictResponse> SendRevocationRequestAsync(
+        OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
+        OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
+    {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (uri is null)
+        {
+            throw new ArgumentNullException(nameof(uri));
+        }
+
+        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            request = await PrepareRevocationRequestAsync();
+            request = await ApplyRevocationRequestAsync();
+
+            var response = await ExtractRevocationResponseAsync();
+
+            return await HandleRevocationResponseAsync();
+
+            async ValueTask<OpenIddictRequest> PrepareRevocationRequestAsync()
+            {
+                var context = new PrepareRevocationRequestContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0430(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Request;
+            }
+
+            async ValueTask<OpenIddictRequest> ApplyRevocationRequestAsync()
+            {
+                var context = new ApplyRevocationRequestContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0431(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+
+                return context.Request;
+            }
+
+            async ValueTask<OpenIddictResponse> ExtractRevocationResponseAsync()
+            {
+                var context = new ExtractRevocationResponseContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0432(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+
+                return context.Response;
+            }
+
+            async ValueTask<OpenIddictResponse> HandleRevocationResponseAsync()
+            {
+                var context = new HandleRevocationResponseContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request,
+                    Response = response
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0433(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Response;
             }
         }
 

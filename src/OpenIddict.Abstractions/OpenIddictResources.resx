@@ -1599,6 +1599,36 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   Error description: {1}
   Error URI: {2}</value>
   </data>
+  <data name="ID0429" xml:space="preserve">
+    <value>An error occurred while revoking a token.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0430" xml:space="preserve">
+    <value>An error occurred while preparing the revocation request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0431" xml:space="preserve">
+    <value>An error occurred while sending the revocation request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0432" xml:space="preserve">
+    <value>An error occurred while extracting the revocation response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0433" xml:space="preserve">
+    <value>An error occurred while handling the revocation response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2120,6 +2150,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID2174" xml:space="preserve">
     <value>The '{0}' client authentication method is not supported.</value>
+  </data>
+  <data name="ID2175" xml:space="preserve">
+    <value>The revocation request was rejected by the remote server.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2771,6 +2804,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6229" xml:space="preserve">
     <value>An error occurred while trying to revoke the tokens associated with the authorization '{Identifier}'.</value>
+  </data>
+  <data name="ID6230" xml:space="preserve">
+    <value>The revocation request was rejected by the remote authorization server: {Response}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

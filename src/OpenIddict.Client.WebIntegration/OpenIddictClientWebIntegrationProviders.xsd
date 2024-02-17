@@ -177,6 +177,27 @@
                             </xs:complexType>
                           </xs:element>
 
+                          <xs:element name="RevocationEndpointAuthMethod" minOccurs="0" maxOccurs="10">
+                            <xs:annotation>
+                              <xs:documentation>The revocation endpoint authentication methods supported by the environment.</xs:documentation>
+                            </xs:annotation>
+
+                            <xs:complexType>
+                              <xs:attribute name="Value" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>The revocation endpoint authentication method name (e.g client_secret_basic).</xs:documentation>
+                                </xs:annotation>
+
+                                <xs:simpleType>
+                                  <xs:restriction base="xs:string">
+                                    <xs:enumeration value="client_secret_basic" />
+                                    <xs:enumeration value="client_secret_post" />
+                                  </xs:restriction>
+                                </xs:simpleType>
+                              </xs:attribute>
+                            </xs:complexType>
+                          </xs:element>
+
                           <xs:element name="TokenEndpointAuthMethod" minOccurs="0" maxOccurs="10">
                             <xs:annotation>
                               <xs:documentation>The token endpoint authentication methods supported by the environment.</xs:documentation>
@@ -214,6 +235,12 @@
                         <xs:attribute name="IntrospectionEndpoint" type="xs:string" use="optional">
                           <xs:annotation>
                             <xs:documentation>The introspection endpoint offered by the environment.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+
+                        <xs:attribute name="RevocationEndpoint" type="xs:string" use="optional">
+                          <xs:annotation>
+                            <xs:documentation>The revocation endpoint offered by the environment.</xs:documentation>
                           </xs:annotation>
                         </xs:attribute>
 

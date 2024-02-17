@@ -935,6 +935,10 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     IntrospectionEndpoint = new Uri($""{{ environment.configuration.introspection_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
+                    {{~ if environment.configuration.revocation_endpoint ~}}
+                    RevocationEndpoint = new Uri($""{{ environment.configuration.revocation_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    {{~ end ~}}
+
                     {{~ if environment.configuration.token_endpoint ~}}
                     TokenEndpoint = new Uri($""{{ environment.configuration.token_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
@@ -988,6 +992,13 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     IntrospectionEndpointAuthMethodsSupported =
                     {
                         {{~ for method in environment.configuration.introspection_endpoint_auth_methods_supported ~}}
+                        ""{{ method }}"",
+                        {{~ end ~}}
+                    },
+
+                    RevocationEndpointAuthMethodsSupported =
+                    {
+                        {{~ for method in environment.configuration.revocation_endpoint_auth_methods_supported ~}}
                         ""{{ method }}"",
                         {{~ end ~}}
                     },
@@ -1050,6 +1061,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                         AuthorizationEndpoint = (string?) configuration.Attribute("AuthorizationEndpoint"),
                                         DeviceAuthorizationEndpoint = (string?) configuration.Attribute("DeviceAuthorizationEndpoint"),
                                         IntrospectionEndpoint = (string?) configuration.Attribute("IntrospectionEndpoint"),
+                                        RevocationEndpoint = (string?) configuration.Attribute("RevocationEndpoint"),
                                         TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
                                         UserinfoEndpoint = (string?) configuration.Attribute("UserinfoEndpoint"),
 
@@ -1106,6 +1118,15 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                             // If no explicit client authentication method was set, assume the provider only
                                             // supports flowing the client credentials as part of the introspection request payload.
+                                            _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                        },
+
+                                        RevocationEndpointAuthMethodsSupported = configuration.Elements("RevocationEndpointAuthMethod").ToList() switch
+                                        {
+                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                            // If no explicit client authentication method was set, assume the provider only
+                                            // supports flowing the client credentials as part of the revocation request payload.
                                             _ => [ClientAuthenticationMethods.ClientSecretPost]
                                         },
 

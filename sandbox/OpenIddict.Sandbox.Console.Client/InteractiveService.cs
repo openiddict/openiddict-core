@@ -98,6 +98,20 @@ public class InteractiveService : BackgroundService
                         })).Principal));
                     }
 
+                    // If revocation is supported by the server, ask the user if the access token should be revoked.
+                    if (configuration.RevocationEndpoint is not null && await RevokeAccessTokenAsync(stoppingToken))
+                    {
+                        await _service.RevokeTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            Token = response.AccessToken,
+                            TokenTypeHint = TokenTypeHints.AccessToken
+                        });
+
+                        AnsiConsole.MarkupLine("[steelblue]Access token revoked.[/]");
+                    }
+
                     // If a refresh token was returned by the authorization server, ask the user
                     // if the access token should be refreshed using the refresh_token grant.
                     if (!string.IsNullOrEmpty(response.RefreshToken) && await UseRefreshTokenGrantAsync(stoppingToken))
@@ -149,6 +163,23 @@ public class InteractiveService : BackgroundService
                             Token = response.BackchannelAccessToken,
                             TokenTypeHint = TokenTypeHints.AccessToken
                         })).Principal));
+                    }
+
+                    // If an access token was returned by the authorization server and revocation is
+                    // supported by the server, ask the user if the access token should be revoked.
+                    if (!string.IsNullOrEmpty(response.BackchannelAccessToken) &&
+                        configuration.RevocationEndpoint is not null &&
+                        await RevokeAccessTokenAsync(stoppingToken))
+                    {
+                        await _service.RevokeTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            Token = response.BackchannelAccessToken,
+                            TokenTypeHint = TokenTypeHints.AccessToken
+                        });
+
+                        AnsiConsole.MarkupLine("[steelblue]Access token revoked.[/]");
                     }
 
                     // If a refresh token was returned by the authorization server, ask the user
@@ -205,6 +236,19 @@ public class InteractiveService : BackgroundService
         {
             static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
                 "Would you like to introspect the access token?")
+            {
+                Comparer = StringComparer.CurrentCultureIgnoreCase,
+                DefaultValue = false,
+                ShowDefaultValue = true
+            });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        static Task<bool> RevokeAccessTokenAsync(CancellationToken cancellationToken)
+        {
+            static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
+                "Would you like to revoke the access token?")
             {
                 Comparer = StringComparer.CurrentCultureIgnoreCase,
                 DefaultValue = false,

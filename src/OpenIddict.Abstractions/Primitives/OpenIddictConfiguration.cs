@@ -92,6 +92,16 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> ResponseTypesSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets or sets the URI of the revocation endpoint.
+    /// </summary>
+    public Uri? RevocationEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets the client authentication methods supported by the revocation endpoint.
+    /// </summary>
+    public HashSet<string> RevocationEndpointAuthMethodsSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets the scopes supported by the server.
     /// </summary>
     public HashSet<string> ScopesSupported { get; } = new(StringComparer.Ordinal);
