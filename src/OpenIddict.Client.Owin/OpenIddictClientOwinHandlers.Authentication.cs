@@ -53,7 +53,7 @@ public static partial class OpenIddictClientOwinHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyAuthorizationRequestContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessQueryRequest>()
-                    .SetOrder(50_000)
+                    .SetOrder(250_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

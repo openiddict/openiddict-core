@@ -1063,7 +1063,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
-                .SetOrder(int.MaxValue - 100_000)
+                .SetOrder(100_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -1150,7 +1150,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .AddFilter<RequireErrorPassthroughEnabled>()
                 .AddFilter<TFilter>()
                 .UseSingletonHandler<ProcessPassthroughErrorResponse<TContext, TFilter>>()
-                .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(500_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 

@@ -630,7 +630,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
-                .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(500_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 

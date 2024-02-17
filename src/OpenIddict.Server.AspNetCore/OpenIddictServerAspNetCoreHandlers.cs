@@ -1176,7 +1176,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ProcessJsonResponse<TContext>>()
-                .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(500_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

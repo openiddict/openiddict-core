@@ -53,9 +53,8 @@ public sealed class OpenIddictValidationOwinBuilder
     /// requiring an explicit call to <see cref="AuthenticationManager.Challenge(string[])"/>.
     /// </summary>
     /// <remarks>
-    /// Using active authentication is strongly discouraged in applications using a cookie
-    /// authentication middleware configured to use active authentication, as both middleware
-    /// will be invoked when handling 401 responses, which will result in invalid responses.
+    /// To avoid collisions, using active authentication is strongly discouraged in applications
+    /// registering multiple authentication middleware configured to use active authentication.
     /// </remarks>
     /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/> instance.</returns>
     public OpenIddictValidationOwinBuilder UseActiveAuthentication()

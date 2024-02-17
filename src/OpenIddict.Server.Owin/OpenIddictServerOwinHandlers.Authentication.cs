@@ -325,7 +325,7 @@ public static partial class OpenIddictServerOwinHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessFormPostResponse>()
-                    .SetOrder(50_000)
+                    .SetOrder(250_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
