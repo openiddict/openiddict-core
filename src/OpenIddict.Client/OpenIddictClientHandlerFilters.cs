@@ -116,10 +116,23 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no client assertion is generated.
     /// </summary>
-    public sealed class RequireClientAssertionGenerated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireClientAssertionGenerated :
+        IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>,
+        IOpenIddictClientHandlerFilter<ProcessRevocationContext>
     {
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateClientAssertion);
+        }
+
+        /// <inheritdoc/>
+        ValueTask<bool> IOpenIddictClientHandlerFilter<ProcessRevocationContext>.IsActiveAsync(ProcessRevocationContext context)
         {
             if (context is null)
             {

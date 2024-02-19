@@ -23,8 +23,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             AmendGrantTypes.Descriptor,
             AmendCodeChallengeMethods.Descriptor,
             AmendScopes.Descriptor,
-            AmendDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor,
-            AmendTokenEndpointClientAuthenticationMethods.Descriptor,
+            AmendClientAuthenticationMethods.Descriptor,
             AmendEndpoints.Descriptor
         ];
 
@@ -230,6 +229,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for amending the client authentication methods
         /// supported by the device authorization endpoint for the providers that require it.
         /// </summary>
+        [Obsolete("This class is obsolete and will be removed in a future version.", error: true)]
         public sealed class AmendDeviceAuthorizationEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
@@ -244,32 +244,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // Google doesn't properly implement the device authorization grant, doesn't support
-                // basic client authentication for the device authorization endpoint and returns a
-                // generic "invalid_request" request when using "client_secret_basic" instead of
-                // sending the client identifier in the request form. To work around this limitation,
-                // "client_secret_post" is listed as the only supported client authentication method.
-                if (context.Registration.ProviderType is ProviderTypes.Google)
-                {
-                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Clear();
-                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Add(
-                        ClientAuthenticationMethods.ClientSecretPost);
-                }
-
-                return default;
-            }
+                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
         }
 
         /// <summary>
         /// Contains the logic responsible for amending the client authentication
         /// methods supported by the token endpoint for the providers that require it.
         /// </summary>
+        [Obsolete("This class is obsolete and will be removed in a future version.", error: true)]
         public sealed class AmendTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
@@ -284,14 +266,35 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for amending the supported client
+        /// authentication methods for the providers that require it.
+        /// </summary>
+        public sealed class AmendClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendClientAuthenticationMethods>()
+                    .SetOrder(ExtractTokenEndpointClientAuthenticationMethods.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Apple implements a non-standard client authentication method for the token endpoint
-                // that is inspired by the standard private_key_jwt method but doesn't use the standard
+                // Apple implements a non-standard client authentication method for its endpoints that
+                // is inspired by the standard private_key_jwt method but doesn't use the standard
                 // client_assertion/client_assertion_type parameters. Instead, the client assertion
                 // must be sent as a "dynamic" client secret using client_secret_post. Since the logic
                 // is the same as private_key_jwt, the configuration is amended to assume Apple supports
@@ -299,8 +302,23 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // parameter using the client assertion once it has been generated by OpenIddict.
                 if (context.Registration.ProviderType is ProviderTypes.Apple)
                 {
+                    context.Configuration.RevocationEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.PrivateKeyJwt);
+
                     context.Configuration.TokenEndpointAuthMethodsSupported.Add(
                         ClientAuthenticationMethods.PrivateKeyJwt);
+                }
+
+                // Google doesn't properly implement the device authorization grant, doesn't support
+                // basic client authentication for the device authorization endpoint and returns
+                // a generic "invalid_request" error when using "client_secret_basic" instead of
+                // sending the client identifier in the request form. To work around this limitation,
+                // "client_secret_post" is listed as the only supported client authentication method.
+                else if (context.Registration.ProviderType is ProviderTypes.Google)
+                {
+                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Clear();
+                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretPost);
                 }
 
                 // LinkedIn doesn't support sending the client credentials using basic authentication but
