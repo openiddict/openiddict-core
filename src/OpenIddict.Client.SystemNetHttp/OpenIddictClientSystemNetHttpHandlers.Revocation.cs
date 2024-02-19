@@ -37,6 +37,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             DecompressResponseContent<ExtractRevocationResponseContext>.Descriptor,
             ExtractJsonHttpResponse<ExtractRevocationResponseContext>.Descriptor,
             ExtractWwwAuthenticateHeader<ExtractRevocationResponseContext>.Descriptor,
+            ExtractEmptyHttpResponse<ExtractRevocationResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractRevocationResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractRevocationResponseContext>.Descriptor
         ];
