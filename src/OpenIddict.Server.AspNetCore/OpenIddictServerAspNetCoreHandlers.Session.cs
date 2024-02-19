@@ -340,7 +340,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     return default;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6151), context.PostLogoutRedirectUri, response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6151), context.PostLogoutRedirectUri, context.Response);
 
                 // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
                 // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.

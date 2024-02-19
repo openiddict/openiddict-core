@@ -8,9 +8,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Validation;
@@ -53,21 +51,13 @@ public class OpenIddictValidationService
         // can be disposed of asynchronously if it implements IAsyncDisposable.
         try
         {
-            var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
-            var configuration = await options.CurrentValue.ConfigurationManager
-                .GetConfigurationAsync(cancellationToken)
-                .WaitAsync(cancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
             var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
             var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
             var transaction = await factory.CreateTransactionAsync();
 
-            var context = new ValidateTokenContext(transaction)
+            var context = new ProcessAuthenticationContext(transaction)
             {
-                Configuration = configuration,
-                Token = token,
-                ValidTokenTypes = { TokenTypeHints.AccessToken }
+                AccessToken = token
             };
 
             await dispatcher.DispatchAsync(context);
@@ -79,9 +69,9 @@ public class OpenIddictValidationService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            return context.Principal;
+            return context.AccessTokenPrincipal;
         }
 
         finally

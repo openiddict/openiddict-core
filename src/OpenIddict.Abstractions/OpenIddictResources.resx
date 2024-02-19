@@ -2154,6 +2154,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID2175" xml:space="preserve">
     <value>The revocation request was rejected by the remote server.</value>
   </data>
+  <data name="ID2176" xml:space="preserve">
+    <value>The introspection response indicates the token is no longer valid.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
