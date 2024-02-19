@@ -554,7 +554,6 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.ClientAssertionPrincipal,
                 Token = context.ClientAssertion,
                 TokenFormat = context.ClientAssertionType switch
                 {
@@ -1255,7 +1254,6 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.AccessTokenPrincipal,
                 Token = context.AccessToken,
                 ValidTokenTypes = { TokenTypeHints.AccessToken }
             };
@@ -1328,7 +1326,6 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.AuthorizationCodePrincipal,
                 Token = context.AuthorizationCode,
                 ValidTokenTypes = { TokenTypeHints.AuthorizationCode }
             };
@@ -1401,7 +1398,6 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.DeviceCodePrincipal,
                 Token = context.DeviceCode,
                 ValidTokenTypes = { TokenTypeHints.DeviceCode }
             };
@@ -1474,7 +1470,6 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.GenericTokenPrincipal,
                 Token = context.GenericToken,
                 TokenTypeHint = context.GenericTokenTypeHint,
 
@@ -1568,7 +1563,6 @@ public static partial class OpenIddictServerHandlers
                 // Don't validate the lifetime of id_tokens used as id_token_hints.
                 DisableLifetimeValidation = context.EndpointType is OpenIddictServerEndpointType.Authorization or
                                                                     OpenIddictServerEndpointType.Logout,
-                Principal = context.IdentityTokenPrincipal,
                 Token = context.IdentityToken,
                 ValidTokenTypes = { TokenTypeHints.IdToken }
             };
@@ -1641,7 +1635,6 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.RefreshTokenPrincipal,
                 Token = context.RefreshToken,
                 ValidTokenTypes = { TokenTypeHints.RefreshToken }
             };
@@ -1714,7 +1707,6 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.UserCodePrincipal,
                 Token = context.UserCode,
                 ValidTokenTypes = { TokenTypeHints.UserCode }
             };

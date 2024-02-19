@@ -144,7 +144,7 @@ public static partial class OpenIddictClientHandlers
         GenerateIntrospectionClientAssertion.Descriptor,
         AttachIntrospectionRequestClientCredentials.Descriptor,
         SendIntrospectionRequest.Descriptor,
-        MapIntrospectionParametersToWebServicesFederationClaims.Descriptor,
+        MapIntrospectionClaimsToWebServicesFederationClaims.Descriptor,
 
         /*
          * Revocation processing:
@@ -656,7 +656,6 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.StateTokenPrincipal,
                 Token = context.StateToken,
                 ValidTokenTypes = { TokenTypeHints.StateToken }
             };
@@ -1587,7 +1586,6 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.FrontchannelIdentityTokenPrincipal,
                 Token = context.FrontchannelIdentityToken,
                 ValidTokenTypes = { TokenTypeHints.IdToken }
             };
@@ -2102,7 +2100,6 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.FrontchannelAccessTokenPrincipal,
                 Token = context.FrontchannelAccessToken,
                 ValidTokenTypes = { TokenTypeHints.AccessToken }
             };
@@ -2177,7 +2174,6 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.AuthorizationCodePrincipal,
                 Token = context.AuthorizationCode,
                 ValidTokenTypes = { TokenTypeHints.AuthorizationCode }
             };
@@ -2917,7 +2913,6 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.BackchannelIdentityTokenPrincipal,
                 Token = context.BackchannelIdentityToken,
                 ValidTokenTypes = { TokenTypeHints.IdToken }
             };
@@ -3396,7 +3391,6 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.BackchannelAccessTokenPrincipal,
                 Token = context.BackchannelAccessToken,
                 ValidTokenTypes = { TokenTypeHints.AccessToken }
             };
@@ -3471,7 +3465,6 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.RefreshTokenPrincipal,
                 Token = context.RefreshToken,
                 ValidTokenTypes = { TokenTypeHints.RefreshToken }
             };
@@ -3823,7 +3816,6 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Principal = context.UserinfoTokenPrincipal,
                 Token = context.UserinfoToken,
                 ValidTokenTypes = { TokenTypeHints.UserinfoToken }
             };
@@ -4020,9 +4012,9 @@ public static partial class OpenIddictClientHandlers
 
             // Attach the registration identifier and identity of the authorization server to the returned principal to allow
             // resolving it even if no other claim was added (e.g if no id_token was returned/no userinfo endpoint is available).
-            context.MergedPrincipal.SetClaim(Claims.AuthorizationServer, context.Registration.Issuer.AbsoluteUri)
+            context.MergedPrincipal.SetClaim(Claims.AuthorizationServer,    context.Registration.Issuer.AbsoluteUri)
                                    .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
-                                   .SetClaim(Claims.Private.ProviderName, context.Registration.ProviderName);
+                                   .SetClaim(Claims.Private.ProviderName,   context.Registration.ProviderName);
 
             return default;
 
@@ -6359,6 +6351,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
             Debug.Assert(context.IntrospectionRequest is not null, SR.GetResourceString(SR.ID4008));
 
             // Ensure the introspection endpoint is present and is a valid absolute URI.
@@ -6385,15 +6378,20 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
+            // Attach the registration identifier and identity of the authorization server to the returned principal.
+            context.Principal.SetClaim(Claims.AuthorizationServer,    context.Registration.Issuer.AbsoluteUri)
+                             .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
+                             .SetClaim(Claims.Private.ProviderName,   context.Registration.ProviderName);
+
             context.Logger.LogTrace(SR.GetResourceString(SR.ID6154), context.Token, context.Principal.Claims);
         }
     }
 
     /// <summary>
-    /// Contains the logic responsible for mapping the introspection parameters
-    /// to their WS-Federation claim equivalent, if applicable.
+    /// Contains the logic responsible for mapping the standard claims resolved from the
+    /// introspection response to their WS-Federation claim equivalent, if applicable.
     /// </summary>
-    public sealed class MapIntrospectionParametersToWebServicesFederationClaims : IOpenIddictClientHandler<ProcessIntrospectionContext>
+    public sealed class MapIntrospectionClaimsToWebServicesFederationClaims : IOpenIddictClientHandler<ProcessIntrospectionContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -6401,7 +6399,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessIntrospectionContext>()
                 .AddFilter<RequireWebServicesFederationClaimMappingEnabled>()
-                .UseSingletonHandler<MapIntrospectionParametersToWebServicesFederationClaims>()
+                .UseSingletonHandler<MapIntrospectionClaimsToWebServicesFederationClaims>()
                 .SetOrder(SendIntrospectionRequest.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -6412,11 +6410,6 @@ public static partial class OpenIddictClientHandlers
             if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context.Options.DisableWebServicesFederationClaimMapping)
-            {
-                return default;
             }
 
             Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));

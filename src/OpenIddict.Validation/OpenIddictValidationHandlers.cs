@@ -34,6 +34,7 @@ public static partial class OpenIddictValidationHandlers
         AttachIntrospectionRequestClientCredentials.Descriptor,
         SendIntrospectionRequest.Descriptor,
         ValidateIntrospectedTokenUsage.Descriptor,
+        ValidateIntrospectedTokenAudiences.Descriptor,
         ValidateAccessToken.Descriptor,
 
         /*
@@ -81,8 +82,12 @@ public static partial class OpenIddictValidationHandlers
              context.ValidateAccessToken,
              context.RejectAccessToken) = context.EndpointType switch
             {
-                // The validation handler is responsible for validating access tokens for endpoints
-                // it doesn't manage (typically, API endpoints using token authentication).
+                // When introspection is used, ask the server to validate the token.
+                OpenIddictValidationEndpointType.Unknown
+                    when context.Options.ValidationType is OpenIddictValidationType.Introspection
+                    => (true, true, false, true),
+
+                // Otherwise, always validate it locally.
                 OpenIddictValidationEndpointType.Unknown => (true, true, true, true),
 
                 _ => (false, false, false, false)
@@ -261,6 +266,7 @@ public static partial class OpenIddictValidationHandlers
                 .AddFilter<RequireIntrospectionRequest>()
                 .UseSingletonHandler<AttachIntrospectionRequestParameters>()
                 .SetOrder(EvaluateIntrospectionRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
@@ -467,6 +473,7 @@ public static partial class OpenIddictValidationHandlers
                 .AddFilter<RequireIntrospectionRequest>()
                 .UseSingletonHandler<AttachIntrospectionRequestClientCredentials>()
                 .SetOrder(GenerateClientAssertion.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
@@ -520,6 +527,7 @@ public static partial class OpenIddictValidationHandlers
                 .AddFilter<RequireIntrospectionRequest>()
                 .UseSingletonHandler<SendIntrospectionRequest>()
                 .SetOrder(AttachIntrospectionRequestClientCredentials.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
@@ -576,6 +584,7 @@ public static partial class OpenIddictValidationHandlers
                 .AddFilter<RequireIntrospectionRequest>()
                 .UseSingletonHandler<ValidateIntrospectedTokenUsage>()
                 .SetOrder(SendIntrospectionRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
@@ -607,6 +616,75 @@ public static partial class OpenIddictValidationHandlers
 
             // Note: if no token usage could be resolved, the token is assumed to be an access token.
             context.AccessTokenPrincipal = context.AccessTokenPrincipal.SetTokenType(usage ?? TokenTypeHints.AccessToken);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the audiences of the introspected token returned by the server, if applicable.
+    /// </summary>
+    public sealed class ValidateIntrospectedTokenAudiences : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireIntrospectionRequest>()
+                .UseSingletonHandler<ValidateIntrospectedTokenAudiences>()
+                .SetOrder(ValidateIntrospectedTokenUsage.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // In theory, authorization servers are expected to return an error (or an active=false response)
+            // when the caller is not allowed to introspect the token (e.g because it's not a valid audience
+            // or authorized party). Unfortunately, some servers are known to have a relaxed validation policy.
+            //
+            // To ensure the token can be used with this resource server, a second pass is manually performed here.
+
+            // If no explicit audience has been configured, skip the audience validation.
+            if (context.Options.Audiences.Count is 0)
+            {
+                return default;
+            }
+
+            // If the access token doesn't have any audience attached, return an error.
+            var audiences = context.AccessTokenPrincipal.GetAudiences();
+            if (audiences.IsDefaultOrEmpty)
+            {
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6157));
+
+                context.Reject(
+                    error: Errors.InvalidToken,
+                    description: SR.GetResourceString(SR.ID2093),
+                    uri: SR.FormatID8000(SR.ID2093));
+
+                return default;
+            }
+
+            // If the access token doesn't include any registered audience, return an error.
+            if (!audiences.Intersect(context.Options.Audiences, StringComparer.Ordinal).Any())
+            {
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6158));
+
+                context.Reject(
+                    error: Errors.InvalidToken,
+                    description: SR.GetResourceString(SR.ID2094),
+                    uri: SR.FormatID8000(SR.ID2094));
+
+                return default;
+            }
 
             return default;
         }
@@ -648,9 +726,6 @@ public static partial class OpenIddictValidationHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                // When using introspection, the principal is already available as it is extracted
-                // from the introspection response returned by the authorization server.
-                Principal = context.AccessTokenPrincipal,
                 Token = context.AccessToken,
                 ValidTokenTypes = { TokenTypeHints.AccessToken }
             };

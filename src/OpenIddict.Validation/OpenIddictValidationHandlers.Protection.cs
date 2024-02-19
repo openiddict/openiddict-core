@@ -149,7 +149,6 @@ public static partial class OpenIddictValidationHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .AddFilter<RequireLocalValidation>()
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .UseScopedHandler<ValidateReferenceTokenIdentifier>()
                     .SetOrder(ResolveTokenValidationParameters.Descriptor.Order + 1_000)
@@ -219,7 +218,6 @@ public static partial class OpenIddictValidationHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .AddFilter<RequireLocalValidation>()
                     .UseSingletonHandler<ValidateIdentityModelToken>()
                     .SetOrder(ValidateReferenceTokenIdentifier.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -470,7 +468,6 @@ public static partial class OpenIddictValidationHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .AddFilter<RequireLocalValidation>()
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .UseScopedHandler<RestoreTokenEntryProperties>()
                     .SetOrder(MapInternalClaims.Descriptor.Order + 1_000)
@@ -699,7 +696,6 @@ public static partial class OpenIddictValidationHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .AddFilter<RequireLocalValidation>()
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .AddFilter<RequireTokenIdResolved>()
                     .UseScopedHandler<ValidateTokenEntry>()
@@ -754,7 +750,6 @@ public static partial class OpenIddictValidationHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .AddFilter<RequireLocalValidation>()
                     .AddFilter<RequireAuthorizationEntryValidationEnabled>()
                     .AddFilter<RequireAuthorizationIdResolved>()
                     .UseScopedHandler<ValidateAuthorizationEntry>()

@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -24,8 +25,10 @@ public static partial class OpenIddictClientHandlers
             HandleErrorResponse.Descriptor,
             HandleInactiveResponse.Descriptor,
             ValidateIssuer.Descriptor,
+            ValidateExpirationDate.Descriptor,
             ValidateTokenUsage.Descriptor,
-            PopulateClaims.Descriptor
+            PopulateClaims.Descriptor,
+            MapInternalClaims.Descriptor
         ];
 
         /// <summary>
@@ -217,7 +220,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the issuer from the introspection response.
+        /// Contains the logic responsible for extracting and validating the issuer from the introspection response.
         /// </summary>
         public sealed class ValidateIssuer : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
         {
@@ -271,6 +274,53 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for extracting and validating the expiration date from the introspection response.
+        /// </summary>
+        public sealed class ValidateExpirationDate : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+                    .UseSingletonHandler<ValidateExpirationDate>()
+                    .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: in most cases, an expired token should lead to an errored or "active=false" response
+                // being returned by the authorization server. Unfortunately, some implementations are known not
+                // to check the expiration date of the introspected token before returning a positive response.
+                //
+                // To ensure expired tokens are rejected, a manual check is performed here if the
+                // expiration date was returned as a dedicated claim by the remote authorization server.
+
+                if (long.TryParse((string?) context.Response[Claims.ExpiresAt],
+                    NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) &&
+                    DateTimeOffset.FromUnixTimeSeconds(value) is DateTimeOffset date &&
+                    date.Add(context.Registration.TokenValidationParameters.ClockSkew) < DateTimeOffset.UtcNow)
+                {
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2176),
+                        uri: SR.FormatID8000(SR.ID2176));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting and validating the token usage from the introspection response.
         /// </summary>
         public sealed class ValidateTokenUsage : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
@@ -281,7 +331,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<ValidateTokenUsage>()
-                    .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateExpirationDate.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -398,6 +448,73 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 context.Principal = new ClaimsPrincipal(identity);
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for mapping the standard claims to their internal/OpenIddict-specific equivalent.
+        /// </summary>
+        public sealed class MapInternalClaims : IOpenIddictClientHandler<HandleIntrospectionResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+                    .UseSingletonHandler<MapInternalClaims>()
+                    .SetOrder(PopulateClaims.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                // Map the internal "oi_crt_dt" claim from the standard "iat" claim, if available.
+                context.Principal.SetCreationDate(context.Principal.GetClaim(Claims.IssuedAt) switch
+                {
+                    string date when long.TryParse(date, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+                        => DateTimeOffset.FromUnixTimeSeconds(value),
+
+                    _ => null
+                });
+
+                // Map the internal "oi_exp_dt" claim from the standard "exp" claim, if available.
+                context.Principal.SetExpirationDate(context.Principal.GetClaim(Claims.ExpiresAt) switch
+                {
+                    string date when long.TryParse(date, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+                        => DateTimeOffset.FromUnixTimeSeconds(value),
+
+                    _ => null
+                });
+
+                // Map the internal "oi_aud" claims from the standard "aud" claims, if available.
+                context.Principal.SetAudiences(context.Principal.GetClaims(Claims.Audience));
+
+                // Map the internal "oi_prst" claims from the standard "client_id" claim, if available.
+                context.Principal.SetPresenters(context.Principal.GetClaim(Claims.ClientId) switch
+                {
+                    string identifier when !string.IsNullOrEmpty(identifier)
+                        => ImmutableArray.Create(identifier),
+
+                    _ => []
+                });
+
+                // Map the internal "oi_scp" claims from the standard, space-separated "scope" claim, if available.
+                context.Principal.SetScopes(context.Principal.GetClaim(Claims.Scope) switch
+                {
+                    string scope => scope.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray(),
+
+                    _ => []
+                });
 
                 return default;
             }

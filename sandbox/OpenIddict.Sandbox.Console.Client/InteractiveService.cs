@@ -219,14 +219,16 @@ public class InteractiveService : BackgroundService
                 .LeftAligned()
                 .AddColumn("Claim type")
                 .AddColumn("Claim value type")
-                .AddColumn("Claim value");
+                .AddColumn("Claim value")
+                .AddColumn("Claim issuer");
 
             foreach (var claim in principal.Claims)
             {
                 table.AddRow(
                     claim.Type.EscapeMarkup(),
                     claim.ValueType.EscapeMarkup(),
-                    claim.Value.EscapeMarkup());
+                    claim.Value.EscapeMarkup(),
+                    claim.Issuer.EscapeMarkup());
             }
 
             return table;
