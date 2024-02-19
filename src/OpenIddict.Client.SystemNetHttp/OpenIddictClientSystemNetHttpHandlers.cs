@@ -709,7 +709,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<ExtractWwwAuthenticateHeader<TContext>>()
-                .SetOrder(ValidateHttpResponse<TContext>.Descriptor.Order - 1_000)
+                .SetOrder(ExtractEmptyHttpResponse<TContext>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -775,6 +775,52 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             }
 
             context.Transaction.Response = new OpenIddictResponse(parameters);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for extracting empty responses from the HTTP response.
+    /// </summary>
+    public sealed class ExtractEmptyHttpResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataUri>()
+                .UseSingletonHandler<ExtractEmptyHttpResponse<TContext>>()
+                .SetOrder(ValidateHttpResponse<TContext>.Descriptor.Order - 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Don't overwrite the response if one was already provided.
+            if (context.Transaction.Response is not null)
+            {
+                return default;
+            }
+
+            // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var response = context.Transaction.GetHttpResponseMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            // Only process an empty response if no Content-Type header is attached to the
+            // HTTP response and the Content-Length header is not present or set to 0.
+            if (response.Content.Headers is { ContentLength: null or 0, ContentType: null })
+            {
+                context.Transaction.Response = new OpenIddictResponse();
+            }
 
             return default;
         }
