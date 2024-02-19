@@ -49,6 +49,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         IncludeStateParameterInRedirectUri.Descriptor,
         AttachAdditionalChallengeParameters.Descriptor,
 
+        /*
+         * Revocation processing:
+         */
+        AttachNonStandardRevocationClientAssertionClaims.Descriptor,
+        AttachRevocationRequestNonStandardClientCredentials.Descriptor,
+
         ..Authentication.DefaultHandlers,
         ..Device.DefaultHandlers,
         ..Discovery.DefaultHandlers,
@@ -371,8 +377,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for amending the client
-    /// assertion methods for the providers that require it.
+    /// Contains the logic responsible for adding non-standard claims to the client
+    /// assertions used for the token endpoint for the providers that require it.
     /// </summary>
     public sealed class AttachNonStandardClientAssertionClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -491,8 +497,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            // Apple implements a non-standard client authentication method for the token endpoint
-            // that is inspired by the standard private_key_jwt method but doesn't use the standard
+            // Apple implements a non-standard client authentication method for its endpoints that
+            // is inspired by the standard private_key_jwt method but doesn't use the standard
             // client_assertion/client_assertion_type parameters. Instead, the client assertion
             // must be sent as a "dynamic" client secret using client_secret_post. Since the logic
             // is the same as private_key_jwt, the configuration is amended to assume Apple supports
@@ -1531,6 +1537,96 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetSlackSettings();
 
                 context.Request["team"] = settings.Team;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for adding non-standard claims to the client
+    /// assertions used for the revocation endpoint for the providers that require it.
+    /// </summary>
+    public sealed class AttachNonStandardRevocationClientAssertionClaims : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireClientAssertionGenerated>()
+                .UseSingletonHandler<AttachNonStandardRevocationClientAssertionClaims>()
+                .SetOrder(PrepareRevocationClientAssertionPrincipal.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // For client assertions to be considered valid by the Apple ID authentication service,
+            // the team identifier associated with the developer account MUST be used as the issuer
+            // and the static "https://appleid.apple.com" URL MUST be used as the token audience.
+            //
+            // For more information about the custom client authentication method implemented by Apple,
+            // see https://developer.apple.com/documentation/sign_in_with_apple/generate_and_validate_tokens.
+            if (context.Registration.ProviderType is ProviderTypes.Apple)
+            {
+                var settings = context.Registration.GetAppleSettings();
+
+                context.ClientAssertionPrincipal.SetClaim(Claims.Private.Issuer, settings.TeamId);
+                context.ClientAssertionPrincipal.SetAudiences("https://appleid.apple.com");
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching custom client credentials
+    /// parameters to the revocation request for the providers that require it.
+    /// </summary>
+    public sealed class AttachRevocationRequestNonStandardClientCredentials : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationRequest>()
+                .UseSingletonHandler<AttachRevocationRequestNonStandardClientCredentials>()
+                .SetOrder(AttachRevocationRequestClientCredentials.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.RevocationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Apple implements a non-standard client authentication method for its endpoints that
+            // is inspired by the standard private_key_jwt method but doesn't use the standard
+            // client_assertion/client_assertion_type parameters. Instead, the client assertion
+            // must be sent as a "dynamic" client secret using client_secret_post. Since the logic
+            // is the same as private_key_jwt, the configuration is amended to assume Apple supports
+            // private_key_jwt and an event handler is responsible for populating the client_secret
+            // parameter using the client assertion once it has been generated by OpenIddict.
+            if (context.Registration.ProviderType is ProviderTypes.Apple)
+            {
+                context.RevocationRequest.ClientSecret = context.RevocationRequest.ClientAssertion;
+                context.RevocationRequest.ClientAssertion = null;
+                context.RevocationRequest.ClientAssertionType = null;
             }
 
             return default;
