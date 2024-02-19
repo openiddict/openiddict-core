@@ -299,6 +299,7 @@
             Documentation="https://www.deviantart.com/developers/authentication">
     <Environment Issuer="https://www.deviantart.com/">
       <Configuration AuthorizationEndpoint="https://www.deviantart.com/oauth2/authorize"
+                     RevocationEndpoint="https://www.deviantart.com/oauth2/revoke"
                      TokenEndpoint="https://www.deviantart.com/oauth2/token"
                      UserinfoEndpoint="https://www.deviantart.com/api/v1/oauth2/user/whoami">
         <GrantType Value="authorization_code" />
@@ -320,6 +321,7 @@
             Documentation="https://discord.com/developers/docs/topics/oauth2">
     <Environment Issuer="https://discord.com/">
       <Configuration AuthorizationEndpoint="https://discord.com/oauth2/authorize"
+                     RevocationEndpoint="https://discord.com/api/oauth2/token/revoke"
                      TokenEndpoint="https://discord.com/api/oauth2/token"
                      UserinfoEndpoint="https://discord.com/api/oauth2/@me">
         <CodeChallengeMethod Value="S256" />
@@ -1277,6 +1279,7 @@
             Documentation="https://trakt.docs.apiary.io/#reference/authentication-oauth">
     <Environment Issuer="https://trakt.tv/">
       <Configuration AuthorizationEndpoint="https://trakt.tv/oauth/authorize"
+                     RevocationEndpoint="https://api.trakt.tv/oauth/revoke"
                      TokenEndpoint="https://api.trakt.tv/oauth/token"
                      UserinfoEndpoint="https://api.trakt.tv/users/me">
         <GrantType Value="authorization_code" />
@@ -1541,6 +1544,7 @@
             Documentation="https://developers.zoom.us/docs/integrations/oauth/">
     <Environment Issuer="https://zoom.us/">
       <Configuration AuthorizationEndpoint="https://zoom.us/oauth/authorize"
+                     RevocationEndpoint="https://zoom.us/oauth/revoke"
                      TokenEndpoint="https://zoom.us/oauth/token"
                      UserinfoEndpoint="https://api.zoom.us/v2/users/me">
         <CodeChallengeMethod Value="plain" />
