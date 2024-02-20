@@ -43,7 +43,6 @@ public static partial class OpenIddictValidationDataProtectionHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .AddFilter<RequireLocalValidation>()
                     .UseSingletonHandler<ValidateDataProtectionToken>()
                     .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 500)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
