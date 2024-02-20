@@ -4061,6 +4061,12 @@ public static partial class OpenIddictClientHandlers
                             continue;
                         }
 
+                        // Ignore the OpenIddict private claims.
+                        if (claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
                         identity.AddClaim(claim);
                     }
                 }
