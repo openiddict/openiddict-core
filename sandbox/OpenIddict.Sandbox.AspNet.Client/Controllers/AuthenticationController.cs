@@ -156,7 +156,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             //     a few claims like the user identifier. The same approach is used to store the access/refresh tokens.
 
             // Important: if the remote server doesn't support OpenID Connect and doesn't expose a userinfo endpoint,
-            // result.Principal.Identity will represent an unauthenticated identity and won't contain any claim.
+            // result.Principal.Identity will represent an unauthenticated identity and won't contain any user claim.
             //
             // Such identities cannot be used as-is to build an authentication cookie in ASP.NET (as the
             // antiforgery stack requires at least a name claim to bind CSRF cookies to the user's identity) but
