@@ -400,10 +400,18 @@ public static partial class OpenIddictClientHandlers
 
                 // Create a new claims-based identity using the same authentication type
                 // and the name/role claims as the one used by IdentityModel for JWT tokens.
-                var identity = new ClaimsIdentity(
-                    context.Registration.TokenValidationParameters.AuthenticationType,
-                    context.Registration.TokenValidationParameters.NameClaimType,
-                    context.Registration.TokenValidationParameters.RoleClaimType);
+                //
+                // Note: if WS-Federation claim mapping was not disabled, the resulting identity
+                // will use the default WS-Federation claims as the name/role claim types.
+                var identity = context.Options.DisableWebServicesFederationClaimMapping ?
+                    new ClaimsIdentity(
+                        context.Registration.TokenValidationParameters.AuthenticationType,
+                        context.Registration.TokenValidationParameters.NameClaimType,
+                        context.Registration.TokenValidationParameters.RoleClaimType) :
+                    new ClaimsIdentity(
+                        context.Registration.TokenValidationParameters.AuthenticationType,
+                        nameType: ClaimTypes.Name,
+                        roleType: ClaimTypes.Role);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
