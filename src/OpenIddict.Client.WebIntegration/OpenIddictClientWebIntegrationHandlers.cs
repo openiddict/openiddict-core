@@ -18,7 +18,7 @@ namespace OpenIddict.Client.WebIntegration;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientWebIntegrationHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
         /*
          * Authentication processing:
          */
@@ -62,7 +62,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         .. Protection.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Userinfo.DefaultHandlers
-    ];
+    ]);
 
     /// <summary>
     /// Contains the logic responsible for validating the signature or message authentication

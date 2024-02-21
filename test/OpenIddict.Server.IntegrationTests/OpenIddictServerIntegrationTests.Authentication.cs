@@ -1202,7 +1202,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync([]);
+                .ReturnsAsync(ImmutableArray<string>.Empty);
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -1378,7 +1378,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync([]);
+                .ReturnsAsync(ImmutableArray<string>.Empty);
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -1425,7 +1425,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(application);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(["rst:" + type]);
+                .ReturnsAsync(ImmutableArray.Create("rst:" + type));
 
             mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);

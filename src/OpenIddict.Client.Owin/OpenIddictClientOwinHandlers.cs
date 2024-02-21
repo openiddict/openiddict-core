@@ -25,7 +25,7 @@ namespace OpenIddict.Client.Owin;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientOwinHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
         /*
          * Top-level request processing:
          */
@@ -68,7 +68,7 @@ public static partial class OpenIddictClientOwinHandlers
 
         .. Authentication.DefaultHandlers,
         .. Session.DefaultHandlers
-    ];
+    ]);
 
     /// <summary>
     /// Contains the logic responsible for resolving the request URI from the OWIN environment.

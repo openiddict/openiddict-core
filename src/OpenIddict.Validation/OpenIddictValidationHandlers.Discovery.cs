@@ -15,7 +15,7 @@ public static partial class OpenIddictValidationHandlers
 {
     public static class Discovery
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Configuration response handling:
              */
@@ -32,7 +32,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateWellKnownCryptographyParameters.Descriptor,
             HandleCryptographyErrorResponse.Descriptor,
             ExtractSigningKeys.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the configuration response.

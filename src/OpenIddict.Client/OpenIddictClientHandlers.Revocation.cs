@@ -14,13 +14,13 @@ public static partial class OpenIddictClientHandlers
 {
     public static class Revocation
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Revocation response handling:
              */
             ValidateWellKnownParameters.Descriptor,
             HandleErrorResponse.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the revocation response.

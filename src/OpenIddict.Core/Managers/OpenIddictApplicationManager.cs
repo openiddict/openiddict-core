@@ -1025,9 +1025,11 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         await Store.SetDisplayNamesAsync(application, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
         await Store.SetJsonWebKeySetAsync(application, descriptor.JsonWebKeySet, cancellationToken);
         await Store.SetPermissionsAsync(application, descriptor.Permissions.ToImmutableArray(), cancellationToken);
-        await Store.SetPostLogoutRedirectUrisAsync(application, [.. descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString)], cancellationToken);
+        await Store.SetPostLogoutRedirectUrisAsync(application,
+            descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString).ToImmutableArray(), cancellationToken);
         await Store.SetPropertiesAsync(application, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
-        await Store.SetRedirectUrisAsync(application, [.. descriptor.RedirectUris.Select(uri => uri.OriginalString)], cancellationToken);
+        await Store.SetRedirectUrisAsync(application,
+            descriptor.RedirectUris.Select(uri => uri.OriginalString).ToImmutableArray(), cancellationToken);
         await Store.SetRequirementsAsync(application, descriptor.Requirements.ToImmutableArray(), cancellationToken);
         await Store.SetSettingsAsync(application, descriptor.Settings.ToImmutableDictionary(), cancellationToken);
     }
@@ -1322,9 +1324,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
             // When callback URIs are specified, ensure they are valid and spec-compliant.
             // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
-            foreach (var uri in ImmutableArray.Create<string>()
-                .AddRange(await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-                .AddRange(await Store.GetRedirectUrisAsync(application, cancellationToken)))
+            foreach (var uri in (List<string>) [
+                .. await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken),
+                .. await Store.GetRedirectUrisAsync(application, cancellationToken)])
             {
                 // Ensure the URI is not null or empty.
                 if (string.IsNullOrEmpty(uri))

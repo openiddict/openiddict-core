@@ -6,6 +6,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Security.Claims;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -296,7 +297,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
-                        .SetClaims(Claims.Audience, ["Fabrikam", "Contoso"]);
+                        .SetClaims(Claims.Audience, ImmutableArray.Create("Fabrikam", "Contoso"));
 
                     return default;
                 });
@@ -346,7 +347,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
-                        .SetClaims(Claims.Scope, [Scopes.OpenId, Scopes.Profile]);
+                        .SetClaims(Claims.Scope, ImmutableArray.Create(Scopes.OpenId, Scopes.Profile));
 
                     return default;
                 });
@@ -444,7 +445,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
-                        .SetClaims(Claims.Scope, [Scopes.OpenId, Scopes.Profile]);
+                        .SetClaims(Claims.Scope, ImmutableArray.Create(Scopes.OpenId, Scopes.Profile));
 
                     return default;
                 });

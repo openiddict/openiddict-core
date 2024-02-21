@@ -22,7 +22,7 @@ namespace OpenIddict.Validation.SystemNetHttp;
 public static partial class OpenIddictValidationSystemNetHttpHandlers
 {
     public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; }
-        = [.. Discovery.DefaultHandlers, .. Introspection.DefaultHandlers];
+        = ImmutableArray.Create([.. Discovery.DefaultHandlers, .. Introspection.DefaultHandlers]);
 
     /// <summary>
     /// Contains the logic responsible for creating and attaching a <see cref="HttpClient"/>.

@@ -21,12 +21,12 @@ public static partial class OpenIddictValidationDataProtectionHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Token validation:
              */
             ValidateDataProtectionToken.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using Data Protection.

@@ -15,7 +15,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 {
     public static class Discovery
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Configuration response handling:
              */
@@ -25,7 +25,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             AmendScopes.Descriptor,
             AmendClientAuthenticationMethods.Descriptor,
             AmendEndpoints.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for amending the issuer for the providers that require it.

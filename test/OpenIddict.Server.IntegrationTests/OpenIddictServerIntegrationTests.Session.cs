@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
@@ -414,7 +415,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(application);
 
             mock.Setup(manager => manager.GetPostLogoutRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(["http://www.fabrikam.com/path"]);
+                .ReturnsAsync(ImmutableArray.Create("http://www.fabrikam.com/path"));
 
             mock.Setup(manager => manager.HasPermissionAsync(application,
                 Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))

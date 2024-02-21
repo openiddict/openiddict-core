@@ -22,7 +22,7 @@ namespace OpenIddict.Server;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictServerHandlers
 {
-    public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
+    public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
         /*
          * Top-level request processing:
          */
@@ -116,7 +116,7 @@ public static partial class OpenIddictServerHandlers
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
         .. Userinfo.DefaultHandlers
-    ];
+    ]);
 
     /// <summary>
     /// Contains the logic responsible for inferring the endpoint type from the request URI.
@@ -2497,7 +2497,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Reset the audiences collection, as it's later set, based on the token type.
-            context.Principal.SetAudiences(ImmutableArray.Create<string>());
+            context.Principal.SetAudiences(ImmutableArray<string>.Empty);
 
             return default;
         }

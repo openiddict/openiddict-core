@@ -12,7 +12,7 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Introspection request extraction:
              */
@@ -28,6 +28,6 @@ public static partial class OpenIddictServerOwinHandlers
             SuppressFormsAuthenticationRedirect<ApplyIntrospectionResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyIntrospectionResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyIntrospectionResponseContext>.Descriptor
-        ];
+        ]);
     }
 }

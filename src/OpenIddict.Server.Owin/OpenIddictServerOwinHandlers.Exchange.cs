@@ -12,7 +12,7 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Exchange
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Token request extraction:
              */
@@ -34,6 +34,6 @@ public static partial class OpenIddictServerOwinHandlers
             AttachCacheControlHeader<ApplyTokenResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyTokenResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyTokenResponseContext>.Descriptor
-        ];
+        ]);
     }
 }

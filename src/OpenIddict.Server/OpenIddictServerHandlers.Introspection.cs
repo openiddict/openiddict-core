@@ -21,7 +21,7 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Introspection request top-level processing:
              */
@@ -52,7 +52,7 @@ public static partial class OpenIddictServerHandlers
              * Introspection response handling:
              */
             NormalizeErrorResponse.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for extracting introspection requests and invoking the corresponding event handlers.

@@ -16,7 +16,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * DeviceAuthorization request processing:
              */
@@ -39,7 +39,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractWwwAuthenticateHeader<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractDeviceAuthorizationResponseContext>.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization header.

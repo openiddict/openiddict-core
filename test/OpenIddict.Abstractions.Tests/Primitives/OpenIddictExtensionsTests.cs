@@ -2084,7 +2084,7 @@ public class OpenIddictExtensionsTests
         var identity = (ClaimsIdentity) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaims("type", []));
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaims("type", ImmutableArray<string>.Empty));
 
         Assert.Equal("identity", exception.ParamName);
     }
@@ -2096,7 +2096,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaims("type", []));
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaims("type", ImmutableArray<string>.Empty));
 
         Assert.Equal("principal", exception.ParamName);
     }
@@ -2108,7 +2108,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims("type", ["value1", "value2"]));
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims("type", ImmutableArray.Create("value1", "value2")));
 
         Assert.Equal("principal", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
@@ -2123,7 +2123,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaims(type, []));
+        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaims(type, ImmutableArray<string>.Empty));
 
         Assert.Equal("type", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
@@ -2138,7 +2138,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims(type, []));
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims(type, ImmutableArray<string>.Empty));
 
         Assert.Equal("type", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
@@ -2151,7 +2151,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.AddClaims("type", ["value1", "value2"], "issuer");
+        identity.AddClaims("type", ImmutableArray.Create("value1", "value2"), "issuer");
 
         // Assert
         var claims = identity.FindAll("type").ToArray();
@@ -2171,7 +2171,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        principal.AddClaims("type", ["value1", "value2"], "issuer");
+        principal.AddClaims("type", ImmutableArray.Create("value1", "value2"), "issuer");
 
         // Assert
         var claims = principal.FindAll("type").ToArray();
@@ -2191,10 +2191,10 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.AddClaims("TYPE", ["value1", "value2"]);
+        identity.AddClaims("TYPE", ImmutableArray.Create("value1", "value2"));
 
         // Assert
-        Assert.Equal<string>(["value1", "value2"], identity.GetClaims("type"));
+        Assert.Equal<string>(ImmutableArray.Create("value1", "value2"), identity.GetClaims("type"));
     }
 
     [Fact]
@@ -2204,10 +2204,10 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        principal.AddClaims("TYPE", ["value1", "value2"]);
+        principal.AddClaims("TYPE", ImmutableArray.Create("value1", "value2"));
 
         // Assert
-        Assert.Equal<string>(["value1", "value2"], principal.GetClaims("type"));
+        Assert.Equal<string>(ImmutableArray.Create("value1", "value2"), principal.GetClaims("type"));
     }
 
     [Fact]
@@ -3612,7 +3612,7 @@ public class OpenIddictExtensionsTests
         var identity = (ClaimsIdentity) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaims("type", []));
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaims("type", ImmutableArray<string>.Empty));
 
         Assert.Equal("identity", exception.ParamName);
     }
@@ -3624,7 +3624,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaims("type", []));
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaims("type", ImmutableArray<string>.Empty));
 
         Assert.Equal("principal", exception.ParamName);
     }
@@ -3636,7 +3636,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims("type", ["value1", "value2"]));
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims("type", ImmutableArray.Create("value1", "value2")));
 
         Assert.Equal("principal", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
@@ -3651,7 +3651,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaims(type, []));
+        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaims(type, ImmutableArray<string>.Empty));
 
         Assert.Equal("type", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
@@ -3666,7 +3666,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims(type, []));
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims(type, ImmutableArray<string>.Empty));
 
         Assert.Equal("type", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
@@ -3679,7 +3679,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.SetClaims("type", ["value1", "value2"], "issuer");
+        identity.SetClaims("type", ImmutableArray.Create("value1", "value2"), "issuer");
 
         // Assert
         var claims = identity.FindAll("type").ToArray();
@@ -3699,7 +3699,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        principal.SetClaims("type", ["value1", "value2"], "issuer");
+        principal.SetClaims("type", ImmutableArray.Create("value1", "value2"), "issuer");
 
         // Assert
         var claims = principal.FindAll("type").ToArray();
@@ -3718,10 +3718,10 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.SetClaims("TYPE", ["value1", "value2"]);
+        identity.SetClaims("TYPE", ImmutableArray.Create("value1", "value2"));
 
         // Assert
-        Assert.Equal<string>(["value1", "value2"], identity.GetClaims("type"));
+        Assert.Equal<string>(ImmutableArray.Create("value1", "value2"), identity.GetClaims("type"));
     }
 
     [Fact]
@@ -3731,10 +3731,10 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        principal.SetClaims("TYPE", ["value1", "value2"]);
+        principal.SetClaims("TYPE", ImmutableArray.Create("value1", "value2"));
 
         // Assert
-        Assert.Equal<string>(["value1", "value2"], principal.GetClaims("type"));
+        Assert.Equal<string>(ImmutableArray.Create("value1", "value2"), principal.GetClaims("type"));
     }
 
     [Fact]
@@ -3745,7 +3745,7 @@ public class OpenIddictExtensionsTests
         identity.AddClaim("type", "value");
 
         // Act
-        identity.SetClaims("type", []);
+        identity.SetClaims("type", ImmutableArray<string>.Empty);
 
         // Assert
         Assert.Empty(identity.GetClaims("type"));
@@ -3759,7 +3759,7 @@ public class OpenIddictExtensionsTests
         principal.AddClaim("type", "value");
 
         // Act
-        principal.SetClaims("type", []);
+        principal.SetClaims("type", ImmutableArray<string>.Empty);
 
         // Assert
         Assert.Empty(principal.GetClaims("type"));

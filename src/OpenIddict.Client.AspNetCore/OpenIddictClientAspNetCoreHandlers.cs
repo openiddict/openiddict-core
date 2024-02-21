@@ -30,7 +30,7 @@ namespace OpenIddict.Client.AspNetCore;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientAspNetCoreHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
         /*
          * Top-level request processing:
          */
@@ -74,7 +74,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 
         .. Authentication.DefaultHandlers,
         .. Session.DefaultHandlers
-    ];
+    ]);
 
     /// <summary>
     /// Contains the logic responsible for resolving the request URI from the ASP.NET Core environment.

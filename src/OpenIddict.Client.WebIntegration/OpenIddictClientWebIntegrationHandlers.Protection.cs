@@ -14,12 +14,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Token validation:
              */
             AmendTokenValidationParameters.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for amending the token validation parameters for the providers that require it.
