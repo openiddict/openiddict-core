@@ -56,8 +56,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
 
             if (certificate is not null)
             {
-                handler.ClientCertificates.Add(certificate);
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                handler.ClientCertificates.Add(certificate);
             }
         });
     }
