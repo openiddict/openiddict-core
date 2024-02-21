@@ -84,16 +84,6 @@ public sealed class OpenIddictClientRegistration
     public HashSet<string> GrantTypes { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the response type combinations allowed by the client instance.
-    /// If no value is explicitly set, all the types enabled in the client options can be used.
-    /// </summary>
-    /// <remarks>
-    /// The final response type used in authorization requests is chosen by OpenIddict based on
-    /// the client options, the server configuration and the values registered in this property.
-    /// </remarks>
-    public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
-
-    /// <summary>
     /// Gets the response modes allowed by the client instance.
     /// If no value is explicitly set, all the modes enabled in the client options can be used.
     /// </summary>
@@ -102,6 +92,16 @@ public sealed class OpenIddictClientRegistration
     /// the client options, the server configuration and the values registered in this property.
     /// </remarks>
     public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets the response type combinations allowed by the client instance.
+    /// If no value is explicitly set, all the types enabled in the client options can be used.
+    /// </summary>
+    /// <remarks>
+    /// The final response type used in authorization requests is chosen by OpenIddict based on
+    /// the client options, the server configuration and the values registered in this property.
+    /// </remarks>
+    public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets or sets the URI of the authorization server.
