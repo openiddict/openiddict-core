@@ -181,7 +181,7 @@ public class Startup
                 //        .SetClientId("resource_server")
                 //        .SetClientSecret("80B552BB-4CD8-48DA-946E-0815E0147DD2");
                 //
-                // When introspection is used, System.Net.Http integration must be enabled.
+                // When introspection is used, the System.Net.Http integration must be enabled.
                 //
                 // options.UseSystemNetHttp();
 

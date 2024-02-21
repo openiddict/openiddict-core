@@ -649,9 +649,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.DisableBackchannelIdentityTokenNonceValidation = context.Registration.ProviderType switch
             {
                 // These providers don't include the nonce in their identity tokens:
-                ProviderTypes.Asana    or ProviderTypes.Dropbox          or
-                ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline or
-                ProviderTypes.WorldId => true,
+                ProviderTypes.Asana            or ProviderTypes.DocuSign or
+                ProviderTypes.Dropbox          or ProviderTypes.LinkedIn or
+                ProviderTypes.QuickBooksOnline or ProviderTypes.WorldId => true,
 
                 _ => context.DisableBackchannelIdentityTokenNonceValidation
             };

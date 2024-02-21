@@ -207,9 +207,10 @@ public class InteractiveService : BackgroundService
                 AnsiConsole.MarkupLine("[yellow]The authorization was denied by the end user.[/]");
             }
 
-            catch
+            catch (Exception exception)
             {
-                AnsiConsole.MarkupLine("[red]An error occurred while trying to authenticate the user.[/]");
+                AnsiConsole.MarkupLine("[red]An error occurred while trying to authenticate the user:[/]");
+                AnsiConsole.WriteException(exception);
             }
         }
 
