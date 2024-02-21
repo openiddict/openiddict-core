@@ -22,12 +22,12 @@ namespace OpenIddict.Client.SystemNetHttp;
 public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
-        ..Device.DefaultHandlers,
-        ..Discovery.DefaultHandlers,
-        ..Exchange.DefaultHandlers,
-        ..Introspection.DefaultHandlers,
-        ..Revocation.DefaultHandlers,
-        ..Userinfo.DefaultHandlers
+        .. Device.DefaultHandlers,
+        .. Discovery.DefaultHandlers,
+        .. Exchange.DefaultHandlers,
+        .. Introspection.DefaultHandlers,
+        .. Revocation.DefaultHandlers,
+        .. Userinfo.DefaultHandlers
     ];
 
     /// <summary>

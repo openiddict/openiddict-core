@@ -107,15 +107,15 @@ public static partial class OpenIddictServerHandlers
         AttachErrorParameters.Descriptor,
         AttachCustomErrorParameters.Descriptor,
 
-        ..Authentication.DefaultHandlers,
-        ..Device.DefaultHandlers,
-        ..Discovery.DefaultHandlers,
-        ..Exchange.DefaultHandlers,
-        ..Introspection.DefaultHandlers,
-        ..Protection.DefaultHandlers,
-        ..Revocation.DefaultHandlers,
-        ..Session.DefaultHandlers,
-        ..Userinfo.DefaultHandlers
+        .. Authentication.DefaultHandlers,
+        .. Device.DefaultHandlers,
+        .. Discovery.DefaultHandlers,
+        .. Exchange.DefaultHandlers,
+        .. Introspection.DefaultHandlers,
+        .. Protection.DefaultHandlers,
+        .. Revocation.DefaultHandlers,
+        .. Session.DefaultHandlers,
+        .. Userinfo.DefaultHandlers
     ];
 
     /// <summary>

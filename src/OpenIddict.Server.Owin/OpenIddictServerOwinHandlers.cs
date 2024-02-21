@@ -47,14 +47,14 @@ public static partial class OpenIddictServerOwinHandlers
          */
         ResolveHostSignOutProperties.Descriptor,
 
-        ..Authentication.DefaultHandlers,
-        ..Device.DefaultHandlers,
-        ..Discovery.DefaultHandlers,
-        ..Exchange.DefaultHandlers,
-        ..Introspection.DefaultHandlers,
-        ..Revocation.DefaultHandlers,
-        ..Session.DefaultHandlers,
-        ..Userinfo.DefaultHandlers
+        .. Authentication.DefaultHandlers,
+        .. Device.DefaultHandlers,
+        .. Discovery.DefaultHandlers,
+        .. Exchange.DefaultHandlers,
+        .. Introspection.DefaultHandlers,
+        .. Revocation.DefaultHandlers,
+        .. Session.DefaultHandlers,
+        .. Userinfo.DefaultHandlers
     ];
 
     /// <summary>

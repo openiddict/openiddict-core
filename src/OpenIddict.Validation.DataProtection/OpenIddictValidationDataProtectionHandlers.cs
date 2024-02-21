@@ -13,5 +13,5 @@ namespace OpenIddict.Validation.DataProtection;
 public static partial class OpenIddictValidationDataProtectionHandlers
 {
     public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; }
-        = [..Protection.DefaultHandlers];
+        = [.. Protection.DefaultHandlers];
 }

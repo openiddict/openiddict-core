@@ -49,9 +49,9 @@ public static partial class OpenIddictValidationHandlers
         AttachErrorParameters.Descriptor,
         AttachCustomErrorParameters.Descriptor,
 
-        ..Discovery.DefaultHandlers,
-        ..Introspection.DefaultHandlers,
-        ..Protection.DefaultHandlers
+        .. Discovery.DefaultHandlers,
+        .. Introspection.DefaultHandlers,
+        .. Protection.DefaultHandlers
     ];
 
     /// <summary>

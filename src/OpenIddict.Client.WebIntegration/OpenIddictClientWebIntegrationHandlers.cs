@@ -55,13 +55,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         AttachNonStandardRevocationClientAssertionClaims.Descriptor,
         AttachRevocationRequestNonStandardClientCredentials.Descriptor,
 
-        ..Authentication.DefaultHandlers,
-        ..Device.DefaultHandlers,
-        ..Discovery.DefaultHandlers,
-        ..Exchange.DefaultHandlers,
-        ..Protection.DefaultHandlers,
-        ..Revocation.DefaultHandlers,
-        ..Userinfo.DefaultHandlers
+        .. Authentication.DefaultHandlers,
+        .. Device.DefaultHandlers,
+        .. Discovery.DefaultHandlers,
+        .. Exchange.DefaultHandlers,
+        .. Protection.DefaultHandlers,
+        .. Revocation.DefaultHandlers,
+        .. Userinfo.DefaultHandlers
     ];
 
     /// <summary>

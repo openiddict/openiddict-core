@@ -52,14 +52,14 @@ public static partial class OpenIddictServerAspNetCoreHandlers
          */
         ResolveHostSignOutProperties.Descriptor,
 
-        ..Authentication.DefaultHandlers,
-        ..Device.DefaultHandlers,
-        ..Discovery.DefaultHandlers,
-        ..Exchange.DefaultHandlers,
-        ..Introspection.DefaultHandlers,
-        ..Revocation.DefaultHandlers,
-        ..Session.DefaultHandlers,
-        ..Userinfo.DefaultHandlers
+        .. Authentication.DefaultHandlers,
+        .. Device.DefaultHandlers,
+        .. Discovery.DefaultHandlers,
+        .. Exchange.DefaultHandlers,
+        .. Introspection.DefaultHandlers,
+        .. Revocation.DefaultHandlers,
+        .. Session.DefaultHandlers,
+        .. Userinfo.DefaultHandlers
     ];
 
     /// <summary>
