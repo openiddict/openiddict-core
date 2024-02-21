@@ -82,7 +82,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
          */
         AbortAuthenticationDemand.Descriptor,
 
-        ..Authentication.DefaultHandlers
+        .. Authentication.DefaultHandlers
     ];
 
     /// <summary>

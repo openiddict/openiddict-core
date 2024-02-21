@@ -66,8 +66,8 @@ public static partial class OpenIddictClientOwinHandlers
         AttachCacheControlHeader<ProcessErrorContext>.Descriptor,
         ProcessLocalErrorResponse<ProcessErrorContext>.Descriptor,
 
-        ..Authentication.DefaultHandlers,
-        ..Session.DefaultHandlers
+        .. Authentication.DefaultHandlers,
+        .. Session.DefaultHandlers
     ];
 
     /// <summary>
