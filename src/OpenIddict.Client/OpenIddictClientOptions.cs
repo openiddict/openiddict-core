@@ -138,7 +138,6 @@ public sealed class OpenIddictClientOptions
 
     /// <summary>
     /// Gets the OAuth 2.0 code challenge methods enabled for this application.
-    /// By default, only the S256 method is allowed (if the code flow is enabled).
     /// </summary>
     public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal);
 
@@ -148,14 +147,14 @@ public sealed class OpenIddictClientOptions
     public HashSet<string> GrantTypes { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
-
-    /// <summary>
     /// Gets the OAuth 2.0/OpenID Connect response modes enabled for this application.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
 }
