@@ -339,6 +339,20 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ▄▄▀██ ▄▄▄ ██ ▄▄▀██ ██ ██ ▄▄▄ █▄ ▄██ ▄▄ ██ ▀██ ██
+                                        ██ ██ ██ ███ ██ █████ ██ ██▄▄▄▀▀██ ███ █▀▀██ █ █ ██
+                                        ██ ▀▀ ██ ▀▀▀ ██ ▀▀▄██▄▀▀▄██ ▀▀▀ █▀ ▀██ ▀▀▄██ ██▄ ██
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="DocuSign" Id="3133a058-b516-4d21-be9a-96c62fff7862"
+            Documentation="https://developers.docusign.com/platform/auth/authcode/authcode-get-token/">
+    <Environment Name="Production"  Issuer="https://account.docusign.com/" />
+    <Environment Name="Development" Issuer="https://account-d.docusign.com" />
+  </Provider>
+
+  <!--
                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                           ██ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▄▄▀██ ▄▄▄ █▄▀█▀▄██
                                           ██ ██ ██ ▀▀▄██ ███ ██ ▀▀ ██ ▄▄▀██ ███ ███ ████
