@@ -16,7 +16,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Introspection request processing:
              */
@@ -39,7 +39,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             ExtractWwwAuthenticateHeader<ExtractIntrospectionResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractIntrospectionResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractIntrospectionResponseContext>.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization header.

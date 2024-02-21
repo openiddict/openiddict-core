@@ -20,7 +20,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 {
     public static class Revocation
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Revocation request preparation:
              */
@@ -30,7 +30,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              * Revocation response extraction:
              */
             NormalizeContentType.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization

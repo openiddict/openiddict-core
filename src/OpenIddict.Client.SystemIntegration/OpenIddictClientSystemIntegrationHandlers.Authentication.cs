@@ -23,7 +23,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 {
     public static class Authentication
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Authorization request processing:
              */
@@ -45,7 +45,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             ProcessEmptyHttpResponse.Descriptor,
             ProcessProtocolActivationResponse<ApplyRedirectionResponseContext>.Descriptor,
             ProcessWebAuthenticationResultResponse<ApplyRedirectionResponseContext>.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for initiating authorization requests using the web authentication broker.

@@ -16,7 +16,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Exchange
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Token request processing:
              */
@@ -39,7 +39,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractWwwAuthenticateHeader<ExtractTokenResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractTokenResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractTokenResponseContext>.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization header.

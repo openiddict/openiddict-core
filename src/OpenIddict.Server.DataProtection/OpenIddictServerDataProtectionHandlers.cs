@@ -13,5 +13,5 @@ namespace OpenIddict.Server.DataProtection;
 public static partial class OpenIddictServerDataProtectionHandlers
 {
     public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; }
-        = [.. Protection.DefaultHandlers];
+        = ImmutableArray.Create([.. Protection.DefaultHandlers]);
 }

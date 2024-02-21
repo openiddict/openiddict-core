@@ -31,7 +31,7 @@ public sealed class OpenIddictClientHandlerDescriptor
     /// Gets the list of filters responsible for excluding the handler
     /// from the activated handlers if it doesn't meet the criteria.
     /// </summary>
-    public ImmutableArray<Type> FilterTypes { get; private set; } = [];
+    public ImmutableArray<Type> FilterTypes { get; private set; } = ImmutableArray<Type>.Empty;
 
     /// <summary>
     /// Gets the order assigned to the handler.

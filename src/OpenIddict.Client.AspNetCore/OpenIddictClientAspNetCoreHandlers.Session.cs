@@ -14,7 +14,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 {
     public static class Session
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Session request processing:
              */
@@ -38,7 +38,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             ProcessPassthroughErrorResponse<ApplyPostLogoutRedirectionResponseContext, RequirePostLogoutRedirectionEndpointPassthroughEnabled>.Descriptor,
             ProcessStatusCodePagesErrorResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
             ProcessLocalErrorResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for processing authorization requests using 302 redirects.

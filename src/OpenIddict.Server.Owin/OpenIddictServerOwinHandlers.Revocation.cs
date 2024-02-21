@@ -12,7 +12,7 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Revocation
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Revocation request extraction:
              */
@@ -29,6 +29,6 @@ public static partial class OpenIddictServerOwinHandlers
             AttachCacheControlHeader<ApplyRevocationResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyRevocationResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyRevocationResponseContext>.Descriptor
-        ];
+        ]);
     }
 }

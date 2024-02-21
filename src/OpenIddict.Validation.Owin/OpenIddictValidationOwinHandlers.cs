@@ -22,7 +22,7 @@ namespace OpenIddict.Validation.Owin;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictValidationOwinHandlers
 {
-    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
+    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
         /*
          * Request top-level processing:
          */
@@ -57,7 +57,7 @@ public static partial class OpenIddictValidationOwinHandlers
         AttachCacheControlHeader<ProcessErrorContext>.Descriptor,
         AttachWwwAuthenticateHeader<ProcessErrorContext>.Descriptor,
         ProcessChallengeErrorResponse<ProcessErrorContext>.Descriptor
-    ];
+    ]);
 
     /// <summary>
     /// Contains the logic responsible for resolving the request URI from the OWIN environment.

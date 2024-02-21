@@ -16,7 +16,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Revocation
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Revocation request processing:
              */
@@ -40,7 +40,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractEmptyHttpResponse<ExtractRevocationResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractRevocationResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractRevocationResponseContext>.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization header.

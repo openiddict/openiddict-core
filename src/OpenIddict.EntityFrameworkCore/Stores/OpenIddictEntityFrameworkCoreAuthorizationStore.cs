@@ -574,7 +574,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         if (string.IsNullOrEmpty(authorization.Scopes))
         {
-            return new([]);
+            return new(ImmutableArray<string>.Empty);
         }
 
         // Note: parsing the stringified scopes is an expensive operation.

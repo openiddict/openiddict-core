@@ -17,7 +17,7 @@ public static partial class OpenIddictValidationHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Introspection response handling:
              */
@@ -29,7 +29,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateTokenUsage.Descriptor,
             PopulateClaims.Descriptor,
             MapInternalClaims.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the introspection response.
@@ -507,7 +507,7 @@ public static partial class OpenIddictValidationHandlers
                     string identifier when !string.IsNullOrEmpty(identifier)
                         => ImmutableArray.Create(identifier),
 
-                    _ => []
+                    _ => ImmutableArray<string>.Empty
                 });
 
                 // Map the internal "oi_scp" claims from the standard, space-separated "scope" claim, if available.
@@ -515,7 +515,7 @@ public static partial class OpenIddictValidationHandlers
                 {
                     string scope => scope.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray(),
 
-                    _ => []
+                    _ => ImmutableArray<string>.Empty
                 });
 
                 return default;

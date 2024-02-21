@@ -17,7 +17,7 @@ public static partial class OpenIddictValidationHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Token validation:
              */
@@ -38,7 +38,7 @@ public static partial class OpenIddictValidationHandlers
              */
             AttachSecurityCredentials.Descriptor,
             GenerateIdentityModelToken.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for resolving the validation parameters used to validate tokens.

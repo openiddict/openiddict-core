@@ -12,7 +12,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Discovery
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Configuration request processing:
              */
@@ -56,6 +56,6 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractWwwAuthenticateHeader<ExtractCryptographyResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractCryptographyResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractCryptographyResponseContext>.Descriptor
-        ];
+        ]);
     }
 }

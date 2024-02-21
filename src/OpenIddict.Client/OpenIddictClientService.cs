@@ -47,7 +47,7 @@ public class OpenIddictClientService
         var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
         return new(options.CurrentValue.Registrations switch
         {
-            [  ]               => ImmutableArray.Create<OpenIddictClientRegistration>(),
+            [  ]               => ImmutableArray<OpenIddictClientRegistration>.Empty,
             [..] registrations => registrations.ToImmutableArray()
         });
     }

@@ -2816,7 +2816,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleTokenRequest_RevokesTokensWhenAuthorizationCodeIsAlreadyRedeemed()
     {
         // Arrange
-        ImmutableArray<OpenIddictToken> tokens = [new(), new(), new()];
+        var tokens = ImmutableArray.Create(new OpenIddictToken(), new OpenIddictToken(), new OpenIddictToken());
 
         var manager = CreateTokenManager(mock =>
         {
@@ -2915,7 +2915,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleTokenRequest_RevokesTokensWhenRefreshTokenIsAlreadyRedeemedAndLeewayIsNull()
     {
         // Arrange
-        ImmutableArray<OpenIddictToken> tokens = [new(), new(), new()];
+        var tokens = ImmutableArray.Create(new OpenIddictToken(), new OpenIddictToken(), new OpenIddictToken());
 
         var manager = CreateTokenManager(mock =>
         {
@@ -3006,7 +3006,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleTokenRequest_RevokesTokensWhenRefreshTokenIsAlreadyRedeemedAndCannotBeReused()
     {
         // Arrange
-        ImmutableArray<OpenIddictToken> tokens = [new(), new(), new()];
+        var tokens = ImmutableArray.Create(new OpenIddictToken(), new OpenIddictToken(), new OpenIddictToken());
 
         var manager = CreateTokenManager(mock =>
         {
@@ -3097,7 +3097,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleTokenRequest_DoesNotRevokeTokensWhenRefreshTokenIsAlreadyRedeemedAndCanBeReused()
     {
         // Arrange
-        ImmutableArray<OpenIddictToken> tokens = [new(), new(), new()];
+        var tokens = ImmutableArray.Create(new OpenIddictToken(), new OpenIddictToken(), new OpenIddictToken());
 
         var manager = CreateTokenManager(mock =>
         {

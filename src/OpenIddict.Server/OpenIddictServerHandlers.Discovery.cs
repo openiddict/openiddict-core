@@ -18,7 +18,7 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Discovery
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Configuration request top-level processing:
              */
@@ -57,7 +57,7 @@ public static partial class OpenIddictServerHandlers
              * Cryptography request handling:
              */
             AttachSigningKeys.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for extracting configuration requests and invoking the corresponding event handlers.

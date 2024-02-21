@@ -21,7 +21,7 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Exchange
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
              * Token request top-level processing:
              */
@@ -65,7 +65,7 @@ public static partial class OpenIddictServerHandlers
              * Token response handling:
              */
             NormalizeErrorResponse.Descriptor
-        ];
+        ]);
 
         /// <summary>
         /// Contains the logic responsible for extracting token requests and invoking the corresponding event handlers.

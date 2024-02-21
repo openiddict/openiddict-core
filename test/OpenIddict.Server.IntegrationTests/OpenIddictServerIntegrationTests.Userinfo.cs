@@ -415,7 +415,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(identity)
                         .SetTokenType(TokenTypeHints.AccessToken)
                         .SetPresenters("Fabrikam")
-                        .SetScopes(ImmutableArray.Create<string>());
+                        .SetScopes(ImmutableArray<string>.Empty);
 
                     return default;
                 });
