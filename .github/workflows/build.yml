@@ -43,8 +43,8 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: |
-          6.0.418
-          7.0.405
+          6.0.419
+          7.0.406
           8.0.200
 
     # Arcade only allows the revision to contain up to two characters, and GitHub Actions does not roll-over
