@@ -40,11 +40,11 @@ public static class OpenIddictClientDataProtectionExtensions
         builder.Services.TryAddSingleton<RequireDataProtectionTokenFormat>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
-        builder.Services.TryAddEnumerable(new[]
-        {
+        builder.Services.TryAddEnumerable(
+        [
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientDataProtectionConfiguration>(),
             ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictClientDataProtectionOptions>, OpenIddictClientDataProtectionConfiguration>()
-        });
+        ]);
 
         return new OpenIddictClientDataProtectionBuilder(builder.Services);
     }

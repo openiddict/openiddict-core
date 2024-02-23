@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
@@ -354,6 +355,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 if (context.Response is null)
                 {
                     return default;
+                }
+
+                // Note: when using the client credentials grant, Dailymotion returns a "refresh_token"
+                // node with a JSON null value, which isn't allowed by OpenIddict (that requires a string).
+                //
+                // To work around that, the "refresh_token" node is removed when it is set to a null value .
+                if (context.Registration.ProviderType is ProviderTypes.Dailymotion && (JsonElement?)
+                    context.Response[Parameters.RefreshToken] is { ValueKind: JsonValueKind.Null })
+                {
+                    context.Response.RefreshToken = null;
                 }
 
                 // Note: Deezer doesn't return a standard "expires_in" parameter

@@ -264,6 +264,61 @@
   </Provider>
 
   <!--
+                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                              ██ ▄▄▀█ ▄▄▀█▄ ▄██ █████ ███ ██ ▄▀▄ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄ ██ ▀██ ██
+                              ██ ██ █ ▀▀ ██ ███ █████▄▀▀▀▄██ █ █ ██ ███ ███ ████ ███ ███ ██ █ █ ██
+                              ██ ▀▀ █ ██ █▀ ▀██ ▀▀ ████ ████ ███ ██ ▀▀▀ ███ ███▀ ▀██ ▀▀▀ ██ ██▄ ██
+                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Dailymotion" Id="e289f3ca-6d1d-45f9-8be0-8a649cc4a700"
+            Documentation="https://developers.dailymotion.com/guides/platform-api-authentication/">
+    <Environment Issuer="https://api.dailymotion.com/">
+      <Configuration AuthorizationEndpoint="https://api.dailymotion.com/oauth/authorize"
+                     TokenEndpoint="https://api.dailymotion.com/oauth/token">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
+        <GrantType Value="password" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
+             Description="The list of user fields to expand from the userinfo endpoint (by default, most common fields are requested)">
+      <Item Value="active"          Default="true" Required="false" />
+      <Item Value="address"         Default="true" Required="false" />
+      <Item Value="birthday"        Default="true" Required="false" />
+      <Item Value="city"            Default="true" Required="false" />
+      <Item Value="country"         Default="true" Required="false" />
+      <Item Value="cover_url"       Default="true" Required="false" />
+      <Item Value="created_time"    Default="true" Required="false" />
+      <Item Value="email"           Default="true" Required="false" />
+      <Item Value="facebook_url"    Default="true" Required="false" />
+      <Item Value="first_name"      Default="true" Required="false" />
+      <Item Value="followers_total" Default="true" Required="false" />
+      <Item Value="following_total" Default="true" Required="false" />
+      <Item Value="fullname"        Default="true" Required="false" />
+      <Item Value="gender"          Default="true" Required="false" />
+      <Item Value="id"              Default="true" Required="false" />
+      <Item Value="instagram_url"   Default="true" Required="false" />
+      <Item Value="language"        Default="true" Required="false" />
+      <Item Value="last_name"       Default="true" Required="false" />
+      <Item Value="linkedin_url"    Default="true" Required="false" />
+      <Item Value="nickname"        Default="true" Required="false" />
+      <Item Value="pinterest_url"   Default="true" Required="false" />
+      <Item Value="screenname"      Default="true" Required="false" />
+      <Item Value="status"          Default="true" Required="false" />
+      <Item Value="twitter_url"     Default="true" Required="false" />
+      <Item Value="url"             Default="true" Required="false" />
+      <Item Value="username"        Default="true" Required="false" />
+      <Item Value="verified"        Default="true" Required="false" />
+      <Item Value="videos_total"    Default="true" Required="false" />
+      <Item Value="views_total"     Default="true" Required="false" />
+      <Item Value="website_url"     Default="true" Required="false" />
+    </Setting>
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             ██ ▄▄▀██ ▄▄▄██ ▄▄▄██ ▄▄▄ ██ ▄▄▄██ ▄▄▀██
                                             ██ ██ ██ ▄▄▄██ ▄▄▄██▀▀▀▄▄██ ▄▄▄██ ▀▀▄██

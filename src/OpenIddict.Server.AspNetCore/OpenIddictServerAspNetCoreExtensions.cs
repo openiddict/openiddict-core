@@ -52,15 +52,15 @@ public static class OpenIddictServerAspNetCoreExtensions
 
         // Register the option initializer used by the OpenIddict ASP.NET Core server integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
-        builder.Services.TryAddEnumerable(new[]
-        {
+        builder.Services.TryAddEnumerable(
+        [
             ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictServerAspNetCoreConfiguration>(),
             ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, OpenIddictServerAspNetCoreConfiguration>(),
 
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerAspNetCoreConfiguration>(),
 
             ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>, OpenIddictServerAspNetCoreConfiguration>()
-        });
+        ]);
 
         return new OpenIddictServerAspNetCoreBuilder(builder.Services);
     }

@@ -39,11 +39,11 @@ public static partial class OpenIddictClientWebIntegrationExtensions
             .Select(descriptor => descriptor.ServiceDescriptor));
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
-        builder.Services.TryAddEnumerable(new[]
-        {
+        builder.Services.TryAddEnumerable(
+        [
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>(),
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientSystemNetHttpOptions>, OpenIddictClientWebIntegrationConfiguration>()
-        });
+        ]);
 
         // Note: the IPostConfigureOptions<OpenIddictClientOptions> service responsible for populating
         // the client registrations MUST be registered before OpenIddictClientConfiguration to ensure

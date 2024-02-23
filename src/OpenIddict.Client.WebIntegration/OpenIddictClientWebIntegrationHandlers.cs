@@ -686,6 +686,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.UserinfoEndpoint = context.Registration.ProviderType switch
             {
+                // Dailymotion's userinfo endpoint requires sending the user identifier in the URI path.
+                ProviderTypes.Dailymotion when (string?) context.TokenResponse?["uid"] is string identifier
+                    => OpenIddictHelpers.CreateAbsoluteUri(
+                        left : new Uri("https://api.dailymotion.com/user", UriKind.Absolute),
+                        right: new Uri(identifier, UriKind.Relative)),
+
                 // HubSpot doesn't have a static userinfo endpoint but allows retrieving basic information
                 // by using an access token info endpoint that requires sending the token in the URI path.
                 ProviderTypes.HubSpot when
@@ -852,10 +858,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
+            // Dailymotion limits the number of fields returned by the userinfo endpoint
+            // but allows returning additional information using special parameters that
+            // determine what fields will be returned as part of the userinfo response.
+            if (context.Registration.ProviderType is ProviderTypes.Dailymotion)
+            {
+                var settings = context.Registration.GetDailymotionSettings();
+
+                context.UserinfoRequest["fields"] = string.Join(",", settings.UserFields);
+            }
+
             // Facebook limits the number of fields returned by the userinfo endpoint
             // but allows returning additional information using special parameters that
             // determine what fields will be returned as part of the userinfo response.
-            if (context.Registration.ProviderType is ProviderTypes.Facebook)
+            else if (context.Registration.ProviderType is ProviderTypes.Facebook)
             {
                 var settings = context.Registration.GetFacebookSettings();
 
@@ -1084,9 +1100,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.MergedPrincipal.SetClaim(ClaimTypes.Name, issuer: issuer, value: context.Registration.ProviderType switch
             {
                 // These providers return the username as a custom "username" node:
-                ProviderTypes.ArcGisOnline or ProviderTypes.Discord  or ProviderTypes.DeviantArt or
-                ProviderTypes.Lichess      or ProviderTypes.Mixcloud or ProviderTypes.Trakt      or
-                ProviderTypes.WordPress
+                ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.Discord  or
+                ProviderTypes.DeviantArt   or ProviderTypes.Lichess     or ProviderTypes.Mixcloud or
+                ProviderTypes.Trakt        or ProviderTypes.WordPress
                     => (string?) context.UserinfoResponse?["username"],
 
                 // Basecamp and Harvest don't return a username so one is created using the "first_name" and "last_name" nodes:
@@ -1166,12 +1182,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => (string?) context.UserinfoResponse?["username"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Basecamp or ProviderTypes.Deezer        or ProviderTypes.Discord    or
-                ProviderTypes.Facebook or ProviderTypes.GitHub        or ProviderTypes.Harvest    or
-                ProviderTypes.Kroger   or ProviderTypes.Lichess       or ProviderTypes.Nextcloud  or
-                ProviderTypes.Patreon  or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
-                ProviderTypes.Spotify  or ProviderTypes.SubscribeStar or ProviderTypes.Twitter    or
-                ProviderTypes.Zoom
+                ProviderTypes.Basecamp   or ProviderTypes.Dailymotion or ProviderTypes.Deezer        or
+                ProviderTypes.Discord    or ProviderTypes.Facebook    or ProviderTypes.GitHub        or
+                ProviderTypes.Harvest    or ProviderTypes.Kroger      or ProviderTypes.Lichess       or
+                ProviderTypes.Nextcloud  or ProviderTypes.Patreon     or ProviderTypes.Reddit        or
+                ProviderTypes.Smartsheet or ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or
+                ProviderTypes.Twitter    or ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:

@@ -87,6 +87,7 @@
                                     <xs:enumeration value="authorization_code" />
                                     <xs:enumeration value="client_credentials" />
                                     <xs:enumeration value="implicit" />
+                                    <xs:enumeration value="password" />
                                     <xs:enumeration value="refresh_token" />
                                     <xs:enumeration value="urn:ietf:params:oauth:grant-type:device_code" />
                                   </xs:restriction>
