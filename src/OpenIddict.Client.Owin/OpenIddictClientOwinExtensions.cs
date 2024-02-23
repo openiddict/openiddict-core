@@ -49,11 +49,11 @@ public static class OpenIddictClientOwinExtensions
 
         // Register the option initializer used by the OpenIddict OWIN client integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
-        builder.Services.TryAddEnumerable(new[]
-        {
+        builder.Services.TryAddEnumerable(
+        [
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientOwinConfiguration>(),
             ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictClientOwinOptions>, OpenIddictClientOwinConfiguration>()
-        });
+        ]);
 
         return new OpenIddictClientOwinBuilder(builder.Services);
     }

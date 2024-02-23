@@ -1026,7 +1026,7 @@ public class OpenIddictExtensionsTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData(new object[] { new string[0] })]
+    [InlineData([new string[0]])]
     public void Claim_SetDestinations_RemovesPropertyForEmptyArray(string[] destinations)
     {
         // Arrange

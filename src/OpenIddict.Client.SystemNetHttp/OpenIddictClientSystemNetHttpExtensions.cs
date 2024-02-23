@@ -40,11 +40,11 @@ public static class OpenIddictClientSystemNetHttpExtensions
         builder.Services.TryAddSingleton<RequireHttpMetadataUri>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
-        builder.Services.TryAddEnumerable(new[]
-        {
+        builder.Services.TryAddEnumerable(
+        [
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientSystemNetHttpConfiguration>(),
             ServiceDescriptor.Singleton<IConfigureOptions<HttpClientFactoryOptions>, OpenIddictClientSystemNetHttpConfiguration>()
-        });
+        ]);
 
         return new OpenIddictClientSystemNetHttpBuilder(builder.Services);
     }

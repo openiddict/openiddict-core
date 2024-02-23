@@ -43,10 +43,10 @@ public static class OpenIddictValidationOwinExtensions
 
         // Register the option initializers used by the OpenIddict OWIN validation integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
-        builder.Services.TryAddEnumerable(new[]
-        {
+        builder.Services.TryAddEnumerable(
+        [
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationOwinConfiguration>()
-        });
+        ]);
 
         return new OpenIddictValidationOwinBuilder(builder.Services);
     }
