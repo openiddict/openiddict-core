@@ -780,6 +780,44 @@
   </Provider>
 
   <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ ▄▀▄ ██ ▄▄▄██ ▄▄▄█▄▄ ▄▄██ ██ ██ ▄▄ ██
+                                            ██ █ █ ██ ▄▄▄██ ▄▄▄███ ████ ██ ██ ▀▀ ██
+                                            ██ ███ ██ ▀▀▀██ ▀▀▀███ ████▄▀▀▄██ █████
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Meetup" Id="3eb9d2c2-e999-41f3-905e-07b97f054e8e"
+            Documentation="https://www.meetup.com/api/authentication/#p01-using-oauth2-section">
+    <Environment Issuer="https://www.meetup.com/">
+      <Configuration AuthorizationEndpoint="https://secure.meetup.com/oauth2/authorize"
+                     TokenEndpoint="https://secure.meetup.com/oauth2/access"
+                     UserinfoEndpoint="https://api.meetup.com/gql">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
+             Description="The list of user fields to expand from the GraphQL endpoint (by default, most basic fields are requested)">
+      <Item Value="birthday"        Default="true" Required="false" />
+      <Item Value="city"            Default="true" Required="false" />
+      <Item Value="country"         Default="true" Required="false" />
+      <Item Value="email"           Default="true" Required="false" />
+      <Item Value="gender"          Default="true" Required="false" />
+      <Item Value="id"              Default="true" Required="false" />
+      <Item Value="memberUrl"       Default="true" Required="false" />
+      <Item Value="name"            Default="true" Required="false" />
+      <Item Value="preferredLocale" Default="true" Required="false" />
+      <Item Value="state"           Default="true" Required="false" />
+      <Item Value="status"          Default="true" Required="false" />
+      <Item Value="timezone"        Default="true" Required="false" />
+      <Item Value="username"        Default="true" Required="false" />
+      <Item Value="zip"             Default="true" Required="false" />
+    </Setting>
+  </Provider>
+
+  <!--
               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
               ██ ▄▀▄ █▄ ▄██ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▄▄▄ ██ ▄▄▄█▄▄ ▄▄███ ▄▄▀██ ▄▄▀██ ▄▄▀██ ▄▄▄ ██ ██ ██ ▀██ █▄▄ ▄▄██
               ██ █ █ ██ ███ █████ ▀▀▄██ ███ ██▄▄▄▀▀██ ███ ██ ▄▄████ █████ ▀▀ ██ █████ █████ ███ ██ ██ ██ █ █ ███ ████

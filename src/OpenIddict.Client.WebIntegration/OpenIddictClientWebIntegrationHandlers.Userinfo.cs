@@ -69,8 +69,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 request.Method = context.Registration.ProviderType switch
                 {
-                    // SubscribeStar's userinfo implementation is based on GraphQL, which requires using POST.
-                    ProviderTypes.SubscribeStar => HttpMethod.Post,
+                    // The userinfo endpoints exposed by these providers
+                    // are based on GraphQL, which requires using POST:
+                    ProviderTypes.Meetup or ProviderTypes.SubscribeStar => HttpMethod.Post,
 
                     _ => request.Method
                 };
@@ -266,10 +267,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 request.Content = context.Registration.ProviderType switch
                 {
-                    // SubscribeStar's userinfo implementation is based on GraphQL,
-                    // which requires sending the request parameters as a JSON payload.
-                    ProviderTypes.SubscribeStar => JsonContent.Create(context.Transaction.Request,
-                        new MediaTypeHeaderValue(MediaTypes.Json)
+                    // The userinfo endpoints exposed by these providers are based on GraphQL,
+                    // which requires sending the request parameters as a JSON payload:
+                    ProviderTypes.Meetup or ProviderTypes.SubscribeStar
+                        => JsonContent.Create(context.Transaction.Request, new MediaTypeHeaderValue(MediaTypes.Json)
                         {
                             CharSet = Charsets.Utf8
                         }),
@@ -397,6 +398,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.Kroger or ProviderTypes.Patreon or ProviderTypes.Twitter
                         => new(context.Response["data"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data"))),
+
+                    // Meetup returns a nested "self" object that is itself nested in a GraphQL "data" node.
+                    ProviderTypes.Meetup => new(context.Response["data"]?["self"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("data/self"))),
 
                     // Nextcloud returns a nested "data" object that is itself nested in a "ocs" node.
                     ProviderTypes.Nextcloud => new(context.Response["ocs"]?["data"]?.GetNamedParameters() ??
