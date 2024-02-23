@@ -885,6 +885,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["fields"] = string.Join(",", settings.Fields);
             }
 
+            // Meetup's userinfo endpoint is a GraphQL implementation that requires
+            // sending a proper "query" parameter containing the requested user details.
+            else if (context.Registration.ProviderType is ProviderTypes.Meetup)
+            {
+                var settings = context.Registration.GetMeetupSettings();
+
+                context.UserinfoRequest["query"] = $"query {{ self {{ {string.Join(" ", settings.UserFields)} }} }}";
+            }
+
             // Patreon limits the number of fields returned by the userinfo endpoint
             // but allows returning additional information using special parameters that
             // determine what fields will be returned as part of the userinfo response.
@@ -1118,12 +1127,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                          context.UserinfoResponse?.HasParameter("last_name")  is true
                     => $"{(string?) context.UserinfoResponse?["first_name"]} {(string?) context.UserinfoResponse?["last_name"]}",
 
-                // These providers return the username as a custom "name" node:
-                ProviderTypes.Deezer or ProviderTypes.Facebook      or ProviderTypes.GitHub  or
-                ProviderTypes.Reddit or ProviderTypes.SubscribeStar or ProviderTypes.Twitter or
-                ProviderTypes.Vimeo
-                    => (string?) context.UserinfoResponse?["name"],
-
                 // FitBit returns the username as a custom "displayName" node:
                 ProviderTypes.Fitbit => (string?) context.UserinfoResponse?["displayName"],
 
@@ -1189,12 +1192,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => (string?) context.UserinfoResponse?["username"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Basecamp      or ProviderTypes.Dailymotion or ProviderTypes.Deezer   or
-                ProviderTypes.Discord       or ProviderTypes.Disqus      or ProviderTypes.Facebook or
-                ProviderTypes.GitHub        or ProviderTypes.Harvest     or ProviderTypes.Kroger   or
-                ProviderTypes.Lichess       or ProviderTypes.Nextcloud   or ProviderTypes.Patreon  or
-                ProviderTypes.Reddit        or ProviderTypes.Smartsheet  or ProviderTypes.Spotify  or
-                ProviderTypes.SubscribeStar or ProviderTypes.Twitter     or ProviderTypes.Zoom
+                ProviderTypes.Basecamp or ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or
+                ProviderTypes.Discord  or ProviderTypes.Disqus        or ProviderTypes.Facebook   or
+                ProviderTypes.GitHub   or ProviderTypes.Harvest       or ProviderTypes.Kroger     or
+                ProviderTypes.Lichess  or ProviderTypes.Meetup        or ProviderTypes.Nextcloud  or
+                ProviderTypes.Patreon  or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
+                ProviderTypes.Spotify  or ProviderTypes.SubscribeStar or ProviderTypes.Twitter    or
+                ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
