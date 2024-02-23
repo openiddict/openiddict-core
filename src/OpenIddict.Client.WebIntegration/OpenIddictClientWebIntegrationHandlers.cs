@@ -868,6 +868,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["fields"] = string.Join(",", settings.UserFields);
             }
 
+            // Disqus requires sending the client identifier (called "public
+            // API key" in the documentation) as part of the userinfo request.
+            else if (context.Registration.ProviderType is ProviderTypes.Disqus)
+            {
+                context.UserinfoRequest["api_key"] = context.Registration.ClientId;
+            }
+
             // Facebook limits the number of fields returned by the userinfo endpoint
             // but allows returning additional information using special parameters that
             // determine what fields will be returned as part of the userinfo response.
@@ -1100,9 +1107,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.MergedPrincipal.SetClaim(ClaimTypes.Name, issuer: issuer, value: context.Registration.ProviderType switch
             {
                 // These providers return the username as a custom "username" node:
-                ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.Discord  or
-                ProviderTypes.DeviantArt   or ProviderTypes.Lichess     or ProviderTypes.Mixcloud or
-                ProviderTypes.Trakt        or ProviderTypes.WordPress
+                ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.DeviantArt or
+                ProviderTypes.Discord      or ProviderTypes.Disqus      or ProviderTypes.Lichess    or
+                ProviderTypes.Mixcloud     or ProviderTypes.Trakt       or ProviderTypes.WordPress
                     => (string?) context.UserinfoResponse?["username"],
 
                 // Basecamp and Harvest don't return a username so one is created using the "first_name" and "last_name" nodes:
@@ -1182,12 +1189,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => (string?) context.UserinfoResponse?["username"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Basecamp   or ProviderTypes.Dailymotion or ProviderTypes.Deezer        or
-                ProviderTypes.Discord    or ProviderTypes.Facebook    or ProviderTypes.GitHub        or
-                ProviderTypes.Harvest    or ProviderTypes.Kroger      or ProviderTypes.Lichess       or
-                ProviderTypes.Nextcloud  or ProviderTypes.Patreon     or ProviderTypes.Reddit        or
-                ProviderTypes.Smartsheet or ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or
-                ProviderTypes.Twitter    or ProviderTypes.Zoom
+                ProviderTypes.Basecamp      or ProviderTypes.Dailymotion or ProviderTypes.Deezer   or
+                ProviderTypes.Discord       or ProviderTypes.Disqus      or ProviderTypes.Facebook or
+                ProviderTypes.GitHub        or ProviderTypes.Harvest     or ProviderTypes.Kroger   or
+                ProviderTypes.Lichess       or ProviderTypes.Nextcloud   or ProviderTypes.Patreon  or
+                ProviderTypes.Reddit        or ProviderTypes.Smartsheet  or ProviderTypes.Spotify  or
+                ProviderTypes.SubscribeStar or ProviderTypes.Twitter     or ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
@@ -1408,7 +1415,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                ProviderTypes.Deezer or ProviderTypes.Shopify or ProviderTypes.Strava
+                ProviderTypes.Deezer  or ProviderTypes.Disqus or
+                ProviderTypes.Shopify or ProviderTypes.Strava
                     => string.Join(",", context.Scopes),
 
                 // The following providers are known to use plus-separated scopes instead of
