@@ -1361,6 +1361,27 @@
   </Provider>
 
   <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                █▄▄ ▄▄█▄ ▄██ ▄▄▀█ ▄▄▀██ █████
+                                                ███ ████ ███ ██ █ ▀▀ ██ █████
+                                                ███ ███▀ ▀██ ▀▀ █ ██ ██ ▀▀ ██
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Tidal" Id="ee2fa66e-4187-4aa7-ad9f-f723fd82ce64"
+            Documentation="https://developer.tidal.com/documentation/authorization/authorization-overview">
+    <Environment Issuer="https://tidal.com/">
+      <!--
+        Note: Tidal doesn't support interactive/user flows and only supports the client credentials grant.
+      -->
+
+      <Configuration TokenEndpoint="https://auth.tidal.com/v1/oauth2/token">
+        <GrantType Value="client_credentials" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                 █▄▄ ▄▄██ ▄▄▀█ ▄▄▀██ █▀▄█▄▄ ▄▄██
                                                 ███ ████ ▀▀▄█ ▀▀ ██ ▄▀████ ████
