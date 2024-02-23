@@ -374,6 +374,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ["accounts"] = context.Response["accounts"]
                     },
 
+                    // Disqus returns a nested "response" object.
+                    ProviderTypes.Disqus => new(context.Response["response"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("response"))),
+
                     // Exact Online returns a "results" array nested in a "d" node and containing a single element.
                     ProviderTypes.ExactOnline => new(context.Response["d"]?["results"]?[0]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),

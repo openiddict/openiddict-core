@@ -394,6 +394,25 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▀█▄ ▄██ ▄▄▄ ██ ▄▄ ██ ██ ██ ▄▄▄ ██
+                                              ██ ██ ██ ███▄▄▄▀▀██ ██ ██ ██ ██▄▄▄▀▀██
+                                              ██ ▀▀ █▀ ▀██ ▀▀▀ ██▄▄ ▀██▄▀▀▄██ ▀▀▀ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Disqus" Id="89d6777b-c22e-4421-b08b-83b1f515480c" Documentation="https://disqus.com/api/docs/auth/">
+    <Environment Issuer="https://disqus.com/">
+      <Configuration AuthorizationEndpoint="https://disqus.com/api/oauth/2.0/authorize/"
+                     TokenEndpoint="https://disqus.com/api/oauth/2.0/access_token/"
+                     UserinfoEndpoint="https://disqus.com/api/3.0/users/details.json">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ▄▄▀██ ▄▄▄ ██ ▄▄▀██ ██ ██ ▄▄▄ █▄ ▄██ ▄▄ ██ ▀██ ██
                                         ██ ██ ██ ███ ██ █████ ██ ██▄▄▄▀▀██ ███ █▀▀██ █ █ ██
