@@ -1136,6 +1136,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Mailchimp returns the username as a custom "accountname" node:
                 ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["accountname"],
 
+                // Mailchimp returns the username as a custom "sub" node:
+                ProviderTypes.MusicBrainz => (string?) context.UserinfoResponse?["sub"],
+
                 // Nextcloud returns the username as a custom "displayname" or "display-name" node:
                 ProviderTypes.Nextcloud => (string?) context.UserinfoResponse?["displayname"] ??
                                            (string?) context.UserinfoResponse?["display-name"],
@@ -1215,6 +1218,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Mixcloud returns the user identifier as a custom "key" node:
                 ProviderTypes.Mixcloud => (string?) context.UserinfoResponse?["key"],
+
+                // MusicBrainz returns the user identifier as a custom "metabrainz_user_id" node:
+                ProviderTypes.MusicBrainz => (string?) context.UserinfoResponse?["metabrainz_user_id"],
 
                 // Notion returns the user identifier as a custom "bot/owner/user/id" node but
                 // requires a special capability to access this node, that may not be present:
@@ -1529,6 +1535,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetGoogleSettings();
 
                 context.Request["access_type"] = settings.AccessType;
+            }
+
+            // By default, MusicBrainz doesn't return a refresh token but allows sending an "access_type"
+            // parameter to retrieve one (but it is only returned during the first authorization dance).
+            else if (context.Registration.ProviderType is ProviderTypes.MusicBrainz)
+            {
+                var settings = context.Registration.GetMusicBrainzSettings();
+
+                context.Request["access_type"] = settings.AccessType;
+                context.Request["approval_prompt"] = settings.ApprovalPrompt;
             }
 
             // Pro Santé Connect's specification requires sending an acr_values parameter containing
