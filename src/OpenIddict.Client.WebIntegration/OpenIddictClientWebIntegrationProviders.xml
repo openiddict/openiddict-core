@@ -858,6 +858,42 @@
   </Provider>
 
   <!--
+                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                              ██ ▄▀▄ ██ ██ ██ ▄▄▄ █▄ ▄██ ▄▄▀██ ▄▄▀██ ▄▄▀█ ▄▄▀█▄ ▄██ ▀██ ██ ▄▄▄ ██
+                              ██ █ █ ██ ██ ██▄▄▄▀▀██ ███ █████ ▄▄▀██ ▀▀▄█ ▀▀ ██ ███ █ █ ██▀▀▀▄▄██
+                              ██ ███ ██▄▀▀▄██ ▀▀▀ █▀ ▀██ ▀▀▄██ ▀▀ ██ ██ █ ██ █▀ ▀██ ██▄ ██ ▀▀▀ ██
+                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="MusicBrainz" Id="7b734583-1b96-4a5b-8d8c-d21d9d28b598"
+            Documentation="https://musicbrainz.org/doc/Development/OAuth2">
+    <Environment Issuer="https://musicbrainz.org/">
+      <Configuration AuthorizationEndpoint="https://musicbrainz.org/oauth2/authorize"
+                     RevocationEndpoint="https://musicbrainz.org/oauth2/revoke"
+                     TokenEndpoint="https://musicbrainz.org/oauth2/token"
+                     UserinfoEndpoint="https://musicbrainz.org/oauth2/userinfo">
+        <CodeChallengeMethod Value="plain" />
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <!--
+        Note: MusicBrainz requires sending the "profile" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="profile" Default="true" Required="true" />
+    </Environment>
+
+    <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
+             Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
+
+    <Setting PropertyName="ApprovalPrompt" ParameterName="prompt" Type="String" Required="false"
+             Description="The value used as the 'approval_prompt' parameter (can be set to 'force' to display the consent form for each authorization demand)" />
+  </Provider>
+
+  <!--
                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                   ██ ▀██ ██ ▄▄▄█▄▀█▀▄█▄▄ ▄▄██ ▄▄▀██ █████ ▄▄▄ ██ ██ ██ ▄▄▀██
                                   ██ █ █ ██ ▄▄▄███ █████ ████ █████ █████ ███ ██ ██ ██ ██ ██

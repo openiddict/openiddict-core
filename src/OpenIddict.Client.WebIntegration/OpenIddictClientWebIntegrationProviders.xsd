@@ -552,7 +552,7 @@
 
             <xs:attribute name="DisplayName" use="optional">
               <xs:annotation>
-                <xs:documentation>The display name used in the documentation, if applicable.</xs:documentation>
+                <xs:documentation>The provider display name (if unspecified, the provider name is used as the display name).</xs:documentation>
               </xs:annotation>
 
               <xs:simpleType>
