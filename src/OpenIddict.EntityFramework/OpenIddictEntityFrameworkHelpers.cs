@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
+using OpenIddict.Extensions;
 
 namespace System.Data.Entity;
 
@@ -84,6 +85,30 @@ public static class OpenIddictEntityFrameworkHelpers
             {
                 yield return enumerator.Current;
             }
+        }
+    }
+
+    /// <summary>
+    /// Tries to create a new <see cref="DbContextTransaction"/> with the specified <paramref name="level"/>.
+    /// </summary>
+    /// <param name="context">The Entity Framework context.</param>
+    /// <param name="level">The desired level of isolation.</param>
+    /// <returns>The <see cref="DbContextTransaction"/> if it could be created, <see langword="null"/> otherwise.</returns>
+    internal static DbContextTransaction? CreateTransaction(this DbContext context, IsolationLevel level)
+    {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        try
+        {
+            return context.Database.BeginTransaction(level);
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            return null;
         }
     }
 }

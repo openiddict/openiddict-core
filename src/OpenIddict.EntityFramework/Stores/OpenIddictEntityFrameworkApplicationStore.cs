@@ -18,7 +18,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.EntityFramework.Models;
-using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFramework;
@@ -133,19 +132,6 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             throw new ArgumentNullException(nameof(application));
         }
 
-        DbContextTransaction? CreateTransaction()
-        {
-            try
-            {
-                return Context.Database.BeginTransaction(IsolationLevel.Serializable);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                return null;
-            }
-        }
-
         Task<List<TAuthorization>> ListAuthorizationsAsync()
             => (from authorization in Authorizations.Include(authorization => authorization.Tokens)
                 where authorization.Application!.Id!.Equals(application.Id)
@@ -160,7 +146,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
         // To prevent an SQL exception from being thrown if a new associated entity is
         // created after the existing entries have been listed, the following logic is
         // executed in a serializable transaction, that will lock the affected tables.
-        using var transaction = CreateTransaction();
+        using var transaction = Context.CreateTransaction(IsolationLevel.Serializable);
 
         // Remove all the authorizations associated with the application and
         // the tokens attached to these implicit or explicit authorizations.
