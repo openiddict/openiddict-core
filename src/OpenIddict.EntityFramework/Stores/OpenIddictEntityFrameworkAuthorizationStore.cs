@@ -130,19 +130,6 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        DbContextTransaction? CreateTransaction()
-        {
-            try
-            {
-                return Context.Database.BeginTransaction(IsolationLevel.Serializable);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                return null;
-            }
-        }
-
         Task<List<TToken>> ListTokensAsync()
             => (from token in Tokens
                 where token.Authorization!.Id!.Equals(authorization.Id)
@@ -151,7 +138,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
         // To prevent an SQL exception from being thrown if a new associated entity is
         // created after the existing entries have been listed, the following logic is
         // executed in a serializable transaction, that will lock the affected tables.
-        using var transaction = CreateTransaction();
+        using var transaction = Context.CreateTransaction(IsolationLevel.Serializable);
 
         // Remove all the tokens associated with the authorization.
         var tokens = await ListTokensAsync();
@@ -609,22 +596,6 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
 
         var result = 0L;
 
-        DbContextTransaction? CreateTransaction()
-        {
-            // Note: relational providers like Sqlite are known to lack proper support
-            // for repeatable read transactions. To ensure this method can be safely used
-            // with such providers, the database transaction is created in a try/catch block.
-            try
-            {
-                return Context.Database.BeginTransaction(IsolationLevel.RepeatableRead);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                return null;
-            }
-        }
-
         // Note: to avoid sending too many queries, the maximum number of elements
         // that can be removed by a single call to PruneAsync() is deliberately limited.
         for (var index = 0; index < 1_000; index++)
@@ -635,7 +606,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
             // after it was retrieved from the database, the following logic is executed in
             // a repeatable read transaction, that will put a lock on the retrieved entries
             // and thus prevent them from being concurrently modified outside this block.
-            using var transaction = CreateTransaction();
+            using var transaction = Context.CreateTransaction(IsolationLevel.RepeatableRead);
 
             // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
             // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
