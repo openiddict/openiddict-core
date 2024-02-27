@@ -71,7 +71,10 @@ var host = new HostBuilder()
                     ProviderDisplayName = "Local authorization server",
 
                     ClientId = "console",
+
+                    PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative),
                     RedirectUri = new Uri("callback/login/local", UriKind.Relative),
+
                     Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" }
                 });
 

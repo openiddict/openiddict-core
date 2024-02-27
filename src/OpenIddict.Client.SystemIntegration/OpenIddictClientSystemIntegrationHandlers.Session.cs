@@ -21,37 +21,37 @@ namespace OpenIddict.Client.SystemIntegration;
 
 public static partial class OpenIddictClientSystemIntegrationHandlers
 {
-    public static class Authentication
+    public static class Session
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Authorization request processing:
+             * Logout request processing:
              */
             InvokeWebAuthenticationBroker.Descriptor,
             LaunchSystemBrowser.Descriptor,
 
             /*
-             * Redirection request extraction:
+             * Post-logout redirection request extraction:
              */
-            ExtractGetHttpListenerRequest<ExtractRedirectionRequestContext>.Descriptor,
-            ExtractProtocolActivationParameters<ExtractRedirectionRequestContext>.Descriptor,
-            ExtractWebAuthenticationResultData<ExtractRedirectionRequestContext>.Descriptor,
+            ExtractGetHttpListenerRequest<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
+            ExtractProtocolActivationParameters<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
+            ExtractWebAuthenticationResultData<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
 
             /*
-             * Redirection response handling:
+             * Post-logout redirection response handling:
              */
-            AttachHttpResponseCode<ApplyRedirectionResponseContext>.Descriptor,
-            AttachCacheControlHeader<ApplyRedirectionResponseContext>.Descriptor,
+            AttachHttpResponseCode<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
+            AttachCacheControlHeader<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
             ProcessEmptyHttpResponse.Descriptor,
-            ProcessProtocolActivationResponse<ApplyRedirectionResponseContext>.Descriptor,
-            ProcessWebAuthenticationResultResponse<ApplyRedirectionResponseContext>.Descriptor
+            ProcessProtocolActivationResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
+            ProcessWebAuthenticationResultResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor
         ]);
 
         /// <summary>
-        /// Contains the logic responsible for initiating authorization requests using the web authentication broker.
+        /// Contains the logic responsible for initiating logout requests using the web authentication broker.
         /// Note: this handler is not used when the user session is not interactive.
         /// </summary>
-        public class InvokeWebAuthenticationBroker : IOpenIddictClientHandler<ApplyAuthorizationRequestContext>
+        public class InvokeWebAuthenticationBroker : IOpenIddictClientHandler<ApplyLogoutRequestContext>
         {
             private readonly OpenIddictClientSystemIntegrationService _service;
 
@@ -62,7 +62,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyAuthorizationRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
                     .AddFilter<RequireInteractiveSession>()
                     .AddFilter<RequireWebAuthenticationBroker>()
                     .UseSingletonHandler<InvokeWebAuthenticationBroker>()
@@ -73,7 +73,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /// <inheritdoc/>
             [SupportedOSPlatform("windows10.0.17763")]
 #pragma warning disable CS1998
-            public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
+            public async ValueTask HandleAsync(ApplyLogoutRequestContext context)
 #pragma warning restore CS1998
             {
                 if (context is null)
@@ -84,7 +84,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
 #if SUPPORTS_WINDOWS_RUNTIME
-                if (string.IsNullOrEmpty(context.RedirectUri))
+                if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                 {
                     return;
                 }
@@ -103,8 +103,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
                 }
 
-                // OpenIddict represents the complete interactive authentication dance as a two-phase process:
-                //   - The challenge, during which the user is redirected to the authorization server, either
+                // OpenIddict represents the complete interactive logout dance as a two-phase process:
+                //   - The sign-out, during which the user is redirected to the authorization server, either
                 //     by launching the system browser or, as in this case, using a web-view-like approach.
                 //
                 //   - The callback validation that takes place after the authorization server and the user approved
@@ -121,11 +121,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 switch (await WebAuthenticationBroker.AuthenticateAsync(
                     options    : WebAuthenticationOptions.None,
                     requestUri : OpenIddictHelpers.AddQueryStringParameters(
-                        uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
+                        uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
                         parameters: context.Transaction.Request.GetParameters().ToDictionary(
                             parameter => parameter.Key,
                             parameter => new StringValues((string?[]?) parameter.Value))),
-                    callbackUri: new Uri(context.RedirectUri, UriKind.Absolute)))
+                    callbackUri: new Uri(context.PostLogoutRedirectUri, UriKind.Absolute)))
                 {
                     case { ResponseStatus: WebAuthenticationStatus.Success } result:
                         await _service.HandleWebAuthenticationResultAsync(result, context.CancellationToken);
@@ -175,16 +175,16 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for initiating authorization requests using the system browser.
+        /// Contains the logic responsible for initiating logout requests using the system browser.
         /// Note: this handler is not used when the user session is not interactive.
         /// </summary>
-        public class LaunchSystemBrowser : IOpenIddictClientHandler<ApplyAuthorizationRequestContext>
+        public class LaunchSystemBrowser : IOpenIddictClientHandler<ApplyLogoutRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyAuthorizationRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
                     .AddFilter<RequireInteractiveSession>()
                     .AddFilter<RequireSystemBrowser>()
                     .UseSingletonHandler<LaunchSystemBrowser>()
@@ -193,7 +193,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
+            public async ValueTask HandleAsync(ApplyLogoutRequestContext context)
             {
                 if (context is null)
                 {
@@ -203,7 +203,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 var uri = OpenIddictHelpers.AddQueryStringParameters(
-                    uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
+                    uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
                     parameters: context.Transaction.Request.GetParameters().ToDictionary(
                         parameter => parameter.Key,
                         parameter => new StringValues((string?[]?) parameter.Value)));
@@ -259,13 +259,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         /// Contains the logic responsible for processing OpenID Connect responses that don't specify any parameter.
         /// Note: this handler is not used when the OpenID Connect request is not handled by the embedded web server.
         /// </summary>
-        public sealed class ProcessEmptyHttpResponse : IOpenIddictClientHandler<ApplyRedirectionResponseContext>
+        public sealed class ProcessEmptyHttpResponse : IOpenIddictClientHandler<ApplyPostLogoutRedirectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyRedirectionResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyPostLogoutRedirectionResponseContext>()
                     .AddFilter<RequireHttpListenerContext>()
                     .UseSingletonHandler<ProcessEmptyHttpResponse>()
                     .SetOrder(int.MaxValue - 100_000)
@@ -273,7 +273,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ApplyRedirectionResponseContext context)
+            public async ValueTask HandleAsync(ApplyPostLogoutRedirectionResponseContext context)
             {
                 if (context is null)
                 {
@@ -291,13 +291,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 response.StatusCode = 200;
                 response.ContentType = "text/plain";
 
-                // Return a message indicating whether the authentication process
+                // Return a message indicating whether the sign-out process
                 // succeeded or failed and that will be visible by the user.
                 var buffer = Encoding.UTF8.GetBytes(context.Transaction.Response.Error switch
                 {
-                    null or { Length: 0 } => "Login completed. Please return to the application.",
-                    Errors.AccessDenied   => "Authorization denied. Please return to the application.",
-                    _                     => "Authentication failed. Please return to the application."
+                    null or { Length: 0 } => "Logout completed. Please return to the application.",
+                    Errors.AccessDenied   => "Logout denied. Please return to the application.",
+                    _                     => "Logout failed. Please return to the application."
                 });
 
 #if SUPPORTS_STREAM_MEMORY_METHODS

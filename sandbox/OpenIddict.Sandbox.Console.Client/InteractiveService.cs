@@ -139,7 +139,8 @@ public class InteractiveService : BackgroundService
 
                     AnsiConsole.MarkupLine("[cyan]Waiting for the user to approve the authorization demand.[/]");
 
-                    // Wait for the user to complete the authorization process.
+                    // Wait for the user to complete the authorization process and authenticate the callback request,
+                    // which allows resolving all the claims contained in the merged principal created by OpenIddict.
                     var response = await _service.AuthenticateInteractivelyAsync(new()
                     {
                         CancellationToken = stoppingToken,
@@ -194,6 +195,34 @@ public class InteractiveService : BackgroundService
                             RefreshToken = response.RefreshToken
                         })).Principal));
                     }
+
+                    // If the authorization server supports RP-initiated logout,
+                    // ask the user if a logout operation should be started.
+                    if (configuration.EndSessionEndpoint is not null && await LogOutAsync(stoppingToken))
+                    {
+                        AnsiConsole.MarkupLine("[cyan]Launching the system browser.[/]");
+
+                        // Ask OpenIddict to initiate the logout flow (typically, by starting the system browser).
+                        var nonce = (await _service.SignOutInteractivelyAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider
+                        })).Nonce;
+
+                        AnsiConsole.MarkupLine("[cyan]Waiting for the user to approve the logout demand.[/]");
+
+                        // Wait for the user to complete the logout process and authenticate the callback request.
+                        //
+                        // Note: in this case, only the claims contained in the state token can be resolved since
+                        // the authorization server doesn't return any other user identity during a logout dance.
+                        await _service.AuthenticateInteractivelyAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            Nonce = nonce
+                        });
+
+                        AnsiConsole.MarkupLine("[green]Interactive logout successful.[/]");
+                    }
                 }
             }
 
@@ -239,6 +268,18 @@ public class InteractiveService : BackgroundService
         {
             static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
                 "Would you like to introspect the access token?")
+            {
+                Comparer = StringComparer.CurrentCultureIgnoreCase,
+                DefaultValue = false,
+                ShowDefaultValue = true
+            });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        static Task<bool> LogOutAsync(CancellationToken cancellationToken)
+        {
+            static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt("Would you like to log out?")
             {
                 Comparer = StringComparer.CurrentCultureIgnoreCase,
                 DefaultValue = false,

@@ -4,10 +4,26 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="OpenIddict WPF client" Height="450" Width="800">
+        Title="OpenIddict WPF client" Height="500" Width="800">
     <Grid>
-        <Button Name="LocalLogin" Content="Log in using the local server" HorizontalAlignment="Center" VerticalAlignment="Top" Click="LocalLoginButton_Click" Height="64" Width="540" FontSize="20" Margin="0,50,0,0" />
-        <Button Name="LocalLoginWithGitHub" Content="Log in using the local server (preferred service: GitHub)" HorizontalAlignment="Center" VerticalAlignment="Center" Click="LocalLoginWithGitHubButton_Click" Height="64" Width="539" FontSize="20" />
-        <Button Name="GitHubLogin" Content="Log in using GitHub" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="GitHubLoginButton_Click" Height="64" Width="539" FontSize="20" Margin="0,0,0,50" />
+        <Button Name="LocalLogin" Content="Log in using the local server"
+                VerticalAlignment="Top" HorizontalAlignment="Center"
+                Height="64" Width="540" FontSize="20" Margin="0,35,0,0"
+                Click="LocalLoginButton_Click" />
+
+        <Button Name="LocalLoginWithGitHub" Content="Log in using the local server (preferred service: GitHub)"
+                VerticalAlignment="Top" HorizontalAlignment="Center"
+                Height="64" Width="540" FontSize="20" Margin="0,125,0,0"
+                Click="LocalLoginWithGitHubButton_Click" />
+
+        <Button Name="GitHubLogin" Content="Log in using GitHub"
+                VerticalAlignment="Top" HorizontalAlignment="Center"
+                Height="64" Width="540" FontSize="20" Margin="0,215,0,0"
+                Click="GitHubLoginButton_Click" />
+
+        <Button Name="LocalLogout" Content="Log out from the local server"
+                VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                Height="64" Width="540" FontSize="20" Margin="0,0,0,35"
+                Click="LocalLogoutButton_Click" />
     </Grid>
 </Window>

@@ -69,6 +69,7 @@ var host = new HostBuilder()
                     // For more information on how to construct private-use URI schemes,
                     // read https://www.rfc-editor.org/rfc/rfc8252#section-7.1 and
                     // https://www.rfc-editor.org/rfc/rfc7595#section-3.8.
+                    PostLogoutRedirectUri = new Uri("com.openiddict.sandbox.winforms.client:/callback/logout/local", UriKind.Absolute),
                     RedirectUri = new Uri("com.openiddict.sandbox.winforms.client:/callback/login/local", UriKind.Absolute),
 
                     Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" }
