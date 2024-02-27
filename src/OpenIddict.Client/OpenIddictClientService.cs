@@ -262,6 +262,11 @@ public class OpenIddictClientService
     /// <summary>
     /// Completes the interactive authentication demand corresponding to the specified nonce.
     /// </summary>
+    /// <remarks>
+    /// Note: when specifying a nonce returned during a sign-out operation, only the
+    /// claims contained in the state token can be resolved since the authorization
+    /// server typically doesn't return any other user identity during a sign-out dance.
+    /// </remarks>
     /// <param name="request">The interactive authentication request.</param>
     /// <returns>The interactive authentication result.</returns>
     public async ValueTask<InteractiveAuthenticationResult> AuthenticateInteractivelyAsync(InteractiveAuthenticationRequest request)
@@ -1240,6 +1245,88 @@ public class OpenIddictClientService
 
                 return context.Configuration;
             }
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Initiates an interactive user sign-out demand.
+    /// </summary>
+    /// <param name="request">The interactive sign-out request.</param>
+    /// <returns>The interactive sign-out result.</returns>
+    public async ValueTask<InteractiveSignOutResult> SignOutInteractivelyAsync(InteractiveSignOutRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessSignOutContext(transaction)
+            {
+                CancellationToken = request.CancellationToken,
+                Issuer = request.Issuer,
+                Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+                ProviderName = request.ProviderName,
+                RegistrationId = request.RegistrationId,
+                Request = request.AdditionalLogoutRequestParameters
+                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+            };
+
+            if (request.Properties is { Count: > 0 })
+            {
+                foreach (var property in request.Properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    message: SR.GetResourceString(SR.ID0434),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            if (string.IsNullOrEmpty(context.Nonce))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
+            }
+
+            return new()
+            {
+                Nonce = context.Nonce,
+                Properties = context.Properties
+            };
         }
 
         finally

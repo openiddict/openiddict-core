@@ -50,7 +50,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     }
 
     /// <summary>
-    /// Uses the Windows web authentication broker to start authentication flows.
+    /// Uses the Windows web authentication broker to start interactive authentication and logout flows.
     /// </summary>
     /// <remarks>
     /// Note: the web authentication broker is only supported in UWP applications
@@ -70,7 +70,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     }
 
     /// <summary>
-    /// Uses the system browser to start authentication flows.
+    /// Uses the system browser to start interactive authentication and logout flows.
     /// </summary>
     /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
     public OpenIddictClientSystemIntegrationBuilder UseSystemBrowser()

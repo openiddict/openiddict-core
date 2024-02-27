@@ -31,6 +31,7 @@ partial class MainForm
         this.LocalLogin = new System.Windows.Forms.Button();
         this.GitHubLogin = new System.Windows.Forms.Button();
         this.LocalLoginWithGitHub = new System.Windows.Forms.Button();
+        this.LocalLogout = new System.Windows.Forms.Button();
         this.SuspendLayout();
         // 
         // LocalLogin
@@ -45,7 +46,7 @@ partial class MainForm
         // 
         // GitHubLogin
         // 
-        this.GitHubLogin.Location = new System.Drawing.Point(214, 321);
+        this.GitHubLogin.Location = new System.Drawing.Point(214, 210);
         this.GitHubLogin.Name = "GitHubLogin";
         this.GitHubLogin.Size = new System.Drawing.Size(391, 83);
         this.GitHubLogin.TabIndex = 1;
@@ -55,7 +56,7 @@ partial class MainForm
         // 
         // LocalLoginWithGitHub
         // 
-        this.LocalLoginWithGitHub.Location = new System.Drawing.Point(214, 177);
+        this.LocalLoginWithGitHub.Location = new System.Drawing.Point(214, 121);
         this.LocalLoginWithGitHub.Name = "LocalLoginWithGitHub";
         this.LocalLoginWithGitHub.Size = new System.Drawing.Size(391, 83);
         this.LocalLoginWithGitHub.TabIndex = 0;
@@ -63,11 +64,22 @@ partial class MainForm
         this.LocalLoginWithGitHub.UseVisualStyleBackColor = true;
         this.LocalLoginWithGitHub.Click += new System.EventHandler(this.LocalLoginWithGitHubButton_Click);
         // 
+        // LocalLogout
+        // 
+        this.LocalLogout.Location = new System.Drawing.Point(214, 336);
+        this.LocalLogout.Name = "LocalLogout";
+        this.LocalLogout.Size = new System.Drawing.Size(391, 83);
+        this.LocalLogout.TabIndex = 2;
+        this.LocalLogout.Text = "Log out from the local server";
+        this.LocalLogout.UseVisualStyleBackColor = true;
+        this.LocalLogout.Click += new System.EventHandler(this.LocalLogoutButton_Click);
+        // 
         // MainForm
         // 
         this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         this.ClientSize = new System.Drawing.Size(800, 450);
+        this.Controls.Add(this.LocalLogout);
         this.Controls.Add(this.GitHubLogin);
         this.Controls.Add(this.LocalLoginWithGitHub);
         this.Controls.Add(this.LocalLogin);
@@ -82,4 +94,5 @@ partial class MainForm
     private Button LocalLogin;
     private Button GitHubLogin;
     private Button LocalLoginWithGitHub;
+    private Button LocalLogout;
 }

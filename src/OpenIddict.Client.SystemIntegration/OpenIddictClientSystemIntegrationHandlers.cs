@@ -78,11 +78,20 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         TrackAuthenticationOperation.Descriptor,
 
         /*
+         * Sign-out processing:
+         */
+        InferLogoutBaseUriFromClientUri.Descriptor,
+        AttachDynamicPortToPostLogoutRedirectUri.Descriptor,
+        AttachLogoutInstanceIdentifier.Descriptor,
+        TrackLogoutOperation.Descriptor,
+
+        /*
          * Error processing:
          */
         AbortAuthenticationDemand.Descriptor,
 
-        .. Authentication.DefaultHandlers
+        .. Authentication.DefaultHandlers,
+        .. Session.DefaultHandlers
     ]);
 
     /// <summary>
@@ -549,7 +558,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             }
 
             // Allow a single authentication operation at the same time with the same nonce.
-            if (!_marshal.TryAcquireLock(context.Nonce))
+            if (!await _marshal.TryAcquireLockAsync(context.Nonce, context.CancellationToken))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0379));
             }
@@ -902,8 +911,9 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireRedirectionRequest>()
                 .AddFilter<RequireAuthenticationNonce>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ResolveRequestForgeryProtection>()
                 .SetOrder(ValidateRequestForgeryProtection.Descriptor.Order - 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -1468,8 +1478,9 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireRedirectionRequest>()
                 .AddFilter<RequireAuthenticationNonce>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<CompleteAuthenticationOperation>()
                 .SetOrder(int.MaxValue - 50_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -1690,6 +1701,182 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (string.IsNullOrEmpty(context.Nonce))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
+            }
+
+            if (string.IsNullOrEmpty(context.RequestForgeryProtection))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0343));
+            }
+
+            if (!_marshal.TryAdd(context.Nonce, context.RequestForgeryProtection))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0378));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for inferring the base URI from the client URI set in the options.
+    /// Note: this handler is not used when the user session is not interactive.
+    /// </summary>
+    public sealed class InferLogoutBaseUriFromClientUri : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireInteractiveSession>()
+                .UseSingletonHandler<InferLogoutBaseUriFromClientUri>()
+                .SetOrder(ValidateSignOutDemand.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.BaseUri ??= context.Options.ClientUri;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the listening port of the
+    /// embedded web server to the post_logout_redirect_uri, if applicable.
+    /// Note: this handler is not used when the user session is not interactive.
+    /// </summary>
+    public sealed class AttachDynamicPortToPostLogoutRedirectUri : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationHttpListener _listener;
+
+        public AttachDynamicPortToPostLogoutRedirectUri(OpenIddictClientSystemIntegrationHttpListener listener)
+            => _listener = listener ?? throw new ArgumentNullException(nameof(listener));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireInteractiveSession>()
+                .UseSingletonHandler<AttachDynamicPortToPostLogoutRedirectUri>()
+                .SetOrder(AttachPostLogoutRedirectUri.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the post_logout_redirect_uri uses a loopback host/IP as the authority and doesn't include a non-default port,
+            // determine whether the embedded web server is running: if so, override the port in the post_logout_redirect_uri
+            // by the port used by the embedded web server (guaranteed to be running if a value is returned).
+            if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) &&
+                Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) &&
+                string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+                uri.IsLoopback && uri.IsDefaultPort &&
+                await _listener.GetEmbeddedServerPortAsync(context.CancellationToken) is int port)
+            {
+                var builder = new UriBuilder(context.PostLogoutRedirectUri)
+                {
+                    Port = port
+                };
+
+                context.PostLogoutRedirectUri = builder.Uri.AbsoluteUri;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for storing the identifier of the current instance in the state token.
+    /// Note: this handler is not used when the user session is not interactive.
+    /// </summary>
+    public sealed class AttachLogoutInstanceIdentifier : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> _options;
+
+        public AttachLogoutInstanceIdentifier(IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireInteractiveSession>()
+                .AddFilter<RequireLogoutStateTokenGenerated>()
+                .UseSingletonHandler<AttachLogoutInstanceIdentifier>()
+                .SetOrder(PrepareLogoutStateTokenPrincipal.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Most applications (except Windows UWP applications) are multi-instanced. As such, any protocol activation
+            // triggered by launching one of the URI schemes associated with the application will create a new instance,
+            // different from the one that initially started the logout flow. To deal with that without having to share
+            // persistent state between instances, OpenIddict stores the identifier of the instance that starts the
+            // logout process and uses it when handling the callback to determine whether the protocol activation
+            // should be redirected to a different instance using inter-process communication.
+            context.StateTokenPrincipal.SetClaim(Claims.Private.InstanceId, _options.CurrentValue.InstanceIdentifier);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for asking the marshal to track the logout operation.
+    /// Note: this handler is not used when the user session is not interactive.
+    /// </summary>
+    public sealed class TrackLogoutOperation : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public TrackLogoutOperation(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireInteractiveSession>()
+                .AddFilter<RequireLogoutStateTokenGenerated>()
+                .UseSingletonHandler<TrackLogoutOperation>()
+                .SetOrder(100_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
         {
             if (context is null)
             {

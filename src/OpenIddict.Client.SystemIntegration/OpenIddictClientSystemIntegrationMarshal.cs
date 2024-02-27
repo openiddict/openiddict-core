@@ -44,9 +44,12 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     /// Tries to acquire a lock on the authentication demand corresponding to the specified nonce.
     /// </summary>
     /// <param name="nonce">The nonce, used as a unique identifier.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><see langword="true"/> if the lock could be taken, <see langword="false"/> otherwise.</returns>
-    internal bool TryAcquireLock(string nonce)
-        => _operations.TryGetValue(nonce, out var operation) && operation.Value.Semaphore.Wait(TimeSpan.Zero);
+    /// <exception cref="OperationCanceledException">The operation was canceled by the user.</exception>
+    internal async Task<bool> TryAcquireLockAsync(string nonce, CancellationToken cancellationToken)
+        => _operations.TryGetValue(nonce, out var operation) &&
+        await operation.Value.Semaphore.WaitAsync(TimeSpan.Zero, cancellationToken);
 
     /// <summary>
     /// Tries to resolve the authentication context associated with the specified nonce.

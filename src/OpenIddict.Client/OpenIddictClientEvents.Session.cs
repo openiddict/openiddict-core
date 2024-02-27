@@ -62,6 +62,15 @@ public static partial class OpenIddictClientEvents
             set => Transaction.Request = value;
         }
 
+        /// <summary>
+        /// Gets or sets the post-logout redirect URI that was
+        /// selected during the sign-out demand, if available.
+        /// </summary>
+        public string? PostLogoutRedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URI of the remote end session endpoint.
+        /// </summary>
         public string EndSessionEndpoint { get; set; } = null!;
     }
 

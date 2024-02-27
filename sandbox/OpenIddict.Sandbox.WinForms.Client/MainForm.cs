@@ -19,22 +19,26 @@ public partial class MainForm : Form, IWinFormsShell
     }
 
     private async void LocalLoginButton_Click(object sender, EventArgs e)
-        => await AuthenticateAsync("Local");
+        => await LogInAsync("Local");
 
     private async void LocalLoginWithGitHubButton_Click(object sender, EventArgs e)
-        => await AuthenticateAsync("Local", new()
+        => await LogInAsync("Local", new()
         {
             [Parameters.IdentityProvider] = Providers.GitHub
         });
 
-    private async void GitHubLoginButton_Click(object sender, EventArgs e)
-        => await AuthenticateAsync(Providers.GitHub);
+    private async void LocalLogoutButton_Click(object sender, EventArgs e)
+        => await LogOutAsync("Local");
 
-    private async Task AuthenticateAsync(string provider, Dictionary<string, OpenIddictParameter>? parameters = null)
+    private async void GitHubLoginButton_Click(object sender, EventArgs e)
+        => await LogInAsync(Providers.GitHub);
+
+    private async Task LogInAsync(string provider, Dictionary<string, OpenIddictParameter>? parameters = null)
     {
-        // Disable the login buttons to prevent concurrent authentication operations.
+        // Disable the buttons to prevent concurrent operations.
         LocalLogin.Enabled = false;
         LocalLoginWithGitHub.Enabled = false;
+        LocalLogout.Enabled = false;
         GitHubLogin.Enabled = false;
 
         try
@@ -123,9 +127,115 @@ public partial class MainForm : Form, IWinFormsShell
 
         finally
         {
-            // Re-enable the login buttons to allow starting a new authentication operation.
+            // Re-enable the buttons to allow starting a new operation.
             LocalLogin.Enabled = true;
             LocalLoginWithGitHub.Enabled = true;
+            LocalLogout.Enabled = true;
+            GitHubLogin.Enabled = true;
+        }
+    }
+
+    private async Task LogOutAsync(string provider, Dictionary<string, OpenIddictParameter>? parameters = null)
+    {
+        // Disable the buttons to prevent concurrent operations.
+        LocalLogin.Enabled = false;
+        LocalLoginWithGitHub.Enabled = false;
+        LocalLogout.Enabled = false;
+        GitHubLogin.Enabled = false;
+
+        try
+        {
+            using var source = new CancellationTokenSource(delay: TimeSpan.FromSeconds(90));
+
+            try
+            {
+                // Ask OpenIddict to initiate the logout flow (typically, by starting the system browser).
+                var result = await _service.SignOutInteractivelyAsync(new()
+                {
+                    AdditionalLogoutRequestParameters = parameters,
+                    CancellationToken = source.Token,
+                    ProviderName = provider
+                });
+
+                // Wait for the user to complete the logout process and authenticate the callback request.
+                //
+                // Note: in this case, only the claims contained in the state token can be resolved since
+                // the authorization server doesn't return any other user identity during a logout dance.
+                await _service.AuthenticateInteractivelyAsync(new()
+                {
+                    CancellationToken = source.Token,
+                    Nonce = result.Nonce
+                });
+
+#if SUPPORTS_WINFORMS_TASK_DIALOG
+                TaskDialog.ShowDialog(new TaskDialogPage
+                {
+                    Caption = "Logout successful",
+                    Heading = "Logout successful",
+                    Icon = TaskDialogIcon.ShieldSuccessGreenBar,
+                    Text = "The user was successfully logged out from the local server."
+                });
+#else
+                MessageBox.Show("The user was successfully logged out from the local server.",
+                    "Logout successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
+#endif
+            }
+
+            catch (OperationCanceledException)
+            {
+#if SUPPORTS_WINFORMS_TASK_DIALOG
+                TaskDialog.ShowDialog(new TaskDialogPage
+                {
+                    Caption = "Logout timed out",
+                    Heading = "Logout timed out",
+                    Icon = TaskDialogIcon.Warning,
+                    Text = "The logout process was aborted."
+                });
+#else
+                MessageBox.Show("The authentication process was aborted.",
+                    "Logout timed out", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+#endif
+            }
+
+            catch (ProtocolException exception) when (exception.Error is Errors.AccessDenied)
+            {
+#if SUPPORTS_WINFORMS_TASK_DIALOG
+                TaskDialog.ShowDialog(new TaskDialogPage
+                {
+                    Caption = "Logout denied",
+                    Heading = "Logout denied",
+                    Icon = TaskDialogIcon.Warning,
+                    Text = "The logout demand was denied by the end user."
+                });
+#else
+                MessageBox.Show("The logout demand was denied by the end user.",
+                    "Logout denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+#endif
+            }
+
+            catch
+            {
+#if SUPPORTS_WINFORMS_TASK_DIALOG
+                TaskDialog.ShowDialog(new TaskDialogPage
+                {
+                    Caption = "Logout failed",
+                    Heading = "Logout failed",
+                    Icon = TaskDialogIcon.Error,
+                    Text = "An error occurred while trying to log the user out."
+                });
+#else
+                MessageBox.Show("An error occurred while trying to log the user out.",
+                    "Logout failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+#endif
+            }
+        }
+
+        finally
+        {
+            // Re-enable the buttons to allow starting a new operation.
+            LocalLogin.Enabled = true;
+            LocalLoginWithGitHub.Enabled = true;
+            LocalLogout.Enabled = true;
             GitHubLogin.Enabled = true;
         }
     }

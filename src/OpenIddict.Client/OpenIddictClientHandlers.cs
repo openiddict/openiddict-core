@@ -1220,7 +1220,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for rejecting errored authorization responses.
+    /// Contains the logic responsible for rejecting authentication demands containing frontchannel errors.
     /// </summary>
     public sealed class HandleFrontchannelErrorResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1229,7 +1229,6 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireRedirectionRequest>()
                 .UseSingletonHandler<HandleFrontchannelErrorResponse>()
                 .SetOrder(ValidateIssuerParameter.Descriptor.Order + 1_000)
                 .Build();
@@ -1240,6 +1239,20 @@ public static partial class OpenIddictClientHandlers
             if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: unlike the redirection endpoint, the post-logout redirection endpoint is not expected
+            // to be called with an error attached (in this case, the error is typically displayed directly
+            // by the authorization server). That said, some implementations are known to allow redirecting
+            // the user to the post-logout redirection URI with error details attached as a non-standard
+            // extension. To support this scenario, the error details are extracted and validated for both
+            // the redirection and post-logout redirection endpoints.
+            //
+            // See https://openid.net/specs/openid-connect-rpinitiated-1_0.html for more information.
+            if (context.EndpointType is not (OpenIddictClientEndpointType.PostLogoutRedirection or
+                                             OpenIddictClientEndpointType.Redirection))
+            {
+                return default;
             }
 
             // Note: for more information about the standard error codes,
@@ -1315,7 +1328,6 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireRedirectionRequest>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ResolveGrantTypeAndResponseTypeFromStateToken>()

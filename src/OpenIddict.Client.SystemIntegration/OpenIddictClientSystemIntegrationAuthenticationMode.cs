@@ -9,17 +9,17 @@ using System.Runtime.Versioning;
 namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>
-/// Provides various settings needed to configure the OpenIddict client system integration.
+/// Represents the authentication mode used to start interactive authentication and logout flows.
 /// </summary>
 public enum OpenIddictClientSystemIntegrationAuthenticationMode
 {
     /// <summary>
-    /// Browser-based authentication.
+    /// Browser-based authentication and logout.
     /// </summary>
     SystemBrowser = 0,
 
     /// <summary>
-    /// Windows web authentication broker-based authentication.
+    /// Windows web authentication broker-based authentication and logout.
     /// </summary>
     /// <remarks>
     /// Note: the web authentication broker is only supported in UWP applications

@@ -59,6 +59,12 @@ public class Worker : IHostedService
                     {
                         [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente console"
                     },
+                    PostLogoutRedirectUris =
+                    {
+                        // Note: the port must not be explicitly specified as it is selected
+                        // dynamically at runtime by the OpenIddict client system integration.
+                        new Uri("http://localhost/callback/logout/local")
+                    },
                     RedirectUris =
                     {
                         // Note: the port must not be explicitly specified as it is selected
@@ -70,6 +76,7 @@ public class Worker : IHostedService
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.Device,
                         Permissions.Endpoints.Introspection,
+                        Permissions.Endpoints.Logout,
                         Permissions.Endpoints.Revocation,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
@@ -162,6 +169,10 @@ public class Worker : IHostedService
                     {
                         [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente WinForms"
                     },
+                    PostLogoutRedirectUris =
+                    {
+                        new Uri("com.openiddict.sandbox.winforms.client:/callback/logout/local")
+                    },
                     RedirectUris =
                     {
                         new Uri("com.openiddict.sandbox.winforms.client:/callback/login/local")
@@ -169,6 +180,7 @@ public class Worker : IHostedService
                     Permissions =
                     {
                         Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Logout,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,
@@ -198,6 +210,10 @@ public class Worker : IHostedService
                     {
                         [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente WPF"
                     },
+                    PostLogoutRedirectUris =
+                    {
+                        new Uri("com.openiddict.sandbox.wpf.client:/callback/logout/local")
+                    },
                     RedirectUris =
                     {
                         new Uri("com.openiddict.sandbox.wpf.client:/callback/login/local")
@@ -205,6 +221,7 @@ public class Worker : IHostedService
                     Permissions =
                     {
                         Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Logout,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,

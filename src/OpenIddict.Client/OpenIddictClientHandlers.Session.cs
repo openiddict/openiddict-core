@@ -115,6 +115,7 @@ public static partial class OpenIddictClientHandlers
                 {
                     // Note: the endpoint URI is automatically set by a specialized handler if it's not set here.
                     EndSessionEndpoint = context.EndSessionEndpoint?.AbsoluteUri!,
+                    PostLogoutRedirectUri = context.PostLogoutRedirectUri
                 };
 
                 await _dispatcher.DispatchAsync(notification);
@@ -353,7 +354,7 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0370));
+                context.Transaction.Response = new OpenIddictResponse();
             }
         }
 
