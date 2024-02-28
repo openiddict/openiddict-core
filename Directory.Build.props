@@ -67,7 +67,7 @@
     -->
     <UniversalWindowsPlatformTargetFrameworks
       Condition=" '$(UniversalWindowsPlatformTargetFrameworks)' == '' And $([MSBuild]::IsOSPlatform('Windows')) And
-                 ('$(GITHUB_ACTIONS)' == 'true' Or Exists('($MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETCore\v5.0')) ">
+                 ('$(GITHUB_ACTIONS)' == 'true' Or Exists('$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETCore\v5.0')) ">
       uap10.0.17763
     </UniversalWindowsPlatformTargetFrameworks>
   </PropertyGroup>
@@ -89,7 +89,7 @@
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
-    <AfterTargetFrameworkInferenceTargets>$(MSBuildThisFileDirectory)\eng\AfterTargetFrameworkInference.targets</AfterTargetFrameworkInferenceTargets>
+    <AfterTargetFrameworkInferenceTargets>$(MSBuildThisFileDirectory)eng\AfterTargetFrameworkInference.targets</AfterTargetFrameworkInferenceTargets>
   </PropertyGroup>
 
   <!--
