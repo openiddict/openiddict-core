@@ -397,7 +397,6 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.4.0"           />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.4.0"           />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.4.0"           />
-    <PackageVersion Include="Microsoft.Windows.SDK.Contracts"                                 Version="10.0.17763.1000" />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6"          />
     <PackageVersion Include="NamedPipeServerStream.NetFrameworkVersion"                       Version="1.1.7"           />
@@ -449,7 +448,6 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.4.0"           />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.4.0"           />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.4.0"           />
-    <PackageVersion Include="Microsoft.Windows.SDK.Contracts"                                 Version="10.0.17763.1000" />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6"          />
     <PackageVersion Include="NamedPipeServerStream.NetFrameworkVersion"                       Version="1.1.7"           />
