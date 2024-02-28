@@ -1,0 +1,142 @@
+<!--
+***********************************************************************************************
+Microsoft.Windows.UI.Xaml.Common.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="ImportBefore\*"/>
+
+  <PropertyGroup>
+    <AvailablePlatforms>$(AvailablePlatforms),ARM64</AvailablePlatforms>
+  </PropertyGroup>
+
+  <!-- Need the path to vcmeta.dll -->
+  <PropertyGroup>
+    <VCInstallDir Condition="'$(VCInstallDir)' == ''">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\15.0\Setup\VC@ProductDir)</VCInstallDir>
+    <VCInstallDir Condition="'$(VCInstallDir)' == ''">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\15.0\Setup\VC@ProductDir)</VCInstallDir>
+    <VCInstallDir Condition="'$(VCInstallDir)' == ''">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VSWinExpress\15.0\Setup\VC@ProductDir)</VCInstallDir>
+    <VCInstallDir Condition="'$(VCInstallDir)' == ''">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\VSWinExpress\15.0\Setup\VC@ProductDir)</VCInstallDir>
+    <VCInstallDir Condition="'$(VCInstallDir)' == ''">$(VsInstallRoot)\Common7\IDE\VC\</VCInstallDir>
+
+    <WindowsKitsPath Condition="'$(WindowsKitsPath)' == '' and '$(TargetPlatformSdkRootOverride)' != ''">$(TargetPlatformSdkRootOverride)\</WindowsKitsPath>
+    <WindowsKitsPath Condition="'$(WindowsKitsPath)'==''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots', 'KitsRoot10', null, RegistryView.Registry32, RegistryView.Default))</WindowsKitsPath>
+
+    <!--
+	if (TPV > RS2(10.0.15063.0) && TPMinV > TH2(10.0.10587.0)), use TPV XAML Compiler
+	else, use TPMinV XAML Compiler
+    -->
+    <WindowsKitsXamlCompilerTargetsPath Condition="'$(TargetPlatformVersion)' &gt; '10.0.15064.0' AND '$(TargetPlatformMinVersion)' &gt; '10.0.14392.0'">$(WindowsKitsPath)bin\$(TargetPlatformVersion)\XamlCompiler\Microsoft.Windows.UI.Xaml.Common.targets</WindowsKitsXamlCompilerTargetsPath>
+    <WindowsKitsXamlCompilerTargetsPath Condition="'$(WindowsKitsXamlCompilerTargetsPath)' == ''">$(WindowsKitsPath)bin\$(TargetPlatformMinVersion)\XamlCompiler\Microsoft.Windows.UI.Xaml.Common.targets</WindowsKitsXamlCompilerTargetsPath>
+  </PropertyGroup>
+
+  <!-- Import the targets SDK -->
+  <Import Condition="Exists($(WindowsKitsXamlCompilerTargetsPath)) AND ('$(IsWinUIAlpha)' != 'true') AND ('$(DefaultXamlRuntime)' != 'WinUI')" Project="$(WindowsKitsXamlCompilerTargetsPath)"/>
+
+  <!--
+      Ensure that UAP headless applications' WINMDs are resolved so that GenerateAppxManifest has the required
+      metadata to generate activatableClass extensions.  This should only execute for non-EXE projects that have
+      <ContainsStartupTask>true</ContainsStartupTask> and create APPX packages.
+  -->
+  <Target Name="_ResolvePrimaryProjectWinmdFiles"
+          BeforeTargets="BeforeGenerateAppxManifest"
+          AfterTargets="_GetPackagingOutputs"
+          Condition="'$(OutputType)' != 'exe' and '$(AppxPackage)' == 'true' AND '$(ContainsStartupTask)' == 'true'">
+    <ItemGroup>
+      <_AppxWinmdFilesToHarvest Include="@(PackagingOutputs)"
+                                      Condition="'%(PackagingOutputs.Extension)' == '.winmd'
+                                             and '%(PackagingOutputs.ProjectName)' == '$(ProjectName)'
+                                             and '%(PackagingOutputs.ResolvedFrom)' != 'GetSDKReferenceFiles'">
+        <!-- This covers the Managed Background Application winmd which does NOT have a WinMDFileType value set -->
+        <ImageRuntime Condition="'$(PrimaryProjectWinmdImageRuntimeOverride)' == ''">WindowsRuntime 1.4;CLR v4.0.30319</ImageRuntime>
+        <!-- This covers the C++ Background Application winmd which does NOT have a WinMDFileType value set -->
+        <ImageRuntime Condition="'$(PrimaryProjectWinmdImageRuntimeOverride)' == ''
+                                 and '@(Language)' == 'C++'">WindowsRuntime 1.4</ImageRuntime>
+        <!-- This covers Managed Windows Runtime Component winmds -->
+        <ImageRuntime Condition="'$(PrimaryProjectWinmdImageRuntimeOverride)' == ''
+                                 and '%(PackagingOutputs.WinMDFileType)' == 'Managed'">WindowsRuntime 1.4;CLR v4.0.30319</ImageRuntime>
+        <!-- This covers Native Windows Runtime Component winmds -->
+        <ImageRuntime Condition="'$(PrimaryProjectWinmdImageRuntimeOverride)' == ''
+                                 and '%(PackagingOutputs.WinMDFileType)' == 'Native'">WindowsRuntime 1.4</ImageRuntime>
+        <!-- This covers Native Windows Runtime Component winmds for DynamicLibrary projects -->
+        <ImageRuntime Condition="'$(PrimaryProjectWinmdImageRuntimeOverride)' == ''
+                                 and '%(PackagingOutputs.ProjectType)' == 'DynamicLibrary'">WindowsRuntime 1.4</ImageRuntime>
+        <!-- This provides an override -->
+        <ImageRuntime Condition="'$(PrimaryProjectWinmdImageRuntimeOverride)' != ''">$(PrimaryProjectWinmdImageRuntimeOverride)</ImageRuntime>
+      </_AppxWinmdFilesToHarvest>
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <AddProcessedXamlFilesToCopyLocalDependsOn>
+      ContentFilesProjectOutputGroup;
+      Prep_ComputeProcessXamlFiles;
+      $(AddProcessedXamlFilesToCopyLocalDependsOn)
+    </AddProcessedXamlFilesToCopyLocalDependsOn>
+    <AddProcessedXamlFilesToCopyLocalDependsOn Condition="'$(WindowsAppContainer)' == 'true'">
+      _CalculateXbfSupport;
+      $(AddProcessedXamlFilesToCopyLocalDependsOn)
+    </AddProcessedXamlFilesToCopyLocalDependsOn>
+  </PropertyGroup>
+
+  <Target Name="AddProcessedXamlFilesToCopyLocal" Condition="'$(AppxPackage)' != 'true'" DependsOnTargets="$(AddProcessedXamlFilesToCopyLocalDependsOn)" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <_ProcessedXamlFilesToCopyLocal Include="@(GeneratedXamlSrc->'%(FullPath)')" />
+      <_ProcessedXamlFilesToCopyLocal Condition="'$(GenerateLibraryLayout)' == 'true' and '$(DisableXbfGeneration)' != 'true'" Include="@(GeneratedXamlSrc0->'%(FullPath)')" />
+    </ItemGroup>
+
+    <AssignTargetPath Files="@(_ProcessedXamlFilesToCopyLocal)" RootFolder="$(XamlGeneratedOutputPath)">
+      <Output TaskParameter="AssignedFiles" ItemName="_ProcessedXamlFilesToCopyLocalWithTargetPath" />
+    </AssignTargetPath>
+
+    <ItemGroup>
+      <_AllChildProjectItemsWithTargetPath Include="@(_ProcessedXamlFilesToCopyLocalWithTargetPath)" Condition="'%(Extension)' != '.xbf' OR ('%(Extension)' == '.xbf' AND '$(_SupportXbfAsEmbedFileResources)' != 'true')">
+        <TargetPath Condition="'$(AppxPriInitialPath)' != ''">$(AppxPriInitialPath)\%(_ProcessedXamlFilesToCopyLocalWithTargetPath.TargetPath)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </_AllChildProjectItemsWithTargetPath>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_AllChildProjectItemsWithTargetPath Include="@(ContentFilesProjectOutputGroupOutput)">
+        <TargetPath Condition="'$(AppxPriInitialPath)' != ''">$(AppxPriInitialPath)\%(ContentFilesProjectOutputGroupOutput.TargetPath)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </_AllChildProjectItemsWithTargetPath>
+    </ItemGroup>
+
+    <Message Importance="Low" Text="(Out) _ProcessedXamlFilesToCopyLocal == @(_ProcessedXamlFilesToCopyLocal)" />
+    <Message Importance="Low" Text="(Out) _XamlFilesToCopyLocal == @(_XamlFilesToCopyLocal)" />
+  </Target>
+
+  <!--
+       This builds the Bin Folder for DLL's that wish to have the SDK type layout
+       This needs to be imported after the Microsoft.Windows.UI.Xaml.Common.targets project as we are overriding it there due to a bug in the DestinationFiles using $(OutputPath) instead of $(OutDir)
+  -->
+  <Target Name="PrepareLibraryLayout"
+          Condition="'$(GenerateLibraryLayout)' == 'true'"
+          DependsOnTargets="GetPackagingOutputs"
+          BeforeTargets="CopyFilesToOutputDirectory">
+
+    <ItemGroup>
+      <_LayoutFile Include="@(PackagingOutputs)" Condition="'%(OutputGroup)' == 'ContentFilesProjectOutputGroup'" />
+      <_LayoutFile Include="@(PackagingOutputs)" Condition="'%(OutputGroup)' == 'CustomOutputGroupForPackaging'" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_LayoutFile)"
+          DestinationFiles="@(_LayoutFile->'$(OutDir)\%(TargetPath)')"
+          SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)" />
+  </Target>
+
+  <Import Project="ImportAfter\*"/>
+
+</Project>

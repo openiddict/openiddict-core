@@ -1,0 +1,49 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(TargetPlatformVersion)'==''">
+    <TargetPlatformVersion>8.0</TargetPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'UAP' And '$(TargetPlatformMinVersion)' != '' And '$(TargetPlatformMinVersion)' &gt; '10.0.10587.0'">
+    <RedirectionTarget>8.21</RedirectionTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'UAP' And '$(RedirectionTarget)' == ''">
+    <RedirectionTarget>8.2</RedirectionTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RedirectionTarget)' == ''">
+    <RedirectionTarget>$(TargetPlatformVersion)</RedirectionTarget>
+  </PropertyGroup>
+
+  <!-- Direct 8.0 projects to 8.1 targets to enable retargeting  -->
+  <PropertyGroup Condition="'$(RedirectionTarget)' == '8.0'">
+    <RedirectionTarget>8.1</RedirectionTarget>
+  </PropertyGroup>
+
+  <!-- UnitTest SDKs always match VS Versions -->
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'UAP' And '$(UnitTestPlatformVersion)' != ''">
+    <UnitTestPlatformVersion>$(VisualStudioVersion)</UnitTestPlatformVersion>
+  </PropertyGroup>
+ 
+  <!-- User Sets this property in csproj -->
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'UAP' And '$(UnitTestPlatformVersion)' == '17.0'">
+    <!-- Needed to drop PDB's inside Appx -->
+    <AppxPackageIncludePrivateSymbols Condition="'$(AppxPackageIncludePrivateSymbols)' == ''">true</AppxPackageIncludePrivateSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UwpUnitTestSdkPkgVersion)' == ''">
+    <UwpUnitTestSdkPkgVersion>16.11.0</UwpUnitTestSdkPkgVersion>
+  </PropertyGroup>
+
+  <!-- Tpv2 needs following packages at runtime -->
+  <Choose>
+    <When Condition="'$(TargetPlatformIdentifier)' == 'UAP' And '$(UnitTestPlatformVersion)' == '17.0' And '$(RestoreProjectStyle)' == 'PackageReference' And '$(IsCppProject)' != 'True' ">
+      <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" IsImplicitlyDefined="true">
+          <Version>$(UwpUnitTestSdkPkgVersion)</Version>
+        </PackageReference>
+      </ItemGroup>
+    </When>
+  </Choose>
+
+</Project>

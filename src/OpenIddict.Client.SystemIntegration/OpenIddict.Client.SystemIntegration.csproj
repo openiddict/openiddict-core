@@ -1,11 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
     <TargetFrameworks>
       $(NetFrameworkTargetFrameworks);
       $(NetCoreTargetFrameworks);
       $(NetCoreWindowsTargetFrameworks);
-      $(NetStandardTargetFrameworks)
+      $(NetStandardTargetFrameworks);
+      $(UniversalWindowsPlatformTargetFrameworks)
     </TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
@@ -25,15 +26,15 @@
   </ItemGroup>
 
   <ItemGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
     <PackageReference Include="NamedPipeServerStream.NetFrameworkVersion" />
   </ItemGroup>
 
   <ItemGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework') ">
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" />
   </ItemGroup>
 

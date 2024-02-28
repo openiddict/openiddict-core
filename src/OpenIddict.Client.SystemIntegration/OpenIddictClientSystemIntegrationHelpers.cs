@@ -242,7 +242,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
         // Note: with the materialization of Project Centennial/Desktop Bridge in Windows 10 1607
         // (also known as Anniversary Update), desktop applications that don't have a package
         // identity are now allowed to use most of the WinRT APIs. Since OpenIddict's UWP support
-        // is implemented via a .NET Standard 2.0 TFM (which requires Windows 10 1809), it is assumed
+        // is implemented via a UAP 10.0.17763 TFM (which requires Windows 10 1809), it is assumed
         // at this point that Launcher.LaunchUriAsync() can be used in both types of applications.
 
         try
