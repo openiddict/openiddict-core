@@ -1,0 +1,61 @@
+<!--
+***********************************************************************************************
+Microsoft.Windows.UI.Xaml.CSharp.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Condition=" '$(TargetPlatformIdentifier)' == 'WindowsPhoneApp' ">
+        <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == ''">8.1</TargetPlatformVersion>
+        <TargetFrameworkIdentifier Condition="'$(TargetFrameworkIdentifier)' == ''">WindowsPhoneApp</TargetFrameworkIdentifier>
+        <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v8.1</TargetFrameworkVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' OR '$(TargetPlatformIdentifier)' == '' ">
+        <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == ''">8.2</TargetPlatformVersion>
+        <TargetFrameworkIdentifier Condition="'$(TargetFrameworkIdentifier)' == ''">.NETCore</TargetFrameworkIdentifier>
+        <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v4.5.1</TargetFrameworkVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetPlatformIdentifier)' == 'UAP'">
+        <TargetFrameworkIdentifier Condition="'$(TargetFrameworkIdentifier)' == ''">.NETCore</TargetFrameworkIdentifier>
+        <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v5.0</TargetFrameworkVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(SDKIdentifier)' == '' and '$(TargetPlatformIdentifier)' == 'UAP'">
+        <SDKIdentifier>Windows</SDKIdentifier>
+        <SDKVersion>10.0</SDKVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <UWPNugetRepo Condition="'$(UWPNugetRepo)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\NuGet\Repository', 'UWPNugetPackages', null, RegistryView.Registry32, RegistryView.Default))</UWPNugetRepo>
+      <RestoreAdditionalProjectFallbackFolders>$(RestoreAdditionalProjectFallbackFolders);$(UWPNugetRepo)</RestoreAdditionalProjectFallbackFolders>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ImplicitlyExpandTargetPlatform Condition="'$(ImplicitlyExpandTargetPlatform)' == '' ">true</ImplicitlyExpandTargetPlatform>
+        <ImplicitlyExpandTargetFramework Condition="'$(ImplicitlyExpandTargetFramework)' == '' ">true</ImplicitlyExpandTargetFramework>
+        <NoStdLib Condition="'$(NoStdLib)' == ''">true</NoStdLib>
+        <UseVSHostingProcess>false</UseVSHostingProcess>
+        <WindowsAppContainer>true</WindowsAppContainer>
+        <AppxPackage Condition="'$(OutputType)' == 'AppContainerExe'">True</AppxPackage>
+
+        <!-- Supress the warnings in the 1st pass so that warnings are not repeated twice -->
+        <SuppressWarningsInPass1 Condition="'$(SuppressWarningsInPass1)' == '' ">true</SuppressWarningsInPass1>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+    <Import Project="Microsoft.Windows.UI.Xaml.Common.targets" />
+    <Import Project="Microsoft.Windows.UI.Xaml.Cps.targets" />
+
+    <ItemGroup>
+        <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\CSharp.ProjectItemsSchema.xaml"/>
+    </ItemGroup>
+</Project>

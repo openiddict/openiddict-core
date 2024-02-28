@@ -1,0 +1,38 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <IsCppProject>True</IsCppProject>
+  </PropertyGroup>
+  <Import Project="Microsoft.Windows.UI.Xaml.Common.targets"/>
+  <Import Project="$(RedirectionTarget)\Microsoft.Windows.UI.Xaml.Cpp.targets" Condition="Exists('$(RedirectionTarget)\Microsoft.Windows.UI.Xaml.Cpp.targets')" />
+
+  <PropertyGroup Condition="'$(DesignTimeBuild)' != 'true'">
+    <MarkupCompilePass1DependsOn>$(MarkupCompilePass1DependsOn);_WriteXamlTlogs</MarkupCompilePass1DependsOn>
+  </PropertyGroup>
+
+  <Target Name="_WriteXamlTlogs"
+        Condition="'@(SelectedFiles)' == ''">
+    <ItemGroup Condition="'@(Page)' != ''">
+      <_XamlReadTlog Include="^%(Page.FullPath)"
+                    Condition="'%(Page.ExcludedFromBuild)' != 'true'"/>
+    </ItemGroup>
+    <ItemGroup Condition="'@(ApplicationDefinition)' != ''">
+      <_XamlReadTlog Include="^%(ApplicationDefinition.FullPath)"
+                Condition="'%(ApplicationDefinition.ExcludedFromBuild)' != 'true'"/>
+    </ItemGroup>
+
+    <WriteLinesToFile
+      Condition="'@(_XamlReadTlog)' != ''"
+      File="$(TLogLocation)Xaml.read.1u.tlog"
+      Lines="@(_XamlReadTlog->MetaData('Identity')->ToUpperInvariant());"
+      Overwrite="true"
+      Encoding="Unicode"/>
+
+    <Delete Condition="'@(_XamlReadTlog)' == '' and Exists('$(TLogLocation)Xaml.read.1u.tlog')"
+            Files="$(TLogLocation)Xaml.read.1u.tlog" />
+
+    <ItemGroup>
+      <_XamlReadTlog Remove="@(_XamlReadTlog)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

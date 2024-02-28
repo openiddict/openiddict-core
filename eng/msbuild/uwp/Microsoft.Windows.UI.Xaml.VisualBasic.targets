@@ -1,0 +1,5 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="Microsoft.Windows.UI.Xaml.Common.targets"/>
+  <Import Project="$(RedirectionTarget)\Microsoft.Windows.UI.Xaml.VisualBasic.targets" Condition="Exists('$(RedirectionTarget)\Microsoft.Windows.UI.Xaml.VisualBasic.targets')"/>
+  <Import Project="$(MSBuildBinPath)\Microsoft.VisualBasic.targets" Condition="!Exists('$(RedirectionTarget)\Microsoft.Windows.UI.Xaml.VisualBasic.targets')"/>
+</Project>

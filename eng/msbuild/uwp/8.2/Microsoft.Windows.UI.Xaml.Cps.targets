@@ -1,0 +1,52 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemGroup Condition=" '$(IsCodeSharingProject)' != 'true' ">
+        <!-- SDK references -->
+        <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\SDKReference.xaml">
+            <Context>;BrowseObject</Context>
+        </PropertyPageSchema>
+        <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\ResolvedSDKReference.xaml">
+            <Context>ProjectCapabilitySubscriptionService;BrowseObject</Context>
+        </PropertyPageSchema>
+        <ProjectCapability Include="SDKReferences" />
+
+        <!-- WinRT references -->
+        <!-- No need for WinRTReference.xaml because we share an item type with AssemblyReference.xaml -->
+        <ProjectCapability Include="WinRTReferences" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- Xaml item types -->
+        <PropertyPageSchema Include="
+                            $(MSBuildThisFileDirectory)$(LangName)\PRIResource.xaml;
+                            $(MSBuildThisFileDirectory)$(LangName)\ApplicationDefinition.xaml;
+                            $(MSBuildThisFileDirectory)$(LangName)\Page.xaml;
+                            $(MSBuildThisFileDirectory)$(LangName)\AppxManifest.xaml;
+                            $(MSBuildThisFileDirectory)$(LangName)\DesignData.xaml;
+                            $(MSBuildThisFileDirectory)$(LangName)\DesignDataWithDesignTimeCreatableTypes.xaml;
+                            ">
+            <Context>File;BrowseObject</Context>
+        </PropertyPageSchema>
+
+        <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\ProjectItemsSchema.xaml"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup Condition=" '$(DefineExplicitDefaults)' == 'true' ">
+        <PRIResource>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </PRIResource>
+        <AppxManifest>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </AppxManifest>
+        <Page>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Page>
+        <ApplicationDefinition>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </ApplicationDefinition>
+        <DesignData>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </DesignData>
+        <DesignDataWithDesignTimeCreatableTypes>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </DesignDataWithDesignTimeCreatableTypes>
+    </ItemDefinitionGroup>
+</Project>

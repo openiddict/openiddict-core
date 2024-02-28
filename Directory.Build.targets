@@ -22,7 +22,8 @@
   -->
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'   And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'   And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
                 ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
     <Nullable>annotations</Nullable>
@@ -121,14 +122,17 @@
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '5.0')) And
+                 '$(TargetPlatformIdentifier)'  == 'UAP'      And '$(TargetPlatformVersion)' != '' And
+                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0'))) Or
+
+                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
 
                 ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)' == 'Windows' And '$(TargetPlatformVersion)' != '' And
+                 '$(TargetPlatformIdentifier)'  == 'Windows'     And '$(TargetPlatformVersion)' != '' And
                   $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '8.0'))) Or
 
-                ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework') ">
     <DefineConstants>$(DefineConstants);SUPPORTS_WINDOWS_RUNTIME</DefineConstants>
   </PropertyGroup>
   
@@ -147,6 +151,16 @@
         Overwrite="true"
         Encoding="Unicode" />
   </Target>
+
+  <!--
+    Note: the built-in _CalculateXbfSupport target cannot be used when building a UWP project using
+    the .NET version of MSBuild. To work around this limitation, a fake target is defined here.
+  -->
+
+  <Target Name="_CalculateXbfSupport"
+          Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '5.0')) And
+                      '$(TargetPlatformIdentifier)'  == 'UAP'      And '$(TargetPlatformVersion)' != '' And
+                       $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0')) " />
 
   <ItemGroup>
     <Using Remove="System.Net.Http" />

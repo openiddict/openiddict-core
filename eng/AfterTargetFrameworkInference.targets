@@ -1,0 +1,15 @@
+<Project>
+
+  <!--
+    Note: the language targets necessary to build UWP applications are not included in the .NET SDK and require
+    installing Visual Studio. To work around this limitation, a local copy of these targets is embedded and used here.
+  -->
+
+  <PropertyGroup
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '5.0')) And
+                '$(TargetPlatformIdentifier)'  == 'UAP'      And '$(TargetPlatformVersion)' != '' And
+                 $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0')) ">
+    <LanguageTargets>$(MSBuildThisFileDirectory)msbuild\uwp\Microsoft.Windows.UI.Xaml.CSharp.targets</LanguageTargets>
+  </PropertyGroup>
+
+</Project>

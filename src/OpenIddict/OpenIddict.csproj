@@ -1,11 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
     <TargetFrameworks>
       $(NetFrameworkTargetFrameworks);
       $(NetCoreTargetFrameworks);
       $(NetCoreWindowsTargetFrameworks);
-      $(NetStandardTargetFrameworks)
+      $(NetStandardTargetFrameworks);
+      $(UniversalWindowsPlatformTargetFrameworks)
     </TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
@@ -48,6 +49,7 @@ To use these features on ASP.NET Core or OWIN/Katana/ASP.NET 4.x, reference the 
     <None Include="_._" Pack="true" PackagePath="lib\net8.0-windows10.0.17763\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\netstandard2.0\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\netstandard2.1\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\uap10.0.17763\_._" />
   </ItemGroup>
 
 </Project>
