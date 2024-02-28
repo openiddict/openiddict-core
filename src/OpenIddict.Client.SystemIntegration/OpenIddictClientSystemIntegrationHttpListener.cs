@@ -94,7 +94,14 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
         // Ignore exceptions indicating that the host is shutting down and return immediately.
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
+            _source.SetResult(result: null);
             return;
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            _source.SetResult(result: null);
+            throw;
         }
 
         static (HttpListener Listener, int Port) CreateHttpListener(List<int> ports, CancellationToken cancellationToken)

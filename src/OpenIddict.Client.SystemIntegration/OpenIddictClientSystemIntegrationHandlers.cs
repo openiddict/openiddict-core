@@ -1599,6 +1599,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireInteractiveSession>()
                 .AddFilter<RequireInteractiveGrantType>()
+                // Note: only apply the dynamic port replacement logic if the callback request
+                // is going to be received by the system browser to ensure it doesn't apply to
+                // challenge demands handled via a web authentication broker are not affected.
+                .AddFilter<RequireSystemBrowser>()
                 .UseSingletonHandler<AttachDynamicPortToRedirectUri>()
                 .SetOrder(AttachRedirectUri.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -1775,6 +1779,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .AddFilter<RequireInteractiveSession>()
+                // Note: only apply the dynamic port replacement logic if the callback request
+                // is going to be received by the system browser to ensure it doesn't apply to
+                // sign-out demands handled via a web authentication broker are not affected.
+                .AddFilter<RequireSystemBrowser>()
                 .UseSingletonHandler<AttachDynamicPortToPostLogoutRedirectUri>()
                 .SetOrder(AttachPostLogoutRedirectUri.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
