@@ -413,7 +413,7 @@
     -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers"                                Version="3.3.4"           />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp"                                   Version="3.11.0"          />
-    <PackageVersion Include="Scriban"                                                         Version="5.9.0"           />
+    <PackageVersion Include="Scriban"                                                         Version="5.9.1"           />
     <PackageVersion Include="System.Interactive"                                              Version="4.1.1"           />
 
     <!--
