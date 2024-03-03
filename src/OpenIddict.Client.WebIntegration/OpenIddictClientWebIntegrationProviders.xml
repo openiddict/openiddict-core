@@ -265,6 +265,26 @@
   </Provider>
 
   <!--
+                                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                      ██ ▄▄▀██ ▄▄▄ █▄▀█▀▄██
+                                                      ██ ▄▄▀██ ███ ███ ████
+                                                      ██ ▀▀ ██ ▀▀▀ █▀▄█▄▀██
+                                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Box" Id="09100499-f6a9-4f71-b561-2dc9f18d751f"
+            Documentation="https://developer.box.com/guides/authentication/oauth2/oauth2-setup/">
+    <Environment Issuer="https://account.box.com/">
+      <Configuration AuthorizationEndpoint="https://account.box.com/api/oauth2/authorize"
+                     TokenEndpoint="https://api.box.com/oauth2/token"
+                     UserinfoEndpoint="https://api.box.com/2.0/users/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                       █ ▄▄▀██ ▄▀▄ █ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▀██ ████ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▀██ █▄ ▄█▄▄ ▄▄██ ▄▄▄ ██
                       █ ▀▀ ██ █ █ █ ▀▀ ██▀▀▀▄▄██ ███ ██ █ █ ████ █████ ███ ██ █▀▀██ █ █ ██ ████ ████ ███ ██
