@@ -1420,7 +1420,10 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>Only instances of type '{0}' can be used as primary HTTP handlers for the HTTP clients managed by OpenIddict.</value>
   </data>
   <data name="ID0374" xml:space="preserve">
-    <value>An error occurred while authenticating the user.</value>
+    <value>An error occurred while authenticating the user.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
   </data>
   <data name="ID0375" xml:space="preserve">
     <value>The protocol activation cannot be resolved or contains invalid data.</value>
@@ -1631,6 +1634,12 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID0434" xml:space="preserve">
     <value>An error occurred while signing the user out.</value>
+  </data>
+  <data name="ID0435" xml:space="preserve">
+    <value>An error occurred while authenticating the client application.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
