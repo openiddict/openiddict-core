@@ -209,19 +209,58 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // Errors that are not handled here will be automatically handled
             // by the standard handler present in the core OpenIddict client.
 
-            if (context.Registration.ProviderType is ProviderTypes.Deezer)
+            if (context.Registration.ProviderType is ProviderTypes.Bitly &&
+                (bool?) context.Request["invalid"] is true)
+            {
+                // Note: Bitly uses custom "invalid" and "reason" parameters instead of
+                // the standard "error" parameter defined by the OAuth 2.0 specification.
+                var error = (string?) context.Request["reason"];
+
+                context.Reject(
+                    error: error switch
+                    {
+                        "deny" => Errors.AccessDenied,
+                           _   => Errors.ServerError
+                    },
+                    description: error switch
+                    {
+                        "deny" => SR.GetResourceString(SR.ID2149),
+                           _   => SR.GetResourceString(SR.ID2152)
+                    },
+                    uri: error switch
+                    {
+                        "deny" => SR.FormatID8000(SR.ID2149),
+                           _   => SR.FormatID8000(SR.ID2152)
+                    });
+
+                return default;
+            }
+
+            else if (context.Registration.ProviderType is ProviderTypes.Deezer)
             {
                 // Note: Deezer uses a custom "error_reason" parameter instead of the
                 // standard "error" parameter defined by the OAuth 2.0 specification.
                 //
                 // See https://developers.deezer.com/api/oauth for more information.
                 var error = (string?) context.Request["error_reason"];
-                if (string.Equals(error, "user_denied", StringComparison.Ordinal))
+                if (!string.IsNullOrEmpty(error))
                 {
                     context.Reject(
-                        error: Errors.AccessDenied,
-                        description: SR.GetResourceString(SR.ID2149),
-                        uri: SR.FormatID8000(SR.ID2149));
+                        error: error switch
+                        {
+                            "user_denied" => Errors.AccessDenied,
+                                  _       => Errors.ServerError
+                        },
+                        description: error switch
+                        {
+                            "user_denied" => SR.GetResourceString(SR.ID2149),
+                                  _       => SR.GetResourceString(SR.ID2152)
+                        },
+                        uri: error switch
+                        {
+                            "user_denied" => SR.FormatID8000(SR.ID2149),
+                                  _       => SR.FormatID8000(SR.ID2152)
+                        });
 
                     return default;
                 }
@@ -1091,6 +1130,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Basecamp returns the email address as a custom "email_address" node:
                 ProviderTypes.Basecamp => (string?) context.UserinfoResponse?["email_address"],
 
+                // Bitly returns one or more email addresses as a custom "emails" node:
+                ProviderTypes.Bitly => context.UserinfoResponse?["emails"]
+                    ?.GetUnnamedParameters()
+                    ?.Where(parameter => (bool?) parameter["is_primary"] is true)
+                    ?.Select(parameter => (string?) parameter["email"])
+                    ?.FirstOrDefault(),
+
                 // HubSpot returns the email address as a custom "user" node:
                 ProviderTypes.HubSpot => (string?) context.UserinfoResponse?["user"],
 
@@ -1207,6 +1253,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
                 ProviderTypes.Bitbucket => (string?) context.UserinfoResponse?["uuid"],
+
+                // Bitly returns the user identifier as a custom "login" node:
+                ProviderTypes.Bitly => (string?) context.UserinfoResponse?["login"],
 
                 // DeviantArt returns the user identifier as a custom "userid" node:
                 ProviderTypes.DeviantArt => (string?) context.UserinfoResponse?["userid"],
