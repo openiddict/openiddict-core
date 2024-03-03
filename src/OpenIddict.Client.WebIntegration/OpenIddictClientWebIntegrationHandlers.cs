@@ -1242,13 +1242,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => (string?) context.UserinfoResponse?["username"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Basecamp   or ProviderTypes.Dailymotion or ProviderTypes.Deezer        or
-                ProviderTypes.Discord    or ProviderTypes.Disqus      or ProviderTypes.Facebook      or
-                ProviderTypes.GitHub     or ProviderTypes.Harvest     or ProviderTypes.Kroger        or
-                ProviderTypes.Lichess    or ProviderTypes.Mastodon    or ProviderTypes.Meetup        or
-                ProviderTypes.Nextcloud  or ProviderTypes.Patreon     or ProviderTypes.Reddit        or
-                ProviderTypes.Smartsheet or ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or
-                ProviderTypes.Twitter    or ProviderTypes.Zoom
+                ProviderTypes.Basecamp      or ProviderTypes.Box        or ProviderTypes.Dailymotion or
+                ProviderTypes.Deezer        or ProviderTypes.Discord    or ProviderTypes.Disqus      or
+                ProviderTypes.Facebook      or ProviderTypes.GitHub     or ProviderTypes.Harvest     or
+                ProviderTypes.Kroger        or ProviderTypes.Lichess    or ProviderTypes.Mastodon    or
+                ProviderTypes.Meetup        or ProviderTypes.Nextcloud  or ProviderTypes.Patreon     or
+                ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify     or
+                ProviderTypes.SubscribeStar or ProviderTypes.Twitter    or ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
