@@ -572,6 +572,16 @@
               </xs:simpleType>
             </xs:attribute>
 
+            <xs:attribute name="Obsolete" use="optional">
+              <xs:annotation>
+                <xs:documentation>A boolean indicating whether the provider is obsolete.</xs:documentation>
+              </xs:annotation>
+
+              <xs:simpleType>
+                <xs:restriction base="xs:boolean" />
+              </xs:simpleType>
+            </xs:attribute>
+
             <xs:attribute name="Documentation" type="xs:anyURI" use="optional">
               <xs:annotation>
                 <xs:documentation>The documentation URI, if applicable.</xs:documentation>

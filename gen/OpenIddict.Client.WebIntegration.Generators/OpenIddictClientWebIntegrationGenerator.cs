@@ -75,6 +75,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     /// </summary>
     /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.display_name }} options.</param>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/> instance.</returns>
+    {{~ if provider.obsolete ~}}
+    [Obsolete(""This provider is no longer supported and will be removed in a future version."")]
+    {{~ end ~}}
     public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
     {
         if (configuration is null)
@@ -103,6 +106,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     /// <summary>
     /// Exposes the necessary methods required to configure the {{ provider.display_name }} integration.
     /// </summary>
+    {{~ if provider.obsolete ~}}
+    [Obsolete(""This provider is no longer supported and will be removed in a future version."")]
+    {{~ end ~}}
     public sealed partial class {{ provider.name }}
     {
         /// <summary>
@@ -677,6 +683,8 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                             Name = (string) provider.Attribute("Name"),
                             DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
                             Documentation = (string?) provider.Attribute("Documentation"),
+
+                            Obsolete = (bool?) provider.Attribute("Obsolete") ?? false,
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
