@@ -143,6 +143,27 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var request = context.Transaction.GetHttpRequestMessage() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
+                // Note: Bitly only supports using "client_secret_post" for the authorization code grant but not for
+                // the resource owner password credentials grant, that requires using "client_secret_basic" instead.
+                if (context.Registration.ProviderType is ProviderTypes.Bitly &&
+                    context.GrantType is GrantTypes.Password &&
+                    !string.IsNullOrEmpty(context.Request.ClientId) &&
+                    !string.IsNullOrEmpty(context.Request.ClientSecret))
+                {
+                    // Important: the credentials MUST be formURL-encoded before being base64-encoded.
+                    var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(new StringBuilder()
+                        .Append(EscapeDataString(context.Request.ClientId))
+                        .Append(':')
+                        .Append(EscapeDataString(context.Request.ClientSecret))
+                        .ToString()));
+
+                    // Attach the authorization header containing the client credentials to the HTTP request.
+                    request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Basic, credentials);
+
+                    // Remove the client credentials from the request payload to ensure they are not sent twice.
+                    context.Request.ClientId = context.Request.ClientSecret = null;
+                }
+
                 // These providers require using basic authentication to flow the client_id
                 // for all types of client applications, even when there's no client_secret.
                 if (context.Registration.ProviderType is ProviderTypes.Reddit &&

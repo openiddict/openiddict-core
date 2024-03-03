@@ -245,6 +245,26 @@
   </Provider>
 
   <!--
+                                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                  ██ ▄▄▀█▄ ▄█▄▄ ▄▄██ █████ ███ ██
+                                                  ██ ▄▄▀██ ████ ████ █████▄▀▀▀▄██
+                                                  ██ ▀▀ █▀ ▀███ ████ ▀▀ ████ ████
+                                                  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Bitly" Id="f22283c2-b074-4710-af44-a1c86343226e"
+            Documentation="https://dev.bitly.com/docs/getting-started/authentication/">
+    <Environment Issuer="https://bitly.com/">
+      <Configuration AuthorizationEndpoint="https://bitly.com/oauth/authorize"
+                     TokenEndpoint="https://api-ssl.bitly.com/oauth/access_token"
+                     UserinfoEndpoint="https://api-ssl.bitly.com/v4/user">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="password" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                       █ ▄▄▀██ ▄▀▄ █ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▀██ ████ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▀██ █▄ ▄█▄▄ ▄▄██ ▄▄▄ ██
                       █ ▀▀ ██ █ █ █ ▀▀ ██▀▀▀▄▄██ ███ ██ █ █ ████ █████ ███ ██ █▀▀██ █ █ ██ ████ ████ ███ ██
