@@ -39,12 +39,41 @@ public class InteractiveService : BackgroundService
 
             try
             {
-                // Resolve the server configuration and determine the type of flow
-                // to use depending on the supported grants and the user selection.
-                var configuration = await _service.GetServerConfigurationByProviderNameAsync(provider, stoppingToken);
-                if (configuration.GrantTypesSupported.Contains(GrantTypes.DeviceCode) &&
-                    configuration.DeviceAuthorizationEndpoint is not null &&
-                    await UseDeviceAuthorizationGrantAsync(stoppingToken))
+                var type = await GetSelectedGrantTypeAsync(provider, stoppingToken);
+                if (type is GrantTypes.ClientCredentials)
+                {
+                    AnsiConsole.MarkupLine("[cyan]Sending the token request.[/]");
+
+                    // Ask OpenIddict to authenticate the client application using the client credentials grant.
+                    await _service.AuthenticateWithClientCredentialsAsync(new()
+                    {
+                        CancellationToken = stoppingToken,
+                        ProviderName = provider
+                    });
+
+                    AnsiConsole.MarkupLine("[green]Client credentials authentication successful.[/]");
+                }
+
+                else if (type is GrantTypes.Password)
+                {
+                    var (username, password) = (await GetUsernameAsync(stoppingToken), await GetPasswordAsync(stoppingToken));
+
+                    AnsiConsole.MarkupLine("[cyan]Sending the token request.[/]");
+
+                    // Ask OpenIddict to authenticate the user using the resource owner password credentials grant.
+                    var response = await _service.AuthenticateWithPasswordAsync(new()
+                    {
+                        CancellationToken = stoppingToken,
+                        ProviderName = provider,
+                        Username = username,
+                        Password = password
+                    });
+
+                    AnsiConsole.MarkupLine("[green]Resource owner password credentials authentication successful:[/]");
+                    AnsiConsole.Write(CreateClaimTable(response.Principal));
+                }
+
+                else if (type is GrantTypes.DeviceCode)
                 {
                     // Ask OpenIddict to send a device authorization request and write
                     // the complete verification endpoint URI to the console output.
@@ -86,6 +115,7 @@ public class InteractiveService : BackgroundService
                     AnsiConsole.Write(CreateClaimTable(response.Principal));
 
                     // If introspection is supported by the server, ask the user if the access token should be introspected.
+                    var configuration = await _service.GetServerConfigurationByProviderNameAsync(provider, stoppingToken);
                     if (configuration.IntrospectionEndpoint is not null && await IntrospectAccessTokenAsync(stoppingToken))
                     {
                         AnsiConsole.MarkupLine("[steelblue]Claims extracted from the token introspection response:[/]");
@@ -114,7 +144,7 @@ public class InteractiveService : BackgroundService
 
                     // If a refresh token was returned by the authorization server, ask the user
                     // if the access token should be refreshed using the refresh_token grant.
-                    if (!string.IsNullOrEmpty(response.RefreshToken) && await UseRefreshTokenGrantAsync(stoppingToken))
+                    if (!string.IsNullOrEmpty(response.RefreshToken) && await RefreshTokenAsync(stoppingToken))
                     {
                         AnsiConsole.MarkupLine("[steelblue]Claims extracted from the refreshed identity:[/]");
                         AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
@@ -126,7 +156,7 @@ public class InteractiveService : BackgroundService
                     }
                 }
 
-                else
+                else if (type is GrantTypes.AuthorizationCode)
                 {
                     AnsiConsole.MarkupLine("[cyan]Launching the system browser.[/]");
 
@@ -152,6 +182,7 @@ public class InteractiveService : BackgroundService
 
                     // If an access token was returned by the authorization server and introspection is
                     // supported by the server, ask the user if the access token should be introspected.
+                    var configuration = await _service.GetServerConfigurationByProviderNameAsync(provider, stoppingToken);
                     if (!string.IsNullOrEmpty(response.BackchannelAccessToken) &&
                         configuration.IntrospectionEndpoint is not null &&
                         await IntrospectAccessTokenAsync(stoppingToken))
@@ -185,7 +216,7 @@ public class InteractiveService : BackgroundService
 
                     // If a refresh token was returned by the authorization server, ask the user
                     // if the access token should be refreshed using the refresh_token grant.
-                    if (!string.IsNullOrEmpty(response.RefreshToken) && await UseRefreshTokenGrantAsync(stoppingToken))
+                    if (!string.IsNullOrEmpty(response.RefreshToken) && await RefreshTokenAsync(stoppingToken))
                     {
                         AnsiConsole.MarkupLine("[steelblue]Claims extracted from the refreshed identity:[/]");
                         AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
@@ -264,7 +295,103 @@ public class InteractiveService : BackgroundService
             return table;
         }
 
-        static Task<bool> IntrospectAccessTokenAsync(CancellationToken cancellationToken)
+        Task<string> GetSelectedProviderAsync(CancellationToken cancellationToken)
+        {
+            async Task<string> PromptAsync() => AnsiConsole.Prompt(new SelectionPrompt<OpenIddictClientRegistration>()
+                .Title("Select the authentication provider you'd like to log in with.")
+                .AddChoices(from registration in await _service.GetClientRegistrationsAsync(stoppingToken)
+                            where !string.IsNullOrEmpty(registration.ProviderName)
+                            where !string.IsNullOrEmpty(registration.ProviderDisplayName)
+                            select registration)
+                .UseConverter(registration => registration.ProviderDisplayName!)).ProviderName!;
+
+            return WaitAsync(Task.Run(PromptAsync, cancellationToken), cancellationToken);
+        }
+
+        Task<string> GetSelectedGrantTypeAsync(string provider, CancellationToken cancellationToken)
+        {
+            async Task<string> PromptAsync()
+            {
+                List<(string GrantType, string DisplayName)> choices = [];
+
+                var configuration = await _service.GetServerConfigurationByProviderNameAsync(provider, stoppingToken);
+                if (configuration.GrantTypesSupported.Contains(GrantTypes.AuthorizationCode) &&
+                    configuration.AuthorizationEndpoint is not null &&
+                    configuration.TokenEndpoint is not null)
+                {
+                    choices.Add((GrantTypes.AuthorizationCode, "Authorization code grant"));
+                }
+
+                if (configuration.GrantTypesSupported.Contains(GrantTypes.DeviceCode) &&
+                    configuration.DeviceAuthorizationEndpoint is not null &&
+                    configuration.TokenEndpoint is not null)
+                {
+                    choices.Add((GrantTypes.DeviceCode, "Device authorization code grant"));
+                }
+
+                if (configuration.GrantTypesSupported.Contains(GrantTypes.Password) &&
+                    configuration.TokenEndpoint is not null)
+                {
+                    choices.Add((GrantTypes.Password, "Resource owner password credentials grant"));
+                }
+
+                if (configuration.GrantTypesSupported.Contains(GrantTypes.ClientCredentials) &&
+                    configuration.TokenEndpoint is not null)
+                {
+                    choices.Add((GrantTypes.ClientCredentials, "Client credentials grant (application authentication only)"));
+                }
+
+                if (choices.Count is 1)
+                {
+                    return choices[0].GrantType;
+                }
+
+                return AnsiConsole.Prompt(new SelectionPrompt<(string GrantType, string DisplayName)>()
+                    .Title("Select the grant type you'd like to use.")
+                    .AddChoices(choices)
+                    .UseConverter(choice => choice.DisplayName)).GrantType;
+            }
+
+            return WaitAsync(Task.Run(PromptAsync, cancellationToken), cancellationToken);
+        }
+
+        Task<string> GetUsernameAsync(CancellationToken cancellationToken)
+        {
+            static string Prompt() => AnsiConsole.Prompt(new TextPrompt<string>("Please enter your username:")
+            {
+                AllowEmpty = false,
+                IsSecret = false
+            });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        Task<string> GetPasswordAsync(CancellationToken cancellationToken)
+        {
+            static string Prompt() => AnsiConsole.Prompt(new TextPrompt<string>("Please enter your password:")
+            {
+                AllowEmpty = false,
+                IsSecret = true
+            });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+
+        static Task<bool> RefreshTokenAsync(CancellationToken cancellationToken)
+        {
+            static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
+                "Would you like to refresh the user authentication using the refresh token grant?")
+            {
+                Comparer = StringComparer.CurrentCultureIgnoreCase,
+                DefaultValue = false,
+                ShowDefaultValue = true
+            });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+static Task<bool> IntrospectAccessTokenAsync(CancellationToken cancellationToken)
         {
             static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
                 "Would you like to introspect the access token?")
@@ -300,45 +427,6 @@ public class InteractiveService : BackgroundService
             });
 
             return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
-        }
-
-        static Task<bool> UseDeviceAuthorizationGrantAsync(CancellationToken cancellationToken)
-        {
-            static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
-                "Would you like to authenticate using the device authorization grant?")
-            {
-                Comparer = StringComparer.CurrentCultureIgnoreCase,
-                DefaultValue = false,
-                ShowDefaultValue = true
-            });
-
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
-        }
-
-        static Task<bool> UseRefreshTokenGrantAsync(CancellationToken cancellationToken)
-        {
-            static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
-                "Would you like to refresh the user authentication using the refresh token grant?")
-            {
-                Comparer = StringComparer.CurrentCultureIgnoreCase,
-                DefaultValue = false,
-                ShowDefaultValue = true
-            });
-
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
-        }
-
-        Task<string> GetSelectedProviderAsync(CancellationToken cancellationToken)
-        {
-            async Task<string> PromptAsync() => AnsiConsole.Prompt(new SelectionPrompt<OpenIddictClientRegistration>()
-                .Title("Select the authentication provider you'd like to log in with.")
-                .AddChoices(from registration in await _service.GetClientRegistrationsAsync(stoppingToken)
-                            where !string.IsNullOrEmpty(registration.ProviderName)
-                            where !string.IsNullOrEmpty(registration.ProviderDisplayName)
-                            select registration)
-                .UseConverter(registration => registration.ProviderDisplayName!)).ProviderName!;
-
-            return WaitAsync(Task.Run(PromptAsync, cancellationToken), cancellationToken);
         }
 
         static async Task<T> WaitAsync<T>(Task<T> task, CancellationToken cancellationToken)

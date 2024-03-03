@@ -311,7 +311,7 @@ public class OpenIddictClientService
             if (context.IsRejected)
             {
                 throw new ProtocolException(
-                    message: SR.GetResourceString(SR.ID0374),
+                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
@@ -412,7 +412,7 @@ public class OpenIddictClientService
             if (context.IsRejected)
             {
                 throw new ProtocolException(
-                    message: SR.GetResourceString(SR.ID0374),
+                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
@@ -499,7 +499,7 @@ public class OpenIddictClientService
             if (context.IsRejected)
             {
                 throw new ProtocolException(
-                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
+                    SR.FormatID0435(context.Error, context.ErrorDescription, context.ErrorUri),
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
@@ -604,7 +604,7 @@ public class OpenIddictClientService
                     if (context.IsRejected)
                     {
                         throw new ProtocolException(
-                            message: SR.GetResourceString(SR.ID0374),
+                            SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -718,7 +718,7 @@ public class OpenIddictClientService
             if (context.IsRejected)
             {
                 throw new ProtocolException(
-                    message: SR.GetResourceString(SR.ID0374),
+                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
@@ -810,7 +810,7 @@ public class OpenIddictClientService
             if (context.IsRejected)
             {
                 throw new ProtocolException(
-                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
+                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
