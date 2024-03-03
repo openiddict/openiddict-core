@@ -1823,6 +1823,8 @@
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
 
+        <RevocationEndpointAuthMethod Value="client_secret_basic" />
+
         <TokenEndpointAuthMethod Value="client_secret_basic" />
       </Configuration>
     </Environment>
