@@ -81,6 +81,7 @@ public class Worker : IHostedService
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.DeviceCode,
+                        Permissions.GrantTypes.Password,
                         Permissions.GrantTypes.RefreshToken,
                         Permissions.ResponseTypes.Code,
                         Permissions.Scopes.Email,
