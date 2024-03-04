@@ -66,11 +66,53 @@ public class InteractiveService : BackgroundService
                         CancellationToken = stoppingToken,
                         ProviderName = provider,
                         Username = username,
-                        Password = password
+                        Password = password,
+                        Scopes = [Scopes.OfflineAccess]
                     });
 
                     AnsiConsole.MarkupLine("[green]Resource owner password credentials authentication successful:[/]");
                     AnsiConsole.Write(CreateClaimTable(response.Principal));
+
+                    // If introspection is supported by the server, ask the user if the access token should be introspected.
+                    var configuration = await _service.GetServerConfigurationByProviderNameAsync(provider, stoppingToken);
+                    if (configuration.IntrospectionEndpoint is not null && await IntrospectAccessTokenAsync(stoppingToken))
+                    {
+                        AnsiConsole.MarkupLine("[steelblue]Claims extracted from the token introspection response:[/]");
+                        AnsiConsole.Write(CreateClaimTable((await _service.IntrospectTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            Token = response.AccessToken,
+                            TokenTypeHint = TokenTypeHints.AccessToken
+                        })).Principal));
+                    }
+
+                    // If revocation is supported by the server, ask the user if the access token should be revoked.
+                    if (configuration.RevocationEndpoint is not null && await RevokeAccessTokenAsync(stoppingToken))
+                    {
+                        await _service.RevokeTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            Token = response.AccessToken,
+                            TokenTypeHint = TokenTypeHints.AccessToken
+                        });
+
+                        AnsiConsole.MarkupLine("[steelblue]Access token revoked.[/]");
+                    }
+
+                    // If a refresh token was returned by the authorization server, ask the user
+                    // if the access token should be refreshed using the refresh_token grant.
+                    if (!string.IsNullOrEmpty(response.RefreshToken) && await RefreshTokenAsync(stoppingToken))
+                    {
+                        AnsiConsole.MarkupLine("[steelblue]Claims extracted from the refreshed identity:[/]");
+                        AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
+                        {
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            RefreshToken = response.RefreshToken
+                        })).Principal));
+                    }
                 }
 
                 else if (type is GrantTypes.DeviceCode)
