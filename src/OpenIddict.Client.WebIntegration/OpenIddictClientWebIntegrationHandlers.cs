@@ -1241,6 +1241,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.ArcGisOnline or ProviderTypes.Trakt
                     => (string?) context.UserinfoResponse?["username"],
 
+                // Atlassian returns the user identifier as a custom "account_id" node:
+                ProviderTypes.Atlassian => (string?) context.UserinfoResponse?["account_id"],
+
                 // These providers return the user identifier as a custom "id" node:
                 ProviderTypes.Basecamp      or ProviderTypes.Box        or ProviderTypes.Dailymotion or
                 ProviderTypes.Deezer        or ProviderTypes.Discord    or ProviderTypes.Disqus      or
@@ -1576,6 +1579,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetActiveDirectoryFederationServicesSettings();
 
                 context.Request["resource"] = settings.Resource;
+            }
+
+            // Atlassian requires sending an "audience" parameter (by default, "api.atlassian.com").
+            //
+            // The documentation also indicates the "prompt" parameter is required, but no error is
+            // returned if this parameter is not explicitly included in the authorization request.
+            else if (context.Registration.ProviderType is ProviderTypes.Atlassian)
+            {
+                var settings = context.Registration.GetAtlassianSettings();
+
+                context.Request.Audiences = [settings.Audience];
+                context.Request.Prompt = settings.Prompt;
             }
 
             // By default, Google doesn't return a refresh token but allows sending an "access_type"
