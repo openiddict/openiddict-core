@@ -114,6 +114,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
+                else if (context.Registration.ProviderType is ProviderTypes.Atlassian)
+                {
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.Implicit);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
+                }
+
                 else if (context.Registration.ProviderType is ProviderTypes.Auth0)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
@@ -214,16 +221,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // While it is a recommended node, some providers don't include "scopes_supported" in their
-                // configuration and thus are treated as OAuth 2.0-only providers by the OpenIddict client.
-                // To avoid that, the "openid" scope is manually added to indicate OpenID Connect is supported.
+                // Atlassian includes the "openid" scope in its server configuration but doesn't currently allow
+                // requesting it. To prevent an error from being returned, OpenID Connect support is disabled.
+                if (context.Registration.ProviderType is ProviderTypes.Atlassian)
+                {
+                    context.Configuration.ScopesSupported.Remove(Scopes.OpenId);
+                }
 
-                if (context.Registration.ProviderType is ProviderTypes.DocuSign)
+                // DocuSign supports OpenID Connect but doesn't format the "openid" scope using the standard casing.
+                // To ensure DocuSign is not treated as an OAuth 2.0-only provider, the invalid "OpenId" scope is
+                // removed from the list and the "openid" value is added to indicate OpenID Connect is supported.
+                else if (context.Registration.ProviderType is ProviderTypes.DocuSign)
                 {
                     context.Configuration.ScopesSupported.Remove("OpenId");
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
                 }
 
+                // While it is a recommended node, these providers don't include "scopes_supported" in their
+                // configuration and thus are treated as OAuth 2.0-only providers by the OpenIddict client.
+                // To avoid that, the "openid" scope is manually added to indicate OpenID Connect is supported.
                 else if (context.Registration.ProviderType is ProviderTypes.EpicGames or ProviderTypes.Xero)
                 {
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
@@ -317,6 +333,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ClientAuthenticationMethods.PrivateKeyJwt);
                 }
 
+                // Atlassian doesn't return a "revocation_endpoint_auth_methods_supported" node in its
+                // server configuration but only supports the "client_secret_post" authentication method.
+                else if (context.Registration.ProviderType is ProviderTypes.Atlassian)
+                {
+                    context.Configuration.RevocationEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretPost);
+                }
+
                 // Google doesn't properly implement the device authorization grant, doesn't support
                 // basic client authentication for the device authorization endpoint and returns
                 // a generic "invalid_request" error when using "client_secret_basic" instead of
@@ -366,10 +390,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                // While Atlassian implements an OpenID Connect userinfo endpoint, using it requires
+                // requesting the "openid" scope, which isn't allowed yet. To work around this
+                // limitation, the userinfo endpoint is replaced by the generic /me endpoint URI.
+                if (context.Registration.ProviderType is ProviderTypes.Atlassian)
+                {
+                    context.Configuration.UserinfoEndpoint = new Uri("https://api.atlassian.com/me", UriKind.Absolute);
+                }
+
                 // While Auth0 exposes an OpenID Connect-compliant logout endpoint, its address is not returned
                 // as part of the configuration document. To ensure RP-initiated logout is supported with Auth0,
                 // "end_session_endpoint" is manually computed using the issuer URI and added to the configuration.
-                if (context.Registration.ProviderType is ProviderTypes.Auth0)
+                else if (context.Registration.ProviderType is ProviderTypes.Auth0)
                 {
                     context.Configuration.EndSessionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                         context.Registration.Issuer, "oidc/logout");

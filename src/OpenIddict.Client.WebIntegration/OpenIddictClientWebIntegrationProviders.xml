@@ -81,6 +81,27 @@
   </Provider>
 
   <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                █ ▄▄▀██ ▄▄ ██ ▄▄ ██ █████ ▄▄▄██
+                                                █ ▀▀ ██ ▀▀ ██ ▀▀ ██ █████ ▄▄▄██
+                                                █ ██ ██ █████ █████ ▀▀ ██ ▀▀▀██
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Apple" DisplayName="Sign in with Apple" Id="f59a420e-9d00-4a85-94a3-8ecacc5968d8"
+            Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
+    <Environment Issuer="https://appleid.apple.com/" />
+
+    <Setting PropertyName="SigningKey" ParameterName="key" Type="SigningKey" Required="true"
+             Description="The Elliptic Curve Digital Signature Algorithm (ECDSA) signing key associated with the developer account">
+      <SigningAlgorithm Value="ES256" />
+    </Setting>
+
+    <Setting PropertyName="TeamId" ParameterName="identifier" Type="String" Required="true"
+             Description="The team ID associated with the developer account" />
+  </Provider>
+
+  <!--
                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                           █ ▄▄▀██ ▄▄▀██ ▄▄▀██ ▄▄ █▄ ▄██ ▄▄▄ ████ ▄▄▄ ██ ▀██ ██ ████▄ ▄██ ▀██ ██ ▄▄▄██
                           █ ▀▀ ██ ▀▀▄██ █████ █▀▀██ ███▄▄▄▀▀████ ███ ██ █ █ ██ █████ ███ █ █ ██ ▄▄▄██
@@ -106,27 +127,6 @@
 
   <!--
                                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                                █ ▄▄▀██ ▄▄ ██ ▄▄ ██ █████ ▄▄▄██
-                                                █ ▀▀ ██ ▀▀ ██ ▀▀ ██ █████ ▄▄▄██
-                                                █ ██ ██ █████ █████ ▀▀ ██ ▀▀▀██
-                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-  -->
-
-  <Provider Name="Apple" DisplayName="Sign in with Apple" Id="f59a420e-9d00-4a85-94a3-8ecacc5968d8"
-            Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
-    <Environment Issuer="https://appleid.apple.com/" />
-
-    <Setting PropertyName="SigningKey" ParameterName="key" Type="SigningKey" Required="true"
-             Description="The Elliptic Curve Digital Signature Algorithm (ECDSA) signing key associated with the developer account">
-      <SigningAlgorithm Value="ES256" />
-    </Setting>
-
-    <Setting PropertyName="TeamId" ParameterName="identifier" Type="String" Required="true"
-             Description="The team ID associated with the developer account" />
-  </Provider>
-
-  <!--
-                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                 █ ▄▄▀██ ▄▄▄ █ ▄▄▀██ ▀██ █ ▄▄▀██
                                                 █ ▀▀ ██▄▄▄▀▀█ ▀▀ ██ █ █ █ ▀▀ ██
                                                 █ ██ ██ ▀▀▀ █ ██ ██ ██▄ █ ██ ██
@@ -136,6 +136,31 @@
   <Provider Name="Asana" Id="c04d789a-a3d3-43f9-a06f-bd56935af13f"
             Documentation="https://developers.asana.com/docs/openid-connect">
     <Environment Issuer="https://app.asana.com/api/1.0" />
+  </Provider>
+
+  <!--
+                                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                    █ ▄▄▀█▄▄ ▄▄██ ████ ▄▄▀██ ▄▄▄ ██ ▄▄▄ █▄ ▄█ ▄▄▀██ ▀██ ██
+                                    █ ▀▀ ███ ████ ████ ▀▀ ██▄▄▄▀▀██▄▄▄▀▀██ ██ ▀▀ ██ █ █ ██
+                                    █ ██ ███ ████ ▀▀ █ ██ ██ ▀▀▀ ██ ▀▀▀ █▀ ▀█ ██ ██ ██▄ ██
+                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Atlassian" Id="e529316b-cbda-4bbd-8bac-9787457cdaaa"
+            Documentation="https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/">
+    <Environment Issuer="https://auth.atlassian.com/">
+      <!--
+        Note: Atlassian requires sending the "read:me" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="read:me" Default="true" Required="true" />
+    </Environment>
+
+    <Setting PropertyName="Audience" ParameterName="audience" Type="String" Required="true" DefaultValue="api.atlassian.com"
+             Description="The value used as the 'audience' parameter (by default, 'api.atlassian.com')" />
+
+    <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="true" DefaultValue="consent"
+             Description="The value used as the 'prompt' parameter (by default, 'consent')" />
   </Provider>
 
   <!--
