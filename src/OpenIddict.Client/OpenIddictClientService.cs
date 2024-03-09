@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
@@ -500,6 +501,108 @@ public class OpenIddictClientService
             {
                 throw new ProtocolException(
                     SR.FormatID0435(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            return new()
+            {
+                AccessToken = context.BackchannelAccessToken!,
+                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+                IdentityToken = context.BackchannelIdentityToken,
+                IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+                Principal = context.MergedPrincipal,
+                Properties = context.Properties,
+                RefreshToken = context.RefreshToken,
+                TokenResponse = context.TokenResponse,
+                UserinfoToken = context.UserinfoToken,
+                UserinfoTokenPrincipal = context.UserinfoTokenPrincipal
+            };
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Authenticates using a custom grant.
+    /// </summary>
+    /// <param name="request">The custom grant authentication request.</param>
+    /// <returns>The custom grant authentication result.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public async ValueTask<CustomGrantAuthenticationResult> AuthenticateWithCustomGrantAsync(CustomGrantAuthenticationRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        // Prevent well-known/non-custom grant types from being used with this API.
+        if (request.GrantType is GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                 GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                 GrantTypes.Password          or GrantTypes.RefreshToken)
+        {
+            throw new InvalidOperationException(SR.FormatID0310(request.GrantType));
+        }
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessAuthenticationContext(transaction)
+            {
+                CancellationToken = request.CancellationToken,
+                DisableUserinfoRetrieval = request.DisableUserinfo,
+                DisableUserinfoValidation = request.DisableUserinfo,
+                GrantType = request.GrantType,
+                ProviderName = request.ProviderName,
+                RegistrationId = request.RegistrationId,
+                TokenRequest = request.AdditionalTokenRequestParameters
+                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
+            };
+
+            if (request.Scopes is { Count: > 0 })
+            {
+                context.Scopes.UnionWith(request.Scopes);
+            }
+
+            if (request.Properties is { Count: > 0 })
+            {
+                foreach (var property in request.Properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 

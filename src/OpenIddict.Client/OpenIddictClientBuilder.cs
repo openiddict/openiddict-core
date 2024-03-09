@@ -934,6 +934,22 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.GrantTypes.Add(GrantTypes.ClientCredentials));
 
     /// <summary>
+    /// Enables custom grant type support.
+    /// </summary>
+    /// <param name="type">The grant type associated with the flow.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientBuilder AllowCustomFlow(string type)
+    {
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0071), nameof(type));
+        }
+
+        return Configure(options => options.GrantTypes.Add(type));
+    }
+
+    /// <summary>
     /// Enables device code flow support. For more information about this
     /// specific OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc8628.
     /// </summary>

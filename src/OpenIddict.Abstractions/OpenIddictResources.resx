@@ -1138,7 +1138,7 @@ To validate tokens received by custom API endpoints, the OpenIddict validation h
     <value>The signing algorithm cannot be resolved from the specified frontchannel identity token.</value>
   </data>
   <data name="ID0294" xml:space="preserve">
-    <value>The negotiated grant type cannot be extracted from the state principal.</value>
+    <value>The negotiated grant type cannot be resolved from the authentication context.</value>
   </data>
   <data name="ID0295" xml:space="preserve">
     <value>The signing algorithm cannot be resolved from the specified backchannel identity token.</value>
@@ -1188,7 +1188,7 @@ To apply redirection responses, create a class implementing 'IOpenIddictClientHa
     <value>A grant type must be specified when triggering authentication demands from endpoints that are not managed by the OpenIddict client stack. This error may also indicate that the redirection endpoint was not correctly enabled in the OpenIddict client options.</value>
   </data>
   <data name="ID0310" xml:space="preserve">
-    <value>The specified grant type ({0}) is not currently supported for authentication demands.</value>
+    <value>The specified grant type ({0}) cannot be used with this method.</value>
   </data>
   <data name="ID0311" xml:space="preserve">
     <value>A refresh token must be specified when using the refresh token grant.</value>
