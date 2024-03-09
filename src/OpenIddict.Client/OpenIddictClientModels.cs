@@ -387,6 +387,125 @@ public static class OpenIddictClientModels
     }
 
     /// <summary>
+    /// Represents a custom grant authentication request.
+    /// </summary>
+    public sealed record class CustomGrantAuthenticationRequest
+    {
+        /// <summary>
+        /// Gets or sets the parameters that will be added to the token request.
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
+
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo should be disabled.
+        /// </summary>
+        public bool DisableUserinfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom grant type that will be used for the authentication request.
+        /// </summary>
+        public required string GrantType { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations use the same provider name.
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the scopes that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Scopes { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a custom grant authentication result.
+    /// </summary>
+    public sealed record class CustomGrantAuthenticationResult
+    {
+        /// <summary>
+        /// Gets or sets the access token.
+        /// </summary>
+        public required string AccessToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the expiration date of the access token, if available.
+        /// </summary>
+        public required DateTimeOffset? AccessTokenExpirationDate { get; init; }
+
+        /// <summary>
+        /// Gets or sets the identity token, if available.
+        /// </summary>
+        public required string? IdentityToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the identity token, if available.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public required ClaimsPrincipal? IdentityTokenPrincipal { get; init; }
+
+        /// <summary>
+        /// Gets or sets a merged principal containing all the claims
+        /// extracted from the identity token and userinfo token principals.
+        /// </summary>
+        public required ClaimsPrincipal Principal { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that were present in the context.
+        /// </summary>
+        public required Dictionary<string, string?> Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the refresh token, if available.
+        /// </summary>
+        public required string? RefreshToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the token response.
+        /// </summary>
+        public required OpenIddictResponse TokenResponse { get; init; }
+
+        /// <summary>
+        /// Gets or sets the userinfo token, if available.
+        /// </summary>
+        public required string? UserinfoToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the userinfo token or response, if available.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
+    }
+
+    /// <summary>
     /// Represents a device authentication request.
     /// </summary>
     public sealed record class DeviceAuthenticationRequest

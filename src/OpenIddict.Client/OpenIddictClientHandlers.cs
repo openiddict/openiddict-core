@@ -326,21 +326,12 @@ public static partial class OpenIddictClientHandlers
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0309));
                         }
 
-                        if (context.GrantType is not (
-                            GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
-                            GrantTypes.DeviceCode or GrantTypes.Implicit or
-                            GrantTypes.Password or GrantTypes.RefreshToken))
-                        {
-                            throw new InvalidOperationException(SR.FormatID0310(context.GrantType));
-                        }
-
                         if (!context.Options.GrantTypes.Contains(context.GrantType))
                         {
                             throw new InvalidOperationException(SR.FormatID0359(context.GrantType));
                         }
 
-                        if (context.GrantType is GrantTypes.DeviceCode &&
-                            string.IsNullOrEmpty(context.DeviceCode))
+                        if (context.GrantType is GrantTypes.DeviceCode && string.IsNullOrEmpty(context.DeviceCode))
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0396));
                         }
@@ -358,8 +349,7 @@ public static partial class OpenIddictClientHandlers
                             }
                         }
 
-                        if (context.GrantType is GrantTypes.RefreshToken &&
-                            string.IsNullOrEmpty(context.RefreshToken))
+                        if (context.GrantType is GrantTypes.RefreshToken && string.IsNullOrEmpty(context.RefreshToken))
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0311));
                         }
@@ -2287,13 +2277,19 @@ public static partial class OpenIddictClientHandlers
                 // if an authorization code was requested in the initial authorization request.
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when
                     context.ResponseType?.Split(Separators.Space) is IList<string> types &&
-                    types.Contains(ResponseTypes.Code)
-                    => true,
+                    types.Contains(ResponseTypes.Code) => true,
+
+                // For the special response_type=none flow (that doesn't have a
+                // standard grant type associated), never send a token request.
+                null when context.ResponseType is ResponseTypes.None => false,
 
                 // For client credentials, device authorization, resource owner password
                 // credentials and refresh token requests, always send a token request.
                 GrantTypes.ClientCredentials or GrantTypes.DeviceCode or
                 GrantTypes.Password          or GrantTypes.RefreshToken => true,
+
+                // By default, always send a token request for custom grant types.
+                { Length: > 0 } => true,
 
                 _ => false
             };
@@ -2331,7 +2327,7 @@ public static partial class OpenIddictClientHandlers
             // Attach the selected grant type.
             context.TokenRequest.GrantType = context.GrantType switch
             {
-                null => throw new InvalidOperationException(SR.GetResourceString(SR.ID0294)),
+                null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0294)),
 
                 // Note: in OpenID Connect, the hybrid flow doesn't have a dedicated grant_type and is
                 // typically treated as a combination of both the implicit and authorization code grants.
@@ -2731,8 +2727,12 @@ public static partial class OpenIddictClientHandlers
                 // An access token is always returned as part of client credentials, device
                 // code, resource owner password credentials and refresh token responses.
                 GrantTypes.ClientCredentials or GrantTypes.DeviceCode or
-                GrantTypes.Password or GrantTypes.RefreshToken
+                GrantTypes.Password          or GrantTypes.RefreshToken
                    => (true, true, false, false),
+
+                // By default, always extract and require a backchannel
+                // access token for custom grant types, but don't validate it.
+                { Length: > 0 } => (true, true, false, false),
 
                 _ => (false, false, false, false)
             };
@@ -2768,6 +2768,10 @@ public static partial class OpenIddictClientHandlers
                 // the same routine (except nonce validation) if it is present in the token response.
                 GrantTypes.RefreshToken => (true, false, true, false),
 
+                // By default, try to extract a backchannel identity token for custom grant
+                // types and validate it when present, but don't require that one be returned.
+                { Length: > 0 } => (true, false, true, false),
+
                 _ => (false, false, false, false)
             };
 
@@ -2795,8 +2799,12 @@ public static partial class OpenIddictClientHandlers
                 // depending on the policy adopted by the remote authorization server. As such,
                 // a refresh token is never considered required for such token responses.
                 GrantTypes.ClientCredentials or GrantTypes.DeviceCode or
-                GrantTypes.Password or GrantTypes.RefreshToken
+                GrantTypes.Password          or GrantTypes.RefreshToken
                     => (true, false, false, false),
+
+                // By default, always try to extract a refresh token for
+                // custom grant types, but don't require or validate it.
+                { Length: > 0 } => (true, false, false, false),
 
                 _ => (false, false, false, false)
             };
@@ -3574,13 +3582,23 @@ public static partial class OpenIddictClientHandlers
 
             context.SendUserinfoRequest = context.GrantType switch
             {
-                // Information about the authenticated user can be retrieved from the userinfo
-                // endpoint when a frontchannel or backchannel access token is available.
-                //
-                // Note: the userinfo endpoint is an optional endpoint and may not be supported.
-                GrantTypes.AuthorizationCode or GrantTypes.Implicit or
-                GrantTypes.DeviceCode        or GrantTypes.Password or GrantTypes.RefreshToken
+                // Never send a userinfo request when using the client credentials grant.
+                GrantTypes.ClientCredentials => false,
+
+                // Never send a userinfo request when using the special response_type=none flow.
+                null when context.ResponseType is ResponseTypes.None => false,
+
+                // For the well-known grant types involving users, send a userinfo request if the
+                // userinfo endpoint is available and if a frontchannel or backchannel access token
+                // is available, unless userinfo retrieval was explicitly disabled by the user.
+                GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or GrantTypes.Implicit or
+                GrantTypes.Password          or GrantTypes.RefreshToken
                     when !context.DisableUserinfoRetrieval && context.UserinfoEndpoint is not null &&
+                    (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
+                     !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
+
+                // Apply the same logic for custom grant types.
+                { Length: > 0 } when !context.DisableUserinfoRetrieval && context.UserinfoEndpoint is not null &&
                     (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
                      !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
 
@@ -3601,15 +3619,17 @@ public static partial class OpenIddictClientHandlers
                 // flawlessly with OpenID Connect implementations, the userinfo response returned by the server
                 // for an OAuth 2.0-only flow might not be OpenID Connect-compliant. In this case, disable
                 // userinfo validation, unless the "openid" scope was explicitly requested by the application.
-                GrantTypes.DeviceCode or GrantTypes.Password or
+                GrantTypes.DeviceCode or GrantTypes.Password => !context.Scopes.Contains(Scopes.OpenId),
 
                 // Note: when using grant_type=refresh_token, it is not possible to determine whether the refresh token
                 // was issued during an OAuth 2.0-only or OpenID Connect flow. In this case, only validate userinfo
                 // responses if the openid scope was explicitly added by the user to the list of requested scopes.
-                GrantTypes.RefreshToken or
+                GrantTypes.RefreshToken => !context.Scopes.Contains(Scopes.OpenId),
 
-                // For unknown grant types, disable userinfo validation, unless the openid scope was explicitly added.
-                _ => !context.Scopes.Contains(Scopes.OpenId)
+                // For unknown grant types, disable userinfo validation unless the openid scope was explicitly added.
+                { Length: > 0 } => !context.Scopes.Contains(Scopes.OpenId),
+
+                _ => true
             };
 
             return default;
@@ -3735,18 +3755,27 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // By default, OpenIddict doesn't require that userinfo tokens be used but
-            // they are extracted and validated when a userinfo request was sent.
             (context.ExtractUserinfoToken,
              context.RequireUserinfoToken,
              context.ValidateUserinfoToken,
              context.RejectUserinfoToken) = context.GrantType switch
             {
+                // By default, OpenIddict doesn't require that userinfo tokens be used even for
+                // user flows but they are extracted and validated when a userinfo request was sent.
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit or
                 GrantTypes.DeviceCode        or GrantTypes.Password or GrantTypes.RefreshToken
                     when context.SendUserinfoRequest => (true, false, true, true),
 
-                _ => (false, false, false, false)
+                // Userinfo tokens are typically not used with the client credentials grant,
+                // but they are extracted and validated when a userinfo request was sent.
+                GrantTypes.ClientCredentials when context.SendUserinfoRequest
+                    => (true, false, true, true),
+
+                // By default, don't require userinfo tokens for custom grants
+                // but extract and validate them when a userinfo request was sent.
+                { Length: > 0 } when context.SendUserinfoRequest => (true, false, true, true),
+
+                _ => (false, false, false, false),
             };
 
             return default;
