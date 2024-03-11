@@ -136,7 +136,7 @@ public sealed class OpenIddictClientAspNetCoreBuilder
     /// Associate the specified domain with the correlation cookie.
     /// </summary>
     /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
-    public OpenIddictClientAspNetCoreBuilder SetStateCookieDomain(string domain)
+    public OpenIddictClientAspNetCoreBuilder SetCorrelationCookieDomain(string domain)
         => Configure(options => options.CookieBuilder.Domain = domain);
 
     /// <inheritdoc/>
