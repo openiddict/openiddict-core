@@ -132,6 +132,13 @@ public sealed class OpenIddictClientAspNetCoreBuilder
     public OpenIddictClientAspNetCoreBuilder EnableStatusCodePagesIntegration()
         => Configure(options => options.EnableStatusCodePagesIntegration = true);
 
+    /// <summary>
+    /// Associate the specified domain with the correlation cookie.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictClientAspNetCoreBuilder SetStateCookieDomain(string domain)
+        => Configure(options => options.CookieBuilder.Domain = domain);
+
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => base.Equals(obj);
