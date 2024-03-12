@@ -962,6 +962,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["query"] = $"{{ user {{ {string.Join(", ", settings.UserFields)} }} }}";
             }
 
+            // Todoist requires sending "sync_token" and "resource_types" parameters.
+            else if (context.Registration.ProviderType is ProviderTypes.Todoist)
+            {
+                context.UserinfoRequest["sync_token"] = "*";
+                context.UserinfoRequest["resource_types"] = "[\"user\"]";
+            }
+
             // Trakt allows retrieving additional user details via the "extended" parameter.
             else if (context.Registration.ProviderType is ProviderTypes.Trakt)
             {
@@ -1194,7 +1201,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // requires a special capability to access this node, that may not be present:
                 ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["name"],
 
-                // Patreon doesn't return a username and require using the complete user name as the username:
+                // Patreon doesn't return a username and requires using the complete user name as the username:
                 ProviderTypes.Patreon => (string?) context.UserinfoResponse?["attributes"]?["full_name"],
 
                 // ServiceChannel returns the username as a custom "UserName" node:
@@ -1212,7 +1219,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                          context.UserinfoResponse?.HasParameter("lastName")  is true
                     => $"{(string?) context.UserinfoResponse?["firstName"]} {(string?) context.UserinfoResponse?["lastName"]}",
 
-                // These providers return return the username as a custom "display_name" node:
+                // These providers return the username as a custom "display_name" node:
                 ProviderTypes.Spotify or ProviderTypes.StackExchange or ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["display_name"],
 
@@ -1221,6 +1228,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Streamlabs returns the username as a custom "streamlabs/display_name" node:
                 ProviderTypes.Streamlabs => (string?) context.UserinfoResponse?["streamlabs"]?["display_name"],
+
+                // Todoist returns the username as a custom "full_name" node:
+                ProviderTypes.Todoist => (string?) context.UserinfoResponse?["full_name"],
 
                 // Trovo returns the username as a custom "userName" node:
                 ProviderTypes.Trovo => (string?) context.UserinfoResponse?["userName"],
@@ -1251,7 +1261,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Kroger        or ProviderTypes.Lichess    or ProviderTypes.Mastodon    or
                 ProviderTypes.Meetup        or ProviderTypes.Nextcloud  or ProviderTypes.Patreon     or
                 ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify     or
-                ProviderTypes.SubscribeStar or ProviderTypes.Twitter    or ProviderTypes.Zoom
+                ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter     or
+                ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
@@ -1478,8 +1489,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                ProviderTypes.Deezer  or ProviderTypes.Disqus or
-                ProviderTypes.Shopify or ProviderTypes.Strava
+                ProviderTypes.Deezer or ProviderTypes.Disqus or ProviderTypes.Shopify or
+                ProviderTypes.Strava or ProviderTypes.Todoist
                     => string.Join(",", context.Scopes),
 
                 // The following providers are known to use plus-separated scopes instead of

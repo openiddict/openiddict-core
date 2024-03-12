@@ -74,6 +74,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // are based on GraphQL, which requires using POST:
                     ProviderTypes.Meetup or ProviderTypes.SubscribeStar => HttpMethod.Post,
 
+                    // The userinfo endpoints exposed by these providers
+                    // use custom protocols that require using POST:
+                    ProviderTypes.Todoist => HttpMethod.Post,
+
                     _ => request.Method
                 };
 
@@ -396,8 +400,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.ExactOnline => new(context.Response["d"]?["results"]?[0]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),
 
-                    // Fitbit returns a nested "user" object.
-                    ProviderTypes.Fitbit => new(context.Response["user"]?.GetNamedParameters() ??
+                    // Fitbit and Todoist return a nested "user" object.
+                    ProviderTypes.Fitbit or ProviderTypes.Todoist => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
 
                     // Harvest returns a nested "user" object and a collection of "accounts".
