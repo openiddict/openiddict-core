@@ -35,7 +35,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              * Userinfo response extraction:
              */
             NormalizeContentType.Descriptor,
-            UnwrapUserinfoResponse.Descriptor
+            UnwrapUserinfoResponse.Descriptor,
+            MapNonStandardResponseParameters.Descriptor,
         ]);
 
         /// <summary>
@@ -323,10 +324,22 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 response.Content.Headers.ContentType = context.Registration.ProviderType switch
                 {
                     // Mixcloud returns JSON-formatted contents declared as "text/javascript".
-                    ProviderTypes.Mixcloud => new MediaTypeHeaderValue(MediaTypes.Json)
-                    {
-                        CharSet = Charsets.Utf8
-                    },
+                    ProviderTypes.Mixcloud when string.Equals(
+                        response.Content.Headers.ContentType?.MediaType,
+                        "text/javascript", StringComparison.OrdinalIgnoreCase)
+                        => new MediaTypeHeaderValue(MediaTypes.Json)
+                        {
+                            CharSet = Charsets.Utf8
+                        },
+
+                    // Wikimedia returns JSON-formatted contents declared as "text/html".
+                    ProviderTypes.Wikimedia when string.Equals(
+                        response.Content.Headers.ContentType?.MediaType,
+                        "text/html", StringComparison.OrdinalIgnoreCase)
+                        => new MediaTypeHeaderValue(MediaTypes.Json)
+                        {
+                            CharSet = Charsets.Utf8
+                        },
 
                     _ => response.Content.Headers.ContentType
                 };
@@ -425,6 +438,42 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                     _ => context.Response
                 };
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for mapping non-standard response parameters
+        /// to their standard equivalent for the providers that require it.
+        /// </summary>
+        public sealed class MapNonStandardResponseParameters : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
+                    .UseSingletonHandler<MapNonStandardResponseParameters>()
+                    .SetOrder(UnwrapUserinfoResponse.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ExtractUserinfoResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                // Note: Wikimedia returns a non-standard "sub" claim formatted as an integer instead of a string.
+                if (context.Registration.ProviderType is ProviderTypes.Wikimedia)
+                {
+                    context.Response[Claims.Subject] = (string?) context.Response[Claims.Subject];
+                }
 
                 return default;
             }

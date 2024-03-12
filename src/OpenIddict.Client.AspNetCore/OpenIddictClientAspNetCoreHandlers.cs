@@ -425,7 +425,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0354));
             }
 
-            // Resolve the cookie builder from the OWIN integration options.
+            // Resolve the cookie builder from the ASP.NET Core integration options.
             var builder = _options.CurrentValue.CookieBuilder;
 
             // Compute the name of the cookie name based on the prefix and the random nonce.
@@ -741,7 +741,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            // Resolve the cookie builder from the OWIN integration options.
+            // Resolve the cookie builder from the ASP.NET Core integration options.
             var builder = _options.CurrentValue.CookieBuilder;
 
             // Unless a value was explicitly set in the options, use the expiration date
@@ -980,7 +980,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            // Resolve the cookie builder from the OWIN integration options.
+            // Resolve the cookie builder from the ASP.NET Core integration options.
             var builder = _options.CurrentValue.CookieBuilder;
 
             // Unless a value was explicitly set in the options, use the expiration date

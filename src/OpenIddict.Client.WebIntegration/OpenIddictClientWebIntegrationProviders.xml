@@ -1766,6 +1766,27 @@
   </Provider>
 
   <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ███ █▄ ▄██ █▀▄█▄ ▄██ ▄▀▄ ██ ▄▄▄██ ▄▄▀█▄ ▄█ ▄▄▀██
+                                      ██ █ █ ██ ███ ▄▀███ ███ █ █ ██ ▄▄▄██ ██ ██ ██ ▀▀ ██
+                                      ██▄▀▄▀▄█▀ ▀██ ██ █▀ ▀██ ███ ██ ▀▀▀██ ▀▀ █▀ ▀█ ██ ██
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Wikimedia" Id="84afac40-28e3-4072-b9cb-c94c883e0951"
+            Documentation="https://api.wikimedia.org/wiki/Authentication">
+    <Environment Issuer="https://www.wikimedia.org/">
+      <Configuration AuthorizationEndpoint="https://meta.wikimedia.org/w/rest.php/oauth2/authorize"
+                     TokenEndpoint="https://meta.wikimedia.org/w/rest.php/oauth2/access_token"
+                     UserinfoEndpoint="https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                   ██ ███ ██ ▄▄▄ ██ ▄▄▀██ ▄▄▀██ ▄▄ ██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ ▄▄▄ ██
                                   ██ █ █ ██ ███ ██ ▀▀▄██ ██ ██ ▀▀ ██ ▀▀▄██ ▄▄▄██▄▄▄▀▀██▄▄▄▀▀██
