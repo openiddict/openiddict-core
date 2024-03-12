@@ -1563,6 +1563,29 @@
   </Provider>
 
   <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          █▄▄ ▄▄██ ▄▄▄ ██ ▄▄▀██ ▄▄▄ █▄ ▄██ ▄▄▄ █▄▄ ▄▄██
+                                          ███ ████ ███ ██ ██ ██ ███ ██ ███▄▄▄▀▀███ ████
+                                          ███ ████ ▀▀▀ ██ ▀▀ ██ ▀▀▀ █▀ ▀██ ▀▀▀ ███ ████
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Todoist" Id="f1036d1d-63f1-41bc-9ec9-df26cd264837"
+            Documentation="https://developer.todoist.com/guides/#authorization">
+    <Environment Issuer="https://todoist.com/">
+      <Configuration AuthorizationEndpoint="https://todoist.com/oauth/authorize"
+                     TokenEndpoint="https://todoist.com/oauth/access_token"
+                     UserinfoEndpoint="https://api.todoist.com/sync/v9/sync" />
+
+      <!--
+        Note: Todoist requires sending the "data:read" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="data:read" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                 █▄▄ ▄▄██ ▄▄▀█ ▄▄▀██ █▀▄█▄▄ ▄▄██
                                                 ███ ████ ▀▀▄█ ▀▀ ██ ▄▀████ ████
