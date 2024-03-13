@@ -278,14 +278,8 @@ public static partial class OpenIddictServerHandlers
                     // A value higher than 12 (but lower than 50) may correspond to a user code
                     // containing dashes or any other non-digit character added by the end user.
                     // In this case, normalize the reference identifier before making the database lookup.
-                    > 12 and < 50 => NormalizeUserCode(context.Token) switch
-                    {
-                        // If the normalized used code is empty, return null.
-                        "" => null,
-
-                        // Otherwise, use the normalized user code to make the database lookup.
-                        string userCode => await _tokenManager.FindByReferenceIdAsync(userCode),
-                    },
+                    > 12 and < 50 when NormalizeUserCode(context.Token) is { Length: > 0 } value
+                        => await _tokenManager.FindByReferenceIdAsync(value),
 
                     // If the token length differs, the token cannot be a reference token.
                     _ => null
