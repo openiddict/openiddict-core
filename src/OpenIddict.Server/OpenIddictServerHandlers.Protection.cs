@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
@@ -278,7 +278,8 @@ public static partial class OpenIddictServerHandlers
                     // A value higher than 12 (but lower than 50) may correspond to a user code
                     // containing dashes or any other non-digit character added by the end user.
                     // In this case, normalize the reference identifier before making the database lookup.
-                    > 12 and < 50 => await _tokenManager.FindByReferenceIdAsync(NormalizeUserCode(context.Token)),
+                    > 12 and < 50 when NormalizeUserCode(context.Token) is { Length: > 0 } value
+                        => await _tokenManager.FindByReferenceIdAsync(value),
 
                     // If the token length differs, the token cannot be a reference token.
                     _ => null
