@@ -319,11 +319,7 @@
 
   <Provider Name="Clever" Id="8DF11BBC-B8A8-4A8D-8C5F-AD86D9539BBA"
             Documentation="https://dev.clever.com/docs/oauth-oidc-overview">
-    <Environment Issuer="https://clever.com/">
-		<Scope Name="openid" Default="true" Required="true" />
-		<Scope Name="profile" Default="true" Required="true" />
-		<Scope Name="email" Default="true" Required="true" />
-	</Environment>
+    <Environment Issuer="https://clever.com/" />
   </Provider>
 
   <!--
