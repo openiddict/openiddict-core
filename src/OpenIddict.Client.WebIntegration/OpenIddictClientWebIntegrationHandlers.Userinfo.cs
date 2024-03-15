@@ -491,6 +491,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     }
                 }
 
+                else if (context.Registration.ProviderType is ProviderTypes.Classlink)
+                {
+                    var address = context.Response["address"]?.GetNamedParameters();
+                    if (address is not null)
+                    {
+                        context.Response[Claims.Locality] = address["locality"];
+                        context.Response[Claims.Region] = address["region"];
+                    }
+                }
+
                 return default;
             }
         }
