@@ -334,7 +334,7 @@
             Documentation="https://dev.clever.com/docs/oauth-oidc-overview">
     <Environment Issuer="https://clever.com/" />
   </Provider>
-  
+
   <!--
                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                           ██ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▀██ █▄ ▄█▄▄ ▄▄██ ▄▄▄ ██
