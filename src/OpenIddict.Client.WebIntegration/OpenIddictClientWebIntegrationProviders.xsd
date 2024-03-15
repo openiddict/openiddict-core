@@ -562,12 +562,12 @@
 
             <xs:attribute name="Id" use="required">
               <xs:annotation>
-                <xs:documentation>The provider identifier, represented as a GUID.</xs:documentation>
+                <xs:documentation>The provider identifier, represented as a lowercase GUID.</xs:documentation>
               </xs:annotation>
 
               <xs:simpleType>
                 <xs:restriction base="xs:string">
-                  <xs:pattern value="([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\})" />
+                  <xs:pattern value="([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})|(\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\})" />
                 </xs:restriction>
               </xs:simpleType>
             </xs:attribute>
