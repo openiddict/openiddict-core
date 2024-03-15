@@ -478,6 +478,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Response[Claims.Subject] = (string?) context.Response[Claims.Subject];
                 }
+                
+                // Note: Clever returns a non-standard "name" claim formatted as a JSON object.
+                else if (context.Registration.ProviderType is ProviderTypes.Clever)
+                {
+                    var name = context.Response[Claims.Name]?.GetNamedParameters();
+                    if (name is not null)
+                    {
+                        context.Response[Claims.Name] = $"{name["first"]} {name["last"]}";
+                        context.Response[Claims.FamilyName] = name["last"];
+                        context.Response[Claims.GivenName] = name["first"];
+                    }
+                }
 
                 return default;
             }
