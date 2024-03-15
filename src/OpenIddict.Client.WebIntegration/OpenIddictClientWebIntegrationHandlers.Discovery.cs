@@ -149,11 +149,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                else if (context.Registration.ProviderType is ProviderTypes.Classlink)
-                {
-                    context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
-                }
-
                 return default;
             }
         }

@@ -383,6 +383,11 @@ public class InteractiveService : BackgroundService
                     choices.Add((GrantTypes.ClientCredentials, "Client credentials grant (application authentication only)"));
                 }
 
+                if (choices.Count is 0)
+                {
+                    choices.Add((GrantTypes.AuthorizationCode, "Authorization code grant"));
+                }
+
                 if (choices.Count is 1)
                 {
                     return choices[0].GrantType;
