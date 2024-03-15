@@ -641,9 +641,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              context.RequireBackchannelIdentityToken,
              context.ValidateBackchannelIdentityToken) = context.Registration.ProviderType switch
             {
-                // While PayPal and Clever claims the OpenID Connect flavor of the code flow is supported,
+                // While PayPal claims the OpenID Connect flavor of the code flow is supported,
                 // their implementation doesn't return an id_token from the token endpoint.
-                ProviderTypes.PayPal or ProviderTypes.Clever => (false, false, false),
+                ProviderTypes.PayPal => (false, false, false),
 
                 _ => (context.ExtractBackchannelIdentityToken,
                       context.RequireBackchannelIdentityToken,
