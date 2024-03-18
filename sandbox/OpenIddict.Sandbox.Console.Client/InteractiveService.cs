@@ -438,7 +438,7 @@ public class InteractiveService : BackgroundService
             return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
         }
 
-static Task<bool> IntrospectAccessTokenAsync(CancellationToken cancellationToken)
+        static Task<bool> IntrospectAccessTokenAsync(CancellationToken cancellationToken)
         {
             static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
                 "Would you like to introspect the access token?")
