@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -27,6 +26,7 @@ public static partial class OpenIddictServerHandlers
              * Token validation:
              */
             ResolveTokenValidationParameters.Descriptor,
+            RemoveDisallowedCharacters.Descriptor,
             ValidateReferenceTokenIdentifier.Descriptor,
             ValidateIdentityModelToken.Descriptor,
             NormalizeScopeClaims.Descriptor,
@@ -43,8 +43,7 @@ public static partial class OpenIddictServerHandlers
             AttachSecurityCredentials.Descriptor,
             CreateTokenEntry.Descriptor,
             GenerateIdentityModelToken.Descriptor,
-            AttachTokenPayload.Descriptor,
-            BeautifyToken.Descriptor
+            AttachTokenPayload.Descriptor
         ]);
 
         /// <summary>
@@ -231,6 +230,54 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for removing the disallowed characters from the token string, if applicable.
+        /// </summary>
+        public sealed class RemoveDisallowedCharacters : IOpenIddictServerHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .UseSingletonHandler<RemoveDisallowedCharacters>()
+                    .SetOrder(ResolveTokenValidationParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // If no character was explicitly added, all characters are considered valid.
+                if (context.AllowedCharset.Count is 0)
+                {
+                    return default;
+                }
+
+                // Remove the disallowed characters from the token string. If the token is
+                // empty after removing all the unwanted characters, return a generic error.
+                var token = OpenIddictHelpers.RemoveDisallowedCharacters(context.Token, context.AllowedCharset);
+                if (string.IsNullOrEmpty(token))
+                {
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
+
+                    return default;
+                }
+
+                context.Token = token;
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -251,7 +298,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<ValidateReferenceTokenIdentifier>()
-                    .SetOrder(ResolveTokenValidationParameters.Descriptor.Order + 1_000)
+                    .SetOrder(RemoveDisallowedCharacters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -269,23 +316,14 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var token = context.Token.Length switch
+                // If the provided token is a JWT token, avoid making a database lookup.
+                if (context.SecurityTokenHandler.CanReadToken(context.Token))
                 {
-                    // 12 may correspond to a normalized user code and 43 to any
-                    // other base64url-encoded 256-bit reference token identifier.
-                    12 or 43 => await _tokenManager.FindByReferenceIdAsync(context.Token),
-
-                    // A value higher than 12 (but lower than 50) may correspond to a user code
-                    // containing dashes or any other non-digit character added by the end user.
-                    // In this case, normalize the reference identifier before making the database lookup.
-                    > 12 and < 50 when NormalizeUserCode(context.Token) is { Length: > 0 } value
-                        => await _tokenManager.FindByReferenceIdAsync(value),
-
-                    // If the token length differs, the token cannot be a reference token.
-                    _ => null
-                };
+                    return;
+                }
 
                 // If the reference token cannot be found, don't return an error to allow another handler to validate it.
+                var token = await _tokenManager.FindByReferenceIdAsync(context.Token);
                 if (token is null)
                 {
                     return;
@@ -345,25 +383,6 @@ public static partial class OpenIddictServerHandlers
                 context.IsReferenceToken = true;
                 context.Token = payload;
                 context.TokenId = await _tokenManager.GetIdAsync(token);
-
-                // Note: unlike other tokens, user codes may be potentially entered manually by users in a web form.
-                // To make that easier, user codes are generally "beautified" by adding intermediate dashes to
-                // make them easier to read and type. Since these additional characters are not part of the original
-                // user codes, non-digit characters are filtered from the reference identifier using this local method.
-                static string NormalizeUserCode(string token)
-                {
-                    var builder = new StringBuilder(token);
-                    for (var index = builder.Length - 1; index >= 0; index--)
-                    {
-                        var character = builder[index];
-                        if (character < '0' || character > '9')
-                        {
-                            builder.Remove(index, 1);
-                        }
-                    }
-
-                    return builder.ToString();
-                }
             }
         }
 
@@ -1496,24 +1515,17 @@ public static partial class OpenIddictServerHandlers
 
                 if (context.IsReferenceToken)
                 {
-                    if (context.TokenType is TokenTypeHints.UserCode)
+                    if (context.TokenType is TokenTypeHints.UserCode &&
+                        context.Options is { UserCodeCharset.Count: > 0, UserCodeLength: > 0 })
                     {
                         do
                         {
-                            // Note: unlike other reference tokens, user codes are meant to be used by humans,
-                            // who may have to enter it in a web form. To ensure they remain easy enough to type
-                            // even by users with non-Latin keyboards, user codes generated by OpenIddict are
-                            // only compound of 12 digits, generated using a crypto-secure random number generator.
-                            // In this case, the resulting user code is estimated to have at most ~40 bits of entropy.
-
-                            static string CreateRandomNumericCode(int length) => OpenIddictHelpers.CreateRandomString(
-                                charset: stackalloc[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' },
-                                length: length);
-
-                            descriptor.ReferenceId = CreateRandomNumericCode(length: 12);
+                            descriptor.ReferenceId = OpenIddictHelpers.CreateRandomString(
+                                charset: [.. context.Options.UserCodeCharset],
+                                count  : context.Options.UserCodeLength);
                         }
 
-                        // User codes are relatively short. To help reduce the risks of collisions with
+                        // User codes are generally short. To help reduce the risks of collisions with
                         // existing entries, a database check is performed here before updating the entry.
                         while (await _tokenManager.FindByReferenceIdAsync(descriptor.ReferenceId) is not null);
                     }
@@ -1542,6 +1554,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for beautifying user-typed tokens.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
+        [Obsolete("This class is obsolete and will be removed in a future version.", error: true)]
         public sealed class BeautifyToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>
@@ -1560,36 +1573,7 @@ public static partial class OpenIddictServerHandlers
 
             /// <inheritdoc/>
             public ValueTask HandleAsync(GenerateTokenContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // To make user codes easier to read and type by humans, a dash is automatically
-                // appended before each new block of 4 integers. These dashes are expected to be
-                // stripped from the user codes when receiving them at the verification endpoint.
-                if (context.IsReferenceToken && context.TokenType is TokenTypeHints.UserCode)
-                {
-                    var builder = new StringBuilder(context.Token);
-                    if (builder.Length % 4 != 0)
-                    {
-                        return default;
-                    }
-
-                    for (var index = builder.Length; index >= 0; index -= 4)
-                    {
-                        if (index != 0 && index != builder.Length)
-                        {
-                            builder.Insert(index, Separators.Dash[0]);
-                        }
-                    }
-
-                    context.Token = builder.ToString();
-                }
-
-                return default;
-            }
+                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
         }
     }
 }

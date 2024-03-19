@@ -1641,6 +1641,24 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   Error description: {1}
   Error URI: {2}</value>
   </data>
+  <data name="ID0436" xml:space="preserve">
+    <value>The specified charset contains a duplicate character.</value>
+  </data>
+  <data name="ID0437" xml:space="preserve">
+    <value>The specified charset contains a character that cannot be represented as a single text element.</value>
+  </data>
+  <data name="ID0438" xml:space="preserve">
+    <value>The specified charset contains non-ASCII characters. Characters outside the Basic Latin Unicode block are only supported on .NET 5.0 and higher.</value>
+  </data>
+  <data name="ID0439" xml:space="preserve">
+    <value>The specified characters count is too low. Use a value equal to or higher than {0}.</value>
+  </data>
+  <data name="ID0440" xml:space="preserve">
+    <value>The specified charset doesn't include enough characters. Ensure at least {0} characters are included in the charset.</value>
+  </data>
+  <data name="ID0441" xml:space="preserve">
+    <value>The specified format string cannot contain a '{0}' character when it is included as an allowed character in the charset.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

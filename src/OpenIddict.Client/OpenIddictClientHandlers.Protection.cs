@@ -24,6 +24,7 @@ public static partial class OpenIddictClientHandlers
              * Token validation:
              */
             ResolveTokenValidationParameters.Descriptor,
+            RemoveDisallowedCharacters.Descriptor,
             ValidateReferenceTokenIdentifier.Descriptor,
             ValidateIdentityModelToken.Descriptor,
             MapInternalClaims.Descriptor,
@@ -183,6 +184,54 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for removing the disallowed characters from the token string, if applicable.
+        /// </summary>
+        public sealed class RemoveDisallowedCharacters : IOpenIddictClientHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .UseSingletonHandler<RemoveDisallowedCharacters>()
+                    .SetOrder(ResolveTokenValidationParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // If no character was explicitly added, all characters are considered valid.
+                if (context.AllowedCharset.Count is 0)
+                {
+                    return default;
+                }
+
+                // Remove the disallowed characters from the token string. If the token is
+                // empty after removing all the unwanted characters, return a generic error.
+                var token = OpenIddictHelpers.RemoveDisallowedCharacters(context.Token, context.AllowedCharset);
+                if (string.IsNullOrEmpty(token))
+                {
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
+
+                    return default;
+                }
+
+                context.Token = token;
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when token storage is disabled.
         /// </summary>
@@ -202,7 +251,7 @@ public static partial class OpenIddictClientHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<ValidateReferenceTokenIdentifier>()
-                    .SetOrder(ResolveTokenValidationParameters.Descriptor.Order + 1_000)
+                    .SetOrder(RemoveDisallowedCharacters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -216,6 +265,12 @@ public static partial class OpenIddictClientHandlers
                 // Note: reference tokens are only used for state tokens.
                 if (context.ValidTokenTypes.Count is not 1 ||
                    !context.ValidTokenTypes.Contains(TokenTypeHints.StateToken))
+                {
+                    return;
+                }
+
+                // If the provided token is a JWT token, avoid making a database lookup.
+                if (context.SecurityTokenHandler.CanReadToken(context.Token))
                 {
                     return;
                 }

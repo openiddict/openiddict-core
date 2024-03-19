@@ -167,6 +167,16 @@ public static partial class OpenIddictServerEvents
         public ClaimsPrincipal? Principal { get; set; }
 
         /// <summary>
+        /// Gets the characters that are allowed to be present in tokens.
+        /// If no character was added, all characters are considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Characters that are not present in this set are automatically ignored
+        /// when validating a self-contained token or making a database lookup.
+        /// </remarks>
+        public HashSet<string> AllowedCharset { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the token types that are considered valid.
         /// </summary>
         public HashSet<string> ValidTokenTypes { get; } = new(StringComparer.OrdinalIgnoreCase);
