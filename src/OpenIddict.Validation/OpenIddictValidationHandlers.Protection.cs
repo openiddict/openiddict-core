@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Validation;
 
@@ -22,6 +23,7 @@ public static partial class OpenIddictValidationHandlers
              * Token validation:
              */
             ResolveTokenValidationParameters.Descriptor,
+            RemoveDisallowedCharacters.Descriptor,
             ValidateReferenceTokenIdentifier.Descriptor,
             ValidateIdentityModelToken.Descriptor,
             NormalizeScopeClaims.Descriptor,
@@ -132,6 +134,54 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for removing the disallowed characters from the token string, if applicable.
+        /// </summary>
+        public sealed class RemoveDisallowedCharacters : IOpenIddictValidationHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .UseSingletonHandler<RemoveDisallowedCharacters>()
+                    .SetOrder(ResolveTokenValidationParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // If no character was explicitly added, all characters are considered valid.
+                if (context.AllowedCharset.Count is 0)
+                {
+                    return default;
+                }
+
+                // Remove the disallowed characters from the token string. If the token is
+                // empty after removing all the unwanted characters, return a generic error.
+                var token = OpenIddictHelpers.RemoveDisallowedCharacters(context.Token, context.AllowedCharset);
+                if (string.IsNullOrEmpty(token))
+                {
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
+
+                    return default;
+                }
+
+                context.Token = token;
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -151,7 +201,7 @@ public static partial class OpenIddictValidationHandlers
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .UseScopedHandler<ValidateReferenceTokenIdentifier>()
-                    .SetOrder(ResolveTokenValidationParameters.Descriptor.Order + 1_000)
+                    .SetOrder(RemoveDisallowedCharacters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -163,9 +213,8 @@ public static partial class OpenIddictValidationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Reference tokens are base64url-encoded payloads of exactly 256 bits (generated using a
-                // crypto-secure RNG). If the token length differs, the token cannot be a reference token.
-                if (context.Token.Length is not 43)
+                // If the provided token is a JWT token, avoid making a database lookup.
+                if (context.SecurityTokenHandler.CanReadToken(context.Token))
                 {
                     return;
                 }

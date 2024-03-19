@@ -2,6 +2,7 @@
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -755,12 +756,12 @@ internal static class OpenIddictHelpers
     /// randomly selected in the specified <paramref name="charset"/>.
     /// </summary>
     /// <param name="charset">The characters allowed to be included in the <see cref="string"/>.</param>
-    /// <param name="length">The desired length of the <see cref="string"/>.</param>
+    /// <param name="count">The number of characters.</param>
     /// <returns>A new <see cref="string"/> containing random data.</returns>
     /// <exception cref="CryptographicException">
     /// The implementation resolved from <see cref="CryptoConfig.CreateFromName(string)"/> is not valid.
     /// </exception>
-    public static string CreateRandomString(ReadOnlySpan<char> charset, int length)
+    public static string CreateRandomString(ReadOnlySpan<string> charset, int count)
     {
         var algorithm = CryptoConfig.CreateFromName("OpenIddict RNG Cryptographic Provider") switch
         {
@@ -771,12 +772,12 @@ internal static class OpenIddictHelpers
 
         try
         {
-            var buffer = new char[length];
+            var builder = new StringBuilder();
 
-            for (var index = 0; index < buffer.Length; index++)
+            for (var index = 0; index < count; index++)
             {
                 // Pick a character in the specified charset by generating a random index.
-                buffer[index] = charset[index: algorithm switch
+                builder.Append(charset[index: algorithm switch
                 {
 #if SUPPORTS_INTEGER32_RANDOM_NUMBER_GENERATOR_METHODS
                     // If no custom random number generator was registered, use
@@ -786,10 +787,10 @@ internal static class OpenIddictHelpers
                     // Otherwise, create a default implementation if necessary
                     // and use the local function that achieves the same result.
                     _ => GetInt32(algorithm ??= RandomNumberGenerator.Create(), 0..charset.Length)
-                }];
+                }]);
             }
 
-            return new string(buffer);
+            return builder.ToString();
         }
 
         finally
@@ -902,6 +903,44 @@ internal static class OpenIddictHelpers
 
         return array;
 #endif
+    }
+
+    /// <summary>
+    /// Removes the characters that are not part of <paramref name="charset"/>
+    /// from the specified <paramref name="value"/> string.
+    /// </summary>
+    /// <remarks>
+    /// Note: if no character is present in <paramref name="charset"/>, all characters are considered valid.
+    /// </remarks>
+    /// <param name="value">The original string.</param>
+    /// <param name="charset">The list of allowed characters.</param>
+    /// <returns>The original string with the disallowed characters removed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="charset"/> is <see langword="null"/>.</exception>
+    public static string? RemoveDisallowedCharacters(string? value, IReadOnlyCollection<string> charset)
+    {
+        if (charset is null)
+        {
+            throw new ArgumentNullException(nameof(charset));
+        }
+
+        if (charset.Count is 0 || string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        var builder = new StringBuilder();
+
+        var enumerator = StringInfo.GetTextElementEnumerator(value);
+        while (enumerator.MoveNext())
+        {
+            var element = enumerator.GetTextElement();
+            if (charset.Contains(element))
+            {
+                builder.Append(element);
+            }
+        }
+
+        return builder.ToString();
     }
 
 #if SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM

@@ -316,16 +316,6 @@ public class AuthorizationController : Controller
     [Authorize, HttpGet("~/connect/verify"), IgnoreAntiforgeryToken]
     public async Task<IActionResult> Verify()
     {
-        var request = HttpContext.GetOpenIddictServerRequest() ??
-            throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
-
-        // If the user code was not specified in the query string (e.g as part of the verification_uri_complete),
-        // render a form to ask the user to enter the user code manually (non-digit chars are automatically ignored).
-        if (string.IsNullOrEmpty(request.UserCode))
-        {
-            return View(new VerifyViewModel());
-        }
-
         // Retrieve the claims principal associated with the user code.
         var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         if (result.Succeeded && !string.IsNullOrEmpty(result.Principal.GetClaim(Claims.ClientId)))
@@ -339,16 +329,23 @@ public class AuthorizationController : Controller
             {
                 ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
                 Scope = string.Join(" ", result.Principal.GetScopes()),
-                UserCode = request.UserCode
+                UserCode = result.Properties.GetTokenValue(OpenIddictServerAspNetCoreConstants.Tokens.UserCode)
             });
         }
 
-        // Redisplay the form when the user code is not valid.
-        return View(new VerifyViewModel
+        // If a user code was specified (e.g as part of the verification_uri_complete)
+        // but is not valid, render a form asking the user to enter the user code manually.
+        else if (!string.IsNullOrEmpty(result.Properties.GetTokenValue(OpenIddictServerAspNetCoreConstants.Tokens.UserCode)))
         {
-            Error = Errors.InvalidToken,
-            ErrorDescription = "The specified user code is not valid. Please make sure you typed it correctly."
-        });
+            return View(new VerifyViewModel
+            {
+                Error = Errors.InvalidToken,
+                ErrorDescription = "The specified user code is not valid. Please make sure you typed it correctly."
+            });
+        }
+
+        // Otherwise, render a form asking the user to enter the user code manually.
+        return View(new VerifyViewModel());
     }
 
     [Authorize, FormValueRequired("submit.Accept")]

@@ -6,6 +6,9 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
@@ -279,6 +282,85 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0097));
                 }
+            }
+        }
+
+        // If token storage was disabled, user codes will be returned as-is by OpenIddict instead of being
+        // automatically converted to reference identifiers (in this case, custom event handlers must be
+        // registered to manually store the token payload in a database or cache and return a user code
+        // that can be used and entered by a human user in a web form). Since the default logic is not
+        // going be used, disable the formatting logic by setting UserCodeDisplayFormat to null here.
+        if (options.DisableTokenStorage)
+        {
+            options.UserCodeLength = 0;
+            options.UserCodeCharset.Clear();
+            options.UserCodeDisplayFormat = null;
+        }
+
+        else
+        {
+            if (options.UserCodeLength is < 6)
+            {
+                throw new InvalidOperationException(SR.FormatID0439(6));
+            }
+
+            if (options.UserCodeCharset.Count is < 9)
+            {
+                throw new InvalidOperationException(SR.FormatID0440(9));
+            }
+
+            if (options.UserCodeCharset.Count != options.UserCodeCharset.Distinct(StringComparer.Ordinal).Count())
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0436));
+            }
+
+            foreach (var character in options.UserCodeCharset)
+            {
+#if SUPPORTS_TEXT_ELEMENT_ENUMERATOR
+                // On supported platforms, ensure each character added to the
+                // charset represents exactly one grapheme cluster/text element.
+                var enumerator = StringInfo.GetTextElementEnumerator(character);
+                if (!enumerator.MoveNext() || enumerator.MoveNext())
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0437));
+                }
+#else
+                // On unsupported platforms, prevent non-ASCII characters from being used.
+                if (character.Any(static character => (uint) character > '\x007f'))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0438));
+                }
+#endif
+            }
+
+            if (string.IsNullOrEmpty(options.UserCodeDisplayFormat))
+            {
+                var builder = new StringBuilder();
+
+                var count = options.UserCodeLength % 5 is 0 ? 5 :
+                            options.UserCodeLength % 4 is 0 ? 4 :
+                            options.UserCodeLength % 3 is 0 ? 3 :
+                            options.UserCodeLength % 2 is 0 ? 2 : 1;
+
+                for (var index = 0; index < options.UserCodeLength; index++)
+                {
+                    if (index is > 0 && index % count is 0)
+                    {
+                        builder.Append(Separators.Dash[0]);
+                    }
+
+                    builder.Append('{');
+                    builder.Append(index);
+                    builder.Append('}');
+                }
+
+                options.UserCodeDisplayFormat = builder.ToString();
+            }
+
+            if (options.UserCodeCharset.Contains("-", StringComparer.Ordinal) &&
+                options.UserCodeDisplayFormat.Any(static character => character is '-'))
+            {
+                throw new InvalidOperationException(SR.FormatID0441('-'));
             }
         }
 

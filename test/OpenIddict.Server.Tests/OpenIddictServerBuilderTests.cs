@@ -1737,6 +1737,147 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void SetUserCodeCharset_ThrowsAnExceptionForNullCharset()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserCodeCharset(charset: null!));
+
+        Assert.Equal("charset", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetUserCodeCharset_ThrowsAnExceptionForCharsetWithTooFewCharacters()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetUserCodeCharset(["0"]));
+
+        Assert.StartsWith(SR.FormatID0440(9), exception.Message);
+        Assert.Equal("charset", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetUserCodeCharset_ThrowsAnExceptionForCharsetWithDuplicatedCharacters()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetUserCodeCharset(
+            ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "9"]));
+
+        Assert.StartsWith(SR.GetResourceString(SR.ID0436), exception.Message);
+        Assert.Equal("charset", exception.ParamName);
+    }
+
+#if SUPPORTS_TEXT_ELEMENT_ENUMERATOR
+    [InlineData("")]
+    [InlineData("\uD83D\uDE42\uD83D\uDE42")]
+    [Theory]
+    public void SetUserCodeCharset_ThrowsAnExceptionForCharsetWithInvalidCharacter(string character)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetUserCodeCharset(
+            ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", character]));
+
+        Assert.StartsWith(SR.GetResourceString(SR.ID0437), exception.Message);
+        Assert.Equal("charset", exception.ParamName);
+    }
+#else
+    [Fact]
+    public void SetUserCodeCharset_ThrowsAnExceptionForCharsetWithNonAsciiCharacter()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetUserCodeCharset(
+            ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "\uD83D\uDE42"]));
+
+        Assert.StartsWith(SR.GetResourceString(SR.ID0438), exception.Message);
+        Assert.Equal("charset", exception.ParamName);
+    }
+#endif
+
+    [Fact]
+    public void SetUserCodeCharset_ReplacesCharset()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetUserCodeCharset(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], options.UserCodeCharset);
+    }
+
+    [Fact]
+    public void SetUserCodeDisplayFormat_ReplacesDisplayFormat()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetUserCodeDisplayFormat("{0}{1}-{2}{3}-{4}{5}-{6}{7}-{8}{9}-{10}{11}");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal("{0}{1}-{2}{3}-{4}{5}-{6}{7}-{8}{9}-{10}{11}", options.UserCodeDisplayFormat);
+    }
+
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(5)]
+    [Theory]
+    public void SetUserCodeLength_ThrowsAnExceptionForInvalidLength(int length)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetUserCodeLength(length));
+
+        Assert.StartsWith(SR.FormatID0439(6), exception.Message);
+        Assert.Equal("length", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetUserCodeLength_ReplacesLength()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetUserCodeLength(42);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(42, options.UserCodeLength);
+    }
+
+    [Fact]
     public void SetUserCodeLifetime_DefaultUserCodeLifetimeIsReplaced()
     {
         // Arrange

@@ -50,6 +50,7 @@ public static partial class OpenIddictServerHandlers
         ValidateRefreshToken.Descriptor,
         ValidateUserCode.Descriptor,
         ResolveHostAuthenticationProperties.Descriptor,
+        ReformatValidatedTokens.Descriptor,
 
         /*
          * Challenge processing:
@@ -91,6 +92,8 @@ public static partial class OpenIddictServerHandlers
 
         GenerateUserCode.Descriptor,
         GenerateIdentityToken.Descriptor,
+
+        BeautifyGeneratedTokens.Descriptor,
 
         AttachSignInParameters.Descriptor,
         AttachCustomSignInParameters.Descriptor,
@@ -1711,6 +1714,9 @@ public static partial class OpenIddictServerHandlers
                 ValidTokenTypes = { TokenTypeHints.UserCode }
             };
 
+            // Note: restrict the allowed characters to the user code charset set in the options.
+            notification.AllowedCharset.UnionWith(context.Options.UserCodeCharset);
+
             await _dispatcher.DispatchAsync(notification);
 
             if (notification.IsRequestHandled)
@@ -1788,6 +1794,78 @@ public static partial class OpenIddictServerHandlers
                 foreach (var property in document.RootElement.EnumerateObject())
                 {
                     context.Properties[property.Name] = property.Value.GetString();
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for reformating validated tokens if necessary.
+    /// Note: this handler is not used when the degraded mode is enabled.
+    /// </summary>
+    public sealed class ReformatValidatedTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseScopedHandler<ReformatValidatedTokens>()
+                .SetOrder(int.MaxValue - 100_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: unlike other tokens, user codes may be potentially entered manually by users in a web form.
+            // To make that easier, characters that are not part of the allowed charset are generally ignored.
+            // Since user codes entered by the user or flowed as a query string parameter can be re-rendered
+            // (e.g for user confirmation), they are automatically reformatted here to make sure that characters
+            // that were not part of the allowed charset and ignored when validating them are not included in the
+            // token string that will be attached to the authentication context and resolved by the application.
+            if (!string.IsNullOrEmpty(context.UserCode) && !string.IsNullOrEmpty(context.Options.UserCodeDisplayFormat))
+            {
+                List<string> arguments = [];
+
+                var enumerator = StringInfo.GetTextElementEnumerator(context.UserCode);
+                while (enumerator.MoveNext())
+                {
+                    var element = enumerator.GetTextElement();
+                    if (context.Options.UserCodeCharset.Contains(element))
+                    {
+                        arguments.Add(enumerator.GetTextElement());
+                    }
+                }
+
+                if (arguments.Count is 0)
+                {
+                    context.UserCode = null;
+                }
+
+                else if (arguments.Count == context.Options.UserCodeLength)
+                {
+                    try
+                    {
+                        context.UserCode = string.Format(CultureInfo.InvariantCulture,
+                            context.Options.UserCodeDisplayFormat, [.. arguments]);
+                    }
+
+                    catch (FormatException)
+                    {
+                        context.UserCode = string.Join(string.Empty, arguments);
+                    }
+                }
+
+                else
+                {
+                    context.UserCode = string.Join(string.Empty, arguments);
                 }
             }
 
@@ -4104,6 +4182,68 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for beautifying user-typed tokens.
+    /// Note: this handler is not used when the degraded mode is enabled.
+    /// </summary>
+    public sealed class BeautifyGeneratedTokens : IOpenIddictServerHandler<ProcessSignInContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                .UseSingletonHandler<BeautifyGeneratedTokens>()
+                .SetOrder(GenerateIdentityToken.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignInContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // To make user codes easier to read and type by humans, the user is formatted
+            // using a display format string specified by the user or created by OpenIddict
+            // (by default, grouping the user code characters and separating them by dashes).
+            if (!string.IsNullOrEmpty(context.UserCode) &&
+                !string.IsNullOrEmpty(context.Options.UserCodeDisplayFormat))
+            {
+                List<string> arguments = [];
+
+                var enumerator = StringInfo.GetTextElementEnumerator(context.UserCode);
+                while (enumerator.MoveNext())
+                {
+                    arguments.Add(enumerator.GetTextElement());
+                }
+
+                if (arguments.Count == context.Options.UserCodeLength)
+                {
+                    try
+                    {
+                        context.UserCode = string.Format(CultureInfo.InvariantCulture,
+                            context.Options.UserCodeDisplayFormat, [.. arguments]);
+                    }
+
+                    catch (FormatException)
+                    {
+                        context.UserCode = string.Join(string.Empty, arguments);
+                    }
+                }
+
+                else
+                {
+                    context.UserCode = string.Join(string.Empty, arguments);
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the appropriate parameters to the sign-in response.
     /// </summary>
     public sealed class AttachSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
@@ -4114,7 +4254,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .UseSingletonHandler<AttachSignInParameters>()
-                .SetOrder(GenerateIdentityToken.Descriptor.Order + 1_000)
+                .SetOrder(BeautifyGeneratedTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

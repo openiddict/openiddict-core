@@ -96,6 +96,7 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_PEM_ENCODED_KEY_IMPORT</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TEXT_ELEMENT_ENUMERATOR</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_WINFORMS_TASK_DIALOG</DefineConstants>
   </PropertyGroup>
 
