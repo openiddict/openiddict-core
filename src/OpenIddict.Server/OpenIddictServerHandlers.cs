@@ -185,8 +185,8 @@ public static partial class OpenIddictServerHandlers
                     else
                     {
                         var uri = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, candidate);
-                        if (uri.IsWellFormedOriginalString() &&
-                            OpenIddictHelpers.IsBaseOf(context.BaseUri, uri) && Equals(uri, context.RequestUri))
+                        if (!OpenIddictHelpers.IsImplicitFileUri(uri) &&
+                             OpenIddictHelpers.IsBaseOf(context.BaseUri, uri) && Equals(uri, context.RequestUri))
                         {
                             return true;
                         }
@@ -845,7 +845,7 @@ public static partial class OpenIddictServerHandlers
                 foreach (var audience in audiences)
                 {
                     // Ignore the iterated audience if it's not a valid absolute URI.
-                    if (!Uri.TryCreate(audience, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(audience, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         continue;
                     }

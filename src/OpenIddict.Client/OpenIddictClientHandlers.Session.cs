@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -173,7 +174,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Ensure the end session endpoint is present and is a valid absolute URI.
                 if (context.Configuration.EndSessionEndpoint is not { IsAbsoluteUri: true } ||
-                   !context.Configuration.EndSessionEndpoint.IsWellFormedOriginalString())
+                    OpenIddictHelpers.IsImplicitFileUri(context.Configuration.EndSessionEndpoint))
                 {
                     throw new InvalidOperationException(SR.FormatID0301(Metadata.EndSessionEndpoint));
                 }

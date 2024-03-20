@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -181,7 +182,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Ensure the authorization endpoint is present and is a valid absolute URI.
                 if (context.Configuration.AuthorizationEndpoint is not { IsAbsoluteUri: true } ||
-                   !context.Configuration.AuthorizationEndpoint.IsWellFormedOriginalString())
+                    OpenIddictHelpers.IsImplicitFileUri(context.Configuration.AuthorizationEndpoint))
                 {
                     throw new InvalidOperationException(SR.FormatID0301(Metadata.AuthorizationEndpoint));
                 }

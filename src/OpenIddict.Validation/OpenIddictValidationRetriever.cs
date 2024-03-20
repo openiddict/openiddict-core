@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.IdentityModel.Protocols;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Validation;
 
@@ -37,7 +38,7 @@ public sealed class OpenIddictValidationRetriever : IConfigurationRetriever<Open
             throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
         }
 
-        if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+        if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
         }

@@ -1085,7 +1085,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             }
 
             // Ensure the URI is a valid absolute URI.
-            if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
+            if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0214));
             }
@@ -1109,7 +1109,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             }
 
             // Ensure the URI is a valid absolute URI.
-            if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
+            if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0214));
             }
@@ -1337,7 +1337,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 }
 
                 // Ensure the URI is a valid absolute URI.
-                if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
                 {
                     yield return new ValidationResult(SR.GetResourceString(SR.ID2062));
 

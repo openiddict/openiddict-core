@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Validation;
 
@@ -257,7 +258,7 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -299,7 +300,7 @@ public static partial class OpenIddictValidationHandlers
                 var endpoint = (string?) context.Response[Metadata.IntrospectionEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,

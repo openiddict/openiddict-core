@@ -509,12 +509,7 @@ public static partial class OpenIddictServerHandlers
                 // Note: when specified, redirect_uri MUST be an absolute URI.
                 // See http://tools.ietf.org/html/rfc6749#section-3.1.2
                 // and http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
-                //
-                // Note: on Linux/macOS, "/path" URIs are treated as valid absolute file URIs.
-                // To ensure relative redirect_uris are correctly rejected on these platforms,
-                // an additional check using IsWellFormedOriginalString() is made here.
-                // See https://github.com/dotnet/corefx/issues/22098 for more information.
-                if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6034), Parameters.RedirectUri, context.RedirectUri);
 

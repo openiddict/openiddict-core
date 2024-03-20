@@ -1081,7 +1081,7 @@ public sealed class OpenIddictClientBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
@@ -1128,7 +1128,7 @@ public sealed class OpenIddictClientBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
@@ -1197,7 +1197,7 @@ public sealed class OpenIddictClientBuilder
             throw new ArgumentException(SR.FormatID0366(nameof(uri)), nameof(uri));
         }
 
-        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }

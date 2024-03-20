@@ -273,11 +273,8 @@ public static class OpenIddictClientSystemIntegrationHelpers
         //
         // For more information, see https://devblogs.microsoft.com/oldnewthing/20060515-07/?p=31203.
 
-        [_, string argument] when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
-            !uri.IsFile && uri.IsWellFormedOriginalString() => uri,
-
-        [string argument] when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) &&
-            !uri.IsFile && uri.IsWellFormedOriginalString() => uri,
+        [_, string argument] when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) && !uri.IsFile => uri,
+        [   string argument] when Uri.TryCreate(argument, UriKind.Absolute, out Uri? uri) && !uri.IsFile => uri,
 
         _ => null
     };

@@ -245,8 +245,8 @@ public static partial class OpenIddictClientHandlers
                     else
                     {
                         var uri = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, candidate);
-                        if (uri.IsWellFormedOriginalString() &&
-                            OpenIddictHelpers.IsBaseOf(context.BaseUri, uri) && Equals(uri, context.RequestUri))
+                        if (!OpenIddictHelpers.IsImplicitFileUri(uri) &&
+                             OpenIddictHelpers.IsBaseOf(context.BaseUri, uri) && Equals(uri, context.RequestUri))
                         {
                             return true;
                         }
@@ -1180,7 +1180,7 @@ public static partial class OpenIddictClientHandlers
 
                 // If the two values don't match, this may indicate a mix-up attack attempt.
                 if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) ||
-                    !uri.IsWellFormedOriginalString() || uri != context.Registration.Issuer)
+                    OpenIddictHelpers.IsImplicitFileUri(uri) || uri != context.Registration.Issuer)
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2239,7 +2239,7 @@ public static partial class OpenIddictClientHandlers
             // this stage, try to extract it from the server configuration.
             context.TokenEndpoint ??= context.Configuration.TokenEndpoint switch
             {
-                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
+                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
 
                 _ => null
             };
@@ -2659,7 +2659,7 @@ public static partial class OpenIddictClientHandlers
 
             // Ensure the token endpoint is present and is a valid absolute URI.
             if (context.TokenEndpoint is not { IsAbsoluteUri: true } ||
-               !context.TokenEndpoint.IsWellFormedOriginalString())
+                OpenIddictHelpers.IsImplicitFileUri(context.TokenEndpoint))
             {
                 throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
             }
@@ -3548,7 +3548,7 @@ public static partial class OpenIddictClientHandlers
             // this stage, try to extract it from the server configuration.
             context.UserinfoEndpoint ??= context.Configuration.UserinfoEndpoint switch
             {
-                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
+                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
 
                 _ => null
             };
@@ -3703,7 +3703,7 @@ public static partial class OpenIddictClientHandlers
 
             // Ensure the userinfo endpoint is present and is a valid absolute URI.
             if (context.UserinfoEndpoint is not { IsAbsoluteUri: true } ||
-               !context.UserinfoEndpoint.IsWellFormedOriginalString())
+                OpenIddictHelpers.IsImplicitFileUri(context.UserinfoEndpoint))
             {
                 throw new InvalidOperationException(SR.FormatID0301(Metadata.UserinfoEndpoint));
             }
@@ -5405,7 +5405,7 @@ public static partial class OpenIddictClientHandlers
             // at this stage, try to extract it from the server configuration.
             context.DeviceAuthorizationEndpoint ??= context.Configuration.DeviceAuthorizationEndpoint switch
             {
-                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
+                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
 
                 _ => null
             };
@@ -5734,7 +5734,7 @@ public static partial class OpenIddictClientHandlers
 
             // Ensure the device authorization endpoint is present and is a valid absolute URI.
             if (context.DeviceAuthorizationEndpoint is not { IsAbsoluteUri: true } ||
-               !context.DeviceAuthorizationEndpoint.IsWellFormedOriginalString())
+                OpenIddictHelpers.IsImplicitFileUri(context.DeviceAuthorizationEndpoint))
             {
                 throw new InvalidOperationException(SR.FormatID0301(Metadata.DeviceAuthorizationEndpoint));
             }
@@ -6079,7 +6079,7 @@ public static partial class OpenIddictClientHandlers
             // at this stage, try to extract it from the server configuration.
             context.IntrospectionEndpoint ??= context.Configuration.IntrospectionEndpoint switch
             {
-                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
+                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
 
                 _ => null
             };
@@ -6403,7 +6403,7 @@ public static partial class OpenIddictClientHandlers
 
             // Ensure the introspection endpoint is present and is a valid absolute URI.
             if (context.IntrospectionEndpoint is not { IsAbsoluteUri: true } ||
-               !context.IntrospectionEndpoint.IsWellFormedOriginalString())
+                OpenIddictHelpers.IsImplicitFileUri(context.IntrospectionEndpoint))
             {
                 throw new InvalidOperationException(SR.FormatID0301(Metadata.IntrospectionEndpoint));
             }
@@ -6671,7 +6671,7 @@ public static partial class OpenIddictClientHandlers
             // at this stage, try to extract it from the server configuration.
             context.RevocationEndpoint ??= context.Configuration.RevocationEndpoint switch
             {
-                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
+                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
 
                 _ => null
             };
@@ -6994,7 +6994,7 @@ public static partial class OpenIddictClientHandlers
 
             // Ensure the revocation endpoint is present and is a valid absolute URI.
             if (context.RevocationEndpoint is not { IsAbsoluteUri: true } ||
-               !context.RevocationEndpoint.IsWellFormedOriginalString())
+                OpenIddictHelpers.IsImplicitFileUri(context.RevocationEndpoint))
             {
                 throw new InvalidOperationException(SR.FormatID0301(Metadata.RevocationEndpoint));
             }

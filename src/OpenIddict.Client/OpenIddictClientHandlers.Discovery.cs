@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -286,7 +287,7 @@ public static partial class OpenIddictClientHandlers
                 var endpoint = (string?) context.Response[Metadata.AuthorizationEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -339,7 +340,7 @@ public static partial class OpenIddictClientHandlers
                     return default;
                 }
 
-                if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -381,7 +382,7 @@ public static partial class OpenIddictClientHandlers
                 var endpoint = (string?) context.Response[Metadata.DeviceAuthorizationEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -424,7 +425,7 @@ public static partial class OpenIddictClientHandlers
                 var endpoint = (string?) context.Response[Metadata.IntrospectionEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -467,7 +468,7 @@ public static partial class OpenIddictClientHandlers
                 var endpoint = (string?) context.Response[Metadata.EndSessionEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -510,7 +511,7 @@ public static partial class OpenIddictClientHandlers
                 var endpoint = (string?) context.Response[Metadata.RevocationEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -553,7 +554,7 @@ public static partial class OpenIddictClientHandlers
                 var endpoint = (string?) context.Response[Metadata.TokenEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -596,7 +597,7 @@ public static partial class OpenIddictClientHandlers
                 var endpoint = (string?) context.Response[Metadata.UserinfoEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,

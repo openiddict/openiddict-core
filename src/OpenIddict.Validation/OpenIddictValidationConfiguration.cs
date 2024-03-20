@@ -39,14 +39,14 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
         }
 
         if (options.Configuration is null && options.ConfigurationManager is null &&
-            options.Issuer is null && options.ConfigurationEndpoint is null)
+            options.Issuer        is null && options.ConfigurationEndpoint is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));
         }
 
         if (options.Issuer is not null)
         {
-            if (!options.Issuer.IsAbsoluteUri || !options.Issuer.IsWellFormedOriginalString())
+            if (!options.Issuer.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(options.Issuer))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
             }

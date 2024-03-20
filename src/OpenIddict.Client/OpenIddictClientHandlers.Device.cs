@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -177,7 +178,8 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 // Return an error if the "verification_uri" parameter is malformed.
-                if (!Uri.IsWellFormedUriString(context.Response.VerificationUri, UriKind.Absolute))
+                if (!Uri.TryCreate(context.Response.VerificationUri, UriKind.Absolute, out Uri? uri) ||
+                    OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -187,10 +189,11 @@ public static partial class OpenIddictClientHandlers
                     return default;
                 }
 
-                // Note: the "verification_uri_complete" parameter is optional and MUST not
+                // Note: the "verification_uri_complete" parameter is optional and MUST NOT
                 // cause an error if it's missing from the device authorization response.
                 if (!string.IsNullOrEmpty(context.Response.VerificationUriComplete) &&
-                    !Uri.IsWellFormedUriString(context.Response.VerificationUriComplete, UriKind.Absolute))
+                   (!Uri.TryCreate(context.Response.VerificationUriComplete, UriKind.Absolute, out uri) ||
+                    OpenIddictHelpers.IsImplicitFileUri(uri)))
                 {
                     context.Reject(
                         error: Errors.ServerError,

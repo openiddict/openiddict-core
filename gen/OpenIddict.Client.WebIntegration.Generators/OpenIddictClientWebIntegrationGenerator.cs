@@ -419,7 +419,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
             }
 
-            if (!{{ setting.parameter_name }}.IsAbsoluteUri || !{{ setting.parameter_name }}.IsWellFormedOriginalString())
+            if (!{{ setting.parameter_name }}.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri({{ setting.parameter_name }}))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof({{ setting.parameter_name }}));
             }
@@ -804,6 +804,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 using static OpenIddict.Extensions.OpenIddictHelpers;
 
@@ -891,7 +892,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             {{~ end ~}}
 
             {{~ if setting.type == 'Uri' ~}}
-            if (!settings.{{ setting.property_name }}.IsAbsoluteUri || !settings.{{ setting.property_name }}.IsWellFormedOriginalString())
+            if (!settings.{{ setting.property_name }}.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(settings.{{ setting.property_name }}))
             {
                 throw new InvalidOperationException(SR.FormatID0350(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
             }
