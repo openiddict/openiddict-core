@@ -1226,7 +1226,7 @@ public class OpenIddictClientService
             throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
@@ -1466,7 +1466,7 @@ public class OpenIddictClientService
             throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
@@ -1638,7 +1638,7 @@ public class OpenIddictClientService
             throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
@@ -1807,7 +1807,7 @@ public class OpenIddictClientService
             throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
@@ -1978,7 +1978,7 @@ public class OpenIddictClientService
             throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
@@ -2152,7 +2152,7 @@ public class OpenIddictClientService
             throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
@@ -2321,7 +2321,7 @@ public class OpenIddictClientService
             throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }

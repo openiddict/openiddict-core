@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using OpenIddict.Validation;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -711,7 +712,7 @@ public sealed class OpenIddictValidationBuilder
             throw new ArgumentException(SR.GetResourceString(SR.ID0126), nameof(uri));
         }
 
-        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0023), nameof(uri));
         }

@@ -9,6 +9,7 @@ using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Validation;
@@ -401,7 +402,7 @@ public class OpenIddictValidationService
             throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }

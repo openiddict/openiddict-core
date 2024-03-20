@@ -297,6 +297,26 @@ internal static class OpenIddictHelpers
     }
 
     /// <summary>
+    /// Determines whether the specified <paramref name="uri"/> represents an implicit file URI.
+    /// </summary>
+    /// <param name="uri">The URI.</param>
+    /// <returns>
+    /// <see langword="true"/> if <paramref name="uri"/> represents
+    /// an implicit file URI, <see langword="false"/> otherwise.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
+    public static bool IsImplicitFileUri(Uri uri)
+    {
+        if (uri is null)
+        {
+            throw new ArgumentNullException(nameof(uri));
+        }
+
+        return uri.IsAbsoluteUri && uri.IsFile &&
+            !uri.OriginalString.StartsWith(uri.Scheme, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Adds a query string parameter to the specified <see cref="Uri"/>.
     /// </summary>
     /// <param name="uri">The URI to which the query string parameter will be appended.</param>

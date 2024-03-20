@@ -11,6 +11,7 @@ using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -346,7 +347,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // If an optional post_logout_redirect_uri was provided, validate it.
-                if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6126), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 

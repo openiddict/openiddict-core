@@ -53,7 +53,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                     new InvalidOperationException(SR.GetResourceString(SR.ID0411));
             }
 
-            if (!registration.Issuer.IsAbsoluteUri || !registration.Issuer.IsWellFormedOriginalString())
+            if (!registration.Issuer.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(registration.Issuer))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
             }

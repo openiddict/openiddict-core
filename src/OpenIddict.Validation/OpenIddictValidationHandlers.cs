@@ -215,7 +215,7 @@ public static partial class OpenIddictValidationHandlers
             // at this stage, try to extract it from the server configuration.
             context.IntrospectionEndpoint ??= context.Configuration.IntrospectionEndpoint switch
             {
-                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
+                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
 
                 _ => null
             };
@@ -542,7 +542,7 @@ public static partial class OpenIddictValidationHandlers
 
             // Ensure the introspection endpoint is present and is a valid absolute URI.
             if (context.IntrospectionEndpoint is not { IsAbsoluteUri: true } ||
-               !context.IntrospectionEndpoint.IsWellFormedOriginalString())
+                OpenIddictHelpers.IsImplicitFileUri(context.IntrospectionEndpoint))
             {
                 throw new InvalidOperationException(SR.FormatID0301(Metadata.IntrospectionEndpoint));
             }

@@ -589,7 +589,7 @@ public static partial class OpenIddictClientOwinHandlers
             if (properties.Dictionary.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
             {
                 // Ensure the issuer set by the application is a valid absolute URI.
-                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0306));
                 }
@@ -855,7 +855,7 @@ public static partial class OpenIddictClientOwinHandlers
             if (properties.Dictionary.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
             {
                 // Ensure the issuer set by the application is a valid absolute URI.
-                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0306));
                 }
