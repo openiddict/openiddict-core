@@ -61,13 +61,15 @@
     </NetStandardTargetFrameworks>
 
     <!--
-      Note: the UWP/.NET Core 5.0 reference assemblies may not be available if the Windows SDK is not installed.
-      To ensure the solution can be built on machines that don't have UWP tooling installed, a directory check is
-      used to ensure the .NET Core 5.0 reference assemblies are present on the machine before targeting uap10.0.
+      Note: the .NET Core 5.0 reference assemblies or UWP contract assemblies may not be available if
+      the Windows SDK is not installed (or if a different version is installed). To ensure the solution
+      can be built on machines that don't have the UWP tooling installed, directory checks are used to
+      ensure the reference and contract assemblies are present on the machine before targeting uap10.0.
     -->
     <UniversalWindowsPlatformTargetFrameworks
       Condition=" '$(UniversalWindowsPlatformTargetFrameworks)' == '' And $([MSBuild]::IsOSPlatform('Windows')) And
-                 ('$(GITHUB_ACTIONS)' == 'true' Or Exists('$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETCore\v5.0')) ">
+                 ('$(GITHUB_ACTIONS)' == 'true' Or (Exists('$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETCore\v5.0') And
+                                                    Exists('$(MSBuildProgramFiles32)\Windows Kits\10\References\10.0.17763.0'))) ">
       uap10.0.17763
     </UniversalWindowsPlatformTargetFrameworks>
   </PropertyGroup>
