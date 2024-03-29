@@ -22,13 +22,4 @@
     <ProjectReference Include="..\OpenIddict.Validation.DataProtection\OpenIddict.Validation.DataProtection.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="_._" Pack="true" PackagePath="lib\net461\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net472\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net48\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net6.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net7.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net8.0\_._" />
-  </ItemGroup>
-
 </Project>

@@ -34,22 +34,4 @@ To use these features on ASP.NET Core or OWIN/Katana/ASP.NET 4.x, reference the 
     <ProjectReference Include="..\OpenIddict.Validation.SystemNetHttp\OpenIddict.Validation.SystemNetHttp.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="_._" Pack="true" PackagePath="lib\net461\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net472\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net48\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net6.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net6.0-windows7.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net6.0-windows10.0.17763\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net7.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net7.0-windows7.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net7.0-windows10.0.17763\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net8.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net8.0-windows7.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\net8.0-windows10.0.17763\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\netstandard2.0\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\netstandard2.1\_._" />
-    <None Include="_._" Pack="true" PackagePath="lib\uap10.0.17763\_._" />
-  </ItemGroup>
-
 </Project>
