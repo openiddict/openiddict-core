@@ -612,6 +612,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     context.LoginHint = hint;
                 }
 
+                // If a scope was specified, attach it to the context.
+                if (properties.Items.TryGetValue(Properties.Scope, out string? scope) &&
+                    !string.IsNullOrEmpty(scope))
+                {
+                    context.Scopes.UnionWith(scope.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
+                }
+
                 foreach (var property in properties.Items)
                 {
                     context.Properties[property.Key] = property.Value;

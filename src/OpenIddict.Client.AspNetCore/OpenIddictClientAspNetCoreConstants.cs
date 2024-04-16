@@ -27,6 +27,7 @@ public static class OpenIddictClientAspNetCoreConstants
         public const string ProviderName = ".provider_name";
         public const string RefreshTokenPrincipal = ".refresh_token_principal";
         public const string RegistrationId = ".registration_id";
+        public const string Scope = ".scope";
         public const string StateTokenPrincipal = ".state_token_principal";
         public const string UserinfoTokenPrincipal = ".userinfo_token_principal";
     }

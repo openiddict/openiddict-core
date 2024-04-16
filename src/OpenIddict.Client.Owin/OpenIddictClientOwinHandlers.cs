@@ -624,6 +624,13 @@ public static partial class OpenIddictClientOwinHandlers
                 context.LoginHint = hint;
             }
 
+            // If a scope was specified, attach it to the context.
+            if (properties.Dictionary.TryGetValue(Properties.Scope, out string? scope) &&
+                !string.IsNullOrEmpty(scope))
+            {
+                context.Scopes.UnionWith(scope.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
+            }
+
             // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
             // dictionary that allows flowing parameters while preserving their original types. To allow
             // returning custom parameters, the OWIN host allows using AuthenticationProperties.Dictionary
