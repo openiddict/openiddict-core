@@ -67,6 +67,26 @@ public class AuthenticationController : Controller
         identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId))
                 .SetClaim(Claims.Private.ProviderName, result.Principal.GetClaim(Claims.Private.ProviderName));
 
+        // Important: when using ASP.NET Core Identity and its default UI, the identity created in this action is
+        // not directly persisted in the final authentication cookie (called "application cookie" by Identity) but
+        // in an intermediate authentication cookie called "external cookie" (the final authentication cookie is
+        // later created by Identity's ExternalLogin Razor Page by calling SignInManager.ExternalLoginSignInAsync()).
+        //
+        // Unfortunately, this process doesn't preserve the claims added here, which prevents flowing claims
+        // returned by the external provider down to the final authentication cookie. For scenarios that
+        // require that, the claims can be stored in Identity's database by calling UserManager.AddClaimAsync()
+        // directly in this action or by scaffolding the ExternalLogin.cshtml page that is part of the default UI:
+        // https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims#add-and-update-user-claims.
+        //
+        // Alternatively, if flowing the claims from the "external cookie" to the "application cookie" is preferred,
+        // the default ExternalLogin.cshtml page provided by Identity can be scaffolded to replace the call to
+        // SignInManager.ExternalLoginSignInAsync() by a manual sign-in operation that will preserve the claims.
+        // For scenarios where scaffolding the ExternalLogin.cshtml page is not convenient, a custom SignInManager
+        // with an overridden SignInOrTwoFactorAsync() method can also be used to tweak the default Identity logic.
+        //
+        // For more information, see https://haacked.com/archive/2019/07/16/external-claims/ and
+        // https://stackoverflow.com/questions/42660568/asp-net-core-identity-extract-and-save-external-login-tokens-and-add-claims-to-l/42670559#42670559.
+
         // Build the authentication properties based on the properties that were added when the challenge was triggered.
         var properties = new AuthenticationProperties(result.Properties.Items)
         {
