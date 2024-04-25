@@ -600,6 +600,20 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▄█ ▄▄▀██ ▄▄▀██ ▄▄▄█▄ ▄█▄▄ ▄▄██
+                                              ██ ▄▄██ ▀▀ ██ █████ ▄▄▄██ ████ ████
+                                              ██ ████ ██ ██ ▀▀▄██ ▀▀▀█▀ ▀███ ████
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="FaceIt" DisplayName="FACEIT" Id="6523733a-b217-4ad6-afcf-67f320db910f"
+            Documentation="https://developers.faceit.com/docs/auth/oauth2">
+    <Environment Issuer="https://api.faceit.com/auth"
+                 ConfigurationEndpoint="https://api.faceit.com/auth/v1/openid_configuration" />
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄▄█▄ ▄█▄▄ ▄▄██ ▄▄▀█▄ ▄█▄▄ ▄▄██
                                               ██ ▄▄███ ████ ████ ▄▄▀██ ████ ████

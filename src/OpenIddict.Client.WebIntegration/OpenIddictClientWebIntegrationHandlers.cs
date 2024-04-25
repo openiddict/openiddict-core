@@ -688,9 +688,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.DisableBackchannelIdentityTokenNonceValidation = context.Registration.ProviderType switch
             {
                 // These providers don't include the nonce in their identity tokens:
-                ProviderTypes.Asana            or ProviderTypes.DocuSign or
-                ProviderTypes.Dropbox          or ProviderTypes.LinkedIn or
-                ProviderTypes.QuickBooksOnline or ProviderTypes.WorldId => true,
+                ProviderTypes.Asana    or ProviderTypes.DocuSign         or
+                ProviderTypes.Dropbox  or ProviderTypes.FaceIt           or
+                ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline or
+                ProviderTypes.WorldId => true,
 
                 _ => context.DisableBackchannelIdentityTokenNonceValidation
             };
@@ -1602,6 +1603,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.Request.Audiences = [settings.Audience];
                 context.Request.Prompt = settings.Prompt;
+            }
+
+            // FaceIt requires sending a custom "redirect_popup" parameter
+            // with the value "true" for the login flow to work correctly.
+            else if (context.Registration.ProviderType is ProviderTypes.FaceIt)
+            {
+                context.Request["redirect_popup"] = true;
             }
 
             // By default, Google doesn't return a refresh token but allows sending an "access_type"

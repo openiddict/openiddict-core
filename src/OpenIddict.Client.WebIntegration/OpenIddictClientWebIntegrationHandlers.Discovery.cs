@@ -108,7 +108,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // types is amended to include the known supported types for the providers that require it.
 
                 if (context.Registration.ProviderType is
-                    ProviderTypes.Apple or ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline)
+                    ProviderTypes.Apple    or ProviderTypes.FaceIt or
+                    ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
@@ -183,7 +184,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // are manually added to the list of supported code challenge methods by this handler.
 
                 if (context.Registration.ProviderType is
-                    ProviderTypes.Adobe or ProviderTypes.Autodesk or ProviderTypes.Microsoft)
+                    ProviderTypes.Adobe  or ProviderTypes.Autodesk or
+                    ProviderTypes.FaceIt or ProviderTypes.Microsoft)
                 {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
