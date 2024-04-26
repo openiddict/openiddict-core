@@ -37,10 +37,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
           6.0.421
@@ -75,20 +75,20 @@ jobs:
 
     - name: Publish logs
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: logs-${{ matrix.os_name }}
         path: ./artifacts/log/Release
 
     - name: Publish NuGet packages
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: packages-${{ matrix.os_name }}
         path: ./artifacts/packages/Release/Shipping
 
     - name: Publish test results
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: testresults-${{ matrix.os_name }}
         path: ./artifacts/TestResults/Release
@@ -98,12 +98,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Download packages
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: packages-windows
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.204'
 
@@ -131,12 +131,12 @@ jobs:
       (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/heads/rel/') || startsWith(github.ref, 'refs/tags/'))
     steps:
     - name: Download packages
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: packages-windows
 
     - name: Setup NuGet
-      uses: nuget/setup-nuget@v1
+      uses: nuget/setup-nuget@v2
       with:
         nuget-version: '5.11.0'
 
@@ -149,12 +149,12 @@ jobs:
     if: github.event.repository.fork == false && startsWith(github.ref, 'refs/tags/')
     steps:
     - name: Download packages
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: packages-windows
 
     - name: Setup NuGet
-      uses: nuget/setup-nuget@v1
+      uses: nuget/setup-nuget@v2
       with:
         nuget-version: '5.11.0'
 
