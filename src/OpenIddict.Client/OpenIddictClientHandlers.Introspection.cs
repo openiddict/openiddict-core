@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -94,7 +95,8 @@ public static partial class OpenIddictClientHandlers
                     // Note: empty arrays and arrays that contain a single value are also considered valid.
                     Claims.Audience => ((JsonElement) value) is JsonElement element &&
                         element.ValueKind is JsonValueKind.String ||
-                       (element.ValueKind is JsonValueKind.Array && ValidateStringArray(element)),
+                       (element.ValueKind is JsonValueKind.Array &&
+                        OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                     // The following claims MUST be formatted as numeric dates:
                     Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
@@ -104,19 +106,6 @@ public static partial class OpenIddictClientHandlers
                     // Claims that are not in the well-known list can be of any type.
                     _ => true
                 };
-
-                static bool ValidateStringArray(JsonElement element)
-                {
-                    foreach (var item in element.EnumerateArray())
-                    {
-                        if (item.ValueKind is not JsonValueKind.String)
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
             }
         }
 

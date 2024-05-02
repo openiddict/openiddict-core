@@ -1579,7 +1579,37 @@ public static class OpenIddictExtensions
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
         }
 
-        return identity.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
+        var builder = ImmutableArray.CreateBuilder<string>();
+
+        foreach (var claim in identity.FindAll(type))
+        {
+            // If the claim uses the special JSON_ARRAY claim value type, parse it to extract its individual
+            // values. When the individual values are not strings, their string representation is returned.
+            if (claim.ValueType is "JSON_ARRAY")
+            {
+                var element = JsonSerializer.Deserialize<JsonElement>(claim.Value);
+                if (element.ValueKind is not JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var item in element.EnumerateArray())
+                {
+                    var value = item.ToString();
+                    if (!builder.Contains(value))
+                    {
+                        builder.Add(value);
+                    }
+                }
+            }
+
+            else if (!builder.Contains(claim.Value))
+            {
+                builder.Add(claim.Value);
+            }
+        }
+
+        return builder.ToImmutable();
     }
 
     /// <summary>
@@ -1600,7 +1630,37 @@ public static class OpenIddictExtensions
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
         }
 
-        return principal.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
+        var builder = ImmutableArray.CreateBuilder<string>();
+
+        foreach (var claim in principal.FindAll(type))
+        {
+            // If the claim uses the special JSON_ARRAY claim value type, parse it to extract its individual
+            // values. When the individual values are not strings, their string representation is returned.
+            if (claim.ValueType is "JSON_ARRAY")
+            {
+                var element = JsonSerializer.Deserialize<JsonElement>(claim.Value);
+                if (element.ValueKind is not JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var item in element.EnumerateArray())
+                {
+                    var value = item.ToString();
+                    if (!builder.Contains(value))
+                    {
+                        builder.Add(value);
+                    }
+                }
+            }
+
+            else if (!builder.Contains(claim.Value))
+            {
+                builder.Add(claim.Value);
+            }
+        }
+
+        return builder.ToImmutable();
     }
 
     /// <summary>

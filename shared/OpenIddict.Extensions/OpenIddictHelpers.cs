@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Primitives;
 
 namespace OpenIddict.Extensions;
@@ -1032,4 +1033,32 @@ internal static class OpenIddictHelpers
         return false;
     }
 #endif
+
+    /// <summary>
+    /// Determines whether the items contained in <paramref name="element"/>
+    /// are of the specified <paramref name="kind"/>.
+    /// </summary>
+    /// <param name="element">The <see cref="JsonElement"/>.</param>
+    /// <param name="kind">The expected <see cref="JsonValueKind"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the array doesn't contain any value or if all the items
+    /// are of the specified <paramref name="kind"/>, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool ValidateArrayElements(JsonElement element, JsonValueKind kind)
+    {
+        if (element.ValueKind is not JsonValueKind.Array)
+        {
+            throw new ArgumentOutOfRangeException(nameof(element));
+        }
+
+        foreach (var item in element.EnumerateArray())
+        {
+            if (item.ValueKind != kind)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
