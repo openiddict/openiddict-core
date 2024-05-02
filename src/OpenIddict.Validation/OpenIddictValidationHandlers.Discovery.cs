@@ -94,24 +94,12 @@ public static partial class OpenIddictValidationHandlers
                     // The following parameters MUST be formatted as arrays of strings:
                     Metadata.IntrospectionEndpointAuthMethodsSupported
                         => ((JsonElement) value) is JsonElement element &&
-                            element.ValueKind is JsonValueKind.Array && ValidateStringArray(element),
+                            element.ValueKind is JsonValueKind.Array &&
+                            OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String),
 
                     // Parameters that are not in the well-known list can be of any type.
                     _ => true
                 };
-
-                static bool ValidateStringArray(JsonElement element)
-                {
-                    foreach (var item in element.EnumerateArray())
-                    {
-                        if (item.ValueKind is not JsonValueKind.String)
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
             }
         }
 

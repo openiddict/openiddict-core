@@ -2593,6 +2593,44 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void ClaimsIdentity_GetClaims_ReturnsExpectedResultForJsonArrayClaims()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim(new Claim("array_claim",
+            """["value1", "value2", 42, ["value1", "value2"], {"property": "value"}]""", "JSON_ARRAY"));
+
+        // Act and assert
+        var claims = identity.GetClaims("array_claim");
+        Assert.Equal(5, claims.Length);
+        Assert.Equal("value1", claims[0]);
+        Assert.Equal("value2", claims[1]);
+        Assert.Equal("42", claims[2]);
+        Assert.Equal("""["value1", "value2"]""", claims[3]);
+        Assert.Equal("""{"property": "value"}""", claims[4]);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_GetClaims_ReturnsExpectedResultForJsonArrayClaims()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim(new Claim("array_claim",
+            """["value1", "value2", 42, ["value1", "value2"], {"property": "value"}]""", "JSON_ARRAY"));
+
+        var principal = new ClaimsPrincipal(identity);
+
+        // Act and assert
+        var claims = principal.GetClaims("array_claim");
+        Assert.Equal(5, claims.Length);
+        Assert.Equal("value1", claims[0]);
+        Assert.Equal("value2", claims[1]);
+        Assert.Equal("42", claims[2]);
+        Assert.Equal("""["value1", "value2"]""", claims[3]);
+        Assert.Equal("""{"property": "value"}""", claims[4]);
+    }
+
+    [Fact]
     public void ClaimsIdentity_HasClaim_ThrowsAnExceptionForNullIdentity()
     {
         // Arrange

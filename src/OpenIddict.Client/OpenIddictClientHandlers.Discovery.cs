@@ -120,7 +120,8 @@ public static partial class OpenIddictClientHandlers
                     Metadata.ScopesSupported                                 or
                     Metadata.TokenEndpointAuthMethodsSupported
                         => ((JsonElement) value) is JsonElement element &&
-                            element.ValueKind is JsonValueKind.Array && ValidateStringArray(element),
+                            element.ValueKind is JsonValueKind.Array &&
+                            OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String),
 
                     // The following parameters MUST be formatted as booleans:
                     Metadata.AuthorizationResponseIssParameterSupported
@@ -129,19 +130,6 @@ public static partial class OpenIddictClientHandlers
                     // Parameters that are not in the well-known list can be of any type.
                     _ => true
                 };
-
-                static bool ValidateStringArray(JsonElement element)
-                {
-                    foreach (var item in element.EnumerateArray())
-                    {
-                        if (item.ValueKind is not JsonValueKind.String)
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
             }
         }
 

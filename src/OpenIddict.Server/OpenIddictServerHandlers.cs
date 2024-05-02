@@ -14,6 +14,7 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
 
@@ -698,7 +699,13 @@ public static partial class OpenIddictServerHandlers
                     => values is [{ ValueType: ClaimValueTypes.String }],
 
                 // The following claims MUST be represented as unique strings or array of strings.
-                Claims.Audience => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+                Claims.Audience
+                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String) ||
+                       // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
+                       // if the individual elements of the parsed JSON array are all string values.
+                       (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
+                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique numeric dates.
                 Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
@@ -2210,7 +2217,12 @@ public static partial class OpenIddictServerHandlers
                 // The following claims MUST be represented as unique strings or array of strings.
                 Claims.AuthenticationMethodReference or Claims.Private.Audience or
                 Claims.Private.Presenter             or Claims.Private.Resource
-                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
+                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String) ||
+                       // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
+                       // if the individual elements of the parsed JSON array are all string values.
+                       (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
+                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique integers.
                 Claims.Private.AccessTokenLifetime  or Claims.Private.AuthorizationCodeLifetime or

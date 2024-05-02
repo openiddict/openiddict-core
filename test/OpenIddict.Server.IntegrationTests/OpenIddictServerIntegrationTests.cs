@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Moq;
 using OpenIddict.Core;
 using Xunit;
@@ -1481,6 +1482,46 @@ public abstract partial class OpenIddictServerIntegrationTests
         });
 
         Assert.Equal(SR.FormatID0424(Claims.Subject), exception.Message);
+    }
+
+    [Fact]
+    public async Task ProcessSignIn_ValidClaimValueTypeDoesNotCauseAnException()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    var identity = new ClaimsIdentity("Bearer")
+                        .SetTokenType(TokenTypeHints.AuthorizationCode)
+                        .SetPresenters("Fabrikam")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    identity.AddClaim(new Claim(Claims.AuthenticationMethodReference,
+                        """["value"]""", JsonClaimValueTypes.JsonArray));
+
+                    context.Principal = new ClaimsPrincipal(identity);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.Password,
+            Username = "johndoe",
+            Password = "A3ddj3w",
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
     }
 
     [Fact]
