@@ -122,17 +122,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                else if (context.Registration.ProviderType is ProviderTypes.Auth0)
+                else if (context.Registration.ProviderType is ProviderTypes.Auth0 or ProviderTypes.Microsoft)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.DeviceCode);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.Implicit);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
                 else if (context.Registration.ProviderType is
-                    ProviderTypes.Cognito   or ProviderTypes.EpicGames or
-                    ProviderTypes.Microsoft or ProviderTypes.Salesforce)
+                    ProviderTypes.Cognito or ProviderTypes.EpicGames or ProviderTypes.Salesforce)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
