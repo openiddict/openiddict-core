@@ -204,9 +204,9 @@ public sealed class OpenIddictClientBuilder
         {
 #if SUPPORTS_TIME_PROVIDER
             var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
-            var notBefore = timeProvider?.GetLocalNow().DateTime ?? DateTime.Now;
+            var notBefore = timeProvider?.GetLocalNow() ?? DateTimeOffset.Now;
 #else
-            var notBefore = DateTime.Now;
+            var notBefore = DateTimeOffset.Now;
 #endif
 
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
@@ -220,7 +220,7 @@ public sealed class OpenIddictClientBuilder
                 .ToList();
 
             if (!certificates.Exists(certificate =>
-                    certificate.NotBefore < notBefore && certificate.NotAfter > notBefore))
+                    certificate.NotBefore < notBefore.LocalDateTime && certificate.NotAfter > notBefore.LocalDateTime))
             {
 #if SUPPORTS_CERTIFICATE_GENERATION
                 using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -584,9 +584,9 @@ public sealed class OpenIddictClientBuilder
         {
 #if SUPPORTS_TIME_PROVIDER
             var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
-            var notBefore = timeProvider?.GetLocalNow().DateTime ?? DateTime.Now;
+            var notBefore = timeProvider?.GetLocalNow() ?? DateTimeOffset.Now;
 #else
-            var notBefore = DateTime.Now;
+            var notBefore = DateTimeOffset.Now;
 #endif
 
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
@@ -600,7 +600,7 @@ public sealed class OpenIddictClientBuilder
                 .ToList();
 
             if (!certificates.Exists(certificate =>
-                    certificate.NotBefore < notBefore && certificate.NotAfter > notBefore))
+                    certificate.NotBefore < notBefore.LocalDateTime && certificate.NotAfter > notBefore.LocalDateTime))
             {
 #if SUPPORTS_CERTIFICATE_GENERATION
                 using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
