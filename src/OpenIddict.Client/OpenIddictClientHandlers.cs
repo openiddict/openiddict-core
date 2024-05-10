@@ -1494,7 +1494,7 @@ public static partial class OpenIddictClientHandlers
             context.FrontchannelAccessTokenExpirationDate = context.EndpointType switch
             {
                 OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelAccessToken
-                    => (long?)context.Request[Parameters.ExpiresIn] is long value? (
+                    => (long?) context.Request[Parameters.ExpiresIn] is long value ? (
 #if SUPPORTS_TIME_PROVIDER
                         context.Options.TimeProvider?.GetUtcNow() ??
 #endif
