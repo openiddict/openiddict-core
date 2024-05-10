@@ -1495,7 +1495,7 @@ public static partial class OpenIddictClientHandlers
             {
                 OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelAccessToken
                     => ((long?) context.Request[Parameters.ExpiresIn]) is long value ?
-                        DateTimeOffset.UtcNow.AddSeconds(value) : null,
+                        context.Options.GetUtcNow().AddSeconds(value) : null,
 
                 _ => null
             };
@@ -2471,7 +2471,7 @@ public static partial class OpenIddictClientHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(context.Options.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
@@ -2849,7 +2849,7 @@ public static partial class OpenIddictClientHandlers
 
             context.BackchannelAccessTokenExpirationDate =
                 context.ExtractBackchannelAccessToken &&
-                context.TokenResponse.ExpiresIn is long value ? DateTimeOffset.UtcNow.AddSeconds(value) : null;
+                context.TokenResponse.ExpiresIn is long value ? context.Options.GetUtcNow().AddSeconds(value) : null;
 
             context.BackchannelIdentityToken = context.ExtractBackchannelIdentityToken ?
                 context.TokenResponse.IdToken : null;
@@ -4741,7 +4741,7 @@ public static partial class OpenIddictClientHandlers
             // response mode as it offers a better protection for SPA applications.
             // Unfortunately, server-side clients like ASP.NET Core applications cannot
             // natively use response_mode=fragment as URI fragments are never sent to servers.
-            // 
+            //
             // As such, this handler will not choose response_mode=fragment by default and it is
             // expected that specialized hosts like Blazor implement custom event handlers to
             // opt for fragment by default, if it is supported by the authorization server.
@@ -5154,7 +5154,7 @@ public static partial class OpenIddictClientHandlers
                 return true;
             });
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(context.Options.GetUtcNow());
 
             var lifetime = context.Principal.GetStateTokenLifetime() ?? context.Options.StateTokenLifetime;
             if (lifetime.HasValue)
@@ -5335,7 +5335,7 @@ public static partial class OpenIddictClientHandlers
             //
             // Note: the nonce is always hashed before being sent, as recommended the specification.
             // See https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes for more information.
-            if (context.Scopes.Contains(Scopes.OpenId) && !string.IsNullOrEmpty(context.Nonce) && 
+            if (context.Scopes.Contains(Scopes.OpenId) && !string.IsNullOrEmpty(context.Nonce) &&
                 context.ResponseType?.Split(Separators.Space) is IList<string> types &&
                 (types.Contains(ResponseTypes.Code) || types.Contains(ResponseTypes.IdToken)))
             {
@@ -5571,7 +5571,7 @@ public static partial class OpenIddictClientHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(context.Options.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
@@ -5824,7 +5824,7 @@ public static partial class OpenIddictClientHandlers
                 // validated by default. Clients that need to deal with non-standard implementations
                 // can use custom handlers to validate user codes that use a readable format (e.g JWT).
                 GrantTypes.DeviceCode => (true, true, false, false),
-            
+
                _ => (false, false, false, false)
             };
 
@@ -6239,7 +6239,7 @@ public static partial class OpenIddictClientHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(context.Options.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
@@ -6831,7 +6831,7 @@ public static partial class OpenIddictClientHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(context.Options.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
@@ -7463,7 +7463,7 @@ public static partial class OpenIddictClientHandlers
                 return true;
             });
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(context.Options.GetUtcNow());
 
             var lifetime = context.Principal.GetStateTokenLifetime() ?? context.Options.StateTokenLifetime;
             if (lifetime.HasValue)

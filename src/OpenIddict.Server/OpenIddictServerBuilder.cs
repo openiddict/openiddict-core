@@ -230,7 +230,7 @@ public sealed class OpenIddictServerBuilder
             var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
 
-            var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(2));
+            var certificate = request.CreateSelfSigned(notBeforeDateTime, notBeforeDateTime.AddYears(2));
 
             // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
             // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
@@ -597,7 +597,7 @@ public sealed class OpenIddictServerBuilder
             var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
 
-            var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(2));
+            var certificate = request.CreateSelfSigned(notBeforeDateTime, notBeforeDateTime.AddYears(2));
 
             // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
             // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
