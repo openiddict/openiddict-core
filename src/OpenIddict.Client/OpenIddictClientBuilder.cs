@@ -204,9 +204,9 @@ public sealed class OpenIddictClientBuilder
         {
 #if SUPPORTS_TIME_PROVIDER
             var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
-            var now = timeProvider?.GetLocalNow() ?? DateTimeOffset.Now;
+            var now = timeProvider?.GetUtcNow() ?? DateTimeOffset.UtcNow;
 #else
-            var now = DateTimeOffset.Now;
+            var now = DateTimeOffset.UtcNow;
 #endif
 
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
@@ -584,9 +584,9 @@ public sealed class OpenIddictClientBuilder
         {
 #if SUPPORTS_TIME_PROVIDER
             var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
-            var now = timeProvider?.GetLocalNow() ?? DateTimeOffset.Now;
+            var now = timeProvider?.GetUtcNow() ?? DateTimeOffset.UtcNow;
 #else
-            var now = DateTimeOffset.Now;
+            var now = DateTimeOffset.UtcNow;
 #endif
 
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);

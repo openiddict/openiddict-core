@@ -240,7 +240,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 #endif
                 DateTimeOffset.UtcNow
             )
-            .DateTime;
+            .LocalDateTime;
 
         // Sort the encryption and signing credentials.
         options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));

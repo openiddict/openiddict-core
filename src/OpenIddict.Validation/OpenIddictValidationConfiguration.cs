@@ -117,7 +117,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
 #endif
                 DateTimeOffset.UtcNow
             )
-            .DateTime;
+            .LocalDateTime;
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
         if (options.EncryptionCredentials.Count is not 0 &&
