@@ -180,7 +180,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AccessToken)
-                        .SetExpirationDate(context.Options.GetUtcNow() - TimeSpan.FromDays(1));
+                        .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1));
 
                     return default;
                 });

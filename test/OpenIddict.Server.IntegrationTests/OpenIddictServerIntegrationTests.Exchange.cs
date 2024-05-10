@@ -450,7 +450,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AuthorizationCode)
-                        .SetExpirationDate(context.Options.GetUtcNow() - TimeSpan.FromDays(1))
+                        .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1))
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                     return default;
@@ -493,7 +493,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
-                        .SetExpirationDate(context.Options.GetUtcNow() - TimeSpan.FromDays(1))
+                        .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1))
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                     return default;
