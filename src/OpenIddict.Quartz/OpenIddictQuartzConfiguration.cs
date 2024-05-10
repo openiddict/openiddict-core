@@ -13,7 +13,8 @@ namespace OpenIddict.Quartz;
 /// Contains the methods required to ensure that the OpenIddict Quartz.NET configuration is valid.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
+public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>,
+    IPostConfigureOptions<OpenIddictQuartzOptions>
 {
     /// <inheritdoc/>
     public void Configure(QuartzOptions options)
@@ -41,5 +42,15 @@ public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOpti
                    .WithDescription(SR.GetResourceString(SR.ID8002))
                    .StartAt(DateBuilder.FutureDate(new Random().Next(1, 10), IntervalUnit.Minute));
         });
+    }
+
+    public void PostConfigure(string? name, OpenIddictQuartzOptions options)
+    {
+#if SUPPORTS_TIME_PROVIDER
+        if (options.TimeProvider is null)
+        {
+            options.TimeProvider = TimeProvider.System;
+        }
+#endif
     }
 }

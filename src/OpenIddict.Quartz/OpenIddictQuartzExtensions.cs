@@ -38,6 +38,9 @@ public static class OpenIddictQuartzExtensions
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IConfigureOptions<QuartzOptions>, OpenIddictQuartzConfiguration>());
 
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<
+            IPostConfigureOptions<OpenIddictQuartzOptions>, OpenIddictQuartzConfiguration>());
+
         return new OpenIddictQuartzBuilder(builder.Services);
     }
 

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Core;
 
-public class OpenIddictCoreOptionsPostConfigure : IPostConfigureOptions<OpenIddictCoreOptions>
+public class OpenIddictCoreConfiguration : IPostConfigureOptions<OpenIddictCoreOptions>
 {
     public void PostConfigure(string? name, OpenIddictCoreOptions options)
     {

@@ -29,6 +29,13 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new ArgumentNullException(nameof(options));
         }
 
+#if SUPPORTS_TIME_PROVIDER
+        if (options.TimeProvider is null)
+        {
+            options.TimeProvider = TimeProvider.System;
+        }
+#endif
+
         // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
         if (options.EnableDegradedMode)
         {

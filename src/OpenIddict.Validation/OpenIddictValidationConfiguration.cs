@@ -33,6 +33,13 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             throw new ArgumentNullException(nameof(options));
         }
 
+#if SUPPORTS_TIME_PROVIDER
+        if (options.TimeProvider is null)
+        {
+            options.TimeProvider = TimeProvider.System;
+        }
+#endif
+
         if (options.JsonWebTokenHandler is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
