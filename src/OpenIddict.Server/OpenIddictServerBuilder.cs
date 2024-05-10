@@ -203,82 +203,90 @@ public sealed class OpenIddictServerBuilder
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject)
-        => AddDevelopmentEncryptionCertificate(subject, DateTime.Now);
-
-    /// <summary>
-    /// Registers (and generates if necessary) a user-specific development encryption certificate.
-    /// </summary>
-    /// <param name="subject">The subject name associated with the certificate.</param>
-    /// <param name="notBefore">The NotBefore of the certificate.</param>
-    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject, DateTime notBefore)
     {
         if (subject is null)
         {
             throw new ArgumentNullException(nameof(subject));
         }
 
-        using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
-        store.Open(OpenFlags.ReadWrite);
-
-        // Try to retrieve the existing development certificates from the specified store.
-        // If no valid existing certificate was found, create a new encryption certificate.
-        var certificates = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
-            .OfType<X509Certificate2>()
-            .ToList();
-
-        if (!certificates.Exists(certificate => certificate.NotBefore < notBefore && certificate.NotAfter > notBefore))
+        Services.AddOptions<OpenIddictServerOptions>().Configure<IServiceProvider>((options, serviceProvider) =>
         {
+#if SUPPORTS_TIME_PROVIDER
+            var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
+            var notBefore = timeProvider?.GetLocalNow().DateTime ?? DateTime.Now;
+#else
+            var notBefore = DateTime.Now;
+#endif
+
+            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadWrite);
+
+            // Try to retrieve the existing development certificates from the specified store.
+            // If no valid existing certificate was found, create a new encryption certificate.
+            var certificates = store.Certificates
+                .Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
+                .OfType<X509Certificate2>()
+                .ToList();
+
+            if (!certificates.Exists(certificate =>
+                    certificate.NotBefore < notBefore && certificate.NotAfter > notBefore))
+            {
 #if SUPPORTS_CERTIFICATE_GENERATION
-            using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
+                using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
 
-            var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
+                var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256,
+                    RSASignaturePadding.Pkcs1);
+                request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment,
+                    critical: true));
 
-            var certificate = request.CreateSelfSigned(notBefore, notBefore.AddYears(2));
+                var certificate = request.CreateSelfSigned(notBefore, notBefore.AddYears(2));
 
-            // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
-            // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                certificate.FriendlyName = "OpenIddict Server Development Encryption Certificate";
-            }
-
-            // Note: CertificateRequest.CreateSelfSigned() doesn't mark the key set associated with the certificate
-            // as "persisted", which eventually prevents X509Store.Add() from correctly storing the private key.
-            // To work around this issue, the certificate payload is manually exported and imported back
-            // into a new X509Certificate2 instance specifying the X509KeyStorageFlags.PersistKeySet flag.
-            var data = certificate.Export(X509ContentType.Pfx, string.Empty);
-
-            try
-            {
-                var flags = X509KeyStorageFlags.PersistKeySet;
-
-                // Note: macOS requires marking the certificate private key as exportable.
-                // If this flag is not set, a CryptographicException is thrown at runtime.
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
+                // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    flags |= X509KeyStorageFlags.Exportable;
+                    certificate.FriendlyName = "OpenIddict Server Development Encryption Certificate";
                 }
 
-                certificates.Insert(0, certificate = new X509Certificate2(data, string.Empty, flags));
-            }
+                // Note: CertificateRequest.CreateSelfSigned() doesn't mark the key set associated with the certificate
+                // as "persisted", which eventually prevents X509Store.Add() from correctly storing the private key.
+                // To work around this issue, the certificate payload is manually exported and imported back
+                // into a new X509Certificate2 instance specifying the X509KeyStorageFlags.PersistKeySet flag.
+                var data = certificate.Export(X509ContentType.Pfx, string.Empty);
 
-            finally
-            {
-                Array.Clear(data, 0, data.Length);
-            }
+                try
+                {
+                    var flags = X509KeyStorageFlags.PersistKeySet;
 
-            store.Add(certificate);
+                    // Note: macOS requires marking the certificate private key as exportable.
+                    // If this flag is not set, a CryptographicException is thrown at runtime.
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        flags |= X509KeyStorageFlags.Exportable;
+                    }
+
+                    certificates.Insert(0, certificate = new X509Certificate2(data, string.Empty, flags));
+                }
+
+                finally
+                {
+                    Array.Clear(data, 0, data.Length);
+                }
+
+                store.Add(certificate);
 #else
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
+                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
 #endif
-        }
+            }
 
-        return Configure(options => options.EncryptionCredentials.AddRange(
-            from certificate in certificates
-            let key = new X509SecurityKey(certificate)
-            select new EncryptingCredentials(key, SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512)));
+            options.EncryptionCredentials.AddRange(
+                from certificate in certificates
+                let key = new X509SecurityKey(certificate)
+                select new EncryptingCredentials(key, SecurityAlgorithms.RsaOAEP,
+                    SecurityAlgorithms.Aes256CbcHmacSha512));
+        });
+
+        return this;
     }
 
     /// <summary>
@@ -575,82 +583,89 @@ public sealed class OpenIddictServerBuilder
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject)
-        => AddDevelopmentSigningCertificate(subject, DateTime.Now);
-
-    /// <summary>
-    /// Registers (and generates if necessary) a user-specific development signing certificate.
-    /// </summary>
-    /// <param name="subject">The subject name associated with the certificate.</param>
-    /// <param name="notBefore">The NotBefore of the certificate.</param>
-    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject, DateTime notBefore)
     {
         if (subject is null)
         {
             throw new ArgumentNullException(nameof(subject));
         }
 
-        using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
-        store.Open(OpenFlags.ReadWrite);
-
-        // Try to retrieve the existing development certificates from the specified store.
-        // If no valid existing certificate was found, create a new signing certificate.
-        var certificates = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
-            .OfType<X509Certificate2>()
-            .ToList();
-
-        if (!certificates.Exists(certificate => certificate.NotBefore < notBefore && certificate.NotAfter > notBefore))
+        Services.AddOptions<OpenIddictServerOptions>().Configure<IServiceProvider>((options, serviceProvider) =>
         {
+#if SUPPORTS_TIME_PROVIDER
+            var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
+            var notBefore = timeProvider?.GetLocalNow().DateTime ?? DateTime.Now;
+#else
+            var notBefore = DateTime.Now;
+#endif
+
+            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadWrite);
+
+            // Try to retrieve the existing development certificates from the specified store.
+            // If no valid existing certificate was found, create a new signing certificate.
+            var certificates = store.Certificates
+                .Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
+                .OfType<X509Certificate2>()
+                .ToList();
+
+            if (!certificates.Exists(certificate =>
+                    certificate.NotBefore < notBefore && certificate.NotAfter > notBefore))
+            {
 #if SUPPORTS_CERTIFICATE_GENERATION
-            using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
+                using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
 
-            var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
+                var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256,
+                    RSASignaturePadding.Pkcs1);
+                request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature,
+                    critical: true));
 
-            var certificate = request.CreateSelfSigned(notBefore, notBefore.AddYears(2));
+                var certificate = request.CreateSelfSigned(notBefore, notBefore.AddYears(2));
 
-            // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
-            // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                certificate.FriendlyName = "OpenIddict Server Development Signing Certificate";
-            }
-
-            // Note: CertificateRequest.CreateSelfSigned() doesn't mark the key set associated with the certificate
-            // as "persisted", which eventually prevents X509Store.Add() from correctly storing the private key.
-            // To work around this issue, the certificate payload is manually exported and imported back
-            // into a new X509Certificate2 instance specifying the X509KeyStorageFlags.PersistKeySet flag.
-            var data = certificate.Export(X509ContentType.Pfx, string.Empty);
-
-            try
-            {
-                var flags = X509KeyStorageFlags.PersistKeySet;
-
-                // Note: macOS requires marking the certificate private key as exportable.
-                // If this flag is not set, a CryptographicException is thrown at runtime.
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
+                // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    flags |= X509KeyStorageFlags.Exportable;
+                    certificate.FriendlyName = "OpenIddict Server Development Signing Certificate";
                 }
 
-                certificates.Insert(0, certificate = new X509Certificate2(data, string.Empty, flags));
-            }
+                // Note: CertificateRequest.CreateSelfSigned() doesn't mark the key set associated with the certificate
+                // as "persisted", which eventually prevents X509Store.Add() from correctly storing the private key.
+                // To work around this issue, the certificate payload is manually exported and imported back
+                // into a new X509Certificate2 instance specifying the X509KeyStorageFlags.PersistKeySet flag.
+                var data = certificate.Export(X509ContentType.Pfx, string.Empty);
 
-            finally
-            {
-                Array.Clear(data, 0, data.Length);
-            }
+                try
+                {
+                    var flags = X509KeyStorageFlags.PersistKeySet;
 
-            store.Add(certificate);
+                    // Note: macOS requires marking the certificate private key as exportable.
+                    // If this flag is not set, a CryptographicException is thrown at runtime.
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        flags |= X509KeyStorageFlags.Exportable;
+                    }
+
+                    certificates.Insert(0, certificate = new X509Certificate2(data, string.Empty, flags));
+                }
+
+                finally
+                {
+                    Array.Clear(data, 0, data.Length);
+                }
+
+                store.Add(certificate);
 #else
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
+                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
 #endif
-        }
+            }
 
-        return Configure(options => options.SigningCredentials.AddRange(
-            from certificate in certificates
-            let key = new X509SecurityKey(certificate)
-            select new SigningCredentials(key, SecurityAlgorithms.RsaSha256)));
+            options.SigningCredentials.AddRange(
+                from certificate in certificates
+                let key = new X509SecurityKey(certificate)
+                select new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
+        });
+
+        return this;
     }
 
     /// <summary>
