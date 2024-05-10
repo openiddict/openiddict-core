@@ -1494,8 +1494,7 @@ public static partial class OpenIddictClientHandlers
             context.FrontchannelAccessTokenExpirationDate = context.EndpointType switch
             {
                 OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelAccessToken
-                    => ((long?) context.Request[Parameters.ExpiresIn]) is long value ?
-                        (
+                    => (long?)context.Request[Parameters.ExpiresIn] is long value? (
 #if SUPPORTS_TIME_PROVIDER
                         context.Options.TimeProvider?.GetUtcNow() ??
 #endif
@@ -2475,11 +2474,11 @@ public static partial class OpenIddictClientHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
@@ -2857,11 +2856,13 @@ public static partial class OpenIddictClientHandlers
 
             context.BackchannelAccessTokenExpirationDate =
                 context.ExtractBackchannelAccessToken &&
-                context.TokenResponse.ExpiresIn is long value ? (
+                context.TokenResponse.ExpiresIn is long value
+                    ? (
 #if SUPPORTS_TIME_PROVIDER
                         context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow).AddSeconds(value) : null;
+                        DateTimeOffset.UtcNow).AddSeconds(value)
+                    : null;
 
             context.BackchannelIdentityToken = context.ExtractBackchannelIdentityToken ?
                 context.TokenResponse.IdToken : null;
@@ -5166,11 +5167,11 @@ public static partial class OpenIddictClientHandlers
                 return true;
             });
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             var lifetime = context.Principal.GetStateTokenLifetime() ?? context.Options.StateTokenLifetime;
             if (lifetime.HasValue)
@@ -5587,11 +5588,11 @@ public static partial class OpenIddictClientHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
@@ -6259,11 +6260,11 @@ public static partial class OpenIddictClientHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
@@ -6855,11 +6856,11 @@ public static partial class OpenIddictClientHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)
@@ -7491,11 +7492,11 @@ public static partial class OpenIddictClientHandlers
                 return true;
             });
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             var lifetime = context.Principal.GetStateTokenLifetime() ?? context.Options.StateTokenLifetime;
             if (lifetime.HasValue)

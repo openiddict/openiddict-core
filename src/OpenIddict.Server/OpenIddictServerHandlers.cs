@@ -2747,11 +2747,11 @@ public static partial class OpenIddictServerHandlers
 
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
-                CreationDate = (
+                CreationDate =
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                    context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow),
+                    DateTimeOffset.UtcNow,
                 Principal = context.Principal,
                 Status = Statuses.Valid,
                 Subject = context.Principal.GetClaim(Claims.Subject),
@@ -2891,11 +2891,11 @@ public static partial class OpenIddictServerHandlers
                 claim.Properties.Remove(Properties.Destinations);
             }
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetAccessTokenLifetime();
@@ -3019,11 +3019,11 @@ public static partial class OpenIddictServerHandlers
                 return true;
             });
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetAuthorizationCodeLifetime();
@@ -3149,11 +3149,11 @@ public static partial class OpenIddictServerHandlers
                 return true;
             });
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetDeviceCodeLifetime();
@@ -3266,11 +3266,11 @@ public static partial class OpenIddictServerHandlers
                 return true;
             });
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             // When sliding expiration is disabled, the expiration date of generated refresh tokens is fixed
             // and must exactly match the expiration date of the refresh token used in the token request.
@@ -3421,11 +3421,11 @@ public static partial class OpenIddictServerHandlers
                 claim.Properties.Remove(Properties.Destinations);
             }
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetIdentityTokenLifetime();
@@ -3550,11 +3550,11 @@ public static partial class OpenIddictServerHandlers
                 return true;
             });
 
-            principal.SetCreationDate((
+            principal.SetCreationDate(
 #if SUPPORTS_TIME_PROVIDER
-                        context.Options.TimeProvider?.GetUtcNow() ??
+                context.Options.TimeProvider?.GetUtcNow() ??
 #endif
-                        DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetUserCodeLifetime();
