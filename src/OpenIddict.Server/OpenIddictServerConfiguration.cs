@@ -27,7 +27,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictServerConfiguration"/> class.
     /// </summary>
-    /// <param name="serviceProvider">The ServiceProvider.</param>
+    /// <param name="serviceProvider">The service provider.</param>
     public OpenIddictServerConfiguration(IServiceProvider serviceProvider)
         => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 

@@ -19,7 +19,7 @@ public class OpenIddictCoreConfiguration : IPostConfigureOptions<OpenIddictCoreO
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictCoreConfiguration"/> class.
     /// </summary>
-    /// <param name="serviceProvider">The ServiceProvider.</param>
+    /// <param name="serviceProvider">The service provider.</param>
     public OpenIddictCoreConfiguration(IServiceProvider serviceProvider)
         => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 

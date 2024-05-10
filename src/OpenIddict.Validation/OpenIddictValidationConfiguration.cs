@@ -32,7 +32,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
     /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
     /// </summary>
     /// <param name="service">The validation service.</param>
-    /// <param name="serviceProvider">The ServiceProvider.</param>
+    /// <param name="serviceProvider">The service provider.</param>
     public OpenIddictValidationConfiguration(OpenIddictValidationService service, IServiceProvider serviceProvider)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));

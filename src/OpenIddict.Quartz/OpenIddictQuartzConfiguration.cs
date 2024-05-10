@@ -22,7 +22,7 @@ public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOpti
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictQuartzConfiguration"/> class.
     /// </summary>
-    /// <param name="serviceProvider">The ServiceProvider.</param>
+    /// <param name="serviceProvider">The service provider.</param>
     public OpenIddictQuartzConfiguration(IServiceProvider serviceProvider)
         => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
