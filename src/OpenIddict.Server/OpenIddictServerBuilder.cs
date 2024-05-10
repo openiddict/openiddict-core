@@ -213,9 +213,9 @@ public sealed class OpenIddictServerBuilder
         {
 #if SUPPORTS_TIME_PROVIDER
             var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
-            var notBefore = timeProvider?.GetLocalNow() ?? DateTimeOffset.Now;
+            var now = timeProvider?.GetLocalNow() ?? DateTimeOffset.Now;
 #else
-            var notBefore = DateTimeOffset.Now;
+            var now = DateTimeOffset.Now;
 #endif
 
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
@@ -229,7 +229,7 @@ public sealed class OpenIddictServerBuilder
                 .ToList();
 
             if (!certificates.Exists(certificate =>
-                    certificate.NotBefore < notBefore.LocalDateTime && certificate.NotAfter > notBefore.LocalDateTime))
+                    certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
             {
 #if SUPPORTS_CERTIFICATE_GENERATION
                 using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -239,7 +239,7 @@ public sealed class OpenIddictServerBuilder
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment,
                     critical: true));
 
-                var certificate = request.CreateSelfSigned(notBefore, notBefore.AddYears(2));
+                var certificate = request.CreateSelfSigned(now, now.AddYears(2));
 
                 // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
                 // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
@@ -593,9 +593,9 @@ public sealed class OpenIddictServerBuilder
         {
 #if SUPPORTS_TIME_PROVIDER
             var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
-            var notBefore = timeProvider?.GetLocalNow() ?? DateTimeOffset.Now;
+            var now = timeProvider?.GetLocalNow() ?? DateTimeOffset.Now;
 #else
-            var notBefore = DateTimeOffset.Now;
+            var now = DateTimeOffset.Now;
 #endif
 
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
@@ -609,7 +609,7 @@ public sealed class OpenIddictServerBuilder
                 .ToList();
 
             if (!certificates.Exists(certificate =>
-                    certificate.NotBefore < notBefore.LocalDateTime && certificate.NotAfter > notBefore.LocalDateTime))
+                    certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
             {
 #if SUPPORTS_CERTIFICATE_GENERATION
                 using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -619,7 +619,7 @@ public sealed class OpenIddictServerBuilder
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature,
                     critical: true));
 
-                var certificate = request.CreateSelfSigned(notBefore, notBefore.AddYears(2));
+                var certificate = request.CreateSelfSigned(now, now.AddYears(2));
 
                 // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
                 // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
