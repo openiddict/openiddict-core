@@ -14,12 +14,10 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using OpenIddict.Client.Owin;
-using OpenIddict.Core;
 using OpenIddict.Sandbox.AspNet.Server.Helpers;
 using OpenIddict.Sandbox.AspNet.Server.ViewModels.Authorization;
 using OpenIddict.Server.Owin;
@@ -34,20 +32,17 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
         private readonly IOpenIddictAuthorizationManager _authorizationManager;
         private readonly OpenIddictClientService _clientService;
         private readonly IOpenIddictScopeManager _scopeManager;
-        private readonly IOptionsSnapshot<OpenIddictCoreOptions> _openIddictCoreOptions;
 
         public AuthorizationController(
             IOpenIddictApplicationManager applicationManager,
             IOpenIddictAuthorizationManager authorizationManager,
             OpenIddictClientService clientService,
-            IOpenIddictScopeManager scopeManager,
-            IOptionsSnapshot<OpenIddictCoreOptions> openIddictCoreOptions)
+            IOpenIddictScopeManager scopeManager)
         {
             _applicationManager = applicationManager;
             _authorizationManager = authorizationManager;
             _clientService = clientService;
             _scopeManager = scopeManager;
-            _openIddictCoreOptions = openIddictCoreOptions;
         }
 
         [HttpGet, Route("~/connect/authorize")]
@@ -62,7 +57,7 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
             // If the user principal can't be extracted or the cookie is too old, redirect the user to the login page.
             var result = await context.Authentication.AuthenticateAsync(DefaultAuthenticationTypes.ApplicationCookie);
             if (result?.Identity == null || (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
-                _openIddictCoreOptions.Value.GetUtcNow() - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
+                DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
             {
                 // For applications that want to allow the client to select the external authentication provider
                 // that will be used to authenticate the user, the identity_provider parameter can be used for that.

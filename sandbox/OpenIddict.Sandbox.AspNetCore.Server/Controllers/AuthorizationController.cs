@@ -11,13 +11,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using OpenIddict.Client.AspNetCore;
-using OpenIddict.Core;
 using OpenIddict.Sandbox.AspNetCore.Server.Helpers;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Authorization;
@@ -34,7 +32,6 @@ public class AuthorizationController : Controller
     private readonly IOpenIddictScopeManager _scopeManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IOptionsSnapshot<OpenIddictCoreOptions> _openIddictCoreOptions;
 
     public AuthorizationController(
         IOpenIddictApplicationManager applicationManager,
@@ -42,8 +39,7 @@ public class AuthorizationController : Controller
         OpenIddictClientService clientService,
         IOpenIddictScopeManager scopeManager,
         SignInManager<ApplicationUser> signInManager,
-        UserManager<ApplicationUser> userManager,
-        IOptionsSnapshot<OpenIddictCoreOptions> openIddictCoreOptions)
+        UserManager<ApplicationUser> userManager)
     {
         _applicationManager = applicationManager;
         _authorizationManager = authorizationManager;
@@ -51,7 +47,6 @@ public class AuthorizationController : Controller
         _scopeManager = scopeManager;
         _signInManager = signInManager;
         _userManager = userManager;
-        _openIddictCoreOptions = openIddictCoreOptions;
     }
 
     #region Authorization code, implicit and hybrid flows
@@ -78,13 +73,7 @@ public class AuthorizationController : Controller
         var result = await HttpContext.AuthenticateAsync();
         if (result == null || !result.Succeeded || request.HasPrompt(Prompts.Login) ||
            (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
-            (
-#if SUPPORTS_TIME_PROVIDER
-                _openIddictCoreOptions.Value.TimeProvider?.GetUtcNow() ??
-#endif
-                DateTimeOffset.UtcNow
-            )
-            - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
+            DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
         {
             // If the client application requested promptless authentication,
             // return an error indicating that the user is not logged in.
