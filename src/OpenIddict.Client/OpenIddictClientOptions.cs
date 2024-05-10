@@ -14,7 +14,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict client handler.
 /// </summary>
-public sealed class OpenIddictClientOptions
+public sealed class OpenIddictClientOptions : IOptionWithTimeProvider
 {
     /// <summary>
     /// Gets or sets the optional URI used to uniquely identify the client/relying party.
@@ -157,4 +157,11 @@ public sealed class OpenIddictClientOptions
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
+
+#if SUPPORTS_TIME_PROVIDER
+    /// <summary>
+    /// Gets the time provider
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+#endif
 }

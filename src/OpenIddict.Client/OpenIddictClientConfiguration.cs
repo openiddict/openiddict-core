@@ -44,6 +44,13 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
         }
 
+#if SUPPORTS_TIME_PROVIDER
+        if (options.TimeProvider is null)
+        {
+            options.TimeProvider = TimeProvider.System;
+        }
+#endif
+
         foreach (var registration in options.Registrations)
         {
             if (registration.Issuer is null)
@@ -212,9 +219,11 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
+        var now = options.GetUtcNow().DateTime;
+
         // Sort the encryption and signing credentials.
-        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
-        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
+        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
 
         // Generate a key identifier for the encryption/signing keys that don't already have one.
         foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key)
@@ -234,7 +243,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             from credentials in options.EncryptionCredentials
             select credentials.Key;
 
-        static int Compare(SecurityKey left, SecurityKey right) => (left, right) switch
+        static int Compare(SecurityKey left, SecurityKey right, DateTime now) => (left, right) switch
         {
             // If the two keys refer to the same instances, return 0.
             (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
@@ -245,8 +254,8 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             (SecurityKey, SymmetricSecurityKey) => 1,
 
             // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
-            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => -1,
+            (X509SecurityKey first, SecurityKey) when first.Certificate.NotBefore > now => 1,
+            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > now => -1,
 
             // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
             (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),

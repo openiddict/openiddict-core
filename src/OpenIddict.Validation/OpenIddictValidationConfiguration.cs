@@ -97,10 +97,12 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             }
         }
 
+        var now = options.GetUtcNow().DateTime;
+
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
         if (options.EncryptionCredentials.Count is not 0 &&
-            options.EncryptionCredentials.TrueForAll(static credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
-                (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+            options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+                (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
         }
@@ -146,15 +148,15 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
         // Sort the encryption and signing credentials.
-        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
-        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
+        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
 
         // Attach the encryption credentials to the token validation parameters.
         options.TokenValidationParameters.TokenDecryptionKeys =
             from credentials in options.EncryptionCredentials
             select credentials.Key;
 
-        static int Compare(SecurityKey left, SecurityKey right) => (left, right) switch
+        static int Compare(SecurityKey left, SecurityKey right, DateTime now) => (left, right) switch
         {
             // If the two keys refer to the same instances, return 0.
             (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
@@ -165,8 +167,8 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             (SecurityKey, SymmetricSecurityKey) => 1,
 
             // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
-            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => -1,
+            (X509SecurityKey first, SecurityKey) when first.Certificate.NotBefore > now => 1,
+            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > now => -1,
 
             // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
             (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),

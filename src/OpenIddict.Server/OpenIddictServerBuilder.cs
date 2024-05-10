@@ -201,13 +201,17 @@ public sealed class OpenIddictServerBuilder
     /// Registers (and generates if necessary) a user-specific development encryption certificate.
     /// </summary>
     /// <param name="subject">The subject name associated with the certificate.</param>
+    /// <param name="notBefore">The NotBefore of the certificate.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject)
+    public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject, DateTimeOffset? notBefore = null)
     {
         if (subject is null)
         {
             throw new ArgumentNullException(nameof(subject));
         }
+
+        notBefore ??= DateTimeOffset.UtcNow;
+        var notBeforeDateTime = notBefore.Value.DateTime;
 
         using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
@@ -218,7 +222,7 @@ public sealed class OpenIddictServerBuilder
             .OfType<X509Certificate2>()
             .ToList();
 
-        if (!certificates.Exists(static certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
+        if (!certificates.Exists(certificate => certificate.NotBefore < notBeforeDateTime && certificate.NotAfter > notBeforeDateTime))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
             using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -564,13 +568,17 @@ public sealed class OpenIddictServerBuilder
     /// Registers (and generates if necessary) a user-specific development signing certificate.
     /// </summary>
     /// <param name="subject">The subject name associated with the certificate.</param>
+    /// <param name="notBefore">The NotBefore of the certificate.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject)
+    public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject, DateTimeOffset? notBefore = null)
     {
         if (subject is null)
         {
             throw new ArgumentNullException(nameof(subject));
         }
+
+        notBefore ??= DateTimeOffset.UtcNow;
+        var notBeforeDateTime = notBefore.Value.DateTime;
 
         using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
@@ -581,7 +589,7 @@ public sealed class OpenIddictServerBuilder
             .OfType<X509Certificate2>()
             .ToList();
 
-        if (!certificates.Exists(static certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
+        if (!certificates.Exists(certificate => certificate.NotBefore < notBeforeDateTime && certificate.NotAfter > notBeforeDateTime))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
             using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -1627,7 +1635,7 @@ public sealed class OpenIddictServerBuilder
         {
             throw new ArgumentNullException(nameof(scopes));
         }
-        
+
         if (Array.Exists(scopes, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
