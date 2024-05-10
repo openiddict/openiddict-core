@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
@@ -21,6 +22,15 @@ namespace OpenIddict.Server;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
 {
+    private readonly IServiceProvider _serviceProvider;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictServerConfiguration"/> class.
+    /// </summary>
+    /// <param name="serviceProvider">The ServiceProvider.</param>
+    public OpenIddictServerConfiguration(IServiceProvider serviceProvider)
+        => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerOptions options)
     {
@@ -32,7 +42,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 #if SUPPORTS_TIME_PROVIDER
         if (options.TimeProvider is null)
         {
-            options.TimeProvider = TimeProvider.System;
+            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
         }
 #endif
 

@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
@@ -23,13 +24,26 @@ namespace OpenIddict.Client;
 public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
 {
     private readonly OpenIddictClientService _service;
+    private readonly IServiceProvider? _serviceProvider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
     /// </summary>
     /// <param name="service">The OpenIddict client service.</param>
+    [Obsolete($"Use constructor with the {nameof(IServiceProvider)}", false)]
     public OpenIddictClientConfiguration(OpenIddictClientService service)
         => _service = service ?? throw new ArgumentNullException(nameof(service));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
+    /// </summary>
+    /// <param name="service">The OpenIddict client service.</param>
+    /// <param name="serviceProvider">The ServiceProvider.</param>
+    public OpenIddictClientConfiguration(OpenIddictClientService service, IServiceProvider serviceProvider)
+    {
+        _service = service ?? throw new ArgumentNullException(nameof(service));
+        _serviceProvider = serviceProvider;
+    }
 
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOptions options)
@@ -47,7 +61,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 #if SUPPORTS_TIME_PROVIDER
         if (options.TimeProvider is null)
         {
-            options.TimeProvider = TimeProvider.System;
+            options.TimeProvider = _serviceProvider?.GetService<TimeProvider>() ?? TimeProvider.System;
         }
 #endif
 

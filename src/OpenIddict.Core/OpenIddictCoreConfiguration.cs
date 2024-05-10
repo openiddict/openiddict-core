@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Core;
@@ -13,12 +14,21 @@ namespace OpenIddict.Core;
 /// </summary>
 public class OpenIddictCoreConfiguration : IPostConfigureOptions<OpenIddictCoreOptions>
 {
+    private readonly IServiceProvider _serviceProvider;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictCoreConfiguration"/> class.
+    /// </summary>
+    /// <param name="serviceProvider">The ServiceProvider.</param>
+    public OpenIddictCoreConfiguration(IServiceProvider serviceProvider)
+        => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+
     public void PostConfigure(string? name, OpenIddictCoreOptions options)
     {
 #if SUPPORTS_TIME_PROVIDER
         if (options.TimeProvider is null)
         {
-            options.TimeProvider = TimeProvider.System;
+            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
         }
 #endif
     }

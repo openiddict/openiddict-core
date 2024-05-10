@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
@@ -17,13 +18,26 @@ namespace OpenIddict.Validation;
 public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
 {
     private readonly OpenIddictValidationService _service;
+    private readonly IServiceProvider? _serviceProvider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
     /// </summary>
     /// <param name="service">The validation service.</param>
+    [Obsolete($"Use constructor with the {nameof(IServiceProvider)}", false)]
     public OpenIddictValidationConfiguration(OpenIddictValidationService service)
         => _service = service ?? throw new ArgumentNullException(nameof(service));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
+    /// </summary>
+    /// <param name="service">The validation service.</param>
+    /// <param name="serviceProvider">The ServiceProvider.</param>
+    public OpenIddictValidationConfiguration(OpenIddictValidationService service, IServiceProvider serviceProvider)
+    {
+        _service = service ?? throw new ArgumentNullException(nameof(service));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    }
 
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictValidationOptions options)
@@ -36,7 +50,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
 #if SUPPORTS_TIME_PROVIDER
         if (options.TimeProvider is null)
         {
-            options.TimeProvider = TimeProvider.System;
+            options.TimeProvider = _serviceProvider?.GetService<TimeProvider>() ?? TimeProvider.System;
         }
 #endif
 
