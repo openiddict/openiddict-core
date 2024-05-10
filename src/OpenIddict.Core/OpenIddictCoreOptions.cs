@@ -9,7 +9,7 @@ namespace OpenIddict.Core;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict core services.
 /// </summary>
-public sealed class OpenIddictCoreOptions
+public sealed class OpenIddictCoreOptions : IOptionWithTimeProvider
 {
     /// <summary>
     /// Gets or sets the type corresponding to the default Application entity,
@@ -59,4 +59,11 @@ public sealed class OpenIddictCoreOptions
     /// This property is not used when <see cref="DisableEntityCaching"/> is <see langword="true"/>.
     /// </summary>
     public int EntityCacheLimit { get; set; } = 250;
+
+#if SUPPORTS_TIME_PROVIDER
+    /// <summary>
+    /// Gets the time provider
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+#endif
 }

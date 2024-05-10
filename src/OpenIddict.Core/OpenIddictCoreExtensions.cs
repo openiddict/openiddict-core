@@ -48,6 +48,8 @@ public static class OpenIddictCoreExtensions
         builder.Services.TryAddScoped<IOpenIddictScopeStoreResolver, OpenIddictScopeStoreResolver>();
         builder.Services.TryAddScoped<IOpenIddictTokenStoreResolver, OpenIddictTokenStoreResolver>();
 
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<OpenIddictCoreOptions>, OpenIddictCoreOptionsPostConfigure>());
+
         builder.Services.TryAddScoped(static provider =>
         {
             var type = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>()

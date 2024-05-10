@@ -1088,7 +1088,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         // the first time the token is redeemed. In this case, attach the current date.
         if (await Store.GetRedemptionDateAsync(token, cancellationToken) is null)
         {
-            await Store.SetRedemptionDateAsync(token, DateTimeOffset.UtcNow, cancellationToken);
+            await Store.SetRedemptionDateAsync(token, Options.CurrentValue.GetUtcNow(), cancellationToken);
         }
 
         await Store.SetStatusAsync(token, Statuses.Redeemed, cancellationToken);
