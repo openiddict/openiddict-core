@@ -361,7 +361,7 @@ public static partial class OpenIddictValidationHandlers
                 nameType: Claims.Name,
                 roleType: Claims.Role));
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(context.Options.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
             if (lifetime.HasValue)

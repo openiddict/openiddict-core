@@ -646,7 +646,7 @@ public static partial class OpenIddictValidationHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var date = context.Principal.GetExpirationDate();
-                if (date.HasValue && date.Value.Add(context.TokenValidationParameters.ClockSkew) < DateTimeOffset.UtcNow)
+                if (date.HasValue && date.Value.Add(context.TokenValidationParameters.ClockSkew) < context.Options.GetUtcNow())
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6156));
 

@@ -523,7 +523,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
-                        .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1));
+                        .SetExpirationDate(context.Options.GetUtcNow() - TimeSpan.FromDays(1));
 
                     return default;
                 });

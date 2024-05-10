@@ -295,7 +295,7 @@ public static partial class OpenIddictValidationHandlers
                 if (long.TryParse((string?) context.Response[Claims.ExpiresAt],
                     NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) &&
                     DateTimeOffset.FromUnixTimeSeconds(value) is DateTimeOffset date &&
-                    date.Add(context.Options.TokenValidationParameters.ClockSkew) < DateTimeOffset.UtcNow)
+                    date.Add(context.Options.TokenValidationParameters.ClockSkew) < context.Options.GetUtcNow())
                 {
                     context.Reject(
                         error: Errors.InvalidToken,

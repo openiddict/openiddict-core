@@ -13,7 +13,7 @@ namespace OpenIddict.Server;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict server handler.
 /// </summary>
-public sealed class OpenIddictServerOptions
+public sealed class OpenIddictServerOptions : IOptionWithTimeProvider
 {
     /// <summary>
     /// Gets or sets the optional URI used to uniquely identify the authorization server.
@@ -453,4 +453,11 @@ public sealed class OpenIddictServerOptions
     /// that provides additional protection against token leakage.
     /// </summary>
     public bool UseReferenceRefreshTokens { get; set; }
+
+#if SUPPORTS_TIME_PROVIDER
+    /// <summary>
+    /// Gets the time provider
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+#endif
 }

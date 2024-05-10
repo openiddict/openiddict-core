@@ -9,7 +9,7 @@ namespace OpenIddict.Quartz;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict Quartz.NET integration.
 /// </summary>
-public sealed class OpenIddictQuartzOptions
+public sealed class OpenIddictQuartzOptions : IOptionWithTimeProvider
 {
     /// <summary>
     /// Gets or sets a boolean indicating whether authorizations pruning should be disabled.
@@ -38,4 +38,11 @@ public sealed class OpenIddictQuartzOptions
     /// By default, this value is set to 14 days and cannot be less than 10 minutes.
     /// </summary>
     public TimeSpan MinimumTokenLifespan { get; set; } = TimeSpan.FromDays(14);
+
+#if SUPPORTS_TIME_PROVIDER
+    /// <summary>
+    /// Gets the time provider
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+#endif
 }
