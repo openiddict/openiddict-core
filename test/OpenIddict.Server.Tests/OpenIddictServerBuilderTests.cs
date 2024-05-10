@@ -303,9 +303,15 @@ public class OpenIddictServerBuilderTests
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
+        builder.AddDevelopmentEncryptionCertificate(
+            subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)));
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var options = serviceProvider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+
         // Act and assert
-        var exception = Assert.Throws<PlatformNotSupportedException>(() => builder.AddDevelopmentEncryptionCertificate(
-            subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))));
+        var exception = Assert.Throws<PlatformNotSupportedException>(() => options.Value);
 
         Assert.Equal("X.509 certificate generation is not supported on this platform.", exception.Message);
     }
@@ -353,9 +359,15 @@ public class OpenIddictServerBuilderTests
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
+        builder.AddDevelopmentSigningCertificate(
+            subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)));
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var options = serviceProvider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+
         // Act and assert
-        var exception = Assert.Throws<PlatformNotSupportedException>(() => builder.AddDevelopmentSigningCertificate(
-            subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))));
+        var exception = Assert.Throws<PlatformNotSupportedException>(() => options.Value);
 
         Assert.Equal("X.509 certificate generation is not supported on this platform.", exception.Message);
     }
