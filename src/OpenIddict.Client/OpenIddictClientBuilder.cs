@@ -194,7 +194,7 @@ public sealed class OpenIddictClientBuilder
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject) =>
-        AddDevelopmentEncryptionCertificate(subject, DateTimeOffset.UtcNow);
+        AddDevelopmentEncryptionCertificate(subject, DateTime.Now);
 
     /// <summary>
     /// Registers (and generates if necessary) a user-specific development encryption certificate.
@@ -202,14 +202,12 @@ public sealed class OpenIddictClientBuilder
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <param name="notBefore">The NotBefore of the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject, DateTimeOffset notBefore)
+    public OpenIddictClientBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject, DateTime notBefore)
     {
         if (subject is null)
         {
             throw new ArgumentNullException(nameof(subject));
         }
-
-        var notBeforeDateTime = notBefore.DateTime;
 
         using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
@@ -220,7 +218,7 @@ public sealed class OpenIddictClientBuilder
             .OfType<X509Certificate2>()
             .ToList();
 
-        if (!certificates.Exists(certificate => certificate.NotBefore < notBeforeDateTime && certificate.NotAfter > notBeforeDateTime))
+        if (!certificates.Exists(certificate => certificate.NotBefore < notBefore && certificate.NotAfter > notBefore))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
             using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -228,7 +226,7 @@ public sealed class OpenIddictClientBuilder
             var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
 
-            var certificate = request.CreateSelfSigned(notBeforeDateTime, notBeforeDateTime.AddYears(2));
+            var certificate = request.CreateSelfSigned(notBefore, notBefore.AddYears(2));
 
             // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
             // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
@@ -568,7 +566,7 @@ public sealed class OpenIddictClientBuilder
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject) =>
-        AddDevelopmentSigningCertificate(subject, DateTimeOffset.UtcNow);
+        AddDevelopmentSigningCertificate(subject, DateTime.Now);
 
     /// <summary>
     /// Registers (and generates if necessary) a user-specific development signing certificate.
@@ -576,14 +574,12 @@ public sealed class OpenIddictClientBuilder
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <param name="notBefore">The NotBefore of the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject, DateTimeOffset notBefore)
+    public OpenIddictClientBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject, DateTime notBefore)
     {
         if (subject is null)
         {
             throw new ArgumentNullException(nameof(subject));
         }
-
-        var notBeforeDateTime = notBefore.DateTime;
 
         using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
@@ -594,7 +590,7 @@ public sealed class OpenIddictClientBuilder
             .OfType<X509Certificate2>()
             .ToList();
 
-        if (!certificates.Exists(certificate => certificate.NotBefore < notBeforeDateTime && certificate.NotAfter > notBeforeDateTime))
+        if (!certificates.Exists(certificate => certificate.NotBefore < notBefore && certificate.NotAfter > notBefore))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
             using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -602,7 +598,7 @@ public sealed class OpenIddictClientBuilder
             var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
 
-            var certificate = request.CreateSelfSigned(notBeforeDateTime, notBeforeDateTime.AddYears(2));
+            var certificate = request.CreateSelfSigned(notBefore, notBefore.AddYears(2));
 
             // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
             // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
