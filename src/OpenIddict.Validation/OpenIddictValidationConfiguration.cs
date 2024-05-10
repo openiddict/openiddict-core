@@ -167,7 +167,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             (SecurityKey, SymmetricSecurityKey) => 1,
 
             // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-            (X509SecurityKey first, SecurityKey) when first.Certificate.NotBefore > now => 1,
+            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > now => 1,
             (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > now => -1,
 
             // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
