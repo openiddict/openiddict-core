@@ -41,7 +41,7 @@ public sealed class OpenIddictQuartzOptions : IOptionWithTimeProvider
 
 #if SUPPORTS_TIME_PROVIDER
     /// <summary>
-    /// Gets the time provider
+    /// Gets or sets the time provider.
     /// </summary>
     public TimeProvider? TimeProvider { get; set; }
 #endif

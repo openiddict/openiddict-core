@@ -8,6 +8,9 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Core;
 
+/// <summary>
+/// Contains the methods required to ensure that the OpenIddict core configuration is valid.
+/// </summary>
 public class OpenIddictCoreConfiguration : IPostConfigureOptions<OpenIddictCoreOptions>
 {
     public void PostConfigure(string? name, OpenIddictCoreOptions options)
