@@ -28,7 +28,12 @@ public class OpenIddictQuartzJobTests
         var scope = Mock.Of<IServiceScope>(scope => scope.ServiceProvider == provider);
         var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
         var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
-            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions());
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+#if SUPPORTS_TIME_PROVIDER
+                TimeProvider = TimeProvider.System,
+#endif
+            });
 
         var job = new OpenIddictQuartzJob(monitor,
             Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));
@@ -336,6 +341,10 @@ public class OpenIddictQuartzJobTests
         var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
         var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
             monitor => monitor.CurrentValue == (options ?? new OpenIddictQuartzOptions()));
+
+#if SUPPORTS_TIME_PROVIDER
+        monitor.CurrentValue.TimeProvider = TimeProvider.System;
+#endif
 
         return new OpenIddictQuartzJob(monitor,
             Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));
