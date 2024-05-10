@@ -18,7 +18,7 @@ namespace OpenIddict.Validation;
 public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
 {
     private readonly OpenIddictValidationService _service;
-    private readonly IServiceProvider? _serviceProvider;
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
@@ -26,7 +26,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
     /// <param name="service">The validation service.</param>
     [Obsolete($"Use constructor with the {nameof(IServiceProvider)}", false)]
     public OpenIddictValidationConfiguration(OpenIddictValidationService service)
-        => _service = service ?? throw new ArgumentNullException(nameof(service));
+        => throw new NotSupportedException ($"Use constructor with the {nameof(IServiceProvider)}");
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
@@ -50,7 +50,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
 #if SUPPORTS_TIME_PROVIDER
         if (options.TimeProvider is null)
         {
-            options.TimeProvider = _serviceProvider?.GetService<TimeProvider>() ?? TimeProvider.System;
+            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
         }
 #endif
 

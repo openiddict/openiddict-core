@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -24,7 +25,7 @@ namespace OpenIddict.Client;
 public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
 {
     private readonly OpenIddictClientService _service;
-    private readonly IServiceProvider? _serviceProvider;
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
@@ -32,7 +33,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
     /// <param name="service">The OpenIddict client service.</param>
     [Obsolete($"Use constructor with the {nameof(IServiceProvider)}", false)]
     public OpenIddictClientConfiguration(OpenIddictClientService service)
-        => _service = service ?? throw new ArgumentNullException(nameof(service));
+        => throw new NotSupportedException ($"Use constructor with the {nameof(IServiceProvider)}");
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
@@ -61,7 +62,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 #if SUPPORTS_TIME_PROVIDER
         if (options.TimeProvider is null)
         {
-            options.TimeProvider = _serviceProvider?.GetService<TimeProvider>() ?? TimeProvider.System;
+            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
         }
 #endif
 
