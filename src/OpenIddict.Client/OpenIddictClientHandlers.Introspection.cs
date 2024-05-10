@@ -295,7 +295,11 @@ public static partial class OpenIddictClientHandlers
                 if (long.TryParse((string?) context.Response[Claims.ExpiresAt],
                     NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) &&
                     DateTimeOffset.FromUnixTimeSeconds(value) is DateTimeOffset date &&
-                    date.Add(context.Registration.TokenValidationParameters.ClockSkew) < context.Options.GetUtcNow())
+                    date.Add(context.Registration.TokenValidationParameters.ClockSkew) < (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow))
                 {
                     context.Reject(
                         error: Errors.ServerError,

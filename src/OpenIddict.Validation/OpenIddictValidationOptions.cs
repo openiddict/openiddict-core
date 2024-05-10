@@ -13,7 +13,7 @@ namespace OpenIddict.Validation;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict validation handler.
 /// </summary>
-public sealed class OpenIddictValidationOptions : IOptionWithTimeProvider
+public sealed class OpenIddictValidationOptions
 {
     /// <summary>
     /// Gets the list of encryption credentials used by the OpenIddict validation services.

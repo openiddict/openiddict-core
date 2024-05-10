@@ -219,7 +219,13 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
-        var now = options.GetUtcNow().DateTime;
+        var now = (
+#if SUPPORTS_TIME_PROVIDER
+                options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow
+            )
+            .DateTime;
 
         // Sort the encryption and signing credentials.
         options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));

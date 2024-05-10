@@ -190,7 +190,13 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0086));
         }
 
-        var now = options.GetUtcNow().DateTime;
+        var now = (
+#if SUPPORTS_TIME_PROVIDER
+                options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow
+            )
+            .DateTime;
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
         if (options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&

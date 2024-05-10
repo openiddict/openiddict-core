@@ -78,7 +78,13 @@ public class AuthorizationController : Controller
         var result = await HttpContext.AuthenticateAsync();
         if (result == null || !result.Succeeded || request.HasPrompt(Prompts.Login) ||
            (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
-            _openIddictCoreOptions.Value.GetUtcNow() - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
+            (
+#if SUPPORTS_TIME_PROVIDER
+                _openIddictCoreOptions.Value.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow
+            )
+            - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
         {
             // If the client application requested promptless authentication,
             // return an error indicating that the user is not logged in.

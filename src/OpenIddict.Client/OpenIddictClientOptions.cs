@@ -14,7 +14,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict client handler.
 /// </summary>
-public sealed class OpenIddictClientOptions : IOptionWithTimeProvider
+public sealed class OpenIddictClientOptions
 {
     /// <summary>
     /// Gets or sets the optional URI used to uniquely identify the client/relying party.

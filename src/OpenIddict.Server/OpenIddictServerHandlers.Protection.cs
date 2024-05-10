@@ -908,7 +908,11 @@ public static partial class OpenIddictServerHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var date = context.Principal.GetExpirationDate();
-                if (date.HasValue && date.Value.Add(context.TokenValidationParameters.ClockSkew) < context.Options.GetUtcNow())
+                if (date.HasValue && date.Value.Add(context.TokenValidationParameters.ClockSkew) < (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow))
                 {
                     context.Reject(
                         error: context.Principal.GetTokenType() switch
@@ -1110,7 +1114,11 @@ public static partial class OpenIddictServerHandlers
                     }
 
                     var date = await _tokenManager.GetRedemptionDateAsync(token);
-                    if (date is null || context.Options.GetUtcNow() < date + context.Options.RefreshTokenReuseLeeway)
+                    if (date is null || (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow) < date + context.Options.RefreshTokenReuseLeeway)
                     {
                         return true;
                     }
