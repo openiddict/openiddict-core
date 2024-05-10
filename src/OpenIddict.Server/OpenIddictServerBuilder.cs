@@ -202,8 +202,8 @@ public sealed class OpenIddictServerBuilder
     /// </summary>
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject) =>
-        AddDevelopmentEncryptionCertificate(subject, DateTime.Now);
+    public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject)
+        => AddDevelopmentEncryptionCertificate(subject, DateTime.Now);
 
     /// <summary>
     /// Registers (and generates if necessary) a user-specific development encryption certificate.
@@ -574,8 +574,8 @@ public sealed class OpenIddictServerBuilder
     /// </summary>
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject) =>
-        AddDevelopmentSigningCertificate(subject, DateTime.Now);
+    public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject)
+        => AddDevelopmentSigningCertificate(subject, DateTime.Now);
 
     /// <summary>
     /// Registers (and generates if necessary) a user-specific development signing certificate.
