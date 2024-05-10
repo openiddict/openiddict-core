@@ -23,6 +23,7 @@ public class OpenIddictCoreConfiguration : IPostConfigureOptions<OpenIddictCoreO
     public OpenIddictCoreConfiguration(IServiceProvider serviceProvider)
         => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictCoreOptions options)
     {
 #if SUPPORTS_TIME_PROVIDER

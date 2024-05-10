@@ -54,6 +54,7 @@ public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOpti
         });
     }
 
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictQuartzOptions options)
     {
 #if SUPPORTS_TIME_PROVIDER
