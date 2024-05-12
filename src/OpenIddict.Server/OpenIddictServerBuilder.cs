@@ -209,15 +209,13 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(subject));
         }
 
-        Services.AddOptions<OpenIddictServerOptions>().Configure<IServiceProvider>((options, serviceProvider) =>
+        Services.AddOptions<OpenIddictServerOptions>().Configure<IServiceProvider>((options, provider) =>
         {
 #if SUPPORTS_TIME_PROVIDER
-            var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
-            var now = timeProvider?.GetUtcNow() ?? DateTimeOffset.UtcNow;
+            var now = (options.TimeProvider ?? provider.GetService<TimeProvider>())?.GetUtcNow() ?? DateTimeOffset.UtcNow;
 #else
             var now = DateTimeOffset.UtcNow;
 #endif
-
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadWrite);
 
@@ -228,16 +226,13 @@ public sealed class OpenIddictServerBuilder
                 .OfType<X509Certificate2>()
                 .ToList();
 
-            if (!certificates.Exists(certificate =>
-                    certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
+            if (!certificates.Exists(certificate => certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
             {
 #if SUPPORTS_CERTIFICATE_GENERATION
                 using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
 
-                var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256,
-                    RSASignaturePadding.Pkcs1);
-                request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment,
-                    critical: true));
+                var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
 
                 var certificate = request.CreateSelfSigned(now, now.AddYears(2));
 
@@ -589,15 +584,13 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(subject));
         }
 
-        Services.AddOptions<OpenIddictServerOptions>().Configure<IServiceProvider>((options, serviceProvider) =>
+        Services.AddOptions<OpenIddictServerOptions>().Configure<IServiceProvider>((options, provider) =>
         {
 #if SUPPORTS_TIME_PROVIDER
-            var timeProvider = options.TimeProvider ?? serviceProvider.GetService<TimeProvider>();
-            var now = timeProvider?.GetUtcNow() ?? DateTimeOffset.UtcNow;
+            var now = (options.TimeProvider ?? provider.GetService<TimeProvider>())?.GetUtcNow() ?? DateTimeOffset.UtcNow;
 #else
             var now = DateTimeOffset.UtcNow;
 #endif
-
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadWrite);
 
@@ -614,10 +607,8 @@ public sealed class OpenIddictServerBuilder
 #if SUPPORTS_CERTIFICATE_GENERATION
                 using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
 
-                var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256,
-                    RSASignaturePadding.Pkcs1);
-                request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature,
-                    critical: true));
+                var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
 
                 var certificate = request.CreateSelfSigned(now, now.AddYears(2));
 

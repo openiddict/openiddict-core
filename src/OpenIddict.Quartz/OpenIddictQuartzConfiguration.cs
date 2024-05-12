@@ -14,17 +14,22 @@ namespace OpenIddict.Quartz;
 /// Contains the methods required to ensure that the OpenIddict Quartz.NET configuration is valid.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>,
-    IPostConfigureOptions<OpenIddictQuartzOptions>
+public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>, IPostConfigureOptions<OpenIddictQuartzOptions>
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictQuartzConfiguration"/> class.
     /// </summary>
-    /// <param name="serviceProvider">The service provider.</param>
-    public OpenIddictQuartzConfiguration(IServiceProvider serviceProvider)
-        => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
+    public OpenIddictQuartzConfiguration() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictQuartzConfiguration"/> class.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictQuartzConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     public void Configure(QuartzOptions options)
@@ -58,10 +63,7 @@ public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOpti
     public void PostConfigure(string? name, OpenIddictQuartzOptions options)
     {
 #if SUPPORTS_TIME_PROVIDER
-        if (options.TimeProvider is null)
-        {
-            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
-        }
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
 #endif
     }
 }

@@ -18,25 +18,25 @@ namespace OpenIddict.Validation;
 public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
 {
     private readonly OpenIddictValidationService _service;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
     /// </summary>
     /// <param name="service">The validation service.</param>
-    [Obsolete($"Use constructor with the {nameof(IServiceProvider)}", false)]
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
     public OpenIddictValidationConfiguration(OpenIddictValidationService service)
-        => throw new NotSupportedException ($"Use constructor with the {nameof(IServiceProvider)}");
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
     /// </summary>
+    /// <param name="provider">The service provider.</param>
     /// <param name="service">The validation service.</param>
-    /// <param name="serviceProvider">The service provider.</param>
-    public OpenIddictValidationConfiguration(OpenIddictValidationService service, IServiceProvider serviceProvider)
+    public OpenIddictValidationConfiguration(IServiceProvider provider, OpenIddictValidationService service)
     {
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
         _service = service ?? throw new ArgumentNullException(nameof(service));
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
     /// <inheritdoc/>
@@ -48,10 +48,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
         }
 
 #if SUPPORTS_TIME_PROVIDER
-        if (options.TimeProvider is null)
-        {
-            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
-        }
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
 #endif
 
         if (options.JsonWebTokenHandler is null)
@@ -59,7 +56,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
         }
 
-        if (options.Configuration is null && options.ConfigurationManager is null &&
+        if (options.Configuration is null && options.ConfigurationManager  is null &&
             options.Issuer        is null && options.ConfigurationEndpoint is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));

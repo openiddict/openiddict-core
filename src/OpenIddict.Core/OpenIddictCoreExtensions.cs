@@ -48,8 +48,6 @@ public static class OpenIddictCoreExtensions
         builder.Services.TryAddScoped<IOpenIddictScopeStoreResolver, OpenIddictScopeStoreResolver>();
         builder.Services.TryAddScoped<IOpenIddictTokenStoreResolver, OpenIddictTokenStoreResolver>();
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<OpenIddictCoreOptions>, OpenIddictCoreConfiguration>());
-
         builder.Services.TryAddScoped(static provider =>
         {
             var type = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>()
@@ -89,6 +87,10 @@ public static class OpenIddictCoreExtensions
             return (IOpenIddictTokenManager) provider.GetRequiredService(
                 typeof(OpenIddictTokenManager<>).MakeGenericType(type));
         });
+
+        // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictCoreOptions>, OpenIddictCoreConfiguration>());
 
         return new OpenIddictCoreBuilder(builder.Services);
     }

@@ -22,14 +22,20 @@ namespace OpenIddict.Server;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictServerConfiguration"/> class.
     /// </summary>
-    /// <param name="serviceProvider">The service provider.</param>
-    public OpenIddictServerConfiguration(IServiceProvider serviceProvider)
-        => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
+    public OpenIddictServerConfiguration() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictServerConfiguration"/> class.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictServerConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerOptions options)
@@ -40,10 +46,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         }
 
 #if SUPPORTS_TIME_PROVIDER
-        if (options.TimeProvider is null)
-        {
-            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
-        }
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
 #endif
 
         // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.

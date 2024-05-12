@@ -14,23 +14,20 @@ namespace OpenIddict.Core;
 /// </summary>
 public class OpenIddictCoreConfiguration : IPostConfigureOptions<OpenIddictCoreOptions>
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictCoreConfiguration"/> class.
     /// </summary>
-    /// <param name="serviceProvider">The service provider.</param>
-    public OpenIddictCoreConfiguration(IServiceProvider serviceProvider)
-        => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictCoreConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictCoreOptions options)
     {
 #if SUPPORTS_TIME_PROVIDER
-        if (options.TimeProvider is null)
-        {
-            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
-        }
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
 #endif
     }
 }

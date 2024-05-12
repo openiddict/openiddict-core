@@ -25,25 +25,25 @@ namespace OpenIddict.Client;
 public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
 {
     private readonly OpenIddictClientService _service;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
     /// </summary>
     /// <param name="service">The OpenIddict client service.</param>
-    [Obsolete($"Use constructor with the {nameof(IServiceProvider)}", false)]
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
     public OpenIddictClientConfiguration(OpenIddictClientService service)
-        => throw new NotSupportedException ($"Use constructor with the {nameof(IServiceProvider)}");
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
     /// </summary>
+    /// <param name="provider">The service provider.</param>
     /// <param name="service">The OpenIddict client service.</param>
-    /// <param name="serviceProvider">The service provider.</param>
-    public OpenIddictClientConfiguration(OpenIddictClientService service, IServiceProvider serviceProvider)
+    public OpenIddictClientConfiguration(IServiceProvider provider, OpenIddictClientService service)
     {
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
         _service = service ?? throw new ArgumentNullException(nameof(service));
-        _serviceProvider = serviceProvider;
     }
 
     /// <inheritdoc/>
@@ -60,10 +60,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         }
 
 #if SUPPORTS_TIME_PROVIDER
-        if (options.TimeProvider is null)
-        {
-            options.TimeProvider = _serviceProvider.GetService<TimeProvider>() ?? TimeProvider.System;
-        }
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
 #endif
 
         foreach (var registration in options.Registrations)
@@ -236,11 +233,10 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 
         var now = (
 #if SUPPORTS_TIME_PROVIDER
-                options.TimeProvider?.GetUtcNow() ??
+            options.TimeProvider?.GetUtcNow() ??
 #endif
-                DateTimeOffset.UtcNow
-            )
-            .LocalDateTime;
+            DateTimeOffset.UtcNow
+        ).LocalDateTime;
 
         // Sort the encryption and signing credentials.
         options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
