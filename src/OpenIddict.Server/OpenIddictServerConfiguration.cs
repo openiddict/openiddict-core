@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
@@ -21,6 +22,21 @@ namespace OpenIddict.Server;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
 {
+    private readonly IServiceProvider _provider;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictServerConfiguration"/> class.
+    /// </summary>
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
+    public OpenIddictServerConfiguration() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictServerConfiguration"/> class.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictServerConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerOptions options)
     {
@@ -28,6 +44,10 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         {
             throw new ArgumentNullException(nameof(options));
         }
+
+#if SUPPORTS_TIME_PROVIDER
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
+#endif
 
         // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
         if (options.EnableDegradedMode)
@@ -183,16 +203,24 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0086));
         }
 
+        var now = (
+#if SUPPORTS_TIME_PROVIDER
+                options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow
+            )
+            .LocalDateTime;
+
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.TrueForAll(static credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
-               (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+        if (options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+               (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
         }
 
         // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.SigningCredentials.TrueForAll(static credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
-               (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+        if (options.SigningCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+               (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0088));
         }
@@ -368,8 +396,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         options.Handlers.Sort(static (left, right) => left.Order.CompareTo(right.Order));
 
         // Sort the encryption and signing credentials.
-        options.EncryptionCredentials.Sort(static (left, right) => Compare(left.Key, right.Key));
-        options.SigningCredentials.Sort(static (left, right) => Compare(left.Key, right.Key));
+        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
+        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
 
         // Generate a key identifier for the encryption/signing keys that don't already have one.
         foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key)
@@ -389,7 +417,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             from credentials in options.EncryptionCredentials
             select credentials.Key;
 
-        static int Compare(SecurityKey left, SecurityKey right) => (left, right) switch
+        static int Compare(SecurityKey left, SecurityKey right, DateTime now) => (left, right) switch
         {
             // If the two keys refer to the same instances, return 0.
             (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
@@ -400,8 +428,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             (SecurityKey, SymmetricSecurityKey)          => 1,
 
             // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
-            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => -1,
+            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > now => 1,
+            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > now => -1,
 
             // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
             (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),

@@ -908,7 +908,11 @@ public static partial class OpenIddictServerHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var date = context.Principal.GetExpirationDate();
-                if (date.HasValue && date.Value.Add(context.TokenValidationParameters.ClockSkew) < DateTimeOffset.UtcNow)
+                if (date.HasValue && date.Value.Add(context.TokenValidationParameters.ClockSkew) < (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow))
                 {
                     context.Reject(
                         error: context.Principal.GetTokenType() switch
@@ -1110,7 +1114,11 @@ public static partial class OpenIddictServerHandlers
                     }
 
                     var date = await _tokenManager.GetRedemptionDateAsync(token);
-                    if (date is null || DateTimeOffset.UtcNow < date + context.Options.RefreshTokenReuseLeeway)
+                    if (date is null || (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow) < date + context.Options.RefreshTokenReuseLeeway)
                     {
                         return true;
                     }
@@ -1404,7 +1412,7 @@ public static partial class OpenIddictServerHandlers
                 // entry to the token) that can be used by the resource servers to determine
                 // whether an access token has already been used or blacklist them if necessary.
                 //
-                // Note: scopes are deliberately formatted as a single space-separated 
+                // Note: scopes are deliberately formatted as a single space-separated
                 // string to respect the usual representation of the standard scope claim.
                 //
                 // See https://datatracker.ietf.org/doc/html/rfc9068 for more information.
@@ -1421,7 +1429,7 @@ public static partial class OpenIddictServerHandlers
 
                 // For authorization/device/user codes and refresh tokens,
                 // attach claims destinations to the JWT claims collection.
-                if (context.TokenType is TokenTypeHints.AuthorizationCode or TokenTypeHints.DeviceCode or 
+                if (context.TokenType is TokenTypeHints.AuthorizationCode or TokenTypeHints.DeviceCode or
                                          TokenTypeHints.RefreshToken      or TokenTypeHints.UserCode)
                 {
                     var destinations = principal.GetDestinations();

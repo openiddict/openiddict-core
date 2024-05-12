@@ -34,9 +34,12 @@ public static class OpenIddictQuartzExtensions
         // Quartz.NET's DI integration to resolve it from the DI.
         builder.Services.TryAddTransient<OpenIddictQuartzJob>();
 
-        // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IConfigureOptions<QuartzOptions>, OpenIddictQuartzConfiguration>());
+        // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
+        builder.Services.TryAddEnumerable(
+        [
+            ServiceDescriptor.Singleton<IConfigureOptions<QuartzOptions>, OpenIddictQuartzConfiguration>(),
+            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictQuartzOptions>, OpenIddictQuartzConfiguration>()
+        ]);
 
         return new OpenIddictQuartzBuilder(builder.Services);
     }

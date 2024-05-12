@@ -181,4 +181,11 @@ public sealed class OpenIddictValidationOptions
         ValidateAudience = false,
         ValidateLifetime = false
     };
+
+#if SUPPORTS_TIME_PROVIDER
+    /// <summary>
+    /// Gets or sets the time provider.
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+#endif
 }

@@ -6,9 +6,11 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
@@ -23,13 +25,26 @@ namespace OpenIddict.Client;
 public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
 {
     private readonly OpenIddictClientService _service;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
     /// </summary>
     /// <param name="service">The OpenIddict client service.</param>
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
     public OpenIddictClientConfiguration(OpenIddictClientService service)
-        => _service = service ?? throw new ArgumentNullException(nameof(service));
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    /// <param name="service">The OpenIddict client service.</param>
+    public OpenIddictClientConfiguration(IServiceProvider provider, OpenIddictClientService service)
+    {
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        _service = service ?? throw new ArgumentNullException(nameof(service));
+    }
 
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOptions options)
@@ -43,6 +58,10 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
         }
+
+#if SUPPORTS_TIME_PROVIDER
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
+#endif
 
         foreach (var registration in options.Registrations)
         {
@@ -212,9 +231,16 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
+        var now = (
+#if SUPPORTS_TIME_PROVIDER
+            options.TimeProvider?.GetUtcNow() ??
+#endif
+            DateTimeOffset.UtcNow
+        ).LocalDateTime;
+
         // Sort the encryption and signing credentials.
-        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
-        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
+        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
 
         // Generate a key identifier for the encryption/signing keys that don't already have one.
         foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key)
@@ -234,7 +260,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             from credentials in options.EncryptionCredentials
             select credentials.Key;
 
-        static int Compare(SecurityKey left, SecurityKey right) => (left, right) switch
+        static int Compare(SecurityKey left, SecurityKey right, DateTime now) => (left, right) switch
         {
             // If the two keys refer to the same instances, return 0.
             (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
@@ -245,8 +271,8 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             (SecurityKey, SymmetricSecurityKey) => 1,
 
             // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
-            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => -1,
+            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > now => 1,
+            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > now => -1,
 
             // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
             (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),

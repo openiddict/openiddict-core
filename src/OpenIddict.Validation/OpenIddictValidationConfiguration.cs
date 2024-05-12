@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
@@ -17,13 +18,26 @@ namespace OpenIddict.Validation;
 public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
 {
     private readonly OpenIddictValidationService _service;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
     /// </summary>
     /// <param name="service">The validation service.</param>
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
     public OpenIddictValidationConfiguration(OpenIddictValidationService service)
-        => _service = service ?? throw new ArgumentNullException(nameof(service));
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    /// <param name="service">The validation service.</param>
+    public OpenIddictValidationConfiguration(IServiceProvider provider, OpenIddictValidationService service)
+    {
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        _service = service ?? throw new ArgumentNullException(nameof(service));
+    }
 
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictValidationOptions options)
@@ -33,12 +47,16 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             throw new ArgumentNullException(nameof(options));
         }
 
+#if SUPPORTS_TIME_PROVIDER
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
+#endif
+
         if (options.JsonWebTokenHandler is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
         }
 
-        if (options.Configuration is null && options.ConfigurationManager is null &&
+        if (options.Configuration is null && options.ConfigurationManager  is null &&
             options.Issuer        is null && options.ConfigurationEndpoint is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));
@@ -90,10 +108,18 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             }
         }
 
+        var now = (
+#if SUPPORTS_TIME_PROVIDER
+                options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow
+            )
+            .LocalDateTime;
+
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
         if (options.EncryptionCredentials.Count is not 0 &&
-            options.EncryptionCredentials.TrueForAll(static credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
-                (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+            options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+                (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
         }
@@ -139,15 +165,15 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
         // Sort the encryption and signing credentials.
-        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
-        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
+        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
 
         // Attach the encryption credentials to the token validation parameters.
         options.TokenValidationParameters.TokenDecryptionKeys =
             from credentials in options.EncryptionCredentials
             select credentials.Key;
 
-        static int Compare(SecurityKey left, SecurityKey right) => (left, right) switch
+        static int Compare(SecurityKey left, SecurityKey right, DateTime now) => (left, right) switch
         {
             // If the two keys refer to the same instances, return 0.
             (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
@@ -158,8 +184,8 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             (SecurityKey, SymmetricSecurityKey) => 1,
 
             // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
-            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => -1,
+            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > now => 1,
+            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > now => -1,
 
             // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
             (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),

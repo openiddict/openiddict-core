@@ -59,4 +59,11 @@ public sealed class OpenIddictCoreOptions
     /// This property is not used when <see cref="DisableEntityCaching"/> is <see langword="true"/>.
     /// </summary>
     public int EntityCacheLimit { get; set; } = 250;
+
+#if SUPPORTS_TIME_PROVIDER
+    /// <summary>
+    /// Gets or sets the time provider.
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+#endif
 }

@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Quartz;
@@ -13,8 +14,23 @@ namespace OpenIddict.Quartz;
 /// Contains the methods required to ensure that the OpenIddict Quartz.NET configuration is valid.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
+public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>, IPostConfigureOptions<OpenIddictQuartzOptions>
 {
+    private readonly IServiceProvider _provider;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictQuartzConfiguration"/> class.
+    /// </summary>
+    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
+    public OpenIddictQuartzConfiguration() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictQuartzConfiguration"/> class.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictQuartzConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+
     /// <inheritdoc/>
     public void Configure(QuartzOptions options)
     {
@@ -41,5 +57,13 @@ public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOpti
                    .WithDescription(SR.GetResourceString(SR.ID8002))
                    .StartAt(DateBuilder.FutureDate(new Random().Next(1, 10), IntervalUnit.Minute));
         });
+    }
+
+    /// <inheritdoc/>
+    public void PostConfigure(string? name, OpenIddictQuartzOptions options)
+    {
+#if SUPPORTS_TIME_PROVIDER
+        options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
+#endif
     }
 }

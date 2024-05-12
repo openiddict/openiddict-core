@@ -38,4 +38,11 @@ public sealed class OpenIddictQuartzOptions
     /// By default, this value is set to 14 days and cannot be less than 10 minutes.
     /// </summary>
     public TimeSpan MinimumTokenLifespan { get; set; } = TimeSpan.FromDays(14);
+
+#if SUPPORTS_TIME_PROVIDER
+    /// <summary>
+    /// Gets or sets the time provider.
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+#endif
 }

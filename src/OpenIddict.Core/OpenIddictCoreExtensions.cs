@@ -88,6 +88,10 @@ public static class OpenIddictCoreExtensions
                 typeof(OpenIddictTokenManager<>).MakeGenericType(type));
         });
 
+        // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictCoreOptions>, OpenIddictCoreConfiguration>());
+
         return new OpenIddictCoreBuilder(builder.Services);
     }
 

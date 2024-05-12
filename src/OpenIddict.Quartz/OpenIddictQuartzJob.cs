@@ -74,7 +74,11 @@ public sealed class OpenIddictQuartzJob : IJob
                         UnscheduleFiringTrigger = true
                     };
 
-                var threshold = DateTimeOffset.UtcNow - _options.CurrentValue.MinimumTokenLifespan;
+                var threshold = (
+#if SUPPORTS_TIME_PROVIDER
+                    _options.CurrentValue.TimeProvider?.GetUtcNow() ??
+#endif
+                    DateTimeOffset.UtcNow) - _options.CurrentValue.MinimumTokenLifespan;
 
                 try
                 {
@@ -119,7 +123,11 @@ public sealed class OpenIddictQuartzJob : IJob
                         UnscheduleFiringTrigger = true
                     };
 
-                var threshold = DateTimeOffset.UtcNow - _options.CurrentValue.MinimumAuthorizationLifespan;
+                var threshold = (
+#if SUPPORTS_TIME_PROVIDER
+                    _options.CurrentValue.TimeProvider?.GetUtcNow() ??
+#endif
+                    DateTimeOffset.UtcNow) - _options.CurrentValue.MinimumAuthorizationLifespan;
 
                 try
                 {

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Xunit;
 
@@ -10,7 +11,7 @@ public class OpenIddictQuartzConfigurationTests
     {
         // Arrange
         var options = new QuartzOptions();
-        var configuration = new OpenIddictQuartzConfiguration();
+        var configuration = new OpenIddictQuartzConfiguration(new ServiceCollection().BuildServiceProvider());
 
         // Act
         configuration.Configure(options);
@@ -28,7 +29,7 @@ public class OpenIddictQuartzConfigurationTests
     {
         // Arrange
         var options = new QuartzOptions();
-        var configuration = new OpenIddictQuartzConfiguration();
+        var configuration = new OpenIddictQuartzConfiguration(new ServiceCollection().BuildServiceProvider());
 
         // Act
         configuration.Configure(options);

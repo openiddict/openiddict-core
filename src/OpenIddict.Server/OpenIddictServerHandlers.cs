@@ -104,7 +104,7 @@ public static partial class OpenIddictServerHandlers
          */
         ValidateSignOutDemand.Descriptor,
         AttachCustomSignOutParameters.Descriptor,
-        
+
         /*
          * Error processing:
          */
@@ -2747,7 +2747,11 @@ public static partial class OpenIddictServerHandlers
 
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
-                CreationDate = DateTimeOffset.UtcNow,
+                CreationDate =
+#if SUPPORTS_TIME_PROVIDER
+                    context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                    DateTimeOffset.UtcNow,
                 Principal = context.Principal,
                 Status = Statuses.Valid,
                 Subject = context.Principal.GetClaim(Claims.Subject),
@@ -2887,7 +2891,11 @@ public static partial class OpenIddictServerHandlers
                 claim.Properties.Remove(Properties.Destinations);
             }
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(
+#if SUPPORTS_TIME_PROVIDER
+                context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetAccessTokenLifetime();
@@ -3011,7 +3019,11 @@ public static partial class OpenIddictServerHandlers
                 return true;
             });
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(
+#if SUPPORTS_TIME_PROVIDER
+                context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetAuthorizationCodeLifetime();
@@ -3137,7 +3149,11 @@ public static partial class OpenIddictServerHandlers
                 return true;
             });
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(
+#if SUPPORTS_TIME_PROVIDER
+                context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetDeviceCodeLifetime();
@@ -3250,7 +3266,11 @@ public static partial class OpenIddictServerHandlers
                 return true;
             });
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(
+#if SUPPORTS_TIME_PROVIDER
+                context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow);
 
             // When sliding expiration is disabled, the expiration date of generated refresh tokens is fixed
             // and must exactly match the expiration date of the refresh token used in the token request.
@@ -3401,7 +3421,11 @@ public static partial class OpenIddictServerHandlers
                 claim.Properties.Remove(Properties.Destinations);
             }
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(
+#if SUPPORTS_TIME_PROVIDER
+                context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetIdentityTokenLifetime();
@@ -3526,7 +3550,11 @@ public static partial class OpenIddictServerHandlers
                 return true;
             });
 
-            principal.SetCreationDate(DateTimeOffset.UtcNow);
+            principal.SetCreationDate(
+#if SUPPORTS_TIME_PROVIDER
+                context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                DateTimeOffset.UtcNow);
 
             // If a specific token lifetime was attached to the principal, prefer it over any other value.
             var lifetime = context.Principal.GetUserCodeLifetime();
@@ -4288,9 +4316,17 @@ public static partial class OpenIddictServerHandlers
                 {
                     // If an expiration date was set on the access token principal, return it to the client application.
                     if (context.AccessTokenPrincipal.GetExpirationDate()
-                        is DateTimeOffset date && date > DateTimeOffset.UtcNow)
+                        is DateTimeOffset date && date > (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow))
                     {
-                        context.Response.ExpiresIn = (long) ((date - DateTimeOffset.UtcNow).TotalSeconds + .5);
+                        context.Response.ExpiresIn = (long) ((date - (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow)).TotalSeconds + .5);
                     }
 
                     // If the granted access token scopes differ from the requested scopes, return the granted scopes
@@ -4352,8 +4388,16 @@ public static partial class OpenIddictServerHandlers
                 {
                     // If an expiration date was set on the device code or user
                     // code principal, return it to the client application.
-                    DateTimeOffset date when date > DateTimeOffset.UtcNow
-                        => (long) ((date - DateTimeOffset.UtcNow).TotalSeconds + .5),
+                    DateTimeOffset date when date > (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow)
+                        => (long) ((date - (
+#if SUPPORTS_TIME_PROVIDER
+                        context.Options.TimeProvider?.GetUtcNow() ??
+#endif
+                        DateTimeOffset.UtcNow)).TotalSeconds + .5),
 
                     // Otherwise, return an arbitrary value, as the "expires_in"
                     // parameter is required in device authorization responses.
