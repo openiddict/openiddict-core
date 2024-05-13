@@ -2298,7 +2298,9 @@ public static partial class OpenIddictClientHandlers
                 GrantTypes.Password          or GrantTypes.RefreshToken => true,
 
                 // By default, always send a token request for custom grant types.
-                { Length: > 0 } => true,
+                not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                  GrantTypes.Password          or GrantTypes.RefreshToken) => true,
 
                 _ => false
             };
@@ -2745,7 +2747,10 @@ public static partial class OpenIddictClientHandlers
 
                 // By default, always extract and require a backchannel
                 // access token for custom grant types, but don't validate it.
-                { Length: > 0 } => (true, true, false, false),
+                not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                  GrantTypes.Password          or GrantTypes.RefreshToken)
+                    => (true, true, false, false),
 
                 _ => (false, false, false, false)
             };
@@ -2783,7 +2788,10 @@ public static partial class OpenIddictClientHandlers
 
                 // By default, try to extract a backchannel identity token for custom grant
                 // types and validate it when present, but don't require that one be returned.
-                { Length: > 0 } => (true, false, true, false),
+                not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                  GrantTypes.Password          or GrantTypes.RefreshToken)
+                    => (true, false, true, false),
 
                 _ => (false, false, false, false)
             };
@@ -2817,7 +2825,10 @@ public static partial class OpenIddictClientHandlers
 
                 // By default, always try to extract a refresh token for
                 // custom grant types, but don't require or validate it.
-                { Length: > 0 } => (true, false, false, false),
+                not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                  GrantTypes.Password          or GrantTypes.RefreshToken)
+                    => (true, false, false, false),
 
                 _ => (false, false, false, false)
             };
@@ -3622,7 +3633,10 @@ public static partial class OpenIddictClientHandlers
                      !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
 
                 // Apply the same logic for custom grant types.
-                { Length: > 0 } when !context.DisableUserinfoRetrieval && context.UserinfoEndpoint is not null &&
+                not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                  GrantTypes.Password          or GrantTypes.RefreshToken)
+                    when !context.DisableUserinfoRetrieval && context.UserinfoEndpoint is not null &&
                     (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
                      !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
 
@@ -3651,7 +3665,10 @@ public static partial class OpenIddictClientHandlers
                 GrantTypes.RefreshToken => !context.Scopes.Contains(Scopes.OpenId),
 
                 // For unknown grant types, disable userinfo validation unless the openid scope was explicitly added.
-                { Length: > 0 } => !context.Scopes.Contains(Scopes.OpenId),
+                not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                  GrantTypes.Password          or GrantTypes.RefreshToken)
+                    => !context.Scopes.Contains(Scopes.OpenId),
 
                 _ => true
             };
@@ -3797,7 +3814,10 @@ public static partial class OpenIddictClientHandlers
 
                 // By default, don't require userinfo tokens for custom grants
                 // but extract and validate them when a userinfo request was sent.
-                { Length: > 0 } when context.SendUserinfoRequest => (true, false, true, true),
+                not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                  GrantTypes.Password          or GrantTypes.RefreshToken)
+                    when context.SendUserinfoRequest => (true, false, true, true),
 
                 _ => (false, false, false, false),
             };
