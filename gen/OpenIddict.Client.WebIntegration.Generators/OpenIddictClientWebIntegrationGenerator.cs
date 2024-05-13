@@ -125,6 +125,89 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         public OpenIddictClientRegistration Registration { get; }
 
         /// <summary>
+        /// Adds one or more code challenge methods to the list of code challenge methods that can be negotiated for this provider.
+        /// </summary>
+        /// <param name=""methods"">The code challenge methods.</param>
+        /// <remarks>Note: explicitly configuring the allowed code challenge methods is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddCodeChallengeMethods(params string[] methods)
+        {
+            if (methods is null)
+            {
+                throw new ArgumentNullException(nameof(methods));
+            }
+
+            return Set(registration => registration.CodeChallengeMethods.UnionWith(methods));
+        }
+
+        /// <summary>
+        /// Adds one or more grant types to the list of grant types that can be negotiated for this provider.
+        /// </summary>
+        /// <param name=""types"">The grant types.</param>
+        /// <remarks>Note: explicitly configuring the allowed grant types is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddGrantTypes(params string[] types)
+        {
+            if (types is null)
+            {
+                throw new ArgumentNullException(nameof(types));
+            }
+
+            return Set(registration => registration.GrantTypes.UnionWith(types));
+        }
+
+        /// <summary>
+        /// Adds one or more response modes to the list of response modes that can be negotiated for this provider.
+        /// </summary>
+        /// <param name=""modes"">The response modes.</param>
+        /// <remarks>Note: explicitly configuring the allowed response modes is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddResponseModes(params string[] modes)
+        {
+            if (modes is null)
+            {
+                throw new ArgumentNullException(nameof(modes));
+            }
+
+            return Set(registration => registration.ResponseModes.UnionWith(modes));
+        }
+
+        /// <summary>
+        /// Adds one or more response types to the list of response types that can be negotiated for this provider.
+        /// </summary>
+        /// <param name=""types"">The response types.</param>
+        /// <remarks>Note: explicitly configuring the allowed response types is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddResponseTypes(params string[] types)
+        {
+            if (types is null)
+            {
+                throw new ArgumentNullException(nameof(types));
+            }
+
+            return Set(registration => registration.ResponseTypes.UnionWith(types));
+        }
+
+        /// <summary>
+        /// Adds one or more scopes to the list of requested scopes, if applicable.
+        /// </summary>
+        /// <param name=""scopes"">The scopes.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} AddScopes(params string[] scopes)
+        {
+            if (scopes is null)
+            {
+                throw new ArgumentNullException(nameof(scopes));
+            }
+
+            return Set(registration => registration.Scopes.UnionWith(scopes));
+        }
+
+        /// <summary>
         /// Sets the provider name.
         /// </summary>
         /// <param name=""name"">The provider name.</param>
@@ -273,21 +356,6 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             }
 
             return SetRedirectUri(new Uri(uri, UriKind.RelativeOrAbsolute));
-        }
-
-        /// <summary>
-        /// Adds one or more scopes to the list of requested scopes, if applicable.
-        /// </summary>
-        /// <param name=""scopes"">The scopes.</param>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        public {{ provider.name }} AddScopes(params string[] scopes)
-        {
-            if (scopes is null)
-            {
-                throw new ArgumentNullException(nameof(scopes));
-            }
-
-            return Set(registration => registration.Scopes.UnionWith(scopes));
         }
 
         {{~ for environment in provider.environments ~}}
