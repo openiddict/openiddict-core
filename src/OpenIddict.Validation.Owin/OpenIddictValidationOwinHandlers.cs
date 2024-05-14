@@ -31,6 +31,7 @@ public static partial class OpenIddictValidationOwinHandlers
         /*
          * Authentication processing:
          */
+        ValidateHostHeader.Descriptor,
         ExtractAccessTokenFromAuthorizationHeader.Descriptor,
         ExtractAccessTokenFromBodyForm.Descriptor,
         ExtractAccessTokenFromQueryString.Descriptor,
@@ -181,6 +182,7 @@ public static partial class OpenIddictValidationOwinHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireOwinRequest>()
                 .AddFilter<RequireAccessTokenExtracted>()
+                .AddFilter<RequireAccessTokenExtractionFromAuthorizationHeaderEnabled>()
                 .UseSingletonHandler<ExtractAccessTokenFromAuthorizationHeader>()
                 .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 500)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -232,6 +234,7 @@ public static partial class OpenIddictValidationOwinHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireOwinRequest>()
                 .AddFilter<RequireAccessTokenExtracted>()
+                .AddFilter<RequireAccessTokenExtractionFromBodyFormEnabled>()
                 .UseSingletonHandler<ExtractAccessTokenFromBodyForm>()
                 .SetOrder(ExtractAccessTokenFromAuthorizationHeader.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -288,6 +291,7 @@ public static partial class OpenIddictValidationOwinHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireOwinRequest>()
                 .AddFilter<RequireAccessTokenExtracted>()
+                .AddFilter<RequireAccessTokenExtractionFromQueryStringEnabled>()
                 .UseSingletonHandler<ExtractAccessTokenFromQueryString>()
                 .SetOrder(ExtractAccessTokenFromBodyForm.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)

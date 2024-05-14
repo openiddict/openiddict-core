@@ -63,7 +63,7 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
             throw new ArgumentNullException(nameof(options));
         }
 
-        if (options.ValidationType != OpenIddictValidationType.Direct)
+        if (options.ValidationType is not OpenIddictValidationType.Direct)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0170));
         }
