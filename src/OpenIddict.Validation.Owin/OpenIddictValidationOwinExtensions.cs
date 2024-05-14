@@ -39,6 +39,9 @@ public static class OpenIddictValidationOwinExtensions
         builder.Services.TryAdd(OpenIddictValidationOwinHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict OWIN validation event handlers.
+        builder.Services.TryAddSingleton<RequireAccessTokenExtractionFromAuthorizationHeaderEnabled>();
+        builder.Services.TryAddSingleton<RequireAccessTokenExtractionFromBodyFormEnabled>();
+        builder.Services.TryAddSingleton<RequireAccessTokenExtractionFromQueryStringEnabled>();
         builder.Services.TryAddSingleton<RequireOwinRequest>();
 
         // Register the option initializers used by the OpenIddict OWIN validation integration services.

@@ -47,6 +47,30 @@ public sealed class OpenIddictValidationAspNetCoreBuilder
     }
 
     /// <summary>
+    /// Prevents OpenIddict from extracting access tokens from the standard "Authorization" header.
+    /// </summary>
+    /// <remarks>
+    /// Disabling access token extraction from the "Authorization" header is NOT recommended.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictValidationAspNetCoreBuilder DisableAccessTokenExtractionFromAuthorizationHeader()
+        => Configure(options => options.DisableAccessTokenExtractionFromAuthorizationHeader = true);
+
+    /// <summary>
+    /// Prevents OpenIddict from extracting access tokens from the standard "access_token" body form parameter.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictValidationAspNetCoreBuilder DisableAccessTokenExtractionFromBodyForm()
+        => Configure(options => options.DisableAccessTokenExtractionFromBodyForm = true);
+
+    /// <summary>
+    /// Prevents OpenIddict from extracting access tokens from the standard "access_token" query string parameter.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictValidationAspNetCoreBuilder DisableAccessTokenExtractionFromQueryString()
+        => Configure(options => options.DisableAccessTokenExtractionFromQueryString = true);
+
+    /// <summary>
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     /// <param name="realm">The realm.</param>

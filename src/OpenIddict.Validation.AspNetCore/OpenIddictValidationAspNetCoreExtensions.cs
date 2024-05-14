@@ -38,6 +38,9 @@ public static class OpenIddictValidationAspNetCoreExtensions
         builder.Services.TryAdd(OpenIddictValidationAspNetCoreHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict ASP.NET Core validation event handlers.
+        builder.Services.TryAddSingleton<RequireAccessTokenExtractionFromAuthorizationHeaderEnabled>();
+        builder.Services.TryAddSingleton<RequireAccessTokenExtractionFromBodyFormEnabled>();
+        builder.Services.TryAddSingleton<RequireAccessTokenExtractionFromQueryStringEnabled>();
         builder.Services.TryAddSingleton<RequireHttpRequest>();
 
         // Register the option initializer used by the OpenIddict ASP.NET Core validation integration services.
