@@ -243,8 +243,8 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.5.2"           />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.5.2"           />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.5.2"           />
-    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"          />
-    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"          />
+    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.13.3"          />
+    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.13.3"          />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"           />
 
     <!--
@@ -288,8 +288,8 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.5.2"           />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.5.2"           />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.5.2"           />
-    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"          />
-    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"          />
+    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.13.3"          />
+    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.13.3"          />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"           />
 
     <!--
@@ -334,8 +334,8 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.5.2"           />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.5.2"           />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.5.2"           />
-    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"          />
-    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"          />
+    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.13.3"          />
+    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.13.3"          />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"           />
 
     <!--
