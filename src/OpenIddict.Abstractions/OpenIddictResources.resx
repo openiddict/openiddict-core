@@ -1659,6 +1659,12 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0441" xml:space="preserve">
     <value>The specified format string cannot contain a '{0}' character when it is included as an allowed character in the charset.</value>
   </data>
+  <data name="ID0442" xml:space="preserve">
+    <value>The client registration corresponding to the specified nonce could not be resolved, which may indicate an invalid authentication demand or an invalid configuration. When using interactive user authentication flows in desktop or mobile applications, make sure the system integration is registered by calling 'services.AddOpenIddict().AddClient().UseSystemIntegration()'. When using interactive user authentication flows in an ASP.NET Core or OWIN application, use the authentication APIs exposed by 'IAuthenticationService' or 'IAuthenticationManager' instead of the 'OpenIddictClientService' class.</value>
+  </data>
+  <data name="ID0443" xml:space="preserve">
+    <value>The base URI could not be resolved from the context, which may indicate an invalid authentication demand or an invalid configuration. When using interactive user authentication flows in desktop or mobile applications, make sure the system integration is registered by calling 'services.AddOpenIddict().AddClient().UseSystemIntegration()'. When using interactive user authentication flows in an ASP.NET Core or OWIN application, use the authentication APIs exposed by 'IAuthenticationService' or 'IAuthenticationManager' instead of the 'OpenIddictClientService' class.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

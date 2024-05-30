@@ -46,10 +46,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
          */
         WaitMarshalledAuthentication.Descriptor,
 
+        RestoreClientRegistrationFromMarshalledContext.Descriptor,
         RestoreStateTokenFromMarshalledAuthentication.Descriptor,
         RestoreStateTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreHostAuthenticationPropertiesFromMarshalledAuthentication.Descriptor,
-        RestoreClientRegistrationFromMarshalledContext.Descriptor,
 
         RedirectProtocolActivation.Descriptor,
         ResolveRequestForgeryProtection.Descriptor,
@@ -537,7 +537,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAuthenticationNonce>()
                 .UseSingletonHandler<WaitMarshalledAuthentication>()
-                .SetOrder(ValidateAuthenticationDemand.Descriptor.Order + 500)
+                .SetOrder(ValidateAuthenticationDemand.Descriptor.Order + 250)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -567,8 +567,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // returned to the redirection endpoint (materialized as a registered protocol activation URI) and handled
             // by OpenIddict via the ProcessRequest event. Since it is asynchronous by nature, this process requires
             // using a signal mechanism to unblock the authentication operation once it is complete. For that, the
-            // marshal uses a TaskCompletionSource (one per authentication) that will be automatically completed
-            // or aborted by a specialized event handler as part of the ProcessRequest/ProcessError events processing.
+            // marshal uses a TaskCompletionSource (one per authentication) that will be automatically completed or
+            // aborted by a specialized event handler as part of the ProcessRequest/ProcessError events processing.
 
             try
             {
@@ -613,6 +613,52 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             {
                 throw;
             }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for restoring the client registration and
+    /// configuration from the marshalled authentication context, if applicable.
+    /// </summary>
+    public sealed class RestoreClientRegistrationFromMarshalledContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public RestoreClientRegistrationFromMarshalledContext(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<RestoreClientRegistrationFromMarshalledContext>()
+                .SetOrder(ResolveClientRegistrationFromAuthenticationContext.Descriptor.Order - 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            (context.Configuration, context.Registration) = context.EndpointType switch
+            {
+                // When the authentication context is marshalled, restore the
+                // issuer registration and configuration from the other instance.
+                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
+                    => (notification.Configuration, notification.Registration),
+
+                _ => (context.Configuration, context.Registration)
+            };
+
+            return default;
         }
     }
 
@@ -751,52 +797,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     context.Properties[property.Key] = property.Value;
                 }
             }
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for restoring the client registration and
-    /// configuration from the marshalled authentication context, if applicable.
-    /// </summary>
-    public sealed class RestoreClientRegistrationFromMarshalledContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
-        public RestoreClientRegistrationFromMarshalledContext(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
-
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireAuthenticationNonce>()
-                .UseSingletonHandler<RestoreClientRegistrationFromMarshalledContext>()
-                .SetOrder(ResolveClientRegistrationFromStateToken.Descriptor.Order + 500)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            (context.Configuration, context.Registration) = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the
-                // issuer registration and configuration from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => (notification.Configuration, notification.Registration),
-
-                _ => (context.Configuration, context.Registration)
-            };
 
             return default;
         }

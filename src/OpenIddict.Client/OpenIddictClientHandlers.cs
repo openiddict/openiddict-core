@@ -406,9 +406,19 @@ public static partial class OpenIddictClientHandlers
             //
             // Client registrations/configurations that need to be resolved as part of authentication demands
             // triggered from the redirection or post-logout redirection requests are handled elsewhere.
-            if (!string.IsNullOrEmpty(context.Nonce) || context.EndpointType is not OpenIddictClientEndpointType.Unknown)
+            if (context.EndpointType is OpenIddictClientEndpointType.PostLogoutRedirection or
+                                        OpenIddictClientEndpointType.Redirection)
             {
                 return;
+            }
+
+            // When using a user interactive flow with the system integration host, the client registration is expected
+            // to be attached by a dedicated event handler registered by the system integration package. If a nonce was
+            // attached but no client registration was resolved at this point, throw an exception to let the user know
+            // that the authentication demand is invalid or the system integration host is not correctly configured.
+            if (context.Registration is null && !string.IsNullOrEmpty(context.Nonce))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0442));
             }
 
             context.Registration ??= context switch
@@ -785,8 +795,8 @@ public static partial class OpenIddictClientHandlers
                 .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenValidated>()
                 .UseScopedHandler<RedeemStateTokenEntry>()
-                // Note: this handler is deliberately executed early in the pipeline to ensure
-                // that the state token entry is always marked as redeemed even if the authentication
+                // Note: this handler is deliberately executed early in the pipeline to ensure that
+                // the state token entry is always marked as redeemed even if the authentication
                 // demand is rejected later in the pipeline (e.g because an error was returned).
                 .SetOrder(ResolveNonceFromStateToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -4905,15 +4915,32 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Don't overwrite the redirect_uri if one was already explicitly attached.
+            if (context.RedirectUri is not null)
+            {
+                return default;
+            }
+
             // Unlike OpenID Connect, OAuth 2.0 and 2.1 don't require specifying a redirect_uri
             // but it is always considered mandatory in OpenIddict (independently of whether the
             // selected flow is an OpenID Connect flow) as it's later used to ensure the redirection
             // URI the authorization response was sent to matches the expected endpoint, which helps
             // mitigate mix-up attacks when no standard issuer validation can be directly used.
-            context.RedirectUri ??= OpenIddictHelpers.CreateAbsoluteUri(
-                context.BaseUri,
-                context.Registration.RedirectUri)?.AbsoluteUri ??
+            if (context.Registration.RedirectUri is null)
+            {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0300));
+            }
+
+            // If the redirect_uri attached to the client registration is not an
+            // absolute URI and the base URI is not available, throw an exception.
+            if (context.BaseUri is null && !context.Registration.RedirectUri.IsAbsoluteUri)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0443));
+            }
+
+            context.RedirectUri = OpenIddictHelpers.CreateAbsoluteUri(
+                left : context.BaseUri,
+                right: context.Registration.RedirectUri).AbsoluteUri;
 
             return default;
         }
@@ -7329,10 +7356,28 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Don't overwrite the post_logout_redirect_uri if one was already explicitly attached.
+            if (context.PostLogoutRedirectUri is not null)
+            {
+                return default;
+            }
+
             // Note: the post_logout_redirect_uri parameter is optional.
-            context.PostLogoutRedirectUri ??= OpenIddictHelpers.CreateAbsoluteUri(
-                context.BaseUri,
-                context.Registration.PostLogoutRedirectUri)?.AbsoluteUri;
+            if (context.Registration.PostLogoutRedirectUri is null)
+            {
+                return default;
+            }
+
+            // If the post_logout_redirect_uri attached to the client registration is not
+            // an absolute URI and the base URI is not available, throw an exception.
+            if (context.BaseUri is null && !context.Registration.PostLogoutRedirectUri.IsAbsoluteUri)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0443));
+            }
+
+            context.PostLogoutRedirectUri = OpenIddictHelpers.CreateAbsoluteUri(
+                left : context.BaseUri,
+                right: context.Registration.PostLogoutRedirectUri).AbsoluteUri;
 
             return default;
         }
