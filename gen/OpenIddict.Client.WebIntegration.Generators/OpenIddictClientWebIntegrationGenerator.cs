@@ -5,47 +5,47 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Scriban;
 
-namespace OpenIddict.Client.WebIntegration.Generators
+namespace OpenIddict.Client.WebIntegration.Generators;
+
+[Generator]
+public sealed class OpenIddictClientWebIntegrationGenerator : ISourceGenerator
 {
-    [Generator]
-    public sealed class OpenIddictClientWebIntegrationGenerator : ISourceGenerator
+    public void Execute(GeneratorExecutionContext context)
     {
-        public void Execute(GeneratorExecutionContext context)
+        var file = context.AdditionalFiles.Select(file => file.Path)
+            .Where(path => string.Equals(Path.GetFileName(path), "OpenIddictClientWebIntegrationProviders.xml"))
+            .SingleOrDefault();
+
+        if (string.IsNullOrEmpty(file))
         {
-            var file = context.AdditionalFiles.Select(file => file.Path)
-                .Where(path => string.Equals(Path.GetFileName(path), "OpenIddictClientWebIntegrationProviders.xml"))
-                .SingleOrDefault();
+            return;
+        }
 
-            if (string.IsNullOrEmpty(file))
-            {
-                return;
-            }
+        var document = XDocument.Load(file, LoadOptions.None);
 
-            var document = XDocument.Load(file, LoadOptions.None);
+        context.AddSource(
+            "OpenIddictClientWebIntegrationBuilder.generated.cs",
+            SourceText.From(GenerateBuilderMethods(document), Encoding.UTF8));
 
-            context.AddSource(
-                "OpenIddictClientWebIntegrationBuilder.generated.cs",
-                SourceText.From(GenerateBuilderMethods(document), Encoding.UTF8));
+        context.AddSource(
+            "OpenIddictClientWebIntegrationConfiguration.generated.cs",
+            SourceText.From(GenerateConfigurationClasses(document), Encoding.UTF8));
 
-            context.AddSource(
-                "OpenIddictClientWebIntegrationConfiguration.generated.cs",
-                SourceText.From(GenerateConfigurationClasses(document), Encoding.UTF8));
+        context.AddSource(
+            "OpenIddictClientWebIntegrationConstants.generated.cs",
+            SourceText.From(GenerateConstants(document), Encoding.UTF8));
 
-            context.AddSource(
-                "OpenIddictClientWebIntegrationConstants.generated.cs",
-                SourceText.From(GenerateConstants(document), Encoding.UTF8));
+        context.AddSource(
+            "OpenIddictClientWebIntegrationHelpers.generated.cs",
+            SourceText.From(GenerateHelpers(document), Encoding.UTF8));
 
-            context.AddSource(
-                "OpenIddictClientWebIntegrationHelpers.generated.cs",
-                SourceText.From(GenerateHelpers(document), Encoding.UTF8));
+        context.AddSource(
+            "OpenIddictClientWebIntegrationSettings.generated.cs",
+            SourceText.From(GenerateSettings(document), Encoding.UTF8));
 
-            context.AddSource(
-                "OpenIddictClientWebIntegrationSettings.generated.cs",
-                SourceText.From(GenerateSettings(document), Encoding.UTF8));
-
-            static string GenerateBuilderMethods(XDocument document)
-            {
-                var template = Template.Parse(@"#nullable enable
+        static string GenerateBuilderMethods(XDocument document)
+        {
+            var template = Template.Parse(@"#nullable enable
 #pragma warning disable CS0618
 
 using System.ComponentModel;
@@ -743,62 +743,62 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     {{~ end ~}}
 }
 ");
-                return template.Render(new
-                {
-                    Providers = document.Root.Elements("Provider")
-                        .Select(provider => new
+            return template.Render(new
+            {
+                Providers = document.Root.Elements("Provider")
+                    .Select(provider => new
+                    {
+                        Name = (string) provider.Attribute("Name"),
+                        DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
+                        Documentation = (string?) provider.Attribute("Documentation"),
+
+                        Obsolete = (bool?) provider.Attribute("Obsolete") ?? false,
+
+                        Environments = provider.Elements("Environment").Select(environment => new
                         {
-                            Name = (string) provider.Attribute("Name"),
-                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
-                            Documentation = (string?) provider.Attribute("Documentation"),
+                            Name = (string?) environment.Attribute("Name") ?? "Production"
+                        })
+                        .ToList(),
 
-                            Obsolete = (bool?) provider.Attribute("Obsolete") ?? false,
+                        Settings = provider.Elements("Setting").Select(setting => new
+                        {
+                            PropertyName = (string) setting.Attribute("PropertyName"),
+                            ParameterName = (string) setting.Attribute("ParameterName"),
 
-                            Environments = provider.Elements("Environment").Select(environment => new
+                            Collection = (bool?) setting.Attribute("Collection") ?? false,
+                            Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
+
+                            Description = (string) setting.Attribute("Description") is string description ?
+                                char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
+                            ClrType = (string) setting.Attribute("Type") switch
                             {
-                                Name = (string?) environment.Attribute("Name") ?? "Production"
-                            })
-                            .ToList(),
+                                "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
+                                    is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
-                            Settings = provider.Elements("Setting").Select(setting => new
-                            {
-                                PropertyName = (string) setting.Attribute("PropertyName"),
-                                ParameterName = (string) setting.Attribute("ParameterName"),
+                                "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
+                                    is "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
 
-                                Collection = (bool?) setting.Attribute("Collection") ?? false,
-                                Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
+                                "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
+                                    is "PS256" or "PS384" or "PS512" or
+                                       "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
-                                Description = (string) setting.Attribute("Description") is string description ?
-                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
-                                ClrType = (string) setting.Attribute("Type") switch
-                                {
-                                    "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
-                                        is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+                                "Certificate" => "X509Certificate2",
+                                "String" => "string",
+                                "StringHashSet" => "HashSet<string>",
+                                "Uri" => "Uri",
 
-                                    "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                        is "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
-
-                                    "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                        is "PS256" or "PS384" or "PS512" or
-                                           "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
-
-                                    "Certificate" => "X509Certificate2",
-                                    "String" => "string",
-                                    "StringHashSet" => "HashSet<string>",
-                                    "Uri" => "Uri",
-
-                                    string value => value
-                                }
-                            })
-                            .ToList()
+                                string value => value
+                            }
                         })
                         .ToList()
-                });
-            }
+                    })
+                    .ToList()
+            });
+        }
 
-            static string GenerateConstants(XDocument document)
-            {
-                var template = Template.Parse(@"#nullable enable
+        static string GenerateConstants(XDocument document)
+        {
+            var template = Template.Parse(@"#nullable enable
 
 namespace OpenIddict.Client.WebIntegration;
 
@@ -838,34 +838,34 @@ public static partial class OpenIddictClientWebIntegrationConstants
     }
 }
 ");
-                return template.Render(new
-                {
-                    Providers = document.Root.Elements("Provider")
-                        .Select(provider => new
-                        {
-                            Name = (string) provider.Attribute("Name"),
-                            Id = (string) provider.Attribute("Id"),
-
-                            Environments = provider.Elements("Environment").Select(environment => new
-                            {
-                                Name = (string?) environment.Attribute("Name") ?? "Production"
-                            })
-                            .ToList(),
-
-                            Properties = provider.Elements("Property").Select(property => new
-                            {
-                                Name = (string) property.Attribute("Name"),
-                                DictionaryKey = (string) property.Attribute("DictionaryKey")
-                            })
-                            .ToList(),
-                        })
-                        .ToList()
-                });
-            }
-
-            static string GenerateConfigurationClasses(XDocument document)
+            return template.Render(new
             {
-                var template = Template.Parse(@"#nullable enable
+                Providers = document.Root.Elements("Provider")
+                    .Select(provider => new
+                    {
+                        Name = (string) provider.Attribute("Name"),
+                        Id = (string) provider.Attribute("Id"),
+
+                        Environments = provider.Elements("Environment").Select(environment => new
+                        {
+                            Name = (string?) environment.Attribute("Name") ?? "Production"
+                        })
+                        .ToList(),
+
+                        Properties = provider.Elements("Property").Select(property => new
+                        {
+                            Name = (string) property.Attribute("Name"),
+                            DictionaryKey = (string) property.Attribute("DictionaryKey")
+                        })
+                        .ToList(),
+                    })
+                    .ToList()
+            });
+        }
+
+        static string GenerateConfigurationClasses(XDocument document)
+        {
+            var template = Template.Parse(@"#nullable enable
 #pragma warning disable CS0618
 
 using Microsoft.Extensions.DependencyInjection;
@@ -1116,149 +1116,149 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
     }
 }
 ");
-                return template.Render(new
-                {
-                    Providers = document.Root.Elements("Provider")
-                        .Select(provider => new
+            return template.Render(new
+            {
+                Providers = document.Root.Elements("Provider")
+                    .Select(provider => new
+                    {
+                        Name = (string) provider.Attribute("Name"),
+                        DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
+
+                        Environments = provider.Elements("Environment").Select(environment => new
                         {
-                            Name = (string) provider.Attribute("Name"),
-                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
+                            Name = (string?) environment.Attribute("Name") ?? "Production",
 
-                            Environments = provider.Elements("Environment").Select(environment => new
+                            Issuer = (string) environment.Attribute("Issuer"),
+                            ConfigurationEndpoint = (string?) environment.Attribute("ConfigurationEndpoint"),
+
+                            Configuration = environment.Element("Configuration") switch
                             {
-                                Name = (string?) environment.Attribute("Name") ?? "Production",
-
-                                Issuer = (string) environment.Attribute("Issuer"),
-                                ConfigurationEndpoint = (string?) environment.Attribute("ConfigurationEndpoint"),
-
-                                Configuration = environment.Element("Configuration") switch
+                                XElement configuration => new
                                 {
-                                    XElement configuration => new
+                                    AuthorizationEndpoint = (string?) configuration.Attribute("AuthorizationEndpoint"),
+                                    DeviceAuthorizationEndpoint = (string?) configuration.Attribute("DeviceAuthorizationEndpoint"),
+                                    IntrospectionEndpoint = (string?) configuration.Attribute("IntrospectionEndpoint"),
+                                    RevocationEndpoint = (string?) configuration.Attribute("RevocationEndpoint"),
+                                    TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
+                                    UserinfoEndpoint = (string?) configuration.Attribute("UserinfoEndpoint"),
+
+                                    CodeChallengeMethodsSupported = configuration.Elements("CodeChallengeMethod").ToList() switch
                                     {
-                                        AuthorizationEndpoint = (string?) configuration.Attribute("AuthorizationEndpoint"),
-                                        DeviceAuthorizationEndpoint = (string?) configuration.Attribute("DeviceAuthorizationEndpoint"),
-                                        IntrospectionEndpoint = (string?) configuration.Attribute("IntrospectionEndpoint"),
-                                        RevocationEndpoint = (string?) configuration.Attribute("RevocationEndpoint"),
-                                        TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
-                                        UserinfoEndpoint = (string?) configuration.Attribute("UserinfoEndpoint"),
+                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
 
-                                        CodeChallengeMethodsSupported = configuration.Elements("CodeChallengeMethod").ToList() switch
-                                        {
-                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            _ => []
-                                        },
-
-                                        GrantTypesSupported = configuration.Elements("GrantType").ToList() switch
-                                        {
-                                            { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            // If no explicit grant type was set, assume the provider only supports the code flow.
-                                            _ => [GrantTypes.AuthorizationCode]
-                                        },
-
-                                        ResponseModesSupported = configuration.Elements("ResponseMode").ToList() switch
-                                        {
-                                            { Count: > 0 } modes => modes.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            // If no explicit response mode was set, assume the provider only supports the query response mode.
-                                            _ => [ResponseModes.Query]
-                                        },
-
-                                        ResponseTypesSupported = configuration.Elements("ResponseType").ToList() switch
-                                        {
-                                            { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            // If no explicit response type was set, assume the provider only supports the code flow.
-                                            _ => [ResponseTypes.Code]
-                                        },
-
-                                        ScopesSupported = configuration.Elements("Scope").ToList() switch
-                                        {
-                                            { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            _ => []
-                                        },
-
-                                        DeviceAuthorizationEndpointAuthMethodsSupported = configuration.Elements("DeviceAuthorizationEndpointAuthMethod").ToList() switch
-                                        {
-                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            // If no explicit client authentication method was set, assume the provider only supports
-                                            // flowing the client credentials as part of the device authorization request payload.
-                                            _ => [ClientAuthenticationMethods.ClientSecretPost]
-                                        },
-
-                                        IntrospectionEndpointAuthMethodsSupported = configuration.Elements("IntrospectionEndpointAuthMethod").ToList() switch
-                                        {
-                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            // If no explicit client authentication method was set, assume the provider only
-                                            // supports flowing the client credentials as part of the introspection request payload.
-                                            _ => [ClientAuthenticationMethods.ClientSecretPost]
-                                        },
-
-                                        RevocationEndpointAuthMethodsSupported = configuration.Elements("RevocationEndpointAuthMethod").ToList() switch
-                                        {
-                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            // If no explicit client authentication method was set, assume the provider only
-                                            // supports flowing the client credentials as part of the revocation request payload.
-                                            _ => [ClientAuthenticationMethods.ClientSecretPost]
-                                        },
-
-                                        TokenEndpointAuthMethodsSupported = configuration.Elements("TokenEndpointAuthMethod").ToList() switch
-                                        {
-                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
-
-                                            // If no explicit client authentication method was set, assume the provider only
-                                            // supports flowing the client credentials as part of the token request payload.
-                                            _ => [ClientAuthenticationMethods.ClientSecretPost]
-                                        }
+                                        _ => []
                                     },
 
-                                    _ => null
+                                    GrantTypesSupported = configuration.Elements("GrantType").ToList() switch
+                                    {
+                                        { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                        // If no explicit grant type was set, assume the provider only supports the code flow.
+                                        _ => [GrantTypes.AuthorizationCode]
+                                    },
+
+                                    ResponseModesSupported = configuration.Elements("ResponseMode").ToList() switch
+                                    {
+                                        { Count: > 0 } modes => modes.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                        // If no explicit response mode was set, assume the provider only supports the query response mode.
+                                        _ => [ResponseModes.Query]
+                                    },
+
+                                    ResponseTypesSupported = configuration.Elements("ResponseType").ToList() switch
+                                    {
+                                        { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                        // If no explicit response type was set, assume the provider only supports the code flow.
+                                        _ => [ResponseTypes.Code]
+                                    },
+
+                                    ScopesSupported = configuration.Elements("Scope").ToList() switch
+                                    {
+                                        { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                        _ => []
+                                    },
+
+                                    DeviceAuthorizationEndpointAuthMethodsSupported = configuration.Elements("DeviceAuthorizationEndpointAuthMethod").ToList() switch
+                                    {
+                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                        // If no explicit client authentication method was set, assume the provider only supports
+                                        // flowing the client credentials as part of the device authorization request payload.
+                                        _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                    },
+
+                                    IntrospectionEndpointAuthMethodsSupported = configuration.Elements("IntrospectionEndpointAuthMethod").ToList() switch
+                                    {
+                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                        // If no explicit client authentication method was set, assume the provider only
+                                        // supports flowing the client credentials as part of the introspection request payload.
+                                        _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                    },
+
+                                    RevocationEndpointAuthMethodsSupported = configuration.Elements("RevocationEndpointAuthMethod").ToList() switch
+                                    {
+                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                        // If no explicit client authentication method was set, assume the provider only
+                                        // supports flowing the client credentials as part of the revocation request payload.
+                                        _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                    },
+
+                                    TokenEndpointAuthMethodsSupported = configuration.Elements("TokenEndpointAuthMethod").ToList() switch
+                                    {
+                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                        // If no explicit client authentication method was set, assume the provider only
+                                        // supports flowing the client credentials as part of the token request payload.
+                                        _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                    }
                                 },
 
-                                Scopes = environment.Elements("Scope").Select(setting => new
-                                {
-                                    Name = (string) setting.Attribute("Name"),
-                                    Default = (bool?) setting.Attribute("Default") ?? false,
-                                    Required = (bool?) setting.Attribute("Required") ?? false
-                                })
-                            })
-                            .ToList(),
+                                _ => null
+                            },
 
-                            Settings = provider.Elements("Setting").Select(setting => new
+                            Scopes = environment.Elements("Scope").Select(setting => new
                             {
-                                PropertyName = (string) setting.Attribute("PropertyName"),
+                                Name = (string) setting.Attribute("Name"),
+                                Default = (bool?) setting.Attribute("Default") ?? false,
+                                Required = (bool?) setting.Attribute("Required") ?? false
+                            })
+                        })
+                        .ToList(),
 
-                                Type = (string) setting.Attribute("Type"),
-                                Required = (bool?) setting.Attribute("Required") ?? false,
-                                Collection = (bool?) setting.Attribute("Collection") ?? false,
+                        Settings = provider.Elements("Setting").Select(setting => new
+                        {
+                            PropertyName = (string) setting.Attribute("PropertyName"),
 
-                                EncryptionAlgorithm = (string?) setting.Element("EncryptionAlgorithm")?.Attribute("Value"),
-                                SigningAlgorithm = (string?) setting.Element("SigningAlgorithm")?.Attribute("Value"),
+                            Type = (string) setting.Attribute("Type"),
+                            Required = (bool?) setting.Attribute("Required") ?? false,
+                            Collection = (bool?) setting.Attribute("Collection") ?? false,
 
-                                DefaultValue = (string?) setting.Attribute("DefaultValue"),
+                            EncryptionAlgorithm = (string?) setting.Element("EncryptionAlgorithm")?.Attribute("Value"),
+                            SigningAlgorithm = (string?) setting.Element("SigningAlgorithm")?.Attribute("Value"),
 
-                                Items = setting.Elements("Item").Select(item => new
-                                {
-                                    Value = (string) item.Attribute("Value"),
-                                    Default = (bool?) item.Attribute("Default") ?? false,
-                                    Required = (bool?) item.Attribute("Required") ?? false
-                                })
-                                .ToList()
+                            DefaultValue = (string?) setting.Attribute("DefaultValue"),
+
+                            Items = setting.Elements("Item").Select(item => new
+                            {
+                                Value = (string) item.Attribute("Value"),
+                                Default = (bool?) item.Attribute("Default") ?? false,
+                                Required = (bool?) item.Attribute("Required") ?? false
                             })
                             .ToList()
                         })
                         .ToList()
-                });
-            }
+                    })
+                    .ToList()
+            });
+        }
 
-            static string GenerateHelpers(XDocument document)
-            {
-                var template = Template.Parse(@"#nullable enable
+        static string GenerateHelpers(XDocument document)
+        {
+            var template = Template.Parse(@"#nullable enable
 
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
@@ -1283,21 +1283,21 @@ public static partial class OpenIddictClientWebIntegrationHelpers
     {{~ end ~}}
 }
 ");
-                return template.Render(new
-                {
-                    Providers = document.Root.Elements("Provider")
-                        .Select(provider => new
-                        {
-                            Name = (string) provider.Attribute("Name"),
-                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name")
-                        })
-                        .ToList()
-                });
-            }
-
-            static string GenerateSettings(XDocument document)
+            return template.Render(new
             {
-                var template = Template.Parse(@"#nullable enable
+                Providers = document.Root.Elements("Provider")
+                    .Select(provider => new
+                    {
+                        Name = (string) provider.Attribute("Name"),
+                        DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name")
+                    })
+                    .ToList()
+            });
+        }
+
+        static string GenerateSettings(XDocument document)
+        {
+            var template = Template.Parse(@"#nullable enable
 
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
@@ -1335,52 +1335,51 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
     {{~ end ~}}
 }
 ");
-                return template.Render(new
-                {
-                    Providers = document.Root.Elements("Provider")
-                        .Select(provider => new
+            return template.Render(new
+            {
+                Providers = document.Root.Elements("Provider")
+                    .Select(provider => new
+                    {
+                        Name = (string) provider.Attribute("Name"),
+                        DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
+
+                        Settings = provider.Elements("Setting").Select(setting => new
                         {
-                            Name = (string) provider.Attribute("Name"),
-                            DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
+                            PropertyName = (string) setting.Attribute("PropertyName"),
 
-                            Settings = provider.Elements("Setting").Select(setting => new
+                            Collection = (bool?) setting.Attribute("Collection") ?? false,
+                            Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
+
+                            Description = (string) setting.Attribute("Description") is string description ?
+                                char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
+                            ClrType = (string) setting.Attribute("Type") switch
                             {
-                                PropertyName = (string) setting.Attribute("PropertyName"),
+                                "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
+                                    is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
-                                Collection = (bool?) setting.Attribute("Collection") ?? false,
-                                Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
+                                "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
+                                    is "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
 
-                                Description = (string) setting.Attribute("Description") is string description ?
-                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
-                                ClrType = (string) setting.Attribute("Type") switch
-                                {
-                                    "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
-                                        is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+                                "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
+                                    is "PS256" or "PS384" or "PS512" or
+                                       "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
-                                    "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                        is "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
+                                "Certificate" => "X509Certificate2",
+                                "String" => "string",
+                                "StringHashSet" => "HashSet<string>",
+                                "Uri" => "Uri",
 
-                                    "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                        is "PS256" or "PS384" or "PS512" or
-                                           "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
-
-                                    "Certificate" => "X509Certificate2",
-                                    "String" => "string",
-                                    "StringHashSet" => "HashSet<string>",
-                                    "Uri" => "Uri",
-
-                                    string value => value
-                                }
-                            })
-                            .ToList()
+                                string value => value
+                            }
                         })
                         .ToList()
-                });
-            }
+                    })
+                    .ToList()
+            });
         }
+    }
 
-        public void Initialize(GeneratorInitializationContext context)
-        {
-        }
+    public void Initialize(GeneratorInitializationContext context)
+    {
     }
 }

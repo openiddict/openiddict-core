@@ -1,12 +1,11 @@
 ﻿using System.Web.Mvc;
 
-namespace OpenIddict.Sandbox.AspNet.Client
+namespace OpenIddict.Sandbox.AspNet.Client;
+
+public class FilterConfig
 {
-    public class FilterConfig
+    public static void RegisterGlobalFilters(GlobalFilterCollection filters)
     {
-        public static void RegisterGlobalFilters(GlobalFilterCollection filters)
-        {
-            filters.Add(new HandleErrorAttribute());
-        }
+        filters.Add(new HandleErrorAttribute());
     }
 }
