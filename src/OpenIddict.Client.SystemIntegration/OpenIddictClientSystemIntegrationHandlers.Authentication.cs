@@ -33,7 +33,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /*
              * Redirection request extraction:
              */
-            ExtractGetHttpListenerRequest<ExtractRedirectionRequestContext>.Descriptor,
+            ExtractGetOrPostHttpListenerRequest<ExtractRedirectionRequestContext>.Descriptor,
             ExtractProtocolActivationParameters<ExtractRedirectionRequestContext>.Descriptor,
             ExtractWebAuthenticationResultData<ExtractRedirectionRequestContext>.Descriptor,
 

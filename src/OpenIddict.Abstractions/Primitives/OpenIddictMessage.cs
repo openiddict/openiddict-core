@@ -5,6 +5,7 @@
  */
 
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -222,6 +223,42 @@ public class OpenIddictMessage
                 0 => default,
                 1 => parameter.Value[0],
                 _ => parameter.Value.ToArray()
+            });
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new OpenIddict message.
+    /// </summary>
+    /// <param name="parameters">The message parameters.</param>
+    /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
+    public OpenIddictMessage(NameValueCollection parameters)
+    {
+        if (parameters is null)
+        {
+            throw new ArgumentNullException(nameof(parameters));
+        }
+
+        for (var index = 0; index < parameters.AllKeys.Length; index++)
+        {
+            // Ignore parameters whose name is null or empty.
+            var name = parameters.AllKeys[index];
+            if (string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
+
+            var values = parameters.GetValues(name);
+
+            // Note: the core OAuth 2.0 specification requires that request parameters
+            // not be present more than once but derived specifications like the
+            // token exchange specification deliberately allow specifying multiple
+            // parameters with the same name to represent a multi-valued parameter.
+            AddParameter(name, values?.Length switch
+            {
+                null or 0 => default,
+                1         => values[0],
+                _         => values
             });
         }
     }

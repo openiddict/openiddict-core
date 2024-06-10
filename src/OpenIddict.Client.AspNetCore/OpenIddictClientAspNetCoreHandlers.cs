@@ -268,7 +268,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 
             else if (HttpMethods.IsPost(request.Method))
             {
-                // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
+                // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization for more information.
                 if (string.IsNullOrEmpty(request.ContentType))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6138), HeaderNames.ContentType);
