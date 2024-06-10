@@ -5,16 +5,17 @@
  */
 
 using System.Collections.Immutable;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
 using System.Runtime.Versioning;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationConstants;
 
@@ -369,7 +370,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for extracting OpenID Connect requests from the HTTP listener request.
+    /// Contains the logic responsible for extracting OpenID Connect requests from GET HTTP listener requests.
     /// Note: this handler is not used when the OpenID Connect request is not handled by the embedded web server.
     /// </summary>
     public sealed class ExtractGetHttpListenerRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
@@ -414,21 +415,98 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             context.Transaction.Request = request.QueryString.AllKeys.Length switch
             {
                 0 => new OpenIddictRequest(),
-                _ => new OpenIddictRequest(AsEnumerable(request.QueryString))
+                _ => new OpenIddictRequest(request.QueryString)
             };
 
             return default;
-            
-            static IEnumerable<KeyValuePair<string, StringValues>> AsEnumerable(NameValueCollection collection)
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for extracting OpenID Connect requests from GET or POST HTTP listener requests.
+    /// Note: this handler is not used when the OpenID Connect request is not handled by the embedded web server.
+    /// </summary>
+    public sealed class ExtractGetOrPostHttpListenerRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpListenerContext>()
+                .UseSingletonHandler<ExtractGetOrPostHttpListenerRequest<TContext>>()
+                .SetOrder(ExtractGetHttpListenerRequest<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
             {
-                for (var index = 0; index < collection.AllKeys.Length; index++)
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpListenerContext()?.Request ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
+
+            if (string.Equals(request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Transaction.Request = request.QueryString.AllKeys.Length switch
                 {
-                    var name = collection.AllKeys[index];
-                    if (!string.IsNullOrEmpty(name))
-                    {
-                        yield return new(name, collection.GetValues(name));
-                    }
+                    0 => new OpenIddictRequest(),
+                    _ => new OpenIddictRequest(request.QueryString)
+                };
+            }
+
+            else if (string.Equals(request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase))
+            {
+                // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization for more information.
+                if (!MediaTypeHeaderValue.TryParse(request.ContentType, out MediaTypeHeaderValue? type) ||
+                    StringSegment.IsNullOrEmpty(type.MediaType))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6138), "Content-Type");
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2081("Content-Type"),
+                        uri: SR.FormatID8000(SR.ID2081));
+
+                    return;
                 }
+
+                if (!StringSegment.Equals(type.MediaType, "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6139), "Content-Type", request.ContentType);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2082("Content-Type"),
+                        uri: SR.FormatID8000(SR.ID2082));
+
+                    return;
+                }
+
+                // Note: do not allow the unsafe UTF-7 encoding to be used, even if explicitly set.
+                // If no encoding was set or if the received value is not valid, fall back to UTF-8.
+                context.Transaction.Request = new OpenIddictRequest(await OpenIddictHelpers.ParseFormAsync(
+                    stream           : request.InputStream,
+                    encoding         : type.Encoding is { CodePage: not 65000 } encoding ? encoding : Encoding.UTF8,
+                    cancellationToken: CancellationToken.None));
+            }
+
+            else
+            {
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.HttpMethod);
+
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2084),
+                    uri: SR.FormatID8000(SR.ID2084));
+
+                return;
             }
         }
     }
@@ -447,7 +525,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireProtocolActivation>()
                 .UseSingletonHandler<ExtractProtocolActivationParameters<TContext>>()
-                .SetOrder(ExtractGetHttpListenerRequest<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(ExtractGetOrPostHttpListenerRequest<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 

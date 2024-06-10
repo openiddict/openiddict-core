@@ -438,6 +438,31 @@ internal static class OpenIddictHelpers
             .ToDictionary(pair => pair.Key!, pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
     }
 
+    /// <summary>
+    /// Extracts the parameters from the specified stream.
+    /// </summary>
+    /// <param name="stream">The stream containing the formurl-encoded data.</param>
+    /// <param name="encoding">The encoding used to decode the data.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The parameters extracted from the specified stream.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    public static async ValueTask<IReadOnlyDictionary<string, StringValues>> ParseFormAsync(
+        Stream stream, Encoding encoding, CancellationToken cancellationToken)
+    {
+        if (stream is null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+
+        if (encoding is null)
+        {
+            throw new ArgumentNullException(nameof(encoding));
+        }
+
+        var reader = new FormReader(stream, encoding);
+        return await reader.ReadFormAsync(cancellationToken);
+    }
+
 #if SUPPORTS_ECDSA
     /// <summary>
     /// Creates a new <see cref="ECDsa"/> key.
@@ -1060,5 +1085,289 @@ internal static class OpenIddictHelpers
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Note: this implementation was taken from ASP.NET Core.
+    /// </summary>
+    private class FormReader
+    {
+        public const int DefaultValueCountLimit = 1024;
+        public const int DefaultKeyLengthLimit = 1024 * 2;
+        public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
+
+        private readonly TextReader _reader;
+        private readonly char[] _buffer;
+        private readonly StringBuilder _builder = new StringBuilder();
+        private int _bufferOffset;
+        private int _bufferCount;
+        private string? _currentKey;
+        private string? _currentValue;
+        private bool _endOfStream;
+
+        public FormReader(Stream stream, Encoding encoding)
+        {
+            _buffer = new char[8192];
+            _reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024 * 2, leaveOpen: true);
+        }
+
+        public int ValueCountLimit { get; set; } = DefaultValueCountLimit;
+        public int KeyLengthLimit { get; set; } = DefaultKeyLengthLimit;
+        public int ValueLengthLimit { get; set; } = DefaultValueLengthLimit;
+
+        public KeyValuePair<string, string>? ReadNextPair()
+        {
+            ReadNextPairImpl();
+            if (ReadSucceeded())
+            {
+                return new KeyValuePair<string, string>(_currentKey, _currentValue);
+            }
+            return null;
+        }
+
+        private void ReadNextPairImpl()
+        {
+            StartReadNextPair();
+            while (!_endOfStream)
+            {
+                // Empty
+                if (_bufferCount == 0)
+                {
+                    Buffer();
+                }
+                if (TryReadNextPair())
+                {
+                    break;
+                }
+            }
+        }
+
+        public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            await ReadNextPairAsyncImpl(cancellationToken);
+            if (ReadSucceeded())
+            {
+                return new KeyValuePair<string, string>(_currentKey, _currentValue);
+            }
+            return null;
+        }
+
+        private async Task ReadNextPairAsyncImpl(CancellationToken cancellationToken = new CancellationToken())
+        {
+            StartReadNextPair();
+            while (!_endOfStream)
+            {
+                if (_bufferCount == 0)
+                {
+                    await BufferAsync(cancellationToken);
+                }
+                if (TryReadNextPair())
+                {
+                    break;
+                }
+            }
+        }
+
+        private void StartReadNextPair()
+        {
+            _currentKey = null;
+            _currentValue = null;
+        }
+
+        private bool TryReadNextPair()
+        {
+            if (_currentKey == null)
+            {
+                if (!TryReadWord('=', KeyLengthLimit, out _currentKey))
+                {
+                    return false;
+                }
+
+                if (_bufferCount == 0)
+                {
+                    return false;
+                }
+            }
+
+            if (_currentValue == null)
+            {
+                if (!TryReadWord('&', ValueLengthLimit, out _currentValue))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool TryReadWord(char separator, int limit, [NotNullWhen(true)] out string? value)
+        {
+            do
+            {
+                if (ReadChar(separator, limit, out value))
+                {
+                    return true;
+                }
+            } while (_bufferCount > 0);
+            return false;
+        }
+
+        private bool ReadChar(char separator, int limit, [NotNullWhen(true)] out string? word)
+        {
+            if (_bufferCount == 0)
+            {
+                word = BuildWord();
+                return true;
+            }
+
+            var c = _buffer[_bufferOffset++];
+            _bufferCount--;
+
+            if (c == separator)
+            {
+                word = BuildWord();
+                return true;
+            }
+            if (_builder.Length >= limit)
+            {
+                throw new InvalidDataException($"Form key or value length limit {limit} exceeded.");
+            }
+            _builder.Append(c);
+            word = null;
+            return false;
+        }
+
+        private string BuildWord()
+        {
+            _builder.Replace('+', ' ');
+            var result = _builder.ToString();
+            _builder.Clear();
+            return Uri.UnescapeDataString(result);
+        }
+
+        private void Buffer()
+        {
+            _bufferOffset = 0;
+            _bufferCount = _reader.Read(_buffer, 0, _buffer.Length);
+            _endOfStream = _bufferCount == 0;
+        }
+
+        private async Task BufferAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _bufferOffset = 0;
+            _bufferCount = await _reader.ReadAsync(_buffer, 0, _buffer.Length);
+            _endOfStream = _bufferCount == 0;
+        }
+
+        public Dictionary<string, StringValues> ReadForm()
+        {
+            var accumulator = new KeyValueAccumulator();
+            while (!_endOfStream)
+            {
+                ReadNextPairImpl();
+                Append(ref accumulator);
+            }
+            return accumulator.GetResults();
+        }
+
+        public async Task<Dictionary<string, StringValues>> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            var accumulator = new KeyValueAccumulator();
+            while (!_endOfStream)
+            {
+                await ReadNextPairAsyncImpl(cancellationToken);
+                Append(ref accumulator);
+            }
+            return accumulator.GetResults();
+        }
+
+        [MemberNotNullWhen(true, nameof(_currentKey), nameof(_currentValue))]
+        private bool ReadSucceeded()
+        {
+            return _currentKey != null && _currentValue != null;
+        }
+
+        private void Append(ref KeyValueAccumulator accumulator)
+        {
+            if (ReadSucceeded())
+            {
+                accumulator.Append(_currentKey, _currentValue);
+                if (accumulator.ValueCount > ValueCountLimit)
+                {
+                    throw new InvalidDataException($"Form value count limit {ValueCountLimit} exceeded.");
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Note: this implementation was taken from ASP.NET Core.
+    /// </summary>
+    private struct KeyValueAccumulator
+    {
+        private Dictionary<string, StringValues> _accumulator;
+        private Dictionary<string, List<string>> _expandingAccumulator;
+
+        public void Append(string key, string value)
+        {
+            if (_accumulator == null)
+            {
+                _accumulator = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            StringValues values;
+            if (_accumulator.TryGetValue(key, out values))
+            {
+                if (values.Count == 0)
+                {
+                    _expandingAccumulator[key].Add(value);
+                }
+                else if (values.Count == 1)
+                {
+                    _accumulator[key] = new string[] { values[0]!, value };
+                }
+                else
+                {
+                    _accumulator[key] = default(StringValues);
+
+                    if (_expandingAccumulator == null)
+                    {
+                        _expandingAccumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    var list = new List<string>(8);
+                    var array = values.ToArray();
+
+                    list.Add(array[0]!);
+                    list.Add(array[1]!);
+                    list.Add(value);
+
+                    _expandingAccumulator[key] = list;
+                }
+            }
+            else
+            {
+                _accumulator[key] = new StringValues(value);
+            }
+
+            ValueCount++;
+        }
+
+        public bool HasValues => ValueCount > 0;
+        public int KeyCount => _accumulator?.Count ?? 0;
+        public int ValueCount { get; private set; }
+
+        public Dictionary<string, StringValues> GetResults()
+        {
+            if (_expandingAccumulator != null)
+            {
+                foreach (var entry in _expandingAccumulator)
+                {
+                    _accumulator[entry.Key] = new StringValues(entry.Value.ToArray());
+                }
+            }
+
+            return _accumulator ?? new Dictionary<string, StringValues>(0, StringComparer.OrdinalIgnoreCase);
+        }
     }
 }

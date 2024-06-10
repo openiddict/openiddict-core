@@ -33,7 +33,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /*
              * Post-logout redirection request extraction:
              */
-            ExtractGetHttpListenerRequest<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
+            ExtractGetOrPostHttpListenerRequest<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
             ExtractProtocolActivationParameters<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
             ExtractWebAuthenticationResultData<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
 

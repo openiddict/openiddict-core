@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -94,6 +95,16 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <param name="parameters">The request parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictRequest(IEnumerable<KeyValuePair<string, StringValues>> parameters)
+        : base(parameters)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new OpenIddict request.
+    /// </summary>
+    /// <param name="parameters">The request parameters.</param>
+    /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
+    public OpenIddictRequest(NameValueCollection parameters)
         : base(parameters)
     {
     }
