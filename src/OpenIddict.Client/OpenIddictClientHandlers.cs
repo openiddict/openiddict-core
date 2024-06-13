@@ -4581,8 +4581,9 @@ public static partial class OpenIddictClientHandlers
                     => (GrantTypes.Implicit, ResponseTypes.IdToken),
 
                 // Note: response types combinations containing "token" are always tested last as some
-                // authorization servers - like OpenIddict - are known to block authorization requests
-                // asking for an access token if Proof Key for Code Exchange is used in the same request.
+                // authorization servers (e.g OpenIddict when response type permissions are disabled)
+                // are known to mitigate downgrade attacks by blocking authorization requests asking
+                // for an access token if Proof Key for Code Exchange is used in the same request.
                 //
                 // Returning an identity token directly from the authorization endpoint also has privacy
                 // concerns that code-based flows - that require a backchannel request - typically don't

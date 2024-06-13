@@ -1045,33 +1045,6 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.NotNull(response.Code);
     }
 
-    [Theory]
-    [InlineData("code id_token token")]
-    [InlineData("code token")]
-    public async Task ValidateAuthorizationRequest_PkceRequestWithForbiddenResponseTypeIsRejected(string type)
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
-            CodeChallengeMethod = CodeChallengeMethods.Sha256,
-            Nonce = "n-0S6_WzA2Mj",
-            RedirectUri = "http://www.fabrikam.com/path",
-            ResponseType = type,
-            Scope = Scopes.OpenId
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidRequest, response.Error);
-        Assert.Equal(SR.FormatID2041(Parameters.ResponseType), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2041), response.ErrorUri);
-    }
-
     [Fact]
     public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenRedirectUriIsMissing()
     {
@@ -1181,6 +1154,154 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
 
         Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+    }
+
+    [Theory]
+    [InlineData("code id_token token")]
+    [InlineData("code token")]
+    public async Task ValidateAuthorizationRequest_PkceRequestWithSensitiveResponseTypeIsRejectedWhenDegradedModeIsEnabled(string type)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+            CodeChallengeMethod = CodeChallengeMethods.Sha256,
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = type,
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Equal(Errors.UnauthorizedClient, response.Error);
+        Assert.Equal(SR.FormatID2041(Parameters.ResponseType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2041), response.ErrorUri);
+    }
+
+    [Theory]
+    [InlineData("code id_token token")]
+    [InlineData("code token")]
+    public async Task ValidateAuthorizationRequest_PkceRequestWithSensitiveResponseTypeIsRejectedWhenPermissionsAreIgnored(string type)
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+            CodeChallengeMethod = CodeChallengeMethods.Sha256,
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = type,
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Equal(Errors.UnauthorizedClient, response.Error);
+        Assert.Equal(SR.FormatID2041(Parameters.ResponseType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2041), response.ErrorUri);
+    }
+
+    [Theory]
+    [InlineData("code id_token token")]
+    [InlineData("code token")]
+    public async Task ValidateAuthorizationRequest_PkceRequestWithSensitiveResponseTypeIsValidatedWhenPermissionsAreEnforced(string type)
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ImmutableArray.Create("rst:" + type));
+
+            mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
+            options.DisableAuthorizationStorage();
+            options.DisableTokenStorage();
+            options.DisableSlidingRefreshTokenExpiration();
+
+            options.Configure(options => options.IgnoreResponseTypePermissions = false);
+
+            options.Services.AddSingleton(manager);
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+            CodeChallengeMethod = CodeChallengeMethods.Sha256,
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = type,
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.Null(response.ErrorDescription);
+        Assert.Null(response.ErrorUri);
+        Assert.NotNull(response.Code);
     }
 
     [Theory]
