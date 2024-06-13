@@ -4259,8 +4259,8 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
             }
 
-            // If an explicit grant type was specified, ensure it is
-            // supported by OpenIddict and enabled in the client options.
+            // If an explicit grant type was specified, ensure it is supported by OpenIddict and
+            // enabled in the client options and that an explicit response type was also set.
             if (!string.IsNullOrEmpty(context.GrantType))
             {
                 if (context.GrantType is not (
@@ -4273,6 +4273,19 @@ public static partial class OpenIddictClientHandlers
                 {
                     throw new InvalidOperationException(SR.FormatID0359(context.GrantType));
                 }
+
+                if (string.IsNullOrEmpty(context.ResponseType))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0444));
+                }
+            }
+
+            // If a response type was explicitly specified, ensure a grant type was also set unless
+            // the special response_type=none - for which no grant type is defined - was specified.
+            if (!string.IsNullOrEmpty(context.ResponseType) && context.ResponseType is not ResponseTypes.None &&
+                 string.IsNullOrEmpty(context.GrantType))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0445));
             }
 
             // Ensure signing/and encryption credentials are present as they are required to protect state tokens.

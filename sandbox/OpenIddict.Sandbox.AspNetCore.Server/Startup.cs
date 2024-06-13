@@ -111,10 +111,13 @@ public class Startup
                        .SetUserinfoEndpointUris("connect/userinfo")
                        .SetVerificationEndpointUris("connect/verify");
 
-                // Note: this sample uses the code, device code, password and refresh token flows, but you
-                // can enable the other flows if you need to support implicit or client credentials.
+                // Note: this sample enables all the supported flows but
+                // you can restrict the list of enabled flows if necessary.
                 options.AllowAuthorizationCodeFlow()
                        .AllowDeviceCodeFlow()
+                       .AllowHybridFlow()
+                       .AllowImplicitFlow()
+                       .AllowNoneFlow()
                        .AllowPasswordFlow()
                        .AllowRefreshTokenFlow();
 

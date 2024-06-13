@@ -578,14 +578,16 @@ public static partial class OpenIddictClientOwinHandlers
                 return default;
             }
 
-            // If a registration identifier was explicitly set, update the challenge context to use it.
-            if (properties.Dictionary.TryGetValue(Properties.RegistrationId, out string? identifier) &&
-                !string.IsNullOrEmpty(identifier))
-            {
-                context.RegistrationId = identifier;
-            }
+            context.CodeChallengeMethod = GetProperty(properties, Properties.CodeChallengeMethod);
+            context.GrantType           = GetProperty(properties, Properties.GrantType);
+            context.IdentityTokenHint   = GetProperty(properties, Properties.IdentityTokenHint);
+            context.LoginHint           = GetProperty(properties, Properties.LoginHint);
+            context.ProviderName        = GetProperty(properties, Properties.ProviderName);
+            context.RegistrationId      = GetProperty(properties, Properties.RegistrationId);
+            context.ResponseMode        = GetProperty(properties, Properties.ResponseMode);
+            context.ResponseType        = GetProperty(properties, Properties.ResponseType);
+            context.TargetLinkUri       = properties.RedirectUri;
 
-            // If an issuer was explicitly set, update the challenge context to use it.
             if (properties.Dictionary.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
             {
                 // Ensure the issuer set by the application is a valid absolute URI.
@@ -597,34 +599,6 @@ public static partial class OpenIddictClientOwinHandlers
                 context.Issuer = uri;
             }
 
-            // If a provider name was explicitly set, update the challenge context to use it.
-            if (properties.Dictionary.TryGetValue(Properties.ProviderName, out string? provider) &&
-                !string.IsNullOrEmpty(provider))
-            {
-                context.ProviderName = provider;
-            }
-
-            // If a target link URI was specified, attach it to the context.
-            if (!string.IsNullOrEmpty(properties.RedirectUri))
-            {
-                context.TargetLinkUri = properties.RedirectUri;
-            }
-
-            // If an identity token hint was specified, attach it to the context.
-            if (properties.Dictionary.TryGetValue(Properties.IdentityTokenHint, out string? token) &&
-                !string.IsNullOrEmpty(token))
-            {
-                context.IdentityTokenHint = token;
-            }
-
-            // If a login hint was specified, attach it to the context.
-            if (properties.Dictionary.TryGetValue(Properties.LoginHint, out string? hint) &&
-                !string.IsNullOrEmpty(hint))
-            {
-                context.LoginHint = hint;
-            }
-
-            // If a scope was specified, attach it to the context.
             if (properties.Dictionary.TryGetValue(Properties.Scope, out string? scope) &&
                 !string.IsNullOrEmpty(scope))
             {
@@ -675,6 +649,9 @@ public static partial class OpenIddictClientOwinHandlers
             }
 
             return default;
+
+            static string? GetProperty(AuthenticationProperties properties, string name)
+                => properties.Dictionary.TryGetValue(name, out string? value) ? value : null;
         }
     }
 
@@ -851,14 +828,12 @@ public static partial class OpenIddictClientOwinHandlers
                 return default;
             }
 
-            // If a registration identifier was explicitly set, update the sign-out context to use it.
-            if (properties.Dictionary.TryGetValue(Properties.RegistrationId, out string? identifier) &&
-                !string.IsNullOrEmpty(identifier))
-            {
-                context.RegistrationId = identifier;
-            }
+            context.IdentityTokenHint = GetProperty(properties, Properties.IdentityTokenHint);
+            context.LoginHint         = GetProperty(properties, Properties.LoginHint);
+            context.ProviderName      = GetProperty(properties, Properties.ProviderName);
+            context.RegistrationId    = GetProperty(properties, Properties.RegistrationId);
+            context.TargetLinkUri     = properties.RedirectUri;
 
-            // If an issuer was explicitly set, update the challenge context to use it.
             if (properties.Dictionary.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
             {
                 // Ensure the issuer set by the application is a valid absolute URI.
@@ -868,33 +843,6 @@ public static partial class OpenIddictClientOwinHandlers
                 }
 
                 context.Issuer = uri;
-            }
-
-            // If a provider name was explicitly set, update the sign-out context to use it.
-            if (properties.Dictionary.TryGetValue(Properties.ProviderName, out string? provider) &&
-                !string.IsNullOrEmpty(provider))
-            {
-                context.ProviderName = provider;
-            }
-
-            // If a target link URI was specified, attach it to the context.
-            if (!string.IsNullOrEmpty(properties.RedirectUri))
-            {
-                context.TargetLinkUri = properties.RedirectUri;
-            }
-
-            // If an identity token hint was specified, attach it to the context.
-            if (properties.Dictionary.TryGetValue(Properties.IdentityTokenHint, out string? token) &&
-                !string.IsNullOrEmpty(token))
-            {
-                context.IdentityTokenHint = token;
-            }
-
-            // If a login hint was specified, attach it to the context.
-            if (properties.Dictionary.TryGetValue(Properties.LoginHint, out string? hint) &&
-                !string.IsNullOrEmpty(hint))
-            {
-                context.LoginHint = hint;
             }
 
             // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
@@ -941,6 +889,9 @@ public static partial class OpenIddictClientOwinHandlers
             }
 
             return default;
+
+            static string? GetProperty(AuthenticationProperties properties, string name)
+                => properties.Dictionary.TryGetValue(name, out string? value) ? value : null;
         }
     }
 

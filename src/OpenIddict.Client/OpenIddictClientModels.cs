@@ -144,6 +144,28 @@ public static class OpenIddictClientModels
         public CancellationToken CancellationToken { get; init; }
 
         /// <summary>
+        /// Gets or sets the code challenge method that will be used for the authorization request.
+        /// </summary>
+        /// <remarks>
+        /// Note: setting this property is generally not recommended, as OpenIddict automatically
+        /// negotiates the best code challenge method supported by both the client and the server.
+        /// </remarks>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public string? CodeChallengeMethod { get; init; }
+
+        /// <summary>
+        /// Gets or sets the grant type that will be used for the authorization request.
+        /// If this property is set to a non-null value, the <see cref="ResponseType"/>
+        /// property must also be explicitly set to a non-null value.
+        /// </summary>
+        /// <remarks>
+        /// Note: setting this property is generally not recommended, as OpenIddict automatically
+        /// negotiates the best grant type supported by both the client and the server.
+        /// </remarks>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public string? GrantType { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -161,6 +183,28 @@ public static class OpenIddictClientModels
         /// Gets or sets the unique identifier of the client registration that will be used.
         /// </summary>
         public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the response mode that will be used for the authorization request.
+        /// </summary>
+        /// <remarks>
+        /// Note: setting this property is generally not recommended, as OpenIddict automatically
+        /// negotiates the best response mode supported by both the client and the server.
+        /// </remarks>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public string? ResponseMode { get; init; }
+
+        /// <summary>
+        /// Gets or sets the response type that will be used for the authorization request.
+        /// If this property is set to a non-null value, the <see cref="GrantType"/>
+        /// property must also be explicitly set to a non-null value.
+        /// </summary>
+        /// <remarks>
+        /// Note: setting this property is generally not recommended, as OpenIddict automatically
+        /// negotiates the best response type supported by both the client and the server.
+        /// </remarks>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public string? ResponseType { get; init; }
 
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.

@@ -387,12 +387,16 @@ public class OpenIddictClientService
             var context = new ProcessChallengeContext(transaction)
             {
                 CancellationToken = request.CancellationToken,
+                CodeChallengeMethod = request.CodeChallengeMethod,
+                GrantType = request.GrantType,
                 Issuer = request.Issuer,
                 Principal = new ClaimsPrincipal(new ClaimsIdentity()),
                 ProviderName = request.ProviderName,
                 RegistrationId = request.RegistrationId,
                 Request = request.AdditionalAuthorizationRequestParameters
                     is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                ResponseMode = request.ResponseMode,
+                ResponseType = request.ResponseType
             };
 
             if (request.Scopes is { Count: > 0 })
