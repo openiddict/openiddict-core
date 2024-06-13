@@ -996,19 +996,6 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                // Reject authorization requests that contain response_type=token when a code_challenge is specified.
-                if (context.Request.HasResponseType(ResponseTypes.Token))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6043));
-
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2041(Parameters.ResponseType),
-                        uri: SR.FormatID8000(SR.ID2041));
-
-                    return default;
-                }
-
                 return default;
             }
         }
@@ -1075,27 +1062,34 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting authorization requests that use a
-        /// response_type containing token if the application is a confidential client.
-        /// Note: this handler is not used when the degraded mode is enabled
-        /// or when response type permissions enforcement is not disabled.
+        /// Contains the logic responsible for rejecting authorization requests that use an unsafe response type.
         /// </summary>
         public sealed class ValidateResponseType : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictApplicationManager? _applicationManager;
 
-            public ValidateResponseType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+            [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
+            public ValidateResponseType() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
-            public ValidateResponseType(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+            public ValidateResponseType(IOpenIddictApplicationManager? applicationManager = null)
+                => _applicationManager = applicationManager;
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateResponseType>()
+                    .UseScopedHandler<ValidateResponseType>(static provider =>
+                    {
+                        // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                        // invalid core configuration exceptions are not thrown even if the managers were registered.
+                        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                        return options.EnableDegradedMode ?
+                            new ValidateResponseType(applicationManager: null) :
+                            new ValidateResponseType(provider.GetService<IOpenIddictApplicationManager>() ??
+                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                    })
                     .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -1108,32 +1102,60 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-
-                // To prevent downgrade attacks, ensure that authorization requests returning an access token directly
-                // from the authorization endpoint are rejected if the client_id corresponds to a confidential application
-                // and if response type permissions enforcement was explicitly disabled in the server options.
-                // Users who want to enable this advanced scenario are encouraged to re-enable permissions validation.
+                // Note: this handler is responsible for enforcing additional response_type requirements when
+                // response type permissions are not used (and thus cannot be finely controlled per client).
                 //
-                // Alternatively, this handler can be removed from the handlers list using the events model APIs.
-                if (!context.Options.IgnoreResponseTypePermissions || !context.Request.HasResponseType(ResponseTypes.Token))
+                // Users who want to support the scenarios disallowed by this event handler are encouraged
+                // to re-enable permissions validation. Alternatively, this handler can be removed from
+                // the handlers list and replaced by a custom version using the events model APIs.
+                if (!context.Options.IgnoreResponseTypePermissions)
                 {
                     return;
                 }
 
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                // When PKCE is used, reject authorization requests returning an access token directly
+                // from the authorization endpoint to prevent a malicious client from retrieving a valid
+                // access token - even with a limited scope - without sending the correct code_verifier.
+                if (!string.IsNullOrEmpty(context.Request.CodeChallenge) &&
+                    context.Request.HasResponseType(ResponseTypes.Token))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6045), context.ClientId);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6043));
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
-                        description: SR.FormatID2043(Parameters.ResponseType),
-                        uri: SR.FormatID8000(SR.ID2043));
+                        description: SR.FormatID2041(Parameters.ResponseType),
+                        uri: SR.FormatID8000(SR.ID2041));
 
                     return;
+                }
+
+                if (!context.Options.EnableDegradedMode)
+                {
+                    if (_applicationManager is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                    }
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                    // To prevent downgrade attacks, ensure that authorization requests returning
+                    // an access token directly from the authorization endpoint are rejected if
+                    // the client_id corresponds to a confidential application.
+                    if (context.Request.HasResponseType(ResponseTypes.Token) &&
+                        await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
+                    {
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6045), context.ClientId);
+
+                        context.Reject(
+                            error: Errors.UnauthorizedClient,
+                            description: SR.FormatID2043(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2043));
+
+                        return;
+                    }
                 }
             }
         }
