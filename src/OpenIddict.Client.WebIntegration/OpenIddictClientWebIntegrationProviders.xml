@@ -822,9 +822,7 @@
     <Environment Issuer="https://www.kookapp.cn/">
       <Configuration AuthorizationEndpoint="https://www.kookapp.cn/app/oauth2/authorize"
                      TokenEndpoint="https://www.kookapp.cn/api/oauth2/token"
-                     UserinfoEndpoint="https://www.kookapp.cn/api/v3/user/me">
-        <GrantType Value="authorization_code" />
-      </Configuration>
+                     UserinfoEndpoint="https://www.kookapp.cn/api/v3/user/me" />
 
       <!--
         Note: Kook requires sending the "get_user_info" scope to be able to use the userinfo endpoint.
