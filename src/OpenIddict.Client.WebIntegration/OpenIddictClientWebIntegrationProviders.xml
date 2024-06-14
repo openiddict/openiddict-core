@@ -783,11 +783,11 @@
   </Provider>
 
   <!--
-                                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                                   ██ █▀▄██ ▄▄▄ ██ ▄▄▄ ██ █▀▄██
-                                                   ██ ▄▀███ ███ ██ ███ ██ ▄▀███
-                                                   ██ ██ ██ ▀▀▀ ██ ▀▀▀ ██ ██ ██
-                                                   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                  ██ █▀▄██ ▄▄▄ ██ ▄▄▄ ██ █▀▄██
+                                                  ██ ▄▀███ ███ ██ ███ ██ ▄▀███
+                                                  ██ ██ ██ ▀▀▀ ██ ▀▀▀ ██ ██ ██
+                                                  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
   <Provider Name="Kook" DisplayName="KOOK" Id="935c58d9-618c-4bc4-9063-944a2c41d03c"
@@ -796,14 +796,14 @@
       <Configuration AuthorizationEndpoint="https://www.kookapp.cn/app/oauth2/authorize"
                      TokenEndpoint="https://www.kookapp.cn/api/oauth2/token"
                      UserinfoEndpoint="https://www.kookapp.cn/api/v3/user/me">
-          <GrantType Value="authorization_code" />
+        <GrantType Value="authorization_code" />
       </Configuration>
 
-        <!--
-          Note: Kook requires sending the "get_user_info" scope to be able to use the userinfo endpoint.
-        -->
+      <!--
+        Note: Kook requires sending the "get_user_info" scope to be able to use the userinfo endpoint.
+      -->
 
-        <Scope Name="get_user_info" Default="true" Required="true" />
+      <Scope Name="get_user_info" Default="true" Required="true" />
     </Environment>
   </Provider>
 

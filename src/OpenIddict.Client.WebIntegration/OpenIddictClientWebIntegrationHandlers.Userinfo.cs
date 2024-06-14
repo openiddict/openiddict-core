@@ -411,9 +411,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ["accounts"] = context.Response["accounts"]
                     },
 
-                    // KOOK, Kroger, Twitter and Patreon return a nested "data" object.
-                    ProviderTypes.Kook    or ProviderTypes.Kroger or ProviderTypes.Patreon or
-                    ProviderTypes.Twitter
+                    // These providers return a nested "data" object.
+                    ProviderTypes.Kook or ProviderTypes.Kroger or ProviderTypes.Patreon or ProviderTypes.Twitter
                         => new(context.Response["data"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data"))),
 
