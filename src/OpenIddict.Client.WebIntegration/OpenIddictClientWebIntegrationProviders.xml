@@ -642,6 +642,33 @@
   </Provider>
 
   <!--
+                                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                 ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ▄▄▄██ ▄▄▄██
+                                                 ██ █▀▀██ ████ ████ ▄▄▄██ ▄▄▄██
+                                                 ██ ▀▀▄█▀ ▀███ ████ ▀▀▀██ ▀▀▀██
+                                                 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Gitee" Id="c7b7cc2f-06a3-46d5-a32b-40c5d3be40a8"
+            Documentation="https://gitee.com/api/v5/oauth_doc#/">
+    <Environment Issuer="https://gitee.com/">
+      <Configuration AuthorizationEndpoint="https://gitee.com/oauth/authorize"
+                     TokenEndpoint="https://gitee.com/oauth/token"
+                     UserinfoEndpoint="https://gitee.com/api/v5/user">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="password" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <!--
+        Note: Gitee requires sending the "user_info" scope to be able to use the dynamic access token info endpoint.
+      -->
+
+      <Scope Name="user_info" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ██ ██ ██ ██ ▄▄▀██
                                               ██ █▀▀██ ████ ████ ▄▄ ██ ██ ██ ▄▄▀██
