@@ -656,7 +656,7 @@
                      TokenEndpoint="https://gitee.com/oauth/token"
                      UserinfoEndpoint="https://gitee.com/api/v5/user">
         <GrantType Value="authorization_code" />
-<!--        <GrantType Value="password" />-->
+        <GrantType Value="password" />
         <GrantType Value="refresh_token" />
       </Configuration>
 
