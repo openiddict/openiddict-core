@@ -122,7 +122,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                else if (context.Registration.ProviderType is ProviderTypes.Auth0 or ProviderTypes.Huawei or ProviderTypes.Microsoft)
+                else if (context.Registration.ProviderType is ProviderTypes.Auth0 or ProviderTypes.Microsoft)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
@@ -142,6 +142,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 else if (context.Registration.ProviderType is ProviderTypes.Google)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.Implicit);
+                }
+
+                else if (context.Registration.ProviderType is ProviderTypes.Huawei)
+                {
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.DeviceCode);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
                 else if (context.Registration.ProviderType is

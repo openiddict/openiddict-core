@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -928,18 +927,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetFacebookSettings();
 
                 context.UserinfoRequest["fields"] = string.Join(",", settings.Fields);
-            }
-
-            else if (context.Registration.ProviderType is ProviderTypes.Huawei)
-            {
-                var settings = context.Registration.GetHuaweiSettings();
-
-                context.UserinfoRequest["nsp_svc"] = "GOpen.User.getInfo";
-                if (!string.IsNullOrEmpty(settings.FetchNickname) &&
-                    long.TryParse(settings.FetchNickname, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-                {
-                    context.UserinfoRequest["getNickName"] = value;
-                }
             }
 
             // Meetup's userinfo endpoint is a GraphQL implementation that requires

@@ -747,29 +747,14 @@
   -->
 
   <Provider Name="Huawei" Id="95a620d2-a362-47b0-b372-26fa9d41d20e"
-            Documentation="https://developer.huawei.com/consumer/cn/doc/HMSCore-Guides/open-platform-oauth-0000001053629189">
+            Documentation="https://developer.huawei.com/consumer/en/doc/HMSCore-Guides/open-platform-oauth-0000001053629189">
     <Environment Issuer="https://accounts.huawei.com/"
-                 ConfigurationEndpoint="https://oauth-login.cloud.huawei.com/.well-known/openid-configuration">
-<!--      <Configuration AuthorizationEndpoint="https://oauth-login.cloud.huawei.com/oauth2/v3/authorize"-->
-<!--                     TokenEndpoint="https://oauth-login.cloud.huawei.com/oauth2/v3/token"-->
-<!--                     UserinfoEndpoint="https://account.cloud.huawei.com/rest.php">-->
-<!--        <GrantType Value="authorization_code" />-->
-<!--        <GrantType Value="refresh_token" />-->
-<!--      </Configuration>-->
-
-<!--      &lt;!&ndash;-->
-<!--        Note: Huawei requires sending the "profile" scope to be able to use the dynamic access token info endpoint.-->
-<!--      &ndash;&gt;-->
-
-<!--      <Scope Name="openid" Default="true" Required="true" />-->
-    </Environment>
+                 ConfigurationEndpoint="https://oauth-login.cloud.huawei.com/.well-known/openid-configuration" />
 
     <Setting PropertyName="AccessType" ParameterName="access_type" Type="String" Required="false"
              Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
     <Setting PropertyName="Display" ParameterName="display" Type="String" Required="false"
              Description="The value used as the 'display' parameter (can be set to 'touch' to adjust the authorization page display style for mobile apps)" />
-    <Setting PropertyName="FetchNickname" ParameterName="getNickName" Type="String" Required="false"
-             Description="The value used as the 'getNickName' parameter (can be set to '1' to indicate that the nickname is returned preferentially)" />
   </Provider>
 
   <!--
@@ -793,7 +778,7 @@
         Note: HubSpot requires sending the "oauth" scope to be able to use the dynamic access token info endpoint.
       -->
 
-      <Scope Name="oauth" Default="true" Required="true" />
+      <Scope Name="openid" Default="true" Required="true" />
     </Environment>
   </Provider>
 
