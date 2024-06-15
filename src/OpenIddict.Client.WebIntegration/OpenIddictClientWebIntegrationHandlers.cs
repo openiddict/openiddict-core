@@ -1625,6 +1625,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["access_type"] = settings.AccessType;
             }
 
+            // By default, Huawei doesn't return a refresh token but allows sending an "access_type"
+            // parameter to retrieve one (but it is only returned during the first authorization dance).
+            // The documentation also indicates the "display" parameter is supported but not required,
+            // which can be set to "touch" to adjust the authorization page display style for mobile apps.
             else if (context.Registration.ProviderType is ProviderTypes.Huawei)
             {
                 var settings = context.Registration.GetHuaweiSettings();
