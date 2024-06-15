@@ -348,7 +348,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 // Note: the shop domain extracted from the redirection request is not used by OpenIddict (that stores
-                // the shop name in the state token, but it can be resolved and used by the developers in their own code.
+                // the shop name in the state token), but it can be resolved and used by the developers in their own code.
                 //
                 // To ensure the value is correct, it is compared to the shop name stored in the state token: if
                 // the two don't match, the request is automatically rejected to prevent a potential mixup attack.
