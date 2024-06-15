@@ -739,6 +739,32 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ██ ██ ██ █
+                                        ██ ▄▄ ██ ██ █
+                                        ██ ██ ██▄▀▀▄█
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Huawei" Id="95a620d2-a362-47b0-b372-26fa9d41d20e"
+            Documentation="https://developer.huawei.com/consumer/cn/doc/HMSCore-Guides/open-platform-oauth-0000001053629189">
+    <Environment Issuer="https://accounts.huawei.com/">
+      <Configuration AuthorizationEndpoint="https://oauth-login.cloud.huawei.com/oauth2/v3/authorize"
+                     TokenEndpoint="https://oauth-login.cloud.huawei.com/oauth2/v3/token"
+                     UserinfoEndpoint="https://account.cloud.huawei.com/rest.php">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <!--
+        Note: Huawei requires sending the "openid" scope to be able to use the dynamic access token info endpoint.
+      -->
+
+      <Scope Name="openid" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ██ ██ ██ ██ ▄▄▀██ ▄▄▄ ██ ▄▄ ██ ▄▄▄ █▄▄ ▄▄██
                                         ██ ▄▄ ██ ██ ██ ▄▄▀██▄▄▄▀▀██ ▀▀ ██ ███ ███ ████

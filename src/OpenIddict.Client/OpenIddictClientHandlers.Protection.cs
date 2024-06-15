@@ -354,6 +354,7 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
+                // TODO: How to skip it?
                 var result = await context.SecurityTokenHandler.ValidateTokenAsync(context.Token, context.TokenValidationParameters);
                 if (!result.IsValid)
                 {
