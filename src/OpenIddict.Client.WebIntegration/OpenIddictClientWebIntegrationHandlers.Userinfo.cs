@@ -76,7 +76,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                     // The userinfo endpoints exposed by these providers
                     // use custom protocols that require using POST:
-                    ProviderTypes.Todoist => HttpMethod.Post,
+                    ProviderTypes.Huawei or ProviderTypes.Todoist => HttpMethod.Post,
 
                     _ => request.Method
                 };

@@ -122,7 +122,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                else if (context.Registration.ProviderType is ProviderTypes.Auth0 or ProviderTypes.Microsoft)
+                else if (context.Registration.ProviderType is ProviderTypes.Auth0 or ProviderTypes.Huawei or ProviderTypes.Microsoft)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
