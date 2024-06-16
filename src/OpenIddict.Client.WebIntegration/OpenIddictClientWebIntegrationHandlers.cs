@@ -268,24 +268,24 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             else if (context.Registration.ProviderType is ProviderTypes.Huawei)
             {
-                var error = (string?) context.Request[Parameters.Error];
-                if (!string.IsNullOrEmpty(error))
+                var error = (long?) context.Request[Parameters.Error];
+                if (error is not null)
                 {
                     context.Reject(
                         error: error switch
                         {
-                            "1107" => Errors.AccessDenied,
-                               _   => Errors.ServerError
+                            1107 => Errors.AccessDenied,
+                              _  => Errors.ServerError
                         },
                         description: error switch
                         {
-                            "1107" => SR.GetResourceString(SR.ID2149),
-                               _   => SR.GetResourceString(SR.ID2152)
+                            1107 => SR.GetResourceString(SR.ID2149),
+                              _  => SR.GetResourceString(SR.ID2152)
                         },
                         uri: error switch
                         {
-                            "1107" => SR.FormatID8000(SR.ID2149),
-                               _   => SR.FormatID8000(SR.ID2152)
+                            1107 => SR.FormatID8000(SR.ID2149),
+                              _  => SR.FormatID8000(SR.ID2152)
                         });
 
                     return default;
