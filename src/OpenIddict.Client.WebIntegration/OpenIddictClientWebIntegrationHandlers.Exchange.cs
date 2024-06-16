@@ -422,8 +422,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // that contains additional error information, with which the error code can demonstrate a specific
                 // meaning. To work around that, the "error" parameter is replaced with a standard error code.
                 // When the error code is "1101", the sub-error code of "20411" indicates that the device code
-                // authorization request is still waiting for the user to access the authorization page, and the
-                // sub-error code of "20412" indicates that the user has not performed the device code authorization.
+                // authorization request is still waiting for the user to access the authorization page; the
+                // sub-error code of "20412" indicates that the user has not performed the device code authorization;
+                // the sub-error code of "20414" indicates that the user has denied the device code authorization.
                 // For more information about the error codes, sub-error codes, and their meanings, see:
                 // https://developer.huawei.com/consumer/en/doc/HMSCore-Guides/open-platform-error-0000001053869182#section6581130161218
                 else if (context.Registration.ProviderType is ProviderTypes.Huawei &&
@@ -435,6 +436,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Response[Parameters.Error] = (error, subError) switch
                     {
                         (1101, 20411 or 20412) => Errors.AuthorizationPending,
+                        (1101, 20414) => Errors.AccessDenied,
                         _ => Errors.InvalidRequest
                     };
                 }
