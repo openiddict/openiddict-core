@@ -435,6 +435,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     long subError = (long) context.Response["sub_error"];
                     context.Response[Parameters.Error] = (error, subError) switch
                     {
+                        (1101, 20404) => Errors.ExpiredToken,
                         (1101, 20411 or 20412) => Errors.AuthorizationPending,
                         (1101, 20414) => Errors.AccessDenied,
                         _ => Errors.InvalidRequest
