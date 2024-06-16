@@ -5,6 +5,8 @@
  */
 
 using System.Collections.Immutable;
+using System.Text.Json;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -55,6 +57,36 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Response[Parameters.VerificationUri] = context.Response["verification_url"];
                     context.Response["verification_url"] = null;
+                }
+
+                // Note: Huawei returns a non-standard "error" parameter as a numeric value,
+                // which is not allowed by OpenIddict (that requires a string).
+                //
+                // In device code responses, Huawei doesn't return a standard "verification_uri" parameter
+                // but returns a custom "verification_url" that serves the same purpose. It also doesn't return
+                // a standard "expires_in" parameter but returns a custom "expire_in" that serves the same purpose.
+                else if (context.Registration.ProviderType is ProviderTypes.Huawei)
+                {
+                    if ((JsonElement?) context.Response[Parameters.Error] is { ValueKind: JsonValueKind.Number })
+                    {
+                        context.Response[Parameters.Error] = Errors.InvalidRequest;
+                    }
+                    else
+                    {
+                        var verificationUri = context.Response["verification_url"];
+                        context.Response[Parameters.VerificationUri] = verificationUri;
+                        if ((string?) verificationUri is { } verificationUriValue &&
+                            !string.IsNullOrEmpty(context.Response.UserCode))
+                        {
+                            context.Response[Parameters.VerificationUriComplete] =
+                                OpenIddictHelpers.AddQueryStringParameter(new Uri(verificationUriValue, UriKind.Absolute),
+                                    Parameters.UserCode, context.Response.UserCode).AbsoluteUri;
+                        }
+                        context.Response["verification_url"] = null;
+
+                        context.Response[Parameters.ExpiresIn] = context.Response["expire_in"];
+                        context.Response["expire_in"] = null;
+                    }
                 }
 
                 return default;

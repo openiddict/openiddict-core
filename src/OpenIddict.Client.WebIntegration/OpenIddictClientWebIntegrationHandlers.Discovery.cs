@@ -363,6 +363,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ClientAuthenticationMethods.ClientSecretPost);
                 }
 
+                // Huawei doesn't support sending the client credentials using basic authentication when
+                // using the device authorization grant, making basic authentication the default authentication
+                // method. To work around this compliance issue, "client_secret_post" is manually added here.
+                else if (context.Registration.ProviderType is ProviderTypes.Huawei)
+                {
+                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretPost);
+                }
+
                 // LinkedIn doesn't support sending the client credentials using basic authentication but
                 // doesn't return a "token_endpoint_auth_methods_supported" node containing alternative
                 // authentication methods, making basic authentication the default authentication method.
@@ -415,6 +424,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Configuration.EndSessionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                         context.Registration.Issuer, "oidc/logout");
+                }
+
+                // While Huawei supports OpenID Connect discovery, the configuration
+                // document doesn't return the address of the device authorization endpoint.
+                // To work around that, the endpoint URI is manually added here.
+                else if (context.Registration.ProviderType is ProviderTypes.Huawei)
+                {
+                    context.Configuration.DeviceAuthorizationEndpoint =
+                        new Uri("https://oauth-login.cloud.huawei.com/oauth2/v3/device/code", UriKind.Absolute);
                 }
 
                 // While it exposes a standard OpenID Connect userinfo endpoint, Orange France doesn't list it
