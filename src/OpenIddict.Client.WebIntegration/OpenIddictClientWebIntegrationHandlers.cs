@@ -1216,6 +1216,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // FitBit returns the username as a custom "displayName" node:
                 ProviderTypes.Fitbit => (string?) context.UserinfoResponse?["displayName"],
 
+                // Huawei returns the username as a custom "display_name" in the backchannel identity token:
+                ProviderTypes.Huawei => context.BackchannelIdentityTokenPrincipal?.GetClaim("display_name"),
+
                 // HubSpot returns the username as a custom "user" node:
                 ProviderTypes.HubSpot => (string?) context.UserinfoResponse?["user"],
 
