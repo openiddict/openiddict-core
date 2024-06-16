@@ -427,19 +427,19 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // the sub-error code of "20414" indicates that the user has denied the device code authorization.
                 // For more information about the error codes, sub-error codes, and their meanings, see:
                 // https://developer.huawei.com/consumer/en/doc/HMSCore-Guides/open-platform-error-0000001053869182#section6581130161218
-                else if (context.Registration.ProviderType is ProviderTypes.Huawei &&
-                         (JsonElement?) context.Response[Parameters.Error] is { ValueKind: JsonValueKind.Number } &&
-                         (JsonElement?) context.Response["sub_error"] is { ValueKind: JsonValueKind.Number })
+                else if (context.Registration.ProviderType is ProviderTypes.Huawei)
                 {
-                    long error = (long) context.Response[Parameters.Error];
-                    long subError = (long) context.Response["sub_error"];
-                    context.Response[Parameters.Error] = (error, subError) switch
-                    {
-                        (1101, 20404) => Errors.ExpiredToken,
-                        (1101, 20411 or 20412) => Errors.AuthorizationPending,
-                        (1101, 20414) => Errors.AccessDenied,
-                        _ => Errors.InvalidRequest
-                    };
+                    context.Response[Parameters.Error] =
+                        ((long?) context.Response[Parameters.Error], (long?) context.Response["sub_error"]) switch
+                        {
+                            (1101, 20404)          => Errors.ExpiredToken,
+                            (1101, 20411 or 20412) => Errors.AuthorizationPending,
+                            (1101, 20414)          => Errors.AccessDenied,
+
+                            (not null, _)          => Errors.InvalidRequest,
+
+                            _ => null,
+                        };
                 }
 
                 // Note: Tumblr returns a non-standard "id_token: false" node that collides
