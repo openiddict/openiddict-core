@@ -627,6 +627,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.TokenRequest.RedirectUri = context.Registration.ProviderType switch
             {
                 ProviderTypes.Deezer or
+                ProviderTypes.Huawei or
                 ProviderTypes.Mixcloud => OpenIddictHelpers.AddQueryStringParameter(
                     uri  : new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
                     name : Parameters.State,
@@ -1575,7 +1576,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // Note: this workaround only works for providers that allow dynamic
             // redirection URIs and implement a relaxed validation policy logic.
 
-            if (context.Registration.ProviderType is ProviderTypes.Deezer or ProviderTypes.Mixcloud)
+            if (context.Registration.ProviderType is ProviderTypes.Deezer or ProviderTypes.Huawei or ProviderTypes.Mixcloud)
             {
                 context.Request.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
                     uri  : new Uri(context.RedirectUri, UriKind.Absolute),
