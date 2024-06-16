@@ -73,16 +73,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     }
                     else
                     {
-                        var verificationUri = context.Response["verification_url"];
-                        context.Response[Parameters.VerificationUri] = verificationUri;
-                        if ((string?) verificationUri is { } verificationUriValue &&
+                        if ((string?) context.Response["verification_url"] is { } verificationUri &&
                             !string.IsNullOrEmpty(context.Response.UserCode))
                         {
-                            context.Response[Parameters.VerificationUriComplete] =
-                                OpenIddictHelpers.AddQueryStringParameter(new Uri(verificationUriValue, UriKind.Absolute),
-                                    Parameters.UserCode, context.Response.UserCode).AbsoluteUri;
+                            string verificationUriComplete = OpenIddictHelpers.AddQueryStringParameter(
+                                new Uri(verificationUri, UriKind.Absolute),
+                                Parameters.UserCode, context.Response.UserCode).AbsoluteUri;
+                            context.Response[Parameters.VerificationUri] = verificationUriComplete;
+                            context.Response[Parameters.VerificationUriComplete] = verificationUriComplete;
+                            context.Response["verification_url"] = null;
                         }
-                        context.Response["verification_url"] = null;
 
                         context.Response[Parameters.ExpiresIn] = context.Response["expire_in"];
                         context.Response["expire_in"] = null;
