@@ -59,34 +59,35 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Response["verification_url"] = null;
                 }
 
-                // Note: Huawei returns a non-standard "error" parameter as a numeric value,
-                // which is not allowed by OpenIddict (that requires a string).
-                //
-                // In device code responses, Huawei doesn't return a standard "verification_uri" parameter
-                // but returns a custom "verification_url" that serves the same purpose. It also doesn't return
-                // a standard "expires_in" parameter but returns a custom "expire_in" that serves the same purpose.
+                // Note: Huawei returns a non-standard "error" parameter as a numeric value, which is
+                // not allowed by OpenIddict (that requires a string). It also doesn't return a standard
+                // "verification_uri" parameter but returns a custom "verification_url" that serves the
+                // same purpose. Similarly, a custom "expire_in" parameter is used instead of "expires_in".
                 else if (context.Registration.ProviderType is ProviderTypes.Huawei)
                 {
                     if ((JsonElement?) context.Response[Parameters.Error] is { ValueKind: JsonValueKind.Number })
                     {
                         context.Response[Parameters.Error] = Errors.InvalidRequest;
                     }
-                    else
+ 
+                    if (!string.IsNullOrEmpty(context.Response.UserCode) &&
+                        Uri.TryCreate((string?) context.Response["verification_url"], UriKind.Absolute, out Uri? uri))
                     {
-                        if ((string?) context.Response["verification_url"] is { } verificationUri &&
-                            !string.IsNullOrEmpty(context.Response.UserCode))
-                        {
-                            string verificationUriComplete = OpenIddictHelpers.AddQueryStringParameter(
-                                new Uri(verificationUri, UriKind.Absolute),
-                                Parameters.UserCode, context.Response.UserCode).AbsoluteUri;
-                            context.Response[Parameters.VerificationUri] = verificationUriComplete;
-                            context.Response[Parameters.VerificationUriComplete] = verificationUriComplete;
-                            context.Response["verification_url"] = null;
-                        }
+                        // Note: the user verification URI returned by Huawei points to an endpoint that always returns
+                        // a JSON error when it is accessed without the "user_code" parameter attached. To ensure the
+                        // user verification URI returned by the OpenIddict client service to the caller can be used
+                        // as-is, both parameters are replaced to always include the user code in the query string.
+                        context.Response[Parameters.VerificationUri] =
+                        context.Response[Parameters.VerificationUriComplete] = OpenIddictHelpers.AddQueryStringParameter(
+                            uri  : uri,
+                            name : Parameters.UserCode,
+                            value: context.Response.UserCode).AbsoluteUri;
 
-                        context.Response[Parameters.ExpiresIn] = context.Response["expire_in"];
-                        context.Response["expire_in"] = null;
+                        context.Response["verification_url"] = null;
                     }
+
+                    context.Response[Parameters.ExpiresIn] = context.Response["expire_in"];
+                    context.Response["expire_in"] = null;
                 }
 
                 return default;
