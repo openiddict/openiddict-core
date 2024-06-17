@@ -202,6 +202,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.ClientId = context.Request.ClientSecret = null;
                 }
 
+                // These providers don't implement the standard version of the client_secret_basic
+                // authentication method as they require an application-specific access token as a bearer token.
+                else if (context.Registration.ProviderType is ProviderTypes.Feishu
+                         && context.Registration.GetFeishuSettings().ApplicationAccessToken is { } token)
+                {
+                    // Attach the authorization header containing the application access token to the HTTP request.
+                    request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, token);
+                }
+
                 return default;
 
                 static string? EscapeDataString(string? value)
@@ -403,6 +412,32 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         NumberStyles.Integer, CultureInfo.InvariantCulture, out long value))
                 {
                     context.Response.ExpiresIn = value;
+                }
+
+                // Note: Feishu returns a non-standard response body. The "code" and "message" parameters describe
+                // whether the request was successful or not. If the "code" parameter is "0", the response is
+                // considered successful and the standard token response parameters are extracted from the "data" node.
+                else if (context.Registration.ProviderType is ProviderTypes.Feishu)
+                {
+                    if ((long?) context.Response[Parameters.Code] is not 0)
+                    {
+                        context.Response[Parameters.Error] = Errors.InvalidRequest;
+                        context.Response[Parameters.ErrorDescription] = (string?) context.Response["message"];
+                    }
+
+                    if (context.Response["data"] is { } data)
+                    {
+                        context.Response[Parameters.AccessToken] = data[Parameters.AccessToken];
+                        context.Response[Parameters.RefreshToken] = data[Parameters.RefreshToken];
+                        context.Response[Parameters.TokenType] = data[Parameters.TokenType];
+                        context.Response[Parameters.ExpiresIn] = data[Parameters.ExpiresIn];
+                        context.Response["refresh_expires_in"] = data["refresh_expires_in"];
+                        context.Response[Parameters.Scope] = data[Parameters.Scope];
+                    }
+
+                    context.Response[Parameters.Code] =
+                    context.Response[Parameters.ErrorDescription] =
+                    context.Response["data"] = null;
                 }
 
                 // Note: Tumblr returns a non-standard "id_token: false" node that collides

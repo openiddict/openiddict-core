@@ -400,6 +400,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.ExactOnline => new(context.Response["d"]?["results"]?[0]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),
 
+                    // These providers return a nested "data" object.
+                    ProviderTypes.Feishu or ProviderTypes.Kook or ProviderTypes.Kroger or ProviderTypes.Patreon or ProviderTypes.Twitter
+                        => new(context.Response["data"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("data"))),
+
                     // Fitbit and Todoist return a nested "user" object.
                     ProviderTypes.Fitbit or ProviderTypes.Todoist => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
@@ -410,11 +415,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     {
                         ["accounts"] = context.Response["accounts"]
                     },
-
-                    // These providers return a nested "data" object.
-                    ProviderTypes.Kook or ProviderTypes.Kroger or ProviderTypes.Patreon or ProviderTypes.Twitter
-                        => new(context.Response["data"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("data"))),
 
                     // Meetup returns a nested "self" object that is itself nested in a GraphQL "data" node.
                     ProviderTypes.Meetup => new(context.Response["data"]?["self"]?.GetNamedParameters() ??
