@@ -1568,6 +1568,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request.State = null;
             }
 
+            // Note: Feishu doesn't return the state parameter in the authorization denied response,
+            // which makes it impossible to validate the state parameter in redirection URIs.
+            // If the state parameter is appended to the redirect_uri with the original state parameter
+            // being removed, the normal authorization flow breaks because Feishu will redirect to the
+            // redirect_uri with an empty state parameter. To work around this issue, the state parameter
+            // is appended to the redirect_uri without the original state parameter being removed.
+            if (context.Registration.ProviderType is ProviderTypes.Feishu)
+            {
+                context.Request.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
+                    uri  : new Uri(context.RedirectUri, UriKind.Absolute),
+                    name : Parameters.State,
+                    value: context.Request.State).AbsoluteUri;
+            }
+
             return default;
         }
     }
