@@ -92,6 +92,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.GrantType = null;
                 }
 
+                // Huawei doesn't support the standard "urn:ietf:params:oauth:grant-type:device_code"
+                // grant type and requires using the non-standard "device_code" grant type instead.
+                // It also doesn't support the standard "device_code" device code parameter and
+                // requires using the non-standard "code" device code parameter instead.
+                if (context.GrantType is GrantTypes.DeviceCode &&
+                    context.Registration.ProviderType is ProviderTypes.Huawei)
+                {
+                    context.Request.GrantType = "device_code";
+                    context.Request.Code = context.Request.DeviceCode;
+                    context.Request.DeviceCode = null;
+                }
+
                 // World ID doesn't support the standard and mandatory redirect_uri parameter and returns
                 // a HTTP 500 response when specifying it in a grant_type=authorization_code token request.
                 //
@@ -403,6 +415,31 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         NumberStyles.Integer, CultureInfo.InvariantCulture, out long value))
                 {
                     context.Response.ExpiresIn = value;
+                }
+
+                // Note: Huawei returns a non-standard "error" parameter as a numeric value, which is not allowed
+                // by OpenIddict (that requires a string). Huawei also returns a non-standard "sub_error" parameter
+                // that contains additional error information, with which the error code can demonstrate a specific
+                // meaning. To work around that, the "error" parameter is replaced with a standard error code.
+                // When the error code is "1101", the sub-error code of "20411" indicates that the device code
+                // authorization request is still waiting for the user to access the authorization page; the
+                // sub-error code of "20412" indicates that the user has not performed the device code authorization;
+                // the sub-error code of "20414" indicates that the user has denied the device code authorization.
+                // For more information about the error codes, sub-error codes, and their meanings, see:
+                // https://developer.huawei.com/consumer/en/doc/HMSCore-Guides/open-platform-error-0000001053869182#section6581130161218
+                else if (context.Registration.ProviderType is ProviderTypes.Huawei)
+                {
+                    context.Response[Parameters.Error] =
+                        ((long?) context.Response[Parameters.Error], (long?) context.Response["sub_error"]) switch
+                        {
+                            (1101, 20404)          => Errors.ExpiredToken,
+                            (1101, 20411 or 20412) => Errors.AuthorizationPending,
+                            (1101, 20414)          => Errors.AccessDenied,
+
+                            (not null, _)          => Errors.InvalidRequest,
+
+                            _ => null,
+                        };
                 }
 
                 // Note: Tumblr returns a non-standard "id_token: false" node that collides

@@ -266,6 +266,32 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
             }
 
+            else if (context.Registration.ProviderType is ProviderTypes.Huawei)
+            {
+                var error = (long?) context.Request[Parameters.Error];
+                if (error is not null)
+                {
+                    context.Reject(
+                        error: error switch
+                        {
+                            1107 => Errors.AccessDenied,
+                              _  => Errors.ServerError
+                        },
+                        description: error switch
+                        {
+                            1107 => SR.GetResourceString(SR.ID2149),
+                              _  => SR.GetResourceString(SR.ID2152)
+                        },
+                        uri: error switch
+                        {
+                            1107 => SR.FormatID8000(SR.ID2149),
+                              _  => SR.FormatID8000(SR.ID2152)
+                        });
+
+                    return default;
+                }
+            }
+
             else if (context.Registration.ProviderType is ProviderTypes.LinkedIn)
             {
                 var error = (string?) context.Request[Parameters.Error];
@@ -601,6 +627,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.TokenRequest.RedirectUri = context.Registration.ProviderType switch
             {
                 ProviderTypes.Deezer or
+                ProviderTypes.Huawei or
                 ProviderTypes.Mixcloud => OpenIddictHelpers.AddQueryStringParameter(
                     uri  : new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
                     name : Parameters.State,
@@ -1189,6 +1216,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // FitBit returns the username as a custom "displayName" node:
                 ProviderTypes.Fitbit => (string?) context.UserinfoResponse?["displayName"],
 
+                // Huawei returns the username as a custom "display_name" in the backchannel identity token:
+                ProviderTypes.Huawei => context.BackchannelIdentityTokenPrincipal?.GetClaim("display_name"),
+
                 // HubSpot returns the username as a custom "user" node:
                 ProviderTypes.HubSpot => (string?) context.UserinfoResponse?["user"],
 
@@ -1549,7 +1579,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // Note: this workaround only works for providers that allow dynamic
             // redirection URIs and implement a relaxed validation policy logic.
 
-            if (context.Registration.ProviderType is ProviderTypes.Deezer or ProviderTypes.Mixcloud)
+            if (context.Registration.ProviderType is ProviderTypes.Deezer or ProviderTypes.Huawei or ProviderTypes.Mixcloud)
             {
                 context.Request.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
                     uri  : new Uri(context.RedirectUri, UriKind.Absolute),
@@ -1623,6 +1653,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetGoogleSettings();
 
                 context.Request["access_type"] = settings.AccessType;
+            }
+
+            // By default, Huawei doesn't return a refresh token but allows sending an "access_type"
+            // parameter to retrieve one (but it is only returned during the first authorization dance).
+            // The documentation also indicates the "display" parameter is supported but not required,
+            // which can be set to "touch" to adjust the authorization page display style for mobile apps.
+            else if (context.Registration.ProviderType is ProviderTypes.Huawei)
+            {
+                var settings = context.Registration.GetHuaweiSettings();
+
+                context.Request["access_type"] = settings.AccessType;
+                context.Request["display"] = settings.Display;
             }
 
             // By default, MusicBrainz doesn't return a refresh token but allows sending an "access_type"
