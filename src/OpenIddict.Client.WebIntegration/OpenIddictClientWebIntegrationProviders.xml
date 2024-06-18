@@ -614,57 +614,6 @@
   </Provider>
 
   <!--
-                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                              ██ ▄▄▄█ ▄▄▄█▄ ▄██ ▄▄▄ ██ ██ ██ ██ ██
-                                              ██ ▄▄██ ▄▄▄██ ███▄▄▄▀▀██ ▄▄ ██ ██ ██
-                                              ██ ████ ▀▀▀█▀ ▀██ ▀▀▀ ██ ██ ██▄▀▀▄██
-                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-  -->
-
-  <Provider Name="Feishu" DisplayName="Feishu (Lark)" Id="5eeeee23-fae8-4619-afcf-14bf61b82b24"
-            Documentation="https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/login-overview?lang=en-US">
-    <Environment Name="Production" Issuer="https://open.feishu.cn">
-      <Configuration AuthorizationEndpoint="https://open.feishu.cn/open-apis/authen/v1/authorize"
-                     TokenEndpoint="https://open.feishu.cn/open-apis/authen/v1/oidc/access_token"
-                     UserinfoEndpoint="https://open.feishu.cn/open-apis/authen/v1/user_info">
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-    <Environment Name="Lark" Issuer="https://open.larksuite.com">
-      <Configuration AuthorizationEndpoint="https://open.larksuite.com/open-apis/authen/v1/authorize"
-                     TokenEndpoint="https://open.larksuite.com/open-apis/authen/v1/oidc/access_token"
-                     UserinfoEndpoint="https://open.larksuite.com/open-apis/authen/v1/user_info">
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Setting PropertyName="ApplicationAccessToken" ParameterName="token" Type="String"  Required="true"
-             Description="The value used as the application-specific 'access_token' value in the 'Authorization' header for a token request" />
-  </Provider>
-
-  <!--
-                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                              ██ ▄▄▄█ ▄▄▄█▄ ▄██ ▄▄▄ ██ ██ ██ ██ ██
-                                              ██ ▄▄██ ▄▄▄██ ███▄▄▄▀▀██ ▄▄ ██ ██ ██
-                                              ██ ████ ▀▀▀█▀ ▀██ ▀▀▀ ██ ██ ██▄▀▀▄██
-                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-  -->
-
-  <Provider Name="FeishuLegacy" DisplayName="Feishu Legacy" Id="b595a5f1-f6e2-46c5-b401-3e8614571768"
-            Documentation="https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/login-overview?lang=en-US">
-    <Environment Issuer="https://passport.feishu.cn">
-      <Configuration AuthorizationEndpoint="https://passport.feishu.cn/suite/passport/oauth/authorize"
-                     TokenEndpoint="https://passport.feishu.cn/suite/passport/oauth/token"
-                     UserinfoEndpoint="https://passport.feishu.cn/suite/passport/oauth/userinfo">
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-  </Provider>
-
-  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄▄█▄ ▄█▄▄ ▄▄██ ▄▄▀█▄ ▄█▄▄ ▄▄██
                                               ██ ▄▄███ ████ ████ ▄▄▀██ ████ ████
