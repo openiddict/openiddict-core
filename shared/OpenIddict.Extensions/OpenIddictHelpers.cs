@@ -429,13 +429,37 @@ internal static class OpenIddictHelpers
 
         return query.TrimStart(Separators.QuestionMark[0])
             .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
-            .Select(parts => (
+            .Select(static parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
+            .Select(static parts => (
                 Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
                 Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
-            .Where(pair => !string.IsNullOrEmpty(pair.Key))
-            .GroupBy(pair => pair.Key)
-            .ToDictionary(pair => pair.Key!, pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
+            .Where(static pair => !string.IsNullOrEmpty(pair.Key))
+            .GroupBy(static pair => pair.Key)
+            .ToDictionary(static pair => pair.Key!, static pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
+    }
+
+    /// <summary>
+    /// Extracts the parameters from the specified fragment.
+    /// </summary>
+    /// <param name="fragment">The fragment string, which may start with a '#'.</param>
+    /// <returns>The parameters extracted from the specified fragment.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="fragment"/> is <see langword="null"/>.</exception>
+    public static IReadOnlyDictionary<string, StringValues> ParseFragment(string fragment)
+    {
+        if (fragment is null)
+        {
+            throw new ArgumentNullException(nameof(fragment));
+        }
+
+        return fragment.TrimStart(Separators.Hash[0])
+            .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(static parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
+            .Select(static parts => (
+                Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
+                Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
+            .Where(static pair => !string.IsNullOrEmpty(pair.Key))
+            .GroupBy(static pair => pair.Key)
+            .ToDictionary(static pair => pair.Key!, static pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
     }
 
     /// <summary>
