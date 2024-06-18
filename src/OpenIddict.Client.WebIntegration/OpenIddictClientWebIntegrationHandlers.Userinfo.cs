@@ -414,7 +414,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // These providers return a nested "data" object.
                     ProviderTypes.Kook or ProviderTypes.Kroger or ProviderTypes.Patreon or ProviderTypes.Twitter
                         => new(context.Response["data"]?.GetNamedParameters() ??
-                            throw new InvalidOperationException(SR.FormatID0334("data"))),
+                        throw new InvalidOperationException(SR.FormatID0334("data"))),
 
                     // Meetup returns a nested "self" object that is itself nested in a GraphQL "data" node.
                     ProviderTypes.Meetup => new(context.Response["data"]?["self"]?.GetNamedParameters() ??
