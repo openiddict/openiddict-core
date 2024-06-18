@@ -1912,7 +1912,7 @@
       <Configuration AuthorizationEndpoint="https://api.weibo.com/oauth2/authorize"
                      RevocationEndpoint="https://api.weibo.com/oauth2/revokeoauth2"
                      TokenEndpoint="https://api.weibo.com/oauth2/access_token"
-                     UserinfoEndpoint="https://api.weibo.com/2/users/show.json"/>
+                     UserinfoEndpoint="https://api.weibo.com/2/users/show.json" />
     </Environment>
 
     <Setting PropertyName="Display" ParameterName="display" Type="String" Required="false"
