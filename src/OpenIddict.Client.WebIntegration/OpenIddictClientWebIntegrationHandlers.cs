@@ -1729,7 +1729,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetWeiboSettings();
 
                 context.Request["display"] = settings.Display;
-                context.Request["forcelogin"] = settings.ForceLogin;
+                context.Request["forcelogin"] = settings.ForceLogin switch
+                {
+                    true => "true",
+                    false => "false",
+                    _ => null
+                };
                 context.Request["language"] = settings.Language;
             }
 
