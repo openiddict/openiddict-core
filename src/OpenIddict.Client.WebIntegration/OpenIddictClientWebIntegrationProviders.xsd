@@ -507,6 +507,7 @@
                         <xs:enumeration value="SigningKey" />
                         <xs:enumeration value="String" />
                         <xs:enumeration value="Uri" />
+                        <xs:enumeration value="Boolean" />
                       </xs:restriction>
                     </xs:simpleType>
                   </xs:attribute>

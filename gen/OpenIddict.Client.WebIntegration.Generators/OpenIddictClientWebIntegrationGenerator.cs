@@ -699,10 +699,12 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}({{ setting.clr_type }} {{ setting.parameter_name }})
         {
+            {{~ if setting.clr_type != 'bool' ~}}
             if ({{ setting.parameter_name }} is null)
             {
                 throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
             }
+            {{~ end ~}}
 
             return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
         }
@@ -786,6 +788,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                                 "String" => "string",
                                 "StringHashSet" => "HashSet<string>",
                                 "Uri" => "Uri",
+                                "Boolean" => "bool",
 
                                 string value => value
                             }
@@ -1368,6 +1371,7 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                                 "String" => "string",
                                 "StringHashSet" => "HashSet<string>",
                                 "Uri" => "Uri",
+                                "Boolean" => "bool",
 
                                 string value => value
                             }
