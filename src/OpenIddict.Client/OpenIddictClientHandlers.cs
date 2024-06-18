@@ -107,13 +107,13 @@ public static partial class OpenIddictClientHandlers
         AttachGrantTypeAndResponseType.Descriptor,
         EvaluateGeneratedChallengeTokens.Descriptor,
         AttachChallengeHostProperties.Descriptor,
-        AttachResponseMode.Descriptor,
         AttachClientId.Descriptor,
         AttachRedirectUri.Descriptor,
         AttachRequestForgeryProtection.Descriptor,
         AttachScopes.Descriptor,
         AttachNonce.Descriptor,
         AttachCodeChallengeParameters.Descriptor,
+        AttachResponseMode.Descriptor,
         PrepareLoginStateTokenPrincipal.Descriptor,
         GenerateLoginStateToken.Descriptor,
         AttachChallengeParameters.Descriptor,
@@ -4569,7 +4569,7 @@ public static partial class OpenIddictClientHandlers
                 // Hybrid flow with grant_type=authorization_code/implicit and response_type=code id_token:
                 (var client, var server) when
                     // Ensure grant_type=authorization_code and grant_type=implicit are supported.
-                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
+                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit))  &&
                     (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
                     (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
 
@@ -4606,7 +4606,7 @@ public static partial class OpenIddictClientHandlers
                 // Hybrid flow with grant_type=authorization_code/implicit and response_type=code id_token token.
                 (var client, var server) when
                     // Ensure grant_type=authorization_code and grant_type=implicit are supported.
-                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
+                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit))  &&
                     (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
                     (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
 
@@ -4623,7 +4623,7 @@ public static partial class OpenIddictClientHandlers
                 // Hybrid flow with grant_type=authorization_code/implicit and response_type=code token.
                 (var client, var server) when
                     // Ensure grant_type=authorization_code and grant_type=implicit are supported.
-                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
+                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit))  &&
                     (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
                     (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
 
@@ -4763,109 +4763,6 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching the response mode to the challenge request.
-    /// </summary>
-    public sealed class AttachResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireInteractiveGrantType>()
-                .UseSingletonHandler<AttachResponseMode>()
-                .SetOrder(AttachChallengeHostProperties.Descriptor.Order + 1_000)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // If an explicit response type was specified, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.ResponseMode))
-            {
-                return default;
-            }
-
-            // Note: in most cases, the query response mode will be used as it offers the
-            // best compatibility and, unlike the form_post response mode, is compatible
-            // with SameSite=Lax cookies (as it uses GET requests for the callback stage).
-            //
-            // However, browser-based hosts like Blazor may typically want to use the fragment
-            // response mode as it offers a better protection for SPA applications.
-            // Unfortunately, server-side clients like ASP.NET Core applications cannot
-            // natively use response_mode=fragment as URI fragments are never sent to servers.
-            //
-            // As such, this handler will not choose response_mode=fragment by default and it is
-            // expected that specialized hosts like Blazor implement custom event handlers to
-            // opt for fragment by default, if it is supported by the authorization server.
-
-            // Some specific response_type/response_mode combinations are not allowed (e.g response_mode=query
-            // can never be used with a response type containing id_token or token, as required by the OAuth 2.0
-            // multiple response types specification. To prevent invalid combinations from being sent to the
-            // remote server, the response types are taken into account when selecting the best response mode.
-            if (context.ResponseType?.Split(Separators.Space) is not IList<string> { Count: > 0 } types)
-            {
-                return default;
-            }
-
-            context.ResponseMode = (
-                // Note: if response modes are explicitly listed in the client registration, only use
-                // the response modes that are both listed and enabled in the global client options.
-                // Otherwise, always default to the response modes that have been enabled globally.
-                SupportedClientResponseModes: context.Registration.ResponseModes.Count switch
-                {
-                    0 => context.Options.ResponseModes as ICollection<string>,
-                    _ => context.Options.ResponseModes.Intersect(context.Registration.ResponseModes, StringComparer.Ordinal).ToList()
-                },
-
-                SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
-            {
-                // If the list of response modes supported by the client is empty, abort the challenge operation.
-                ({ Count: 0 }, { Count: _ }) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0362)),
-
-                // If both the client and the server support response_mode=form_post, use it if the response
-                // types contain a value that prevents response_mode=query from being used (token/id_token).
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost) &&
-                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
-                    => ResponseModes.FormPost,
-
-                // If the client support response_mode=form_post and the server doesn't specify a list
-                // of response modes, assume it is supported and use it if the response types contain
-                // a value that prevents response_mode=query from being used (token/id_token).
-                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.FormPost) &&
-                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
-                    => ResponseModes.FormPost,
-
-                // If both the client and the server support response_mode=query, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ResponseModes.Query) && server.Contains(ResponseModes.Query)
-                    => ResponseModes.Query,
-
-                // If the client support response_mode=query and the server doesn't
-                // specify a list of response modes, assume it is supported.
-                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.Query)
-                    => ResponseModes.Query,
-
-                // If both the client and the server support response_mode=form_post, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost)
-                    => ResponseModes.FormPost,
-
-                // If no common response mode can be negotiated, abort the challenge operation.
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0299))
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for attaching the client identifier to the challenge request.
     /// </summary>
     public sealed class AttachClientId : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -4876,7 +4773,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .UseSingletonHandler<AttachClientId>()
-                .SetOrder(AttachResponseMode.Descriptor.Order + 1_000)
+                .SetOrder(AttachChallengeHostProperties.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -5177,6 +5074,72 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the response mode to the challenge request.
+    /// </summary>
+    public sealed class AttachResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireInteractiveGrantType>()
+                .UseSingletonHandler<AttachResponseMode>()
+                .SetOrder(AttachCodeChallengeParameters.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit response type was specified, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.ResponseMode))
+            {
+                return default;
+            }
+
+            context.ResponseMode = (
+                // Note: if response modes are explicitly listed in the client registration, only use
+                // the response modes that are both listed and enabled in the global client options.
+                // Otherwise, always default to the response modes that have been enabled globally.
+                SupportedClientResponseModes: context.Registration.ResponseModes.Count switch
+                {
+                    0 => context.Options.ResponseModes as ICollection<string>,
+                    _ => context.Options.ResponseModes.Intersect(context.Registration.ResponseModes, StringComparer.Ordinal).ToList()
+                },
+
+                SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
+            {
+                // If the list of response modes supported by the client is empty, abort the challenge operation.
+                ({ Count: 0 }, { Count: _ }) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0362)),
+
+                // If both the client and the server support response_mode=query, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ResponseModes.Query) && server.Contains(ResponseModes.Query)
+                    => ResponseModes.Query,
+
+                // If the client supports response_mode=query and the server doesn't
+                // specify a list of response modes, assume it is supported.
+                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.Query)
+                    => ResponseModes.Query,
+
+                // Note: other response modes - like form_post or fragment - are never negotiated
+                // by this generic handler but can be selected by more specialized handlers, such
+                // as the one present in the ASP.NET Core/OWIN hosts or in the system integration.
+
+                // If no common response mode can be negotiated, abort the challenge operation.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0299))
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the state token, if one is going to be returned.
     /// </summary>
@@ -5189,7 +5152,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireLoginStateTokenGenerated>()
                 .UseSingletonHandler<PrepareLoginStateTokenPrincipal>()
-                .SetOrder(AttachCodeChallengeParameters.Descriptor.Order + 1_000)
+                .SetOrder(AttachResponseMode.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 

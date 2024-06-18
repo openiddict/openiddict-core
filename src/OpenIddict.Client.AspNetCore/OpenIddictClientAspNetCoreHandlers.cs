@@ -51,6 +51,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         ValidateChallengeType.Descriptor,
         ResolveHostChallengeProperties.Descriptor,
         ValidateTransportSecurityRequirementForChallenge.Descriptor,
+        AttachNonDefaultResponseMode.Descriptor,
         GenerateLoginCorrelationCookie.Descriptor,
 
         /*
@@ -663,6 +664,98 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0364));
             }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching a non-default response mode to the challenge request.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class AttachNonDefaultResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireInteractiveGrantType>()
+                .UseSingletonHandler<AttachNonDefaultResponseMode>()
+                .SetOrder(AttachResponseMode.Descriptor.Order - 500)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit response type was specified, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.ResponseMode))
+            {
+                return default;
+            }
+
+            // Note: in most cases, the query response mode will be used as it offers the best compatibility and,
+            // unlike the form_post response mode, is compatible with SameSite=Lax cookies (as it uses GET requests
+            // for the callback stage). However, some specific response_type/response_mode combinations are not
+            // allowed (e.g query can never be used with a type containing id_token or token, as required by the
+            // OAuth 2.0 multiple response types specification. To prevent invalid combinations from being sent to
+            // the remote server, the response types are taken into account when selecting the best response mode.
+            if (context.ResponseType?.Split(Separators.Space) is not IList<string> { Count: > 0 } types)
+            {
+                return default;
+            }
+
+            context.ResponseMode = (
+                // Note: if response modes are explicitly listed in the client registration, only use
+                // the response modes that are both listed and enabled in the global client options.
+                // Otherwise, always default to the response modes that have been enabled globally.
+                SupportedClientResponseModes: context.Registration.ResponseModes.Count switch
+                {
+                    0 => context.Options.ResponseModes as ICollection<string>,
+                    _ => context.Options.ResponseModes.Intersect(context.Registration.ResponseModes, StringComparer.Ordinal).ToList()
+                },
+
+                SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
+            {
+                // If both the client and the server support response_mode=form_post, use it if the response
+                // types contain a value that prevents response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost) &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.FormPost,
+
+                // If the client supports response_mode=form_post and the server doesn't specify a list
+                // of response modes, assume it is supported and use it if the response types contain
+                // a value that prevents response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.FormPost) &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.FormPost,
+
+                // If both the client and the server support response_mode=query, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ResponseModes.Query) && server.Contains(ResponseModes.Query)
+                    => ResponseModes.Query,
+
+                // If the client supports response_mode=query and the server doesn't
+                // specify a list of response modes, assume it is supported.
+                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.Query)
+                    => ResponseModes.Query,
+
+                // If both the client and the server support response_mode=form_post, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost)
+                    => ResponseModes.FormPost,
+
+                // Assign a null value to allow the generic handler present in
+                // the base client package to negotiate other response modes.
+                _ => null
+            };
 
             return default;
         }
