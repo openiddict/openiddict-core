@@ -774,6 +774,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                                 char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                             ClrType = (string) setting.Attribute("Type") switch
                             {
+                                "Boolean" => "bool",
                                 "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
                                     is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
@@ -788,7 +789,6 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                                 "String" => "string",
                                 "StringHashSet" => "HashSet<string>",
                                 "Uri" => "Uri",
-                                "Boolean" => "bool",
 
                                 string value => value
                             }
@@ -1357,6 +1357,7 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                                 char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                             ClrType = (string) setting.Attribute("Type") switch
                             {
+                                "Boolean" => "bool",
                                 "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
                                     is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
@@ -1371,7 +1372,6 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                                 "String" => "string",
                                 "StringHashSet" => "HashSet<string>",
                                 "Uri" => "Uri",
-                                "Boolean" => "bool",
 
                                 string value => value
                             }

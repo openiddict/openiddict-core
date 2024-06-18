@@ -502,12 +502,12 @@
 
                     <xs:simpleType>
                       <xs:restriction base="xs:string">
+                        <xs:enumeration value="Boolean" />
                         <xs:enumeration value="Certificate" />
                         <xs:enumeration value="EncryptionKey" />
                         <xs:enumeration value="SigningKey" />
                         <xs:enumeration value="String" />
                         <xs:enumeration value="Uri" />
-                        <xs:enumeration value="Boolean" />
                       </xs:restriction>
                     </xs:simpleType>
                   </xs:attribute>
