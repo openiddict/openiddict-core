@@ -1909,7 +1909,6 @@
   <Provider Name="Weibo" Id="3523b2ce-c595-4f7b-9dda-9ce984fbf02d"
             Documentation="https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6%E8%AF%B4%E6%98%8E">
     <Environment Issuer="https://www.weibo.com/">
-<!--                     IntrospectionEndpoint="https://api.weibo.com/oauth2/get_token_info"-->
       <Configuration AuthorizationEndpoint="https://api.weibo.com/oauth2/authorize"
                      RevocationEndpoint="https://api.weibo.com/oauth2/revokeoauth2"
                      TokenEndpoint="https://api.weibo.com/oauth2/access_token"
