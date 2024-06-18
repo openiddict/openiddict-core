@@ -908,7 +908,7 @@
   -->
 
   <Provider Name="Lark" DisplayName="Lark (Feishu)" Id="0822ff2a-c4e7-4e1d-a797-bb24632b3f1a"
-            Documentation="https://open.feishu.cn/document/common-capabilities/sso/web-application-sso/web-app-overview?lang=en-US">
+            Documentation="https://open.larksuite.com/document/common-capabilities/sso/web-application-sso/web-app-overview?lang=en-US">
     <!--
       Note: Lark serves global users, but it is known as Feishu in China, which has a separate issuer and domain.
     -->
