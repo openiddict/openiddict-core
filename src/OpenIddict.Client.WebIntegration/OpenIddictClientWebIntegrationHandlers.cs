@@ -1019,6 +1019,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["user.fields"] = string.Join(",", settings.UserFields);
             }
 
+            // Weibo requires sending the user identifier as part of the userinfo request.
+            else if (context.Registration.ProviderType is ProviderTypes.Weibo)
+            {
+                context.UserinfoRequest["uid"] = context.TokenResponse?["uid"];
+            }
+
             return default;
         }
     }
@@ -1297,7 +1303,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Lichess    or ProviderTypes.Mastodon or ProviderTypes.Meetup        or
                 ProviderTypes.Nextcloud  or ProviderTypes.Patreon  or ProviderTypes.Reddit        or
                 ProviderTypes.Smartsheet or ProviderTypes.Spotify  or ProviderTypes.SubscribeStar or
-                ProviderTypes.Todoist    or ProviderTypes.Twitter  or ProviderTypes.Zoom
+                ProviderTypes.Todoist    or ProviderTypes.Twitter  or ProviderTypes.Weibo         or
+                ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
@@ -1524,8 +1531,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                ProviderTypes.Deezer or ProviderTypes.Disqus or ProviderTypes.Shopify or
-                ProviderTypes.Strava or ProviderTypes.Todoist
+                ProviderTypes.Deezer or ProviderTypes.Disqus  or ProviderTypes.Shopify or
+                ProviderTypes.Strava or ProviderTypes.Todoist or ProviderTypes.Weibo
                     => string.Join(",", context.Scopes),
 
                 // The following providers are known to use plus-separated scopes instead of
@@ -1714,6 +1721,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["team"] = settings.Team;
             }
 
+            // Weibo allows sending an optional "display" parameter to adjust the authorization page
+            // display style; an optional "forcelogin" parameter to force the user to log in again;
+            // and an optional "language" parameter to set the language of the authorization page.
+            else if (context.Registration.ProviderType is ProviderTypes.Weibo)
+            {
+                var settings = context.Registration.GetWeiboSettings();
+
+                context.Request["display"] = settings.Display;
+                context.Request["forcelogin"] = settings.ForceLogin;
+                context.Request["language"] = settings.Language;
+            }
+
             return default;
         }
     }
@@ -1802,6 +1821,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.RevocationRequest.ClientSecret = context.RevocationRequest.ClientAssertion;
                 context.RevocationRequest.ClientAssertion = null;
                 context.RevocationRequest.ClientAssertionType = null;
+            }
+
+            // Weibo implements a non-standard client authentication method for its endpoints that
+            // requires sending the token as "access_token" instead of the standard "token" parameter.
+            if (context.Registration.ProviderType is ProviderTypes.Weibo)
+            {
+                context.RevocationRequest.AccessToken = context.RevocationRequest.Token;
+                context.RevocationRequest.Token = null;
             }
 
             return default;

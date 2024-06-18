@@ -176,7 +176,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // or using a non-standard authentication scheme (e.g OAuth instead of Bearer).
 
                 // These providers require sending the access token as part of the request payload.
-                if (context.Registration.ProviderType is ProviderTypes.Deezer or ProviderTypes.Mixcloud or ProviderTypes.StackExchange)
+                if (context.Registration.ProviderType is
+                    ProviderTypes.Deezer or ProviderTypes.Mixcloud or ProviderTypes.StackExchange or ProviderTypes.Weibo)
                 {
                     context.Request.AccessToken = request.Headers.Authorization?.Parameter;
 
