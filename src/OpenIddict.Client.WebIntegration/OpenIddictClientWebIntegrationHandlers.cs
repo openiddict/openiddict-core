@@ -419,15 +419,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.TokenEndpoint = context.Registration.ProviderType switch
             {
-                // Feishu uses a different token endpoint for the refresh token grant.
-                //
-                // For more information, see
-                // https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/oidc-refresh_access_token/create
-                // https://open.larksuite.com/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/oidc-refresh_access_token/create
-                ProviderTypes.Feishu when context.GrantType is GrantTypes.RefreshToken &&
-                    context.TokenEndpoint is not null =>
-                    new Uri($"https://{context.TokenEndpoint.Host}/open-apis/authen/v1/oidc/refresh_access_token", UriKind.Absolute),
-
                 // Shopify is a multitenant provider that requires setting the token endpoint dynamically
                 // based on the shop name stored in the authentication properties set during the challenge.
                 //
@@ -1288,7 +1279,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
             {
                 // These providers return the user identifier as a custom "user_id" node:
-                ProviderTypes.Amazon or ProviderTypes.Feishu or ProviderTypes.HubSpot or ProviderTypes.StackExchange
+                ProviderTypes.Amazon or ProviderTypes.HubSpot or ProviderTypes.StackExchange
                     => (string?) context.UserinfoResponse?["user_id"],
 
                 // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
@@ -1596,20 +1587,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     value: context.Request.State).AbsoluteUri;
 
                 context.Request.State = null;
-            }
-
-            // Note: Feishu doesn't return the state parameter in the authorization denied response,
-            // which makes it impossible to validate the state parameter in redirection URIs.
-            // If the state parameter is appended to the redirect_uri with the original state parameter
-            // being removed, the normal authorization flow breaks because Feishu will redirect to the
-            // redirect_uri with an empty state parameter. To work around this issue, the state parameter
-            // is appended to the redirect_uri without the original state parameter being removed.
-            if (context.Registration.ProviderType is ProviderTypes.Feishu)
-            {
-                context.Request.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
-                    uri  : new Uri(context.RedirectUri, UriKind.Absolute),
-                    name : Parameters.State,
-                    value: context.Request.State).AbsoluteUri;
             }
 
             return default;

@@ -645,6 +645,26 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▄█ ▄▄▄█▄ ▄██ ▄▄▄ ██ ██ ██ ██ ██
+                                              ██ ▄▄██ ▄▄▄██ ███▄▄▄▀▀██ ▄▄ ██ ██ ██
+                                              ██ ████ ▀▀▀█▀ ▀██ ▀▀▀ ██ ██ ██▄▀▀▄██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="FeishuLegacy" DisplayName="Feishu Legacy" Id="b595a5f1-f6e2-46c5-b401-3e8614571768"
+            Documentation="https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/login-overview?lang=en-US">
+    <Environment Issuer="https://passport.feishu.cn">
+      <Configuration AuthorizationEndpoint="https://passport.feishu.cn/suite/passport/oauth/authorize"
+                     TokenEndpoint="https://passport.feishu.cn/suite/passport/oauth/token"
+                     UserinfoEndpoint="https://passport.feishu.cn/suite/passport/oauth/userinfo">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄▄█▄ ▄█▄▄ ▄▄██ ▄▄▀█▄ ▄█▄▄ ▄▄██
                                               ██ ▄▄███ ████ ████ ▄▄▀██ ████ ████
@@ -928,6 +948,46 @@
 
       <Scope Name="profile.compact" Default="true" Required="true" />
     </Environment>
+  </Provider>
+
+  <!--
+                                                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                    ██ ████ ▄▄▀██ ▄▄▀██ █▀▄██
+                                                    ██ ████ ▀▀ ██ ▀▀▄██ ▄▀███
+                                                    ██ ▀▀ █ ██ ██ ██ ██ ██ ██
+                                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Lark" DisplayName="Lark (Feishu)" Id="0822ff2a-c4e7-4e1d-a797-bb24632b3f1a"
+            Documentation="https://open.feishu.cn/document/common-capabilities/sso/web-application-sso/web-app-overview?lang=en-US">
+    <!--
+      Note: Lark serves global users, but it is known as Feishu in China, which has a separate issuer and domain.
+    -->
+
+    <Environment Issuer="https://passport.{settings.Region switch {
+        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
+            => 'feishu.cn',
+        _ => 'larksuite.com' }}/">
+      <Configuration AuthorizationEndpoint="https://passport.{settings.Region switch {
+        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
+            => 'feishu.cn',
+        _ => 'larksuite.com' }}/suite/passport/oauth/authorize"
+                     TokenEndpoint="https://passport.{settings.Region switch {
+        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
+            => 'feishu.cn',
+        _ => 'larksuite.com' }}/suite/passport/oauth/token"
+                     UserinfoEndpoint="https://passport.{settings.Region switch {
+        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
+            => 'feishu.cn',
+        _ => 'larksuite.com' }}/suite/passport/oauth/userinfo">
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="Global"
+             Description="The Lark (Feishu) service region ('Global' for the global Lark by default, or can be set to 'CN' for Feishu)" />
   </Provider>
 
   <!--
