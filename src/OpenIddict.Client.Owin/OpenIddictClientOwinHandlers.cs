@@ -731,7 +731,7 @@ public static partial class OpenIddictClientOwinHandlers
             // unlike the form_post response mode, is compatible with SameSite=Lax cookies (as it uses GET requests
             // for the callback stage). However, some specific response_type/response_mode combinations are not
             // allowed (e.g query can never be used with a type containing id_token or token, as required by the
-            // OAuth 2.0 multiple response types specification. To prevent invalid combinations from being sent to
+            // OAuth 2.0 multiple response types specification). To prevent invalid combinations from being sent to
             // the remote server, the response types are taken into account when selecting the best response mode.
             if (context.ResponseType?.Split(Separators.Space) is not IList<string> { Count: > 0 } types)
             {

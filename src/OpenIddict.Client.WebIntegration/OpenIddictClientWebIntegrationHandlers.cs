@@ -582,8 +582,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching custom client credentials
-    /// parameters to the token request for the providers that require it.
+    /// Contains the logic responsible for overriding the redirect_uri
+    /// attached to the token request for the providers that require it.
     /// </summary>
     public sealed class AdjustRedirectUriInTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
