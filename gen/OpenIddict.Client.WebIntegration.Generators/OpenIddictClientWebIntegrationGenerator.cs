@@ -688,6 +688,19 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                     .OfType<X509Certificate2>()
                     .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
         }
+        {{~ else if setting.clr_type == 'bool' ~}}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
+        public {{ provider.name }} Set{{ setting.property_name }}(bool {{ setting.parameter_name }})
+        {
+            return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
+        }
         {{~ else ~}}
         /// <summary>
         /// Configures {{ setting.description }}.
@@ -699,12 +712,10 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}({{ setting.clr_type }} {{ setting.parameter_name }})
         {
-            {{~ if setting.clr_type != 'bool' ~}}
             if ({{ setting.parameter_name }} is null)
             {
                 throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
             }
-            {{~ end ~}}
 
             return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
         }
