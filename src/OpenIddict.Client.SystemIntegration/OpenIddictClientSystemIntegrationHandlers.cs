@@ -629,6 +629,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 }
             }
 
+            context.Transaction.Request = new OpenIddictRequest(parameters);
+
             return default;
 #else
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
