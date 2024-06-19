@@ -36,9 +36,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="2.1.1"           />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="2.1.6"           />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="2.1.1"           />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.0"           />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.1"           />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14"          />
     <PackageVersion Include="Microsoft.Owin.Security"                                         Version="4.2.2"           />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts"                                 Version="10.0.17763.1000" />
@@ -95,9 +95,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="2.1.1"           />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="2.1.6"           />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="2.1.1"           />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.0"           />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.1"           />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14"          />
     <PackageVersion Include="Microsoft.Owin.Security"                                         Version="4.2.2"           />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts"                                 Version="10.0.17763.1000" />
@@ -154,9 +154,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="2.1.1"           />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="2.1.6"           />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="2.1.1"           />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.0"           />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.1"           />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14"          />
     <PackageVersion Include="Microsoft.Owin.Security"                                         Version="4.2.2"           />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts"                                 Version="10.0.17763.1000" />
@@ -243,9 +243,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="6.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="6.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="6.0.30"          />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.0"           />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.1"           />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14"          />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"          />
@@ -289,9 +289,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="7.0.1"           />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="7.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="7.0.19"          />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.0"           />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.1"           />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14"          />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"          />
@@ -336,9 +336,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="8.0.2"           />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="8.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="8.0.5"           />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.0"           />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.1"           />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="8.0.6"           />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"          />
@@ -400,9 +400,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="2.1.1"           />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="2.1.6"           />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="2.1.1"           />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.0"           />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.1"           />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14"          />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6"          />
@@ -452,9 +452,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="3.1.32"          />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="3.1.32"          />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="3.1.32"          />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.0"           />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.0"           />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.1"           />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.1"           />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14"          />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6"          />
