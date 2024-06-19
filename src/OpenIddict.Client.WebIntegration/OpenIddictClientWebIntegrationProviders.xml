@@ -1939,6 +1939,33 @@
   </Provider>
 
   <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                ██ ███ ██ ▄▄▄█▄ ▄██ ▄▄▀██ ▄▄▄ ██
+                                                ██ █ █ ██ ▄▄▄██ ███ ▄▄▀██ ███ ██
+                                                ██▄▀▄▀▄██ ▀▀▀█▀ ▀██ ▀▀ ██ ▀▀▀ ██
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Weibo" Id="3523b2ce-c595-4f7b-9dda-9ce984fbf02d"
+            Documentation="https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6%E8%AF%B4%E6%98%8E">
+    <Environment Issuer="https://www.weibo.com/">
+      <Configuration AuthorizationEndpoint="https://api.weibo.com/oauth2/authorize"
+                     RevocationEndpoint="https://api.weibo.com/oauth2/revokeoauth2"
+                     TokenEndpoint="https://api.weibo.com/oauth2/access_token"
+                     UserinfoEndpoint="https://api.weibo.com/2/users/show.json" />
+    </Environment>
+
+    <Setting PropertyName="Display" ParameterName="display" Type="String" Required="false"
+             Description="The value used as the 'display' parameter (can be set to 'default', 'mobile', 'wap', 'client', or 'apponweibo' to adjust the authorization page display style)" />
+
+    <Setting PropertyName="ForceLogin" ParameterName="force" Type="Boolean" Required="false"
+             Description="The value used as the 'forcelogin' parameter (can be set to 'true' to force user to log in again)" />
+
+    <Setting PropertyName="Language" ParameterName="language" Type="String" Required="false"
+             Description="The value used as the 'language' parameter (can be set to 'en' to display the authorization page in English)" />
+  </Provider>
+
+  <!--
                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                       ██ ███ █▄ ▄██ █▀▄█▄ ▄██ ▄▀▄ ██ ▄▄▄██ ▄▄▀█▄ ▄█ ▄▄▀██
                                       ██ █ █ ██ ███ ▄▀███ ███ █ █ ██ ▄▄▄██ ██ ██ ██ ▀▀ ██

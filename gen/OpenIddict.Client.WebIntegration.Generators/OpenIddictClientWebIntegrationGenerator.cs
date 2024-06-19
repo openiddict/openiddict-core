@@ -688,6 +688,17 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                     .OfType<X509Certificate2>()
                     .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
         }
+        {{~ else if setting.clr_type == 'bool' ~}}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        {{~ if setting.obsolete ~}}
+        [Obsolete(""This option is no longer supported and will be removed in a future version."")]
+        {{~ end ~}}
+        public {{ provider.name }} Set{{ setting.property_name }}(bool {{ setting.parameter_name }})
+            => Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
         {{~ else ~}}
         /// <summary>
         /// Configures {{ setting.description }}.
@@ -772,6 +783,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                                 char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                             ClrType = (string) setting.Attribute("Type") switch
                             {
+                                "Boolean" => "bool",
                                 "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
                                     is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
@@ -905,6 +917,11 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             if (settings.{{ setting.property_name }} is null)
             {
                 settings.{{ setting.property_name }} = new Uri(""{{ setting.default_value }}"", UriKind.RelativeOrAbsolute);
+            }
+            {{~ else if setting.type == 'Boolean' ~}}
+            if (settings.{{ setting.property_name }} is null)
+            {
+                settings.{{ setting.property_name }} = {{ setting.default_value }};
             }
             {{~ end ~}}
             {{~ end ~}}
@@ -1354,6 +1371,7 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                                 char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                             ClrType = (string) setting.Attribute("Type") switch
                             {
+                                "Boolean" => "bool",
                                 "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
                                     is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
