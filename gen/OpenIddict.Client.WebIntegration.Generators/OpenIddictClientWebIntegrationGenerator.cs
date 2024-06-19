@@ -912,7 +912,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             {{~ else if setting.type == 'Boolean' ~}}
             if (settings.{{ setting.property_name }} is null)
             {
-                settings.{{ setting.property_name }} = setting.default_value;
+                settings.{{ setting.property_name }} = {{ setting.default_value }};
             }
             {{~ end ~}}
             {{~ end ~}}
