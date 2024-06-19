@@ -1958,7 +1958,7 @@
     <Setting PropertyName="Display" ParameterName="display" Type="String" Required="false"
              Description="The value used as the 'display' parameter (can be set to 'default', 'mobile', 'wap', 'client', or 'apponweibo' to adjust the authorization page display style)" />
 
-    <Setting PropertyName="ForceLogin" ParameterName="forceLogin" Type="Boolean" Required="false"
+    <Setting PropertyName="ForceLogin" ParameterName="force" Type="Boolean" Required="false"
              Description="The value used as the 'forcelogin' parameter (can be set to 'true' to force user to log in again)" />
 
     <Setting PropertyName="Language" ParameterName="language" Type="String" Required="false"
