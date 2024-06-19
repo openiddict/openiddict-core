@@ -698,9 +698,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(bool {{ setting.parameter_name }})
-        {
-            return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
-        }
+            => Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
         {{~ else ~}}
         /// <summary>
         /// Configures {{ setting.description }}.
