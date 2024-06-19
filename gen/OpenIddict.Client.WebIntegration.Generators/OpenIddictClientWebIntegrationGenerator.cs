@@ -910,9 +910,9 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 settings.{{ setting.property_name }} = new Uri(""{{ setting.default_value }}"", UriKind.RelativeOrAbsolute);
             }
             {{~ else if setting.type == 'Boolean' ~}}
-            if (!settings.{{ setting.property_name }}.HasValue && bool.TryParse(""{{ setting.default_value }}"", out var value))
+            if (settings.{{ setting.property_name }} is null)
             {
-                settings.{{ setting.property_name }} = value;
+                settings.{{ setting.property_name }} = setting.default_value;
             }
             {{~ end ~}}
             {{~ end ~}}
