@@ -1893,6 +1893,46 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
                     => ResponseModes.FormPost,
 
+                // If both the client and the server support response_mode=query, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ResponseModes.Query) && server.Contains(ResponseModes.Query)
+                    => ResponseModes.Query,
+
+                // If the client supports response_mode=query and the server doesn't
+                // specify a list of response modes, assume it is supported.
+                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.Query)
+                    => ResponseModes.Query,
+
+#if SUPPORTS_WINDOWS_RUNTIME
+                // When using the web authentication broker on Windows, if both
+                // the client and the server support response_mode=fragment, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported()                     &&
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker) &&
+                    client.Contains(ResponseModes.Fragment) && server.Contains(ResponseModes.Fragment)
+                    => ResponseModes.Fragment,
+#endif
+                // When using browser-based authentication with a redirect_uri not pointing to the embedded
+                // server, if both the client and the server support response_mode=fragment, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
+                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
+                    !string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)       &&
+                    uri.Port != await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    client.Contains(ResponseModes.Fragment) && server.Contains(ResponseModes.Fragment)
+                    => ResponseModes.Fragment,
+
+                // When using browser-based authentication with a redirect_uri pointing to the embedded
+                // server, if both the client and the server support response_mode=form_post, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
+                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
+                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)        &&
+                    uri.IsLoopback                                                                          &&
+                    uri.Port == await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost)
+                    => ResponseModes.FormPost,
+
                 // Assign a null value to allow the generic handler present in
                 // the base client package to negotiate other response modes.
                 _ => null
