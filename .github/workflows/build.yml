@@ -43,9 +43,9 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          6.0.422
-          7.0.409
-          8.0.300
+          6.0.423
+          7.0.410
+          8.0.302
 
     # Arcade only allows the revision to contain up to two characters, and GitHub Actions does not roll-over
     # build numbers every day like Azure DevOps does. To balance these two requirements, set the official
@@ -105,7 +105,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.300'
+        dotnet-version: '8.0.302'
 
     - name: Validate NuGet packages
       shell: pwsh
