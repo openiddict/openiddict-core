@@ -1475,9 +1475,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<OverrideResponseMode>()
-                // Note: this handler MUST be invoked after the scopes have been attached to the
-                // context to support overriding the response mode based on the requested scopes.
-                .SetOrder(AttachScopes.Descriptor.Order + 500)
+                .SetOrder(AttachResponseMode.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 

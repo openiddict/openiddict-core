@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Security.Claims;
 using System.Text;
@@ -75,6 +76,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
          */
         InferBaseUriFromClientUri.Descriptor,
         AttachDynamicPortToRedirectUri.Descriptor,
+        AttachNonDefaultResponseMode.Descriptor,
         AttachInstanceIdentifier.Descriptor,
         TrackAuthenticationOperation.Descriptor,
 
@@ -537,12 +539,34 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.Transaction.Request = context.Transaction.GetProtocolActivation() switch
+            if (context.Transaction.GetProtocolActivation() is not { ActivationUri: Uri uri })
             {
-                { ActivationUri: Uri uri } => new OpenIddictRequest(OpenIddictHelpers.ParseQuery(uri.Query)),
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0375));
+            }
 
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0375))
-            };
+            var parameters = new Dictionary<string, StringValues>(StringComparer.Ordinal);
+
+            if (!string.IsNullOrEmpty(uri.Query))
+            {
+                foreach (var parameter in OpenIddictHelpers.ParseQuery(uri.Query))
+                {
+                    parameters[parameter.Key] = parameter.Value;
+                }
+            }
+
+            // Note: the fragment is always processed after the query string to ensure that
+            // parameters extracted from the fragment are preferred to parameters extracted
+            // from the query string when they are present in both parts.
+
+            if (!string.IsNullOrEmpty(uri.Fragment))
+            {
+                foreach (var parameter in OpenIddictHelpers.ParseFragment(uri.Fragment))
+                {
+                    parameters[parameter.Key] = parameter.Value;
+                }
+            }
+
+            context.Transaction.Request = new OpenIddictRequest(parameters);
 
             return default;
         }
@@ -576,14 +600,34 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             }
 
 #if SUPPORTS_WINDOWS_RUNTIME
-            context.Transaction.Request = context.Transaction.GetWebAuthenticationResult() switch
+            if (context.Transaction.GetWebAuthenticationResult()
+                is not { ResponseStatus: WebAuthenticationStatus.Success, ResponseData: string data } ||
+                !Uri.TryCreate(data, UriKind.Absolute, out Uri? uri))
             {
-                { ResponseStatus: WebAuthenticationStatus.Success, ResponseData: string data } when
-                    Uri.TryCreate(data, UriKind.Absolute, out Uri? uri)
-                        => new OpenIddictRequest(OpenIddictHelpers.ParseQuery(uri.Query)),
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0393));
+            }
 
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0393))
-            };
+            var parameters = new Dictionary<string, StringValues>(StringComparer.Ordinal);
+
+            if (!string.IsNullOrEmpty(uri.Query))
+            {
+                foreach (var parameter in OpenIddictHelpers.ParseQuery(uri.Query))
+                {
+                    parameters[parameter.Key] = parameter.Value;
+                }
+            }
+
+            // Note: the fragment is always processed after the query string to ensure that
+            // parameters extracted from the fragment are preferred to parameters extracted
+            // from the query string when they are present in both parts.
+
+            if (!string.IsNullOrEmpty(uri.Fragment))
+            {
+                foreach (var parameter in OpenIddictHelpers.ParseFragment(uri.Fragment))
+                {
+                    parameters[parameter.Key] = parameter.Value;
+                }
+            }
 
             return default;
 #else
@@ -1679,7 +1723,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .AddFilter<RequireInteractiveGrantType>()
                 // Note: only apply the dynamic port replacement logic if the callback request
                 // is going to be received by the system browser to ensure it doesn't apply to
-                // challenge demands handled via a web authentication broker are not affected.
+                // challenge demands handled via a web authentication broker.
                 .AddFilter<RequireSystemBrowser>()
                 .UseSingletonHandler<AttachDynamicPortToRedirectUri>()
                 .SetOrder(AttachRedirectUri.Descriptor.Order + 500)
@@ -1709,6 +1753,162 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 };
 
                 context.RedirectUri = builder.Uri.AbsoluteUri;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching a non-default response mode to the challenge request, if applicable.
+    /// </summary>
+    public sealed class AttachNonDefaultResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationHttpListener _listener;
+        private readonly IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> _options;
+
+        public AttachNonDefaultResponseMode(
+            OpenIddictClientSystemIntegrationHttpListener listener,
+            IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> options)
+        {
+            _listener = listener ?? throw new ArgumentNullException(nameof(listener));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+        }
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireInteractiveSession>()
+                .AddFilter<RequireInteractiveGrantType>()
+                .UseSingletonHandler<AttachNonDefaultResponseMode>()
+                .SetOrder(AttachResponseMode.Descriptor.Order - 500)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit response type was specified, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.ResponseMode))
+            {
+                return;
+            }
+
+            // Some specific response_type/response_mode combinations are not allowed (e.g response_mode=query
+            // can never be used with a response type containing id_token or token, as required by the OAuth 2.0
+            // multiple response types specification. To prevent invalid combinations from being sent to the
+            // remote server, the response types are taken into account when selecting the best response mode.
+            if (context.ResponseType?.Split(Separators.Space) is not IList<string> { Count: > 0 } types)
+            {
+                return;
+            }
+
+            context.ResponseMode = (
+                // Note: if response modes are explicitly listed in the client registration, only use
+                // the response modes that are both listed and enabled in the global client options.
+                // Otherwise, always default to the response modes that have been enabled globally.
+                SupportedClientResponseModes: context.Registration.ResponseModes.Count switch
+                {
+                    0 => context.Options.ResponseModes as ICollection<string>,
+                    _ => context.Options.ResponseModes.Intersect(context.Registration.ResponseModes, StringComparer.Ordinal).ToList()
+                },
+
+                SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
+            {
+#if SUPPORTS_WINDOWS_RUNTIME
+                // When using the web authentication broker on Windows, if both the client and
+                // the server support response_mode=fragment, use it if the response types contain
+                // a value that prevents response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported()                     &&
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker) &&
+                    client.Contains(ResponseModes.Fragment) && server.Contains(ResponseModes.Fragment)                &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.Fragment,
+
+                // When using the web authentication broker on Windows, if the client supports
+                // response_mode=fragment and the server doesn't specify a list of response modes,
+                // assume it is supported and use it if the response types contain a value that
+                // prevents response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: 0 }) when
+                    OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported()                     &&
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker) &&
+                    client.Contains(ResponseModes.Fragment)                                                           &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.Fragment,
+#endif
+                // When using browser-based authentication with a redirect_uri not pointing to the embedded server,
+                // if both the client and the server support response_mode=fragment, use it if the response types
+                // contain a value that prevents response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
+                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
+                    !string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)       &&
+                    uri.Port != await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    client.Contains(ResponseModes.Fragment) && server.Contains(ResponseModes.Fragment)      &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.Fragment,
+
+                // When using browser-based authentication with a redirect_uri not pointing to the embedded server,
+                // if the client supports response_mode=fragment and the server doesn't specify a list of response
+                // modes, assume it is supported and use it if the response types contain a value that prevents
+                // response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: 0 }) when
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
+                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
+                    !string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)       &&
+                    uri.Port != await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    client.Contains(ResponseModes.Fragment) &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.Fragment,
+
+                // When using browser-based authentication with a redirect_uri pointing to the embedded server,
+                // if both the client and the server support response_mode=form_post, use it if the response
+                // types contain a value that prevents response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
+                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
+                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)        &&
+                    uri.IsLoopback                                                                          &&
+                    uri.Port == await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost)      &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.FormPost,
+
+                // When using browser-based authentication with a redirect_uri pointing to the embedded server,
+                // if the client supports response_mode=form_post and the server doesn't specify a list
+                // of response modes, assume it is supported and use it if the response types contain
+                // a value that prevents response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: 0 }) when
+                    IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
+                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
+                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)        &&
+                    uri.IsLoopback                                                                          &&
+                    uri.Port == await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    client.Contains(ResponseModes.FormPost)                                                 &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.FormPost,
+
+                // Assign a null value to allow the generic handler present in
+                // the base client package to negotiate other response modes.
+                _ => null
+            };
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            bool IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode mode)
+            {
+                if (context.Transaction.Properties.TryGetValue(
+                    typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) &&
+                    result is OpenIddictClientSystemIntegrationAuthenticationMode value)
+                {
+                    return mode == value;
+                }
+
+                return mode == _options.CurrentValue.AuthenticationMode;
             }
         }
     }

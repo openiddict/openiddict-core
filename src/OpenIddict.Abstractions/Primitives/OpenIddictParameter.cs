@@ -598,20 +598,29 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     {
         null => string.Empty,
 
-        bool value => value ? bool.TrueString : bool.FalseString,
+        bool value => value ? "true" : "false",
         long value => value.ToString(CultureInfo.InvariantCulture),
 
         string    value => value,
         string?[] value => string.Join(", ", value),
 
+        JsonElement { ValueKind: JsonValueKind.True  } => "true",
+        JsonElement { ValueKind: JsonValueKind.False } => "false",
+
         JsonElement value => value.ToString(),
 
 #if SUPPORTS_JSON_NODES
         JsonValue value when value.TryGetValue(out JsonElement element)
-            => element.ToString(),
+            => element.ValueKind switch
+            {
+                JsonValueKind.True  => "true",
+                JsonValueKind.False => "false",
+
+                _ => element.ToString()
+            },
         
         JsonValue value when value.TryGetValue(out bool result)
-            => result ? bool.TrueString : bool.FalseString,
+            => result ? "true" : "false",
         
         JsonValue value when value.TryGetValue(out int result)
             => result.ToString(CultureInfo.InvariantCulture),
@@ -621,7 +630,14 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         JsonValue value when value.TryGetValue(out string? result) => result,
 
-        JsonNode value => value.ToJsonString(),
+        JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
+            => element.ValueKind switch
+            {
+                JsonValueKind.True  => "true",
+                JsonValueKind.False => "false",
+
+                _ => element.ToString()
+            },
 #endif
         _ => string.Empty
     };
@@ -1058,10 +1074,14 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             string value => value,
 
             // When the parameter is a boolean value, use its string representation.
-            bool value => value ? bool.TrueString : bool.FalseString,
+            bool value => value ? "true" : "false",
 
             // When the parameter is an integer, use its string representation.
             long value => value.ToString(CultureInfo.InvariantCulture),
+
+            // When the parameter is a JSON boolean value, use its string representation.
+            JsonElement { ValueKind: JsonValueKind.True }  => "true",
+            JsonElement { ValueKind: JsonValueKind.False } => "false",
 
             // When the parameter is a JsonElement, try to convert it if it's of a supported type.
             JsonElement value => ConvertFromJsonElement(value),
@@ -1075,7 +1095,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonValue value when value.TryGetValue(out string? result) => result,
 
             // When the parameter is a JsonValue wrapping a boolean, return its representation.
-            JsonValue value when value.TryGetValue(out bool result) => result ? bool.TrueString : bool.FalseString,
+            JsonValue value when value.TryGetValue(out bool result) => result ? "true" : "false",
 
             // When the parameter is a JsonValue wrapping a boolean, return its representation.
             JsonValue value when value.TryGetValue(out int result)  => result.ToString(CultureInfo.InvariantCulture),
@@ -1093,11 +1113,14 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         static string? ConvertFromJsonElement(JsonElement element) => element.ValueKind switch
         {
-            // When the parameter is a JsonElement representing a string,
-            // a number or a boolean, return its string representation.
-            JsonValueKind.String or JsonValueKind.Number or
-            JsonValueKind.True   or JsonValueKind.False
-                => element.ToString(),
+            // When the parameter is a JsonElement representing
+            // a boolean, return its string representation.
+            JsonValueKind.True  => "true",
+            JsonValueKind.False => "false",
+
+            // When the parameter is a JsonElement representing a
+            // string or a number, return its string representation.
+            JsonValueKind.String or JsonValueKind.Number => element.ToString(),
 
             _ => null
         };
@@ -1122,10 +1145,14 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             string value => [value],
 
             // When the parameter is a boolean value, return an array with its string representation.
-            bool value => [value ? bool.TrueString : bool.FalseString],
+            bool value => [value ? "true" : "false"],
 
             // When the parameter is an integer, return an array with its string representation.
             long value => [value.ToString(CultureInfo.InvariantCulture)],
+
+            // When the parameter is a JSON boolean value, return an array with its string representation.
+            JsonElement { ValueKind: JsonValueKind.True  } => ["true"],
+            JsonElement { ValueKind: JsonValueKind.False } => ["false"],
 
             // When the parameter is a JsonElement, try to convert it if it's of a supported type.
             JsonElement value => ConvertFromJsonElement(value),
@@ -1140,7 +1167,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             // When the parameter is a JsonValue wrapping a boolean, return an array with its string representation.
             JsonValue value when value.TryGetValue(out bool result)
-                => [result ? bool.TrueString : bool.FalseString],
+                => [result ? "true" : "false"],
 
             // When the parameter is a JsonValue wrapping an integer, return an array with its string representation.
             JsonValue value when value.TryGetValue(out int result)
@@ -1161,8 +1188,13 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         static string?[]? ConvertFromJsonElement(JsonElement element) => element.ValueKind switch
         {
-            // When the parameter is a JsonElement representing a string, a number
-            // or a boolean, return an 1-item array with its string representation.
+            // When the parameter is a JsonElement representing a boolean,
+            // return an 1-item array with its string representation.
+            JsonValueKind.True  => ["true"],
+            JsonValueKind.False => ["false"],
+
+            // When the parameter is a JsonElement representing a string or a
+            // number, return an 1-item array with its string representation.
             JsonValueKind.String or JsonValueKind.Number or
             JsonValueKind.True   or JsonValueKind.False
                 => [element.ToString()],
@@ -1180,14 +1212,27 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             for (var index = 0; index < length; index++)
             {
+                var item = element[index];
+                if (item.ValueKind is JsonValueKind.True)
+                {
+                    array[index] = "true";
+                }
+
+                else if (item.ValueKind is JsonValueKind.False)
+                {
+                    array[index] = "false";
+                }
+
+                else if (item.ValueKind is JsonValueKind.String or JsonValueKind.Number)
+                {
+                    array[index] = item.ToString();
+                }
+
                 // Always return a null array if one of the items is a not string, a number or a boolean.
-                if (element[index] is not { ValueKind: JsonValueKind.String or JsonValueKind.Number or
-                                                       JsonValueKind.True   or JsonValueKind.False } item)
+                else
                 {
                     return null;
                 }
-
-                array[index] = item.ToString();
             }
 
             return array;
