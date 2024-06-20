@@ -1195,9 +1195,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             // When the parameter is a JsonElement representing a string or a
             // number, return an 1-item array with its string representation.
-            JsonValueKind.String or JsonValueKind.Number or
-            JsonValueKind.True   or JsonValueKind.False
-                => [element.ToString()],
+            JsonValueKind.String or JsonValueKind.Number => [element.ToString()],
 
             // When the parameter is a JsonElement representing an array, return the elements as strings.
             JsonValueKind.Array => CreateArrayFromJsonElement(element),
