@@ -1723,6 +1723,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireInteractiveSession>()
                 .AddFilter<RequireInteractiveGrantType>()
+                .AddFilter<RequireEmbeddedWebServerEnabled>()
                 // Note: only apply the dynamic port replacement logic if the callback request
                 // is going to be received by the system browser to ensure it doesn't apply to
                 // challenge demands handled via a web authentication broker.
@@ -1743,10 +1744,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // If the redirect_uri uses a loopback host/IP as the authority and doesn't include a non-default port,
             // determine whether the embedded web server is running: if so, override the port in the redirect_uri
             // by the port used by the embedded web server (guaranteed to be running if a value is returned).
-            if (!string.IsNullOrEmpty(context.RedirectUri) &&
-                Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) &&
+            if (!string.IsNullOrEmpty(context.RedirectUri)                                       &&
+                Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)               &&
                 string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-                uri.IsLoopback && uri.IsDefaultPort &&
+                uri.IsLoopback                                                                   &&
+                uri.IsDefaultPort                                                                &&
                 await _listener.GetEmbeddedServerPortAsync(context.CancellationToken) is int port)
             {
                 var builder = new UriBuilder(context.RedirectUri)
@@ -1848,9 +1850,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // contain a value that prevents response_mode=query from being used (token/id_token).
                 ({ Count: > 0 } client, { Count: > 0 } server) when
                     IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
-                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
-                    !string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)       &&
-                    uri.Port != await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    !await IsEmbeddedWebServerRedirectUriAsync()                                            &&
                     client.Contains(ResponseModes.Fragment) && server.Contains(ResponseModes.Fragment)      &&
                     (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
                     => ResponseModes.Fragment,
@@ -1861,10 +1861,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // response_mode=query from being used (token/id_token).
                 ({ Count: > 0 } client, { Count: 0 }) when
                     IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
-                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
-                    !string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)       &&
-                    uri.Port != await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
-                    client.Contains(ResponseModes.Fragment) &&
+                    !await IsEmbeddedWebServerRedirectUriAsync()                                            &&
+                    client.Contains(ResponseModes.Fragment)                                                 &&
                     (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
                     => ResponseModes.Fragment,
 
@@ -1873,10 +1871,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // types contain a value that prevents response_mode=query from being used (token/id_token).
                 ({ Count: > 0 } client, { Count: > 0 } server) when
                     IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
-                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
-                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)        &&
-                    uri.IsLoopback                                                                          &&
-                    uri.Port == await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    await IsEmbeddedWebServerRedirectUriAsync()                                             &&
                     client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost)      &&
                     (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
                     => ResponseModes.FormPost,
@@ -1887,10 +1882,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // a value that prevents response_mode=query from being used (token/id_token).
                 ({ Count: > 0 } client, { Count: 0 }) when
                     IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
-                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
-                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)        &&
-                    uri.IsLoopback                                                                          &&
-                    uri.Port == await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    await IsEmbeddedWebServerRedirectUriAsync()                                             &&
                     client.Contains(ResponseModes.FormPost)                                                 &&
                     (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
                     => ResponseModes.FormPost,
@@ -1918,9 +1910,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // server, if both the client and the server support response_mode=fragment, use it.
                 ({ Count: > 0 } client, { Count: > 0 } server) when
                     IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
-                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
-                    !string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)       &&
-                    uri.Port != await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    !await IsEmbeddedWebServerRedirectUriAsync()                                            &&
                     client.Contains(ResponseModes.Fragment) && server.Contains(ResponseModes.Fragment)
                     => ResponseModes.Fragment,
 
@@ -1928,10 +1918,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // server, if both the client and the server support response_mode=form_post, use it.
                 ({ Count: > 0 } client, { Count: > 0 } server) when
                     IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser) &&
-                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)                      &&
-                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)        &&
-                    uri.IsLoopback                                                                          &&
-                    uri.Port == await _listener.GetEmbeddedServerPortAsync(context.CancellationToken)       &&
+                    await IsEmbeddedWebServerRedirectUriAsync()                                             &&
                     client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost)
                     => ResponseModes.FormPost,
 
@@ -1952,6 +1939,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 return mode == _options.CurrentValue.AuthenticationMode;
             }
+
+            async ValueTask<bool> IsEmbeddedWebServerRedirectUriAsync()
+                => _options.CurrentValue.EnableEmbeddedWebServer is true                             &&
+                    Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri)               &&
+                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+                    uri.IsLoopback                                                                   &&
+                    uri.Port == await _listener.GetEmbeddedServerPortAsync(context.CancellationToken);
         }
     }
 
@@ -2099,6 +2093,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .AddFilter<RequireInteractiveSession>()
+                .AddFilter<RequireEmbeddedWebServerEnabled>()
                 // Note: only apply the dynamic port replacement logic if the callback request
                 // is going to be received by the system browser to ensure it doesn't apply to
                 // sign-out demands handled via a web authentication broker are not affected.
@@ -2119,10 +2114,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // If the post_logout_redirect_uri uses a loopback host/IP as the authority and doesn't include a non-default port,
             // determine whether the embedded web server is running: if so, override the port in the post_logout_redirect_uri
             // by the port used by the embedded web server (guaranteed to be running if a value is returned).
-            if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) &&
-                Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) &&
+            if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri)                             &&
+                Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri)     &&
                 string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-                uri.IsLoopback && uri.IsDefaultPort &&
+                uri.IsLoopback                                                                   &&
+                uri.IsDefaultPort                                                                &&
                 await _listener.GetEmbeddedServerPortAsync(context.CancellationToken) is int port)
             {
                 var builder = new UriBuilder(context.PostLogoutRedirectUri)
