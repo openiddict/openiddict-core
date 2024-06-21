@@ -35,6 +35,28 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the embedded web server was not enabled.
+    /// </summary>
+    public sealed class RequireEmbeddedWebServerEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> _options;
+
+        public RequireEmbeddedWebServerEnabled(IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(_options.CurrentValue.EnableEmbeddedWebServer is true);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no HTTP listener context can be found.
     /// </summary>
     public sealed class RequireHttpListenerContext : IOpenIddictClientHandlerFilter<BaseContext>

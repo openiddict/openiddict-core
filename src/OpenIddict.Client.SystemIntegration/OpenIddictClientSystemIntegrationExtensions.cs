@@ -59,6 +59,7 @@ public static class OpenIddictClientSystemIntegrationExtensions
 
         // Register the built-in filters used by the default OpenIddict client system integration event handlers.
         builder.Services.TryAddSingleton<RequireAuthenticationNonce>();
+        builder.Services.TryAddSingleton<RequireEmbeddedWebServerEnabled>();
         builder.Services.TryAddSingleton<RequireHttpListenerContext>();
         builder.Services.TryAddSingleton<RequireInteractiveSession>();
         builder.Services.TryAddSingleton<RequireProtocolActivation>();
