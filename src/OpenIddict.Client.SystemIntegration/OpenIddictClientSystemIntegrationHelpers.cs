@@ -44,6 +44,17 @@ public static class OpenIddictClientSystemIntegrationHelpers
     public static HttpListenerContext? GetHttpListenerContext(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<HttpListenerContext>(typeof(HttpListenerContext).FullName!);
 
+#if SUPPORTS_AUTHENTICATION_SERVICES
+    /// <summary>
+    /// Gets the AS web authentication callback URL associated with the current context.
+    /// </summary>
+    /// <param name="transaction">The transaction instance.</param>
+    /// <returns>The <see cref="NSUrl"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    [SupportedOSPlatform("ios12.0")]
+    public static NSUrl? GetASWebAuthenticationCallbackUrl(this OpenIddictClientTransaction transaction)
+        => transaction.GetProperty<NSUrl>(typeof(NSUrl).FullName!);
+#endif
+
 #if SUPPORTS_WINDOWS_RUNTIME
     /// <summary>
     /// Gets the <see cref="WebAuthenticationResult"/> associated with the current context.
@@ -54,6 +65,27 @@ public static class OpenIddictClientSystemIntegrationHelpers
     public static WebAuthenticationResult? GetWebAuthenticationResult(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<WebAuthenticationResult>(typeof(WebAuthenticationResult).FullName!);
 #endif
+
+    /// <summary>
+    /// Determines whether the current iOS version
+    /// is greater than or equals to the specified version.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the current iOS version is greater than
+    /// or equals to the specified version, <see langword="false"/> otherwise.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SupportedOSPlatformGuard("ios")]
+    internal static bool IsIOSVersionAtLeast(int major, int minor = 0, int build = 0)
+    {
+#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+        return OperatingSystem.IsIOSVersionAtLeast(major, minor, build);
+#else
+        return RuntimeInformation.OSDescription.StartsWith("iOS ", StringComparison.OrdinalIgnoreCase) &&
+               RuntimeInformation.OSDescription["iOS ".Length..] is string value &&
+               Version.TryParse(value, out Version? version) && version >= new Version(major, minor, build);
+#endif
+    }
 
     /// <summary>
     /// Determines whether the current Windows version
@@ -86,6 +118,14 @@ public static class OpenIddictClientSystemIntegrationHelpers
                Version.TryParse(value, out Version? version) && version >= new Version(major, minor, build, revision);
 #endif
     }
+
+    /// <summary>
+    /// Determines whether the ASWebAuthenticationSession API is supported on this platform.
+    /// </summary>
+    /// <returns><see langword="true"/> if the ASWebAuthenticationSession API is supported, <see langword="false"/> otherwise.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SupportedOSPlatformGuard("ios12.0")]
+    internal static bool IsASWebAuthenticationSessionSupported() => IsIOSVersionAtLeast(12);
 
     /// <summary>
     /// Determines whether the Windows Runtime APIs are supported on this platform.
@@ -208,6 +248,69 @@ public static class OpenIddictClientSystemIntegrationHelpers
             out uint ReturnLength);
     }
 
+#if SUPPORTS_UIKIT
+    /// <summary>
+    /// Gets a reference to the current <see cref="UIWindow"/>.
+    /// </summary>
+    /// <returns>The <see cref="UIWindow"/> or <see langword="null"/> if it couldn't be resolved.</returns>
+    internal static UIWindow? GetCurrentUIWindow()
+    {
+        var window = GetKeyWindow();
+        if (window is not null && window.WindowLevel == UIWindowLevel.Normal)
+        {
+            return window;
+        }
+
+        return GetWindows()
+            ?.OrderByDescending(static window => window.WindowLevel)
+            ?.Where(static window => window.RootViewController is not null)
+            ?.Where(static window => window.WindowLevel == UIWindowLevel.Normal)
+            ?.FirstOrDefault();
+
+        static UIWindow? GetKeyWindow()
+        {
+            if (IsIOSVersionAtLeast(13))
+            {
+                try
+                {
+                    using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+                    var scene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+
+                    return scene?.Windows.FirstOrDefault();
+                }
+
+                catch (InvalidCastException)
+                {
+                    return null;
+                }
+            }
+
+            return UIApplication.SharedApplication.KeyWindow;
+        }
+
+        static UIWindow[]? GetWindows()
+        {
+            if (IsIOSVersionAtLeast(13))
+            {
+                try
+                {
+                    using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+                    var scene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+
+                    return scene?.Windows;
+                }
+
+                catch (InvalidCastException)
+                {
+                    return null;
+                }
+            }
+
+            return UIApplication.SharedApplication.Windows;
+        }
+    }
+#endif
+
 #if SUPPORTS_WINDOWS_RUNTIME
     /// <summary>
     /// Resolves the protocol activation using the Windows Runtime APIs, if applicable.
@@ -284,6 +387,8 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// </summary>
     /// <param name="uri">The <see cref="Uri"/> to use.</param>
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("windows")]
     internal static async Task<bool> TryLaunchBrowserWithShellExecuteAsync(Uri uri)
     {
         try
@@ -307,6 +412,17 @@ public static class OpenIddictClientSystemIntegrationHelpers
             return false;
         }
     }
+
+#if SUPPORTS_UIKIT
+    /// <summary>
+    /// Starts the system browser using xdg-open.
+    /// </summary>
+    /// <param name="uri">The <see cref="Uri"/> to use.</param>
+    /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
+    [SupportedOSPlatform("ios")]
+    internal static Task<bool> TryLaunchBrowserWithUIApplicationAsync(Uri uri)
+        => UIApplication.SharedApplication.OpenUrlAsync(new NSUrl(uri.AbsoluteUri), new UIApplicationOpenUrlOptions());
+#endif
 
     /// <summary>
     /// Starts the system browser using xdg-open.

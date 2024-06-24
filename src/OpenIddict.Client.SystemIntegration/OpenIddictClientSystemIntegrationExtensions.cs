@@ -31,7 +31,8 @@ public static class OpenIddictClientSystemIntegrationExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
@@ -58,6 +59,8 @@ public static class OpenIddictClientSystemIntegrationExtensions
             .Single());
 
         // Register the built-in filters used by the default OpenIddict client system integration event handlers.
+        builder.Services.TryAddSingleton<RequireASWebAuthenticationSession>();
+        builder.Services.TryAddSingleton<RequireASWebAuthenticationCallbackUrl>();
         builder.Services.TryAddSingleton<RequireAuthenticationNonce>();
         builder.Services.TryAddSingleton<RequireEmbeddedWebServerEnabled>();
         builder.Services.TryAddSingleton<RequireHttpListenerContext>();

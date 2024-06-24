@@ -50,6 +50,22 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     }
 
     /// <summary>
+    /// Uses an AS web authentication session to start interactive authentication and logout flows.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
+    [SupportedOSPlatform("ios12.0")]
+    public OpenIddictClientSystemIntegrationBuilder UseASWebAuthenticationSession()
+    {
+        if (!OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
+        }
+
+        return Configure(options => options.AuthenticationMode =
+            OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession);
+    }
+
+    /// <summary>
     /// Uses the Windows web authentication broker to start interactive authentication and logout flows.
     /// </summary>
     /// <remarks>

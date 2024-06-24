@@ -26,5 +26,11 @@ public enum OpenIddictClientSystemIntegrationAuthenticationMode
     /// and its use is generally not recommended due to its inherent limitations.
     /// </remarks>
     [SupportedOSPlatform("windows10.0.17763")]
-    WebAuthenticationBroker = 1
+    WebAuthenticationBroker = 1,
+
+    /// <summary>
+    /// AS web authentication session-based authentication and logout.
+    /// </summary>
+    [SupportedOSPlatform("ios12.0")]
+    ASWebAuthenticationSession = 2
 }

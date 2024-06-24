@@ -12,6 +12,10 @@ using System.Text;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;
 
+#if SUPPORTS_AUTHENTICATION_SERVICES
+using AuthenticationServices;
+#endif
+
 #if SUPPORTS_WINDOWS_RUNTIME
 using Windows.Security.Authentication.Web;
 using Windows.UI.Core;
@@ -27,6 +31,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /*
              * Authorization request processing:
              */
+            InvokeASWebAuthenticationSession.Descriptor,
             InvokeWebAuthenticationBroker.Descriptor,
             LaunchSystemBrowser.Descriptor,
 
@@ -35,6 +40,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
              */
             ExtractGetOrPostHttpListenerRequest<ExtractRedirectionRequestContext>.Descriptor,
             ExtractProtocolActivationParameters<ExtractRedirectionRequestContext>.Descriptor,
+            ExtractASWebAuthenticationCallbackUrlData<ExtractRedirectionRequestContext>.Descriptor,
             ExtractWebAuthenticationResultData<ExtractRedirectionRequestContext>.Descriptor,
 
             /*
@@ -44,8 +50,162 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             AttachCacheControlHeader<ApplyRedirectionResponseContext>.Descriptor,
             ProcessEmptyHttpResponse.Descriptor,
             ProcessProtocolActivationResponse<ApplyRedirectionResponseContext>.Descriptor,
+            ProcessASWebAuthenticationSessionResponse<ApplyRedirectionResponseContext>.Descriptor,
             ProcessWebAuthenticationResultResponse<ApplyRedirectionResponseContext>.Descriptor
         ]);
+
+        /// <summary>
+        /// Contains the logic responsible for initiating authorization requests using the web authentication broker.
+        /// Note: this handler is not used when the user session is not interactive.
+        /// </summary>
+        public class InvokeASWebAuthenticationSession : IOpenIddictClientHandler<ApplyAuthorizationRequestContext>
+        {
+            private readonly OpenIddictClientSystemIntegrationService _service;
+
+            public InvokeASWebAuthenticationSession(OpenIddictClientSystemIntegrationService service)
+                => _service = service ?? throw new ArgumentNullException(nameof(service));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyAuthorizationRequestContext>()
+                    .AddFilter<RequireInteractiveSession>()
+                    .AddFilter<RequireASWebAuthenticationSession>()
+                    .UseSingletonHandler<InvokeASWebAuthenticationSession>()
+                    .SetOrder(100_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            [SupportedOSPlatform("ios12.0")]
+#pragma warning disable CS1998
+            public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
+#pragma warning restore CS1998
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+#if SUPPORTS_AUTHENTICATION_SERVICES
+                if (string.IsNullOrEmpty(context.RedirectUri))
+                {
+                    return;
+                }
+
+                if (!OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+                {
+                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
+                }
+
+                var source = new TaskCompletionSource<NSUrl>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                // OpenIddict represents the complete interactive authentication dance as a two-phase process:
+                //   - The challenge, during which the user is redirected to the authorization server, either
+                //     by launching the system browser or, as in this case, using a web-view-like approach.
+                //
+                //   - The callback validation that takes place after the authorization server and the user approved
+                //     the demand and redirected the user agent to the client (using either protocol activation,
+                //     an embedded web server or by tracking the return URL of the web view created for the process).
+                //
+                // Unlike OpenIddict, ASWebAuthenticationSession materializes this process as a single/one-shot API
+                // that opens the system-managed authentication host, navigates to the specified request URI and
+                // doesn't return until the specified callback URI is reached or the modal closed by the user.
+                // To accomodate OpenIddict's model, successful results are processed as any other callback request.
+
+                using var session = new ASWebAuthenticationSession(
+                    url: new NSUrl(OpenIddictHelpers.AddQueryStringParameters(
+                        uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
+                        parameters: context.Transaction.Request.GetParameters().ToDictionary(
+                            parameter => parameter.Key,
+                            parameter => new StringValues((string?[]?) parameter.Value))).AbsoluteUri),
+                    callbackUrlScheme: new Uri(context.RedirectUri, UriKind.Absolute).Scheme,
+                    completionHandler: (url, error) =>
+                    {
+                        if (url is not null)
+                        {
+                            source.SetResult(url);
+                        }
+
+                        else
+                        {
+                            source.SetException(new NSErrorException(error));
+                        }
+                    });
+
+                // On iOS 13.0 and higher, a presentation context provider returning the UI window to
+                // which the Safari web view will be attached MUST be provided (otherwise, a code 2
+                // error is returned by ASWebAuthenticationSession). To avoid that, a default provider
+                // pointing to the current UI window is automatically attached on iOS 13.0 and higher.
+                if (OpenIddictClientSystemIntegrationHelpers.IsIOSVersionAtLeast(13))
+                {
+#pragma warning disable CA1416
+                    session.PresentationContextProvider = new ASWebAuthenticationPresentationContext(
+                        OpenIddictClientSystemIntegrationHelpers.GetCurrentUIWindow() ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0447)));
+#pragma warning restore CA1416
+                }
+
+                using var registration = context.CancellationToken.Register(
+                    static state => ((ASWebAuthenticationSession) state!).Cancel(), session);
+
+                if (!session.Start())
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0448));
+                }
+
+                NSUrl url;
+
+                try
+                {
+                    url = await source.Task.WaitAsync(context.CancellationToken);
+                }
+
+                // Since the result of this operation is known by the time the task signaled by ASWebAuthenticationSession
+                // returns, canceled demands can directly be handled and surfaced here, as part of the challenge handling.
+
+                catch (NSErrorException exception) when (exception.Error.Code is
+                    (int) ASWebAuthenticationSessionErrorCode.CanceledLogin)
+                {
+                    context.Reject(
+                        error: Errors.AccessDenied,
+                        description: SR.GetResourceString(SR.ID2149),
+                        uri: SR.FormatID8000(SR.ID2149));
+
+                    return;
+                }
+
+                catch (NSErrorException)
+                {
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2136),
+                        uri: SR.FormatID8000(SR.ID2136));
+
+                    return;
+                }
+
+                await _service.HandleASWebAuthenticationCallbackUrlAsync(url, context.CancellationToken);
+                context.HandleRequest();
+                return;
+#pragma warning restore CA1416
+#else
+                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
+#endif
+            }
+
+#if SUPPORTS_AUTHENTICATION_SERVICES
+            class ASWebAuthenticationPresentationContext(UIWindow window) : NSObject,
+                IASWebAuthenticationPresentationContextProviding
+            {
+                UIWindow IASWebAuthenticationPresentationContextProviding.GetPresentationAnchor(
+                    ASWebAuthenticationSession session) => window;
+            }
+#endif
+        }
 
         /// <summary>
         /// Contains the logic responsible for initiating authorization requests using the web authentication broker.
@@ -244,6 +404,14 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     }
                 }
 
+#if SUPPORTS_UIKIT
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) &&
+                    await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithUIApplicationAsync(uri))
+                {
+                    context.HandleRequest();
+                    return;
+                }
+#endif
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
                     await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithXdgOpenAsync(uri))
                 {

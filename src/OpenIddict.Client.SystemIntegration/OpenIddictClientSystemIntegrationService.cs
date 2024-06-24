@@ -64,6 +64,19 @@ public sealed class OpenIddictClientSystemIntegrationService
     internal Task HandleHttpRequestAsync(HttpListenerContext request, CancellationToken cancellationToken = default)
         => HandleRequestAsync(request ?? throw new ArgumentNullException(nameof(request)), cancellationToken);
 
+#if SUPPORTS_AUTHENTICATION_SERVICES
+    /// <summary>
+    /// Handles the specified AS web authentication session callback URL.
+    /// </summary>
+    /// <param name="url">The AS web authentication session callback URL.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="url"/> is <see langword="null"/>.</exception>
+    [SupportedOSPlatform("ios12.0")]
+    internal Task HandleASWebAuthenticationCallbackUrlAsync(NSUrl url, CancellationToken cancellationToken = default)
+        => HandleRequestAsync(url, cancellationToken);
+#endif
+
 #if SUPPORTS_WINDOWS_RUNTIME
     /// <summary>
     /// Handles the specified web authentication result.

@@ -39,6 +39,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
          */
         ResolveRequestUriFromHttpListenerRequest.Descriptor,
         ResolveRequestUriFromProtocolActivation.Descriptor,
+        ResolveRequestUriFromASWebAuthenticationCallbackUrl.Descriptor,
         ResolveRequestUriFromWebAuthenticationResult.Descriptor,
         InferEndpointTypeFromDynamicAddress.Descriptor,
         RejectUnknownHttpRequests.Descriptor,
@@ -205,6 +206,49 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for resolving the request URI from the AS web authentication session callback URL.
+    /// Note: this handler is not used when the OpenID Connect request is not an AS web authentication session callback URL.
+    /// </summary>
+    public sealed class ResolveRequestUriFromASWebAuthenticationCallbackUrl : IOpenIddictClientHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .AddFilter<RequireASWebAuthenticationCallbackUrl>()
+                .UseSingletonHandler<ResolveRequestUriFromASWebAuthenticationCallbackUrl>()
+                .SetOrder(ResolveRequestUriFromProtocolActivation.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        [SupportedOSPlatform("ios12.0")]
+        public ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_AUTHENTICATION_SERVICES
+            (context.BaseUri, context.RequestUri) = context.Transaction.GetASWebAuthenticationCallbackUrl() switch
+            {
+                NSUrl url when Uri.TryCreate(url.AbsoluteString, UriKind.Absolute, out Uri? uri) => (
+                    BaseUri: new UriBuilder(uri) { Path = null, Query = null, Fragment = null }.Uri,
+                    RequestUri: uri),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0393))
+            };
+
+            return default;
+#else
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
+#endif
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the request URI from the web authentication result.
     /// Note: this handler is not used when the OpenID Connect request is not a web authentication result.
     /// </summary>
@@ -217,7 +261,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                 .AddFilter<RequireWebAuthenticationResult>()
                 .UseSingletonHandler<ResolveRequestUriFromWebAuthenticationResult>()
-                .SetOrder(ResolveRequestUriFromProtocolActivation.Descriptor.Order + 1_000)
+                .SetOrder(ResolveRequestUriFromASWebAuthenticationCallbackUrl.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -573,6 +617,70 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for extracting OpenID Connect requests from the callback URL of an AS session.
+    /// Note: this handler is not used when the OpenID Connect request is not an AS web authentication session callback.
+    /// </summary>
+    public sealed class ExtractASWebAuthenticationCallbackUrlData<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireASWebAuthenticationCallbackUrl>()
+                .UseSingletonHandler<ExtractASWebAuthenticationCallbackUrlData<TContext>>()
+                .SetOrder(ExtractProtocolActivationParameters<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        [SupportedOSPlatform("ios12.0")]
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_AUTHENTICATION_SERVICES
+            if (context.Transaction.GetASWebAuthenticationCallbackUrl()
+                is not NSUrl url || !Uri.TryCreate(url.AbsoluteString, UriKind.Absolute, out Uri? uri))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0393));
+            }
+
+            var parameters = new Dictionary<string, StringValues>(StringComparer.Ordinal);
+
+            if (!string.IsNullOrEmpty(uri.Query))
+            {
+                foreach (var parameter in OpenIddictHelpers.ParseQuery(uri.Query))
+                {
+                    parameters[parameter.Key] = parameter.Value;
+                }
+            }
+
+            // Note: the fragment is always processed after the query string to ensure that
+            // parameters extracted from the fragment are preferred to parameters extracted
+            // from the query string when they are present in both parts.
+
+            if (!string.IsNullOrEmpty(uri.Fragment))
+            {
+                foreach (var parameter in OpenIddictHelpers.ParseFragment(uri.Fragment))
+                {
+                    parameters[parameter.Key] = parameter.Value;
+                }
+            }
+
+            context.Transaction.Request = new OpenIddictRequest(parameters);
+
+            return default;
+#else
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
+#endif
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for extracting OpenID Connect
     /// requests from the response data of a web authentication result.
     /// Note: this handler is not used when the OpenID Connect request is not a web authentication result.
@@ -586,7 +694,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireWebAuthenticationResult>()
                 .UseSingletonHandler<ExtractWebAuthenticationResultData<TContext>>()
-                .SetOrder(ExtractProtocolActivationParameters<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(ExtractASWebAuthenticationCallbackUrlData<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -2383,6 +2491,43 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .AddFilter<RequireProtocolActivation>()
                 .UseSingletonHandler<ProcessProtocolActivationResponse<TContext>>()
                 .SetOrder(ProcessWebAuthenticationResultResponse<TContext>.Descriptor.Order - 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // For both protocol activations (initial or redirected) and web-view-like results,
+            // no proper response can be generated and eventually displayed to the user. In this
+            // case, simply stop processing the response and mark the request as fully handled.
+            //
+            // Note: this logic applies to both successful and errored responses.
+
+            context.HandleRequest();
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for marking OpenID Connect responses
+    /// returned via AS web authentication callback URLs as processed.
+    /// </summary>
+    public sealed class ProcessASWebAuthenticationSessionResponse<TContext> : IOpenIddictClientHandler<TContext>
+        where TContext : BaseRequestContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireASWebAuthenticationCallbackUrl>()
+                .UseSingletonHandler<ProcessASWebAuthenticationSessionResponse<TContext>>()
+                .SetOrder(int.MaxValue)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 

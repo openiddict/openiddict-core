@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -507,18 +508,12 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // a generic HttpClientHandler, a SocketsHttpHandler or a WinHttpHandler instance with the
             // AutomaticDecompression property set to the desired algorithms (e.g GZip, Deflate or Brotli).
             //
-            // Unfortunately, while convenient and efficient, relying on this property has two downsides:
-            //
-            //   - By being specific to HttpClientHandler/SocketsHttpHandler/WinHttpHandler, the automatic
-            //     decompression feature cannot be used with any other type of client handler, forcing users
-            //     to use a specific instance configured with decompression support enforced and preventing
-            //     them from chosing their own implementation (e.g via ConfigurePrimaryHttpMessageHandler()).
-            //
-            //   - Setting AutomaticDecompression always overrides the Accept-Encoding header of all requests
-            //     to include the selected algorithms without offering a way to make this behavior opt-in.
-            //     Sadly, using HTTP content compression with transport security enabled has security implications
-            //     that could potentially lead to compression side-channel attacks if the client is used with
-            //     remote endpoints that reflect user-defined data and contain secret values (e.g BREACH attacks).
+            // Unfortunately, while convenient and efficient, relying on this property has a downside:
+            // setting AutomaticDecompression always overrides the Accept-Encoding header of all requests
+            // to include the selected algorithms without offering a way to make this behavior opt-in.
+            // Sadly, using HTTP content compression with transport security enabled has security implications
+            // that could potentially lead to compression side-channel attacks if the client is used with
+            // remote endpoints that reflect user-defined data and contain secret values (e.g BREACH attacks).
             //
             // Since OpenIddict itself cannot safely assume such scenarios will never happen (e.g a token request
             // will typically be sent with an authorization code that can be defined by a malicious user and can
@@ -528,8 +523,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // for all the supported HTTP APIs even if no Accept-Encoding header is explicitly sent by the client).
             //
             // For these reasons, OpenIddict doesn't rely on the automatic decompression feature and uses
-            // a custom event handler to deal with GZip/Deflate/Brotli-encoded responses, so that providers
-            // that require using HTTP compression can be supported without having to use it for all providers.
+            // a custom event handler to deal with GZip/Deflate/Brotli-encoded responses, so that servers
+            // that require using HTTP compression can be supported without having to use it for all servers.
 
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
@@ -538,6 +533,19 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
             // If no Content-Encoding header was returned, keep the response stream as-is.
             if (response.Content is not { Headers.ContentEncoding.Count: > 0 })
+            {
+                return;
+            }
+
+            // On iOS, the generic HttpClientHandler type instantiates a NSUrlSessionHandler under the hood.
+            // NSURLSession is known for enforcing response compression on certain versions of iOS: when
+            // using this type, an Accept-Encoding header is automatically attached by iOS and the response
+            // is automatically decompressed. Unfortunately, NSUrlSessionHandler doesn't remove the
+            // Content-Encoding header from the response, which leads to incorrect results when trying
+            // to decompress the content a second time. To avoid that, the entire logic used in this
+            // handler is ignored on iOS if the native HTTP handler (NSUrlSessionHandler) is used.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) &&
+                AppContext.TryGetSwitch("System.Net.Http.UseNativeHttpHandler", out bool value) && value)
             {
                 return;
             }
