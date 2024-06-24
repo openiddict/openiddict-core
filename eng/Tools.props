@@ -4,4 +4,16 @@
     <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.10.0" IsImplicitlyDefined="true" />
   </ItemGroup>
 
+  <!--
+    Restore the .NET workloads immediately after the .NET tooling has been installed by Arcade.
+  -->
+
+  <Target Name="RestoreWorkloads" AfterTargets="InstallDotNetCore">
+    <Message Text="Installing the .NET workloads required to build the solution..." />
+
+    <Exec Command='"$(DotNetTool)" workload restore' WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+  </Target>
+
 </Project>

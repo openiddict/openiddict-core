@@ -45,6 +45,18 @@
       net8.0
     </NetCoreTargetFrameworks>
 
+    <!--
+      Note: targeting iOS requires installing the .NET iOS workload. To ensure the solution can be
+      built on machines that don't have the iOS workload installed, a directory check is used to
+      ensure the iOS reference assemblies pack is present on the machine before targeting iOS.
+    -->
+    <NetCoreIOSTargetFrameworks
+      Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And
+                  ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
+                  ('$(GITHUB_ACTIONS)' == 'true' Or Exists('$(DotNetRoot)packs\Microsoft.iOS.Ref')) ">
+      net8.0-ios
+    </NetCoreIOSTargetFrameworks>
+
     <NetCoreWindowsTargetFrameworks Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' ">
       net6.0-windows7.0;
       net6.0-windows10.0.17763;
@@ -66,7 +78,7 @@
       ensure the reference and contract assemblies are present on the machine before targeting uap10.0.
     -->
     <UniversalWindowsPlatformTargetFrameworks
-      Condition=" '$(UniversalWindowsPlatformTargetFrameworks)' == '' And $([MSBuild]::IsOSPlatform('Windows')) And
+      Condition=" '$(UniversalWindowsPlatformTargetFrameworks)' == '' And $([System.OperatingSystem]::IsWindows()) And
                  ('$(GITHUB_ACTIONS)' == 'true' Or (Exists('$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETCore\v5.0') And
                                                     Exists('$(MSBuildProgramFiles32)\Windows Kits\10\References\10.0.17763.0'))) ">
       uap10.0.17763

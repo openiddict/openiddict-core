@@ -17,6 +17,70 @@ namespace OpenIddict.Client.SystemIntegration;
 public static class OpenIddictClientSystemIntegrationHandlerFilters
 {
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no AS web
+    /// authentication callback URL can be found in the transaction properties.
+    /// </summary>
+    public sealed class RequireASWebAuthenticationCallbackUrl : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_AUTHENTICATION_SERVICES
+            if (OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+            {
+                return new(ContainsASWebAuthenticationSessionResult(context.Transaction));
+            }
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            static bool ContainsASWebAuthenticationSessionResult(OpenIddictClientTransaction transaction)
+                => transaction.GetASWebAuthenticationCallbackUrl() is not null;
+#endif
+            return new(false);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if
+    /// the AS web authentication session integration was not enabled.
+    /// </summary>
+    public sealed class RequireASWebAuthenticationSession : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> _options;
+
+        public RequireASWebAuthenticationSession(IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_AUTHENTICATION_SERVICES
+            if (OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+            {
+                if (!context.Transaction.Properties.TryGetValue(
+                    typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) ||
+                    result is not OpenIddictClientSystemIntegrationAuthenticationMode mode)
+                {
+                    mode = _options.CurrentValue.AuthenticationMode.GetValueOrDefault();
+                }
+
+                return new(mode is OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession);
+            }
+#endif
+            return new(false);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers
     /// if no explicit nonce was attached to the authentication context.
     /// </summary>

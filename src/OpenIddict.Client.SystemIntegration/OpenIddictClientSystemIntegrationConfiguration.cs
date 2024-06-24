@@ -74,7 +74,8 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             throw new ArgumentNullException(nameof(options));
         }
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
@@ -82,21 +83,27 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
 
 #pragma warning disable CA1416
         // If explicitly set, ensure the specified authentication mode is supported.
-        if (options.AuthenticationMode is OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker &&
+        if (options.AuthenticationMode is OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession &&
+            !OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
+        }
+
+        else if (options.AuthenticationMode is OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker &&
             !OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
         }
 #pragma warning restore CA1416
 
-        // Note: the OpenIddict client system integration is currently only supported on Windows
-        // and Linux. As such, using the system browser as the default authentication method in
-        // conjunction with the embedded web server and activation handling should be always supported.
-        options.AuthenticationMode          ??= OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser;
-        options.EnableActivationHandling    ??= true;
-        options.EnableActivationRedirection ??= true;
-        options.EnablePipeServer            ??= true;
-        options.EnableEmbeddedWebServer     ??= HttpListener.IsSupported;
+        options.AuthenticationMode ??= OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported() ?
+            OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession :
+            OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser;
+
+        options.EnableActivationHandling    ??= !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"));
+        options.EnableActivationRedirection ??= !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"));
+        options.EnablePipeServer            ??= !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"));
+        options.EnableEmbeddedWebServer     ??= !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) && HttpListener.IsSupported;
 
         // If no explicit application discriminator was specified, compute the SHA-256 hash
         // of the application name resolved from the host and use it as a unique identifier.

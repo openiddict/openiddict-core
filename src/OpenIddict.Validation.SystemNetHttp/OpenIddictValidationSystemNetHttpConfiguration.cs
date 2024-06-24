@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
@@ -90,6 +91,32 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
             if (builder.PrimaryHandler is not HttpClientHandler handler)
             {
                 throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName));
+            }
+
+            // Note: automatic content decompression can be enabled by constructing an HttpClient wrapping
+            // a generic HttpClientHandler, a SocketsHttpHandler or a WinHttpHandler instance with the
+            // AutomaticDecompression property set to the desired algorithms (e.g GZip, Deflate or Brotli).
+            //
+            // Unfortunately, while convenient and efficient, relying on this property has a downside:
+            // setting AutomaticDecompression always overrides the Accept-Encoding header of all requests
+            // to include the selected algorithms without offering a way to make this behavior opt-in.
+            // Sadly, using HTTP content compression with transport security enabled has security implications
+            // that could potentially lead to compression side-channel attacks if the client is used with
+            // remote endpoints that reflect user-defined data and contain secret values (e.g BREACH attacks).
+            //
+            // Since OpenIddict itself cannot safely assume such scenarios will never happen (e.g a token request
+            // will typically be sent with an authorization code that can be defined by a malicious user and can
+            // potentially be reflected in the token response depending on the configuration of the remote server),
+            // it is safer to disable compression by default by not sending an Accept-Encoding header while
+            // still allowing encoded responses to be processed (e.g StackExchange forces content compression
+            // for all the supported HTTP APIs even if no Accept-Encoding header is explicitly sent by the client).
+            //
+            // For these reasons, OpenIddict doesn't rely on the automatic decompression feature and uses
+            // a custom event handler to deal with GZip/Deflate/Brotli-encoded responses, so that servers
+            // that require using HTTP compression can be supported without having to use it for all servers.
+            if (handler.SupportsAutomaticDecompression)
+            {
+                handler.AutomaticDecompression = DecompressionMethods.None;
             }
 
             // OpenIddict uses IHttpClientFactory to manage the creation of the HTTP clients and

@@ -123,6 +123,14 @@
   </PropertyGroup>
 
   <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                 '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
+                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_SERVICES</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_UIKIT</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore'    And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '5.0')) And
                  '$(TargetPlatformIdentifier)'  == 'UAP'         And '$(TargetPlatformVersion)' != '' And
                   $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0'))) Or
