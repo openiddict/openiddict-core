@@ -1,0 +1,300 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Web.AzureAD.Publishing.targets  
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your web deploy projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--********************************************************************-->
+  <!-- This will create the parameters required when publishing an web app leveraging
+       Windows Azure Active Directory for auth -->
+  <PropertyGroup>
+    <PipelineTransformPhaseDependsOn>$(PipelineTransformPhaseDependsOn);_TransformWebConfigForAzureAuthentication</PipelineTransformPhaseDependsOn>
+  </PropertyGroup>
+  <Target Name="_TransformWebConfigForAzureAuthenticationCore">
+    <PropertyGroup>
+      <_WebConfigTransformFolderForAzureAuthentication>$(_WPPDefaultIntermediateOutputPath)WebConfigTransformFolderForAzureAuthentication</_WebConfigTransformFolderForAzureAuthentication>
+    </PropertyGroup>
+    <ItemGroup>
+      <_WebConfigsToTransformForAzureAuthentication Include="@(FilesForPackagingFromProject)"
+                             Condition="'%(FilesForPackagingFromProject.Filename)%(FilesForPackagingFromProject.Extension)'=='$(ProjectConfigFileName)' 
+                                         And !%(FilesForPackagingFromProject.Exclude)
+                                         And '%(DestinationRelativePath)' == '$(ProjectConfigFileName)'">
+        <TransformOriginalFolder>$(_WebConfigTransformFolderForAzureAuthentication)\original</TransformOriginalFolder>
+        <TransformFileFolder>$(_WebConfigTransformFolderForAzureAuthentication)\assist</TransformFileFolder>
+        <TransformOutputFile>$(_WebConfigTransformFolderForAzureAuthentication)\transformed\%(DestinationRelativePath)</TransformOutputFile>
+        <TransformScope>$([System.IO.Path]::GetFullPath($(WPPAllFilesInSingleFolder)\%(DestinationRelativePath)))</TransformScope>
+      </_WebConfigsToTransformForAzureAuthentication>
+      <_WebConfigsToTransformForAzureAuthenticationOuputFiles Include="@(_WebConfigsToTransformForAzureAuthentication->'%(TransformOutputFile)')">
+      </_WebConfigsToTransformForAzureAuthenticationOuputFiles>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_WebConfigsToTransformForAzureAuthenticationOuputDirectories>@(_WebConfigsToTransformForAzureAuthenticationOuputFiles->'%(RootDir)%(Directory)')</_WebConfigsToTransformForAzureAuthenticationOuputDirectories>
+      <_WebConfigsToTransformForAzureAuthenticationOuput>@(_WebConfigsToTransformForAzureAuthentication->'%(TransformOutputFile)');</_WebConfigsToTransformForAzureAuthenticationOuput>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_WebConfigsToTransformForAzureAuthenticationOuputDirectories Include="$(_WebConfigsToTransformForAzureAuthenticationOuputDirectories)" />
+    </ItemGroup>
+
+    <!-- Make sure required directories exist -->
+    <MakeDir Directories="@(_WebConfigsToTransformForAzureAuthenticationOuputDirectories)" Condition="!Exists(%(Identity))"/>
+
+    <!-- Copy the original web.config -->
+    <CopyPipelineFiles PipelineItems="@(_WebConfigsToTransformForAzureAuthentication)"
+                           SourceDirectory="$(WebPublishPipelineProjectDirectory)"
+                           TargetDirectory="%(TransformOriginalFolder)"
+                           SkipMetadataExcludeTrueItems="True"
+                           UpdateItemSpec="False"
+                           DeleteItemsMarkAsExcludeTrue ="True"
+                           Condition="'@(_WebConfigsToTransformForAzureAuthentication)' != ''">
+      <Output TaskParameter="UpdatedPipelineItems" ItemName="_UpdatedWebConfigsToTransformForAzureAuthentication"/>
+    </CopyPipelineFiles>
+
+    <!-- Delete those web.config have been updated if existed-->
+    <Delete Files="@(_WebConfigsToTransformForAzureAuthenticationOuputDirectories->'%(TransformOutputFile)')" />
+
+    <ItemGroup>
+      <MSDeployParameterValue Include="AD_APPIDUri">
+        <ParameterValue>$(ADAppIDUri)</ParameterValue>
+      </MSDeployParameterValue>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <RemoveCertValidationElement Condition="'$(RemoveCertValidationElement)'=='' ">false</RemoveCertValidationElement>
+      <_RemoveCertificateValidationTransform Condition="'$(RemoveCertValidationElement)' == 'true'">&lt;certificateValidation certificateValidationMode=&quot;None&quot; xdt:Transform=&quot;Remove&quot; /&gt;</_RemoveCertificateValidationTransform>
+      <_RemoveExistingAudienceUrisTransform Condition="'$(PreserveExistingAudienceUris)' != 'true'">&lt;add xdt:Transform=&quot;RemoveAll&quot; /&gt;</_RemoveExistingAudienceUrisTransform>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <_ReplaceRealmAndAudienceUriAppSetting Condition="'$(ADWebAPIBased)'!='true' And '$(ADUsesOwinOrOpenIdConnect)'!='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:AudienceUri&quot;
+        value=&quot;{% parameter='AD_AudienceUriAppSetting' xpathlocator='key' description='AD Audience Uri App Setting' defaultValue='%24(value)' tags='AD_AudienceUriAppSetting' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;add key=&quot;ida:Realm&quot;
+        value=&quot;{% parameter='AD_RealmAppSetting' xpathlocator='key' description='AD Realm App Setting' defaultValue='%24(value)' tags='AD_RealmAppSetting' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;add key=&quot;ida:FederationMetadataLocation&quot;
+        value=&quot;{% parameter='AD_MetadataUrl' xpathlocator='key' description='AD MetadataUrl App Setting' defaultValue='%24(value)' tags='AD_MetadataUrlAppSetting' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceRealmAndAudienceUriAppSetting>
+      <_ReplaceADClientID Condition="'$(ADClientAPPID)'!='' And '$(ADUsesOwinOrOpenIdConnect)'!='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:ClientID&quot;
+        value=&quot;{% parameter='AD_ClientID' xpathlocator='key' description='AD Client Application ID' defaultValue='%24(value)' tags='AD_ClientAPPID' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceADClientID>
+      <_ReplaceADClientPassword Condition="'$(ADClientPassword)'!='' And '$(ADUsesOwinOrOpenIdConnect)'!='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:Password&quot;
+        value=&quot;{% parameter='AD_ClientPassword' xpathlocator='key' description='AD Client Password' defaultValue='%24(value)' tags='AD_Password' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceADClientPassword>
+      <_ReplaceADWebAPIAudienceAppSetting Condition="'$(ADWebAPIBased)'=='true' And '$(ADUsesOwinOrOpenIdConnect)'!='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:Audience&quot;
+        value=&quot;{% parameter='AD_WebAPI_Audience' xpathlocator='key' description='AD Web API Audience' defaultValue='%24(value)' tags='AD_WebAPI_Audience' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceADWebAPIAudienceAppSetting>
+      <_ReplaceADWIFArtifacts Condition="'$(ADWebAPIBased)'!='true' And '$(ADUsesOwinOrOpenIdConnect)'!='true'">
+        &lt;system.identityModel&gt;
+        &lt;identityConfiguration&gt;
+        $(_RemoveCertificateValidationTransform)
+        &lt;audienceUris&gt;
+        $(_RemoveExistingAudienceUrisTransform)
+        &lt;add
+        value=&quot;APPIDUri&quot;
+        xdt:Transform=&quot;Insert&quot; xdt:SupressWarnings=&quot;True&quot; /&gt;
+        &lt;/audienceUris&gt;
+
+        &lt;audienceUris&gt;
+        &lt;add
+        value=&quot;{% token='%24(value)' parameter='AD_%24(value)' xpathlocator='value' description='AD AppIDUri' defaultValue='%24(value)' tags='ADrealmUri' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; /&gt;
+        &lt;/audienceUris&gt;
+
+        &lt;/identityConfiguration&gt;
+        &lt;/system.identityModel&gt;
+        &lt;system.identityModel.services&gt;
+        &lt;federationConfiguration&gt;
+        &lt;wsFederation
+        realm=&quot;{% xpathlocator='requireHttps' parameter='AD_APPIDUri' description='AD AppIDUri' defaultValue='%24(realm)' tags='ADAPPIDUri' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(realm)&quot; xdt:SupressWarnings=&quot;True&quot; /&gt;
+        &lt;wsFederation
+        issuer=&quot;{% xpathlocator='requireHttps' parameter='AD_Issuer' description='AD Issuer' defaultValue='%24(issuer)' tags='ADISSUER' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(issuer)&quot; xdt:SupressWarnings=&quot;True&quot; /&gt;
+        &lt;/federationConfiguration&gt;
+        &lt;/system.identityModel.services&gt;
+      </_ReplaceADWIFArtifacts>
+      <_ReplaceADClientIDDev14 Condition="'$(ADClientAPPID)'!='' And '$(ADUsesOwinOrOpenIdConnect)'=='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:ClientId&quot;
+        value=&quot;{% parameter='AD_ClientID' xpathlocator='key' description='AD Client Application ID' defaultValue='%24(value)' tags='AD_ClientAPPID' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceADClientIDDev14>
+      <_ReplaceADClientPasswordDev14 Condition="'$(ADClientPassword)'!='' And '$(ADUsesOwinOrOpenIdConnect)'=='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:ClientSecret&quot;
+        value=&quot;{% parameter='AD_ClientPassword' xpathlocator='key' description='AD Client Password' defaultValue='%24(value)' tags='AD_Password' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceADClientPasswordDev14>
+      <_ReplaceADTenantIdDev14 Condition="'$(ADTenantId)'!='' And '$(ADUsesOwinOrOpenIdConnect)'=='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:TenantId&quot;
+        value=&quot;{% parameter='AD_TenantId' xpathlocator='key' description='AD Tenant Id' defaultValue='%24(value)' tags='AD_TenantId' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceADTenantIdDev14>
+      <_ReplaceADDomainDev14 Condition="'$(ADDomain)'!='' And '$(ADUsesOwinOrOpenIdConnect)'=='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:Domain&quot;
+        value=&quot;{% parameter='AD_Domain' xpathlocator='key' description='AD Domain' defaultValue='%24(value)' tags='AD_Domain' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceADDomainDev14>
+      <_ReplaceADPostLogoutRedirectUriDev14 Condition="'$(ADPostLogoutRedirectUri)'!='' And '$(ADUsesOwinOrOpenIdConnect)'=='true'">
+        &lt;appSettings&gt;
+        &lt;add key=&quot;ida:PostLogoutRedirectUri&quot;
+        value=&quot;{% parameter='AD_PostLogoutRedirectUri' xpathlocator='key' description='AD PostLogoutRedirectUri' defaultValue='%24(value)' tags='AD_PostLogoutRedirectUri' %}&quot;
+        xdt:Transform=&quot;SetTokenizedAttributes(value)&quot; xdt:SupressWarnings=&quot;True&quot; xdt:Locator=&quot;Match(key)&quot;/&gt;
+        &lt;/appSettings&gt;
+      </_ReplaceADPostLogoutRedirectUriDev14>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MSDeployParameterValue Include="AD_ClientID" Condition="'$(ADClientAPPID)'!=''">
+        <ParameterValue>$(ADClientAPPID)</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_Issuer" Condition="'$(ADIssuer)'!=''">
+        <ParameterValue>$(ADIssuer)</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_MetadataUrl" Condition="'$(ADDomain)'!=''">
+        <ParameterValue>https://login.windows.net/$(ADDomain)/FederationMetadata/2007-06/FederationMetadata.xml</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_ClientPassword" Condition="'$(ADClientPassword)'!=''">
+        <ParameterValue>$(ADClientPassword)</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_WebAPI_Audience" Condition="'$(ADWebAPIBased)'=='true'">
+        <ParameterValue>$(ADAppIDUri)</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_RealmAppSetting" Condition="'$(ADWebAPIBased)'!='true'">
+        <ParameterValue>$(ADAppIDUri)</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_AudienceUriAppSetting" Condition="'$(ADWebAPIBased)'!='true'">
+        <ParameterValue>$(ADAppIDUri)</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_TenantId" Condition="'$(ADTenantId)'!=''">
+        <ParameterValue>$(ADTenantId)</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_Domain" Condition="'$(ADDomain)'!=''">
+        <ParameterValue>$(ADDomain)</ParameterValue>
+      </MSDeployParameterValue>
+      <MSDeployParameterValue Include="AD_PostLogoutRedirectUri" Condition="'$(ADPostLogoutRedirectUri)'!=''">
+        <ParameterValue>$(ADPostLogoutRedirectUri)</ParameterValue>
+      </MSDeployParameterValue>
+    </ItemGroup>
+
+    <CreateProperty Value="&lt;?xml version=&quot;1.0&quot;?&gt;
+       &lt;configuration xmlns:xdt=&quot;http://schemas.microsoft.com/XML-Document-Transform&quot;&gt;
+       $(_ReplaceRealmAndAudienceUriAppSetting)
+       $(_ReplaceADClientID)
+       $(_ReplaceADClientPassword)
+       $(_ReplaceADWebAPIAudienceAppSetting)
+       $(_ReplaceADWIFArtifacts)
+       $(_ReplaceADClientIDDev14)
+       $(_ReplaceADClientPasswordDev14)
+       $(_ReplaceADTenantIdDev14)
+       $(_ReplaceADDomainDev14)
+       $(_ReplaceADPostLogoutRedirectUriDev14)
+       &lt;/configuration&gt;">
+      <Output TaskParameter="Value" PropertyName="_WebConfigsTransformForAzureAuthentication"/>
+    </CreateProperty>
+
+    <PropertyGroup>
+      <_WebConfigsToTransformForAzureAuthentication_Identity>%(_WebConfigsToTransformForAzureAuthentication.Identity)</_WebConfigsToTransformForAzureAuthentication_Identity>
+      <_WebConfigsToTransformForAzureAuthentication_TransformOutputFile>%(_WebConfigsToTransformForAzureAuthentication.TransformOutputFile)</_WebConfigsToTransformForAzureAuthentication_TransformOutputFile>
+      <_WebConfigsToTransformForAzureAuthentication_TransformScope>%(_WebConfigsToTransformForAzureAuthentication.TransformScope)</_WebConfigsToTransformForAzureAuthentication_TransformScope>
+    </PropertyGroup>
+
+    <ParameterizeTransformXml
+      Source="$(_WebConfigsToTransformForAzureAuthentication_Identity)"
+      IsSourceAFile="True"
+      Transform="$(_WebConfigsTransformForAzureAuthentication)"
+      IsTransformAFile="False"
+      Destination="$(_WebConfigsToTransformForAzureAuthentication_TransformOutputFile)"
+      IsDestinationAFile="True"
+      Scope="$(_WebConfigsToTransformForAzureAuthentication_TransformScope)"
+      StackTrace="$(TransformWebConfigStackTraceEnabled)"
+      EnableTokenizeParameters="True"
+      SourceRootPath="$(WebPublishPipelineSourceRootDirectory)">
+      <Output TaskParameter="DeclareParameters" ItemName="_ParamsFromWebConfigsToTransformForAzureAuthentication"/>
+    </ParameterizeTransformXml>
+
+    <PropertyGroup>
+      <_WebConfigsToTransformForAzureAuthenticationOutputFolder>$(_WPPDefaultIntermediateOutputPath)AzureAuthentication</_WebConfigsToTransformForAzureAuthenticationOutputFolder>
+      <_WebConfigsToTransformForAzureAuthenticationOutputParametersFile>$(_WebConfigsToTransformForAzureAuthenticationOutputFolder)\TransformForAzureAuthentication.parameters.xml</_WebConfigsToTransformForAzureAuthenticationOutputParametersFile>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_WebConfigsToTransformForAzureAuthenticationOutputFolder)" Condition="!Exists($(_WebConfigsToTransformForAzureAuthenticationOutputFolder))"/>
+
+    <ExportParametersFile
+      Parameters="@(_ParamsFromWebConfigsToTransformForAzureAuthentication)"
+      DeclareParameterFile="$(_WebConfigsToTransformForAzureAuthenticationOutputParametersFile)"
+      GenerateFileEvenIfEmpty="True"
+      />
+
+    <ImportParametersFile  Files="$(_WebConfigsToTransformForAzureAuthenticationOutputParametersFile)"
+                           DisableEscapeMSBuildVariable="$(ImportParametersFile_DisableEscapeMSBuildVariable)"
+                           Condition="!$(DisableAllVSGeneratedMSDeployParameter) And Exists($(_WebConfigsToTransformForAzureAuthenticationOutputParametersFile))" >
+      <Output TaskParameter="Result" ItemName="_ImportAutoParameterizeAzureAuthenticationWebConfig"/>
+    </ImportParametersFile>
+
+    <ItemGroup>
+      <MsDeployDeclareParameters Include="@(_ImportAutoParameterizeAzureAuthenticationWebConfig)"  Condition="'%(_ImportAutoParameterizeAzureAuthenticationWebConfig.Identity)' !=''">
+        <Value>%(_ImportAutoParameterizeAzureAuthenticationWebConfig.DefaultValue)</Value>
+        <Priority>$(VsWebConfigAutoCsParametersPriority)</Priority>
+      </MsDeployDeclareParameters>
+    </ItemGroup>
+  </Target>
+
+  <!--********************************************************************-->
+  <!-- Commit parameterized web.config into pipeline so later phase will pick up-->
+  <!--********************************************************************-->
+  <Target Name="_PostTransformWebConfigForAzureAuthentication">
+    <ItemGroup>
+      <!--Remove untransformed Web.configs from the pipeline-->
+      <FilesForPackagingFromProject Remove="@(_WebConfigsToTransformForAzureAuthentication)" Condition="'@(_WebConfigsToTransformForAzureAuthentication)'!='' And !%(_WebConfigsToTransformForAzureAuthentication.Exclude) And Exists(%(_WebConfigsToTransformForAzureAuthentication.TransformOutputFile))"/>
+      <!--Add the transformed Web.configs at the new loction to the pipeline-->
+      <FilesForPackagingFromProject Include="@(_WebConfigsToTransformForAzureAuthentication->'%(TransformOutputFile)')" Condition="'@(_WebConfigsToTransformForAzureAuthentication)'!='' And !%(_WebConfigsToTransformForAzureAuthentication.Exclude) And Exists(%(_WebConfigsToTransformForAzureAuthentication.TransformOutputFile))"/>
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <_TransformWebConfigForAzureAuthenticationDependsOn>
+      _TransformWebConfigForAzureAuthenticationCore;
+      _PostTransformWebConfigForAzureAuthentication;
+    </_TransformWebConfigForAzureAuthenticationDependsOn>
+  </PropertyGroup>
+
+  <!--********************************************************************-->
+  <!-- Entry point of parameterizing web.config containing Win Azure Active Directory (WAAD) related artifacts -->
+  <!--********************************************************************-->
+  <Target Name="_TransformWebConfigForAzureAuthentication"
+          DependsOnTargets="$(_TransformWebConfigForAzureAuthenticationDependsOn)"
+          Condition="('$(WebPublishMethod)' =='MsDeploy' or '$(WebPublishMethod)' =='Package')  and '$(EnableADPublish)' =='true'">
+  </Target>
+
+</Project>
