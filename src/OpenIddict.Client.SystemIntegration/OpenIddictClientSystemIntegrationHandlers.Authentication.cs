@@ -136,6 +136,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                         }
                     });
 
+#if SUPPORTS_PRESENTATION_CONTEXT_PROVIDER
                 // On iOS 13.0 and higher, a presentation context provider returning the UI window to
                 // which the Safari web view will be attached MUST be provided (otherwise, a code 2
                 // error is returned by ASWebAuthenticationSession). To avoid that, a default provider
@@ -148,7 +149,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0447)));
 #pragma warning restore CA1416
                 }
-
+#endif
                 using var registration = context.CancellationToken.Register(
                     static state => ((ASWebAuthenticationSession) state!).Cancel(), session);
 

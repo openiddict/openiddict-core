@@ -10,7 +10,6 @@
       $(UniversalWindowsPlatformTargetFrameworks)
     </TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <PropertyGroup>

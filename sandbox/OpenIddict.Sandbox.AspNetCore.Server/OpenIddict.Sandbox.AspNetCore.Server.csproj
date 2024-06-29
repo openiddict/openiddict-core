@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net48;net8.0</TargetFrameworks>
-    <IsShipping>false</IsShipping>
-    <SignAssembly>false</SignAssembly>
     <TypeScriptEnabled>false</TypeScriptEnabled>
     <Nullable>disable</Nullable>
   </PropertyGroup>

@@ -131,6 +131,13 @@
   </PropertyGroup>
 
   <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                 '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
+                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '13.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_PRESENTATION_CONTEXT_PROVIDER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore'    And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '5.0')) And
                  '$(TargetPlatformIdentifier)'  == 'UAP'         And '$(TargetPlatformVersion)' != '' And
                   $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0'))) Or
