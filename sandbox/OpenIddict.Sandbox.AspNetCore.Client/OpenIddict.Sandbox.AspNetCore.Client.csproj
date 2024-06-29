@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net48;net8.0</TargetFrameworks>
-    <IsShipping>false</IsShipping>
     <Nullable>disable</Nullable>
   </PropertyGroup>
 

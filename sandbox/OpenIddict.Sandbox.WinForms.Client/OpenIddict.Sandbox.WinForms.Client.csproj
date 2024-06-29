@@ -2,11 +2,9 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net48;net8.0-windows7.0</TargetFrameworks>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <TargetFrameworks>net48</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(SupportsWindowsPlatformTargeting)' == 'true' ">$(TargetFrameworks);net8.0-windows7.0</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
-    <IsShipping>false</IsShipping>
-    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>

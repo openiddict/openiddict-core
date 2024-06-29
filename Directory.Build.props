@@ -7,7 +7,7 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>preview</AnalysisLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>$(NoWarn);CS1591;NU5118;NU5128;xUnit2002</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;NETSDK1206;NU5118;NU5128;xUnit2002</NoWarn>
     <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -33,6 +33,31 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!--
+      Note: targeting iOS requires installing the .NET iOS workload. To ensure the solution can be
+      built on machines that don't have the iOS workload installed, a directory check is used to
+      ensure the iOS reference assemblies pack is present on the machine before targeting iOS.
+    -->
+    <SupportsIOSPlatformTargeting
+      Condition=" '$(SupportsIOSPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) And
+                 ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.iOS.Ref')) Or
+                                                   ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.iOS.Ref')) Or
+                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.iOS.Ref'))) ">true</SupportsIOSPlatformTargeting>
+
+    <SupportsWindowsPlatformTargeting
+      Condition=" '$(SupportsWindowsPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) ">true</SupportsWindowsPlatformTargeting>
+
+    <!--
+      Note: the .NET Core 5.0 reference assemblies or UWP contract assemblies may not be available if
+      the Windows SDK is not installed (or if a different version is installed). To ensure the solution
+      can be built on machines that don't have the UWP tooling installed, directory checks are used to
+      ensure the reference and contract assemblies are present on the machine before targeting uap10.0.
+    -->
+    <SupportsUniversalWindowsPlatformTargeting
+      Condition=" '$(SupportsUniversalWindowsPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) And
+                 ('$(GITHUB_ACTIONS)' == 'true' Or (Exists('$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETCore\v5.0') And
+                                                    Exists('$(MSBuildProgramFiles32)\Windows Kits\10\References\10.0.17763.0'))) ">true</SupportsUniversalWindowsPlatformTargeting>
+
     <NetFrameworkTargetFrameworks Condition=" '$(NetFrameworkTargetFrameworks)' == '' ">
       net461;
       net472;
@@ -45,19 +70,14 @@
       net8.0
     </NetCoreTargetFrameworks>
 
-    <!--
-      Note: targeting iOS requires installing the .NET iOS workload. To ensure the solution can be
-      built on machines that don't have the iOS workload installed, a directory check is used to
-      ensure the iOS reference assemblies pack is present on the machine before targeting iOS.
-    -->
     <NetCoreIOSTargetFrameworks
-      Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And
-                  ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
-                  ('$(GITHUB_ACTIONS)' == 'true' Or Exists('$(DotNetRoot)packs\Microsoft.iOS.Ref')) ">
-      net8.0-ios
+      Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSPlatformTargeting)' == 'true' ">
+      net8.0-ios12.0;
+      net8.0-ios13.0
     </NetCoreIOSTargetFrameworks>
 
-    <NetCoreWindowsTargetFrameworks Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' ">
+    <NetCoreWindowsTargetFrameworks
+      Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' And '$(SupportsWindowsPlatformTargeting)' == 'true' ">
       net6.0-windows7.0;
       net6.0-windows10.0.17763;
       net7.0-windows7.0;
@@ -71,18 +91,14 @@
       netstandard2.1
     </NetStandardTargetFrameworks>
 
-    <!--
-      Note: the .NET Core 5.0 reference assemblies or UWP contract assemblies may not be available if
-      the Windows SDK is not installed (or if a different version is installed). To ensure the solution
-      can be built on machines that don't have the UWP tooling installed, directory checks are used to
-      ensure the reference and contract assemblies are present on the machine before targeting uap10.0.
-    -->
     <UniversalWindowsPlatformTargetFrameworks
-      Condition=" '$(UniversalWindowsPlatformTargetFrameworks)' == '' And $([System.OperatingSystem]::IsWindows()) And
-                 ('$(GITHUB_ACTIONS)' == 'true' Or (Exists('$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETCore\v5.0') And
-                                                    Exists('$(MSBuildProgramFiles32)\Windows Kits\10\References\10.0.17763.0'))) ">
+      Condition=" '$(UniversalWindowsPlatformTargetFrameworks)' == '' And '$(SupportsUniversalWindowsPlatformTargeting)' == 'true' ">
       uap10.0.17763
     </UniversalWindowsPlatformTargetFrameworks>
+
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'iOS' ">12.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">7.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion   Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">7.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -113,6 +129,15 @@
   <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' And '$(GITHUB_REF.StartsWith(`refs/pull/`))' == 'false' ">
     <OfficialBuild>true</OfficialBuild>
     <OfficialBuildId>$(_ComputedOfficialBuildId)</OfficialBuildId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(RepoRelativeProjectDir.Contains('sandbox')) ">
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
+    <Serviceable>false</Serviceable>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition=" $(RepoRelativeProjectDir.Contains('src')) ">
