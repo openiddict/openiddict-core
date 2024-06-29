@@ -95,10 +95,6 @@
       Condition=" '$(UniversalWindowsPlatformTargetFrameworks)' == '' And '$(SupportsUniversalWindowsPlatformTargeting)' == 'true' ">
       uap10.0.17763
     </UniversalWindowsPlatformTargetFrameworks>
-
-    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'iOS' ">12.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">7.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion   Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">7.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <PropertyGroup>
