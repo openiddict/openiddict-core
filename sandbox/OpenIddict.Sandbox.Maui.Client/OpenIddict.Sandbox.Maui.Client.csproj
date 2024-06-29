@@ -4,8 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks Condition=" '$(SupportsWindowsPlatformTargeting)' == 'true' ">net8.0-windows10.0.19041</TargetFrameworks>
     <TargetFrameworks Condition=" '$(SupportsIOSPlatformTargeting)' == 'true' ">$(TargetFrameworks);net8.0-ios17.2</TargetFrameworks>
+    <UseMaui Condition=" '$(TargetFrameworks)' != '' ">true</UseMaui>
     <TargetFrameworks Condition=" '$(TargetFrameworks)' == '' ">net8.0</TargetFrameworks>
-    <UseMaui Condition=" '$(TargetPlatformIdentifier)' != '' ">true</UseMaui>
     <SingleProject>true</SingleProject>
   </PropertyGroup>
 
