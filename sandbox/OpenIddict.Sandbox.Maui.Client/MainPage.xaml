@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="OpenIddict.Sandbox.Maui.Client.MainPage">
-			 
+
     <ScrollView>
         <VerticalStackLayout 
             Spacing="25" 
@@ -14,14 +14,15 @@
                 SemanticProperties.Description="Cute dot net bot waving hi to you!"
                 HeightRequest="200"
                 HorizontalOptions="Center" />
-                
+
             <Label
                 Text="Hello, World!"
                 SemanticProperties.HeadingLevel="Level1"
                 FontSize="32"
                 HorizontalOptions="Center" />
-            
+
             <Label
+                x:Name="Message"
                 Text="Welcome to .NET Multi-platform App UI"
                 SemanticProperties.HeadingLevel="Level2"
                 SemanticProperties.Description="Welcome to dot net Multi platform App U I"
@@ -58,5 +59,5 @@
 
         </VerticalStackLayout>
     </ScrollView>
- 
+
 </ContentPage>
