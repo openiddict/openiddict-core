@@ -15,6 +15,12 @@
     <PublicSign>false</PublicSign>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'iOS' ">12.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">7.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion   Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">7.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
   <!--
     Note: .NET Framework and .NET Core <3.0/.NET Standard assemblies are not annotated
     with nullable references annotations. To avoid errors on these target frameworks,
