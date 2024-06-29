@@ -58,25 +58,26 @@ public partial class MainPage : ContentPage
                 // Wait for the user to complete the authorization process.
                 var principal = (await _service.AuthenticateInteractivelyAsync(new()
                 {
+                    CancellationToken = source.Token,
                     Nonce = result.Nonce
                 })).Principal;
 
-                await DisplayAlert("Authentication successful", $"Welcome, {principal.FindFirst(Claims.Name)!.Value}.", "OK");
+                Message.Text = $"Welcome, {principal.FindFirst(Claims.Name)!.Value}.";
             }
 
             catch (OperationCanceledException)
             {
-                await DisplayAlert("Authentication timed out", "The authentication process was aborted.", "OK");
+                Message.Text = "The authentication process was aborted.";
             }
 
             catch (ProtocolException exception) when (exception.Error is Errors.AccessDenied)
             {
-                await DisplayAlert("Authorization denied", "The authorization was denied by the end user.", "OK");
+                Message.Text = "The authorization was denied by the end user.";
             }
 
             catch
             {
-                await DisplayAlert("Authentication failed", "An error occurred while trying to authenticate the user.", "OK");
+                Message.Text = "An error occurred while trying to authenticate the user.";
             }
         }
 
@@ -122,17 +123,17 @@ public partial class MainPage : ContentPage
                     Nonce = result.Nonce
                 });
 
-                await DisplayAlert("Logout demand successful", "The user was successfully logged out from the local server.", "OK");
+                Message.Text = "The user was successfully logged out from the local server.";
             }
 
             catch (OperationCanceledException)
             {
-                await DisplayAlert("Logout timed out", "The logout process was aborted.", "OK");
+                Message.Text = "The logout process was aborted.";
             }
 
             catch
             {
-                await DisplayAlert("Logout failed", "An error occurred while trying to log the user out.", "OK");
+                Message.Text = "An error occurred while trying to log the user out.";
             }
         }
 

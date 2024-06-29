@@ -15,10 +15,25 @@
     <PublicSign>false</PublicSign>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'iOS' ">12.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">7.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion   Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">7.0</TargetPlatformMinVersion>
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                 '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
+                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) ">
+    <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                 '$(TargetPlatformIdentifier)'  == 'Windows'     And '$(TargetPlatformVersion)' != '' And
+                  $([MSBuild]::VersionEquals($(TargetPlatformVersion), '7.0'))) ">
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                 '$(TargetPlatformIdentifier)'  == 'Windows'     And '$(TargetPlatformVersion)' != '' And
+                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0.17763'))) ">
+    <SupportedOSPlatformVersion>10.0.17763</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <!--
