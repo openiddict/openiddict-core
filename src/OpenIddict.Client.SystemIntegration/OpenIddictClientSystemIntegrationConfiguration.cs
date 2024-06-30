@@ -102,10 +102,23 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession :
             OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser;
 
-        options.EnableActivationHandling    ??= !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"));
-        options.EnableActivationRedirection ??= !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"));
-        options.EnablePipeServer            ??= !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"));
-        options.EnableEmbeddedWebServer     ??= !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) && HttpListener.IsSupported;
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            options.EnableActivationHandling    ??= true;
+            options.EnableActivationRedirection ??= true;
+            options.EnablePipeServer            ??= true;
+            options.EnableEmbeddedWebServer     ??= HttpListener.IsSupported;
+        }
+
+        else
+        {
+            options.EnableActivationHandling    ??= false;
+            options.EnableActivationRedirection ??= false;
+            options.EnablePipeServer            ??= false;
+            options.EnableEmbeddedWebServer     ??= false;
+        }
 
         // If no explicit application discriminator was specified, compute the SHA-256 hash
         // of the application name resolved from the host and use it as a unique identifier.

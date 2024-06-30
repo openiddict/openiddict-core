@@ -89,6 +89,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             /// <inheritdoc/>
             [SupportedOSPlatform("ios12.0")]
+            [SupportedOSPlatform("maccatalyst13.1")]
+            [SupportedOSPlatform("macos10.15")]
 #pragma warning disable CS1998
             public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
 #pragma warning restore CS1998
