@@ -31,8 +31,10 @@ public static class OpenIddictClientSystemIntegrationExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Linux)                 &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)                   &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));

@@ -1,3 +1,3 @@
-﻿#if !IOS && !WINDOWS
-Console.Error.WriteLine("This sample is only supported on iOS and Windows.");
+﻿#if !IOS && !MACCATALYST && !WINDOWS
+Console.Error.WriteLine("This sample is only supported on iOS, Mac Catalyst and Windows.");
 #endif

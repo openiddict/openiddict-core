@@ -1,4 +1,4 @@
-﻿#if IOS || WINDOWS
+﻿#if IOS || MACCATALYST || WINDOWS
 using System.Net.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;

@@ -43,6 +43,31 @@
                  ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.iOS.Ref')) Or
                                                    ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.iOS.Ref')) Or
                                                    ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.iOS.Ref'))) ">true</SupportsIOSPlatformTargeting>
+    <!--
+      Note: targeting Mac Catalyst requires installing the .NET Mac Catalyst workload. To ensure the solution
+      can be built on machines that don't have the Mac Catalyst workload installed, a directory check is used to
+      ensure the Mac Catalyst reference assemblies pack is present on the machine before targeting Mac Catalyst.
+    -->
+    <SupportsMacCatalystPlatformTargeting
+      Condition=" '$(SupportsMacCatalystPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) And
+                 ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.MacCatalyst.Ref')) Or
+                                                   ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.MacCatalyst.Ref')) Or
+                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.MacCatalyst.Ref'))) ">true</SupportsMacCatalystPlatformTargeting>
+    <!--
+      Note: targeting macOS requires installing the .NET macOS workload. To ensure the solution can be
+      built on machines that don't have the macOS workload installed, a directory check is used to
+      ensure the macOS reference assemblies pack is present on the machine before targeting macOS.
+    -->
+    <SupportsMacOSPlatformTargeting
+      Condition=" '$(SupportsMacOSPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) And
+                 ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.macOS.Ref')) Or
+                                                   ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.macOS.Ref')) Or
+                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.macOS.Ref'))) ">true</SupportsMacOSPlatformTargeting>
+
+    <!--
+      Note: while <EnableWindowsTargeting>true</EnableWindowsTargeting> can be used to allow targeting Windows,
+      Windows targets are only used when running on Windows to speed up the build on non-Windows platforms.
+    -->
 
     <SupportsWindowsPlatformTargeting
       Condition=" '$(SupportsWindowsPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) ">true</SupportsWindowsPlatformTargeting>
@@ -75,6 +100,16 @@
       net8.0-ios12.0;
       net8.0-ios13.0
     </NetCoreIOSTargetFrameworks>
+
+    <NetCoreMacCatalystTargetFrameworks
+      Condition=" '$(NetCoreMacCatalystTargetFrameworks)' == '' And '$(SupportsMacCatalystPlatformTargeting)' == 'true' ">
+      net8.0-maccatalyst13.1
+    </NetCoreMacCatalystTargetFrameworks>
+
+    <NetCoreMacOSTargetFrameworks
+      Condition=" '$(NetCoreMacOSTargetFrameworks)' == '' And '$(SupportsMacOSPlatformTargeting)' == 'true' ">
+      net8.0-macos10.15
+    </NetCoreMacOSTargetFrameworks>
 
     <NetCoreWindowsTargetFrameworks
       Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' And '$(SupportsWindowsPlatformTargeting)' == 'true' ">

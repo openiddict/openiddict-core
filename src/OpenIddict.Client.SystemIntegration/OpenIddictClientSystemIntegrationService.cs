@@ -12,6 +12,10 @@ using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+#if SUPPORTS_FOUNDATION
+using Foundation;
+#endif
+
 #if SUPPORTS_WINDOWS_RUNTIME
 using Windows.Security.Authentication.Web;
 #endif
@@ -64,7 +68,7 @@ public sealed class OpenIddictClientSystemIntegrationService
     internal Task HandleHttpRequestAsync(HttpListenerContext request, CancellationToken cancellationToken = default)
         => HandleRequestAsync(request ?? throw new ArgumentNullException(nameof(request)), cancellationToken);
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
     /// <summary>
     /// Handles the specified AS web authentication session callback URL.
     /// </summary>
@@ -73,6 +77,8 @@ public sealed class OpenIddictClientSystemIntegrationService
     /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="url"/> is <see langword="null"/>.</exception>
     [SupportedOSPlatform("ios12.0")]
+    [SupportedOSPlatform("maccatalyst13.0")]
+    [SupportedOSPlatform("macos10.15")]
     internal Task HandleASWebAuthenticationCallbackUrlAsync(NSUrl url, CancellationToken cancellationToken = default)
         => HandleRequestAsync(url, cancellationToken);
 #endif

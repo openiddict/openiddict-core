@@ -5,6 +5,8 @@
       $(NetFrameworkTargetFrameworks);
       $(NetCoreTargetFrameworks);
       $(NetCoreIOSTargetFrameworks);
+      $(NetCoreMacCatalystTargetFrameworks);
+      $(NetCoreMacOSTargetFrameworks);
       $(NetCoreWindowsTargetFrameworks);
       $(NetStandardTargetFrameworks);
       $(UniversalWindowsPlatformTargetFrameworks)
