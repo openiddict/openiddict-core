@@ -54,6 +54,8 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     /// </summary>
     /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
     [SupportedOSPlatform("ios12.0")]
+    [SupportedOSPlatform("maccatalyst13.0")]
+    [SupportedOSPlatform("macos10.15")]
     public OpenIddictClientSystemIntegrationBuilder UseASWebAuthenticationSession()
     {
         if (!OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())

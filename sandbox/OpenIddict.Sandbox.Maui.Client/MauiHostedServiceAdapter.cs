@@ -1,4 +1,4 @@
-﻿#if IOS || WINDOWS
+﻿#if IOS || MACCATALYST || WINDOWS
 using Microsoft.Extensions.Hosting;
 
 namespace OpenIddict.Sandbox.Maui.Client;

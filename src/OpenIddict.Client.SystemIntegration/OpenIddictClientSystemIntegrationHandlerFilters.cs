@@ -30,7 +30,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
             if (OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
             {
                 return new(ContainsASWebAuthenticationSessionResult(context.Transaction));

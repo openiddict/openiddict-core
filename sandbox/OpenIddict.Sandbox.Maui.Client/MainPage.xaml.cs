@@ -1,4 +1,4 @@
-﻿#if IOS || WINDOWS
+﻿#if IOS || MACCATALYST || WINDOWS
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;

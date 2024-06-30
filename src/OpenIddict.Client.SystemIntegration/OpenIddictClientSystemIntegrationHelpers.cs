@@ -13,6 +13,17 @@ using System.Runtime.Versioning;
 using System.Security.Principal;
 using OpenIddict.Extensions;
 
+#if SUPPORTS_FOUNDATION
+using Foundation;
+#endif
+
+#if SUPPORTS_APPKIT
+using AppKit;
+using NativeWindow = AppKit.NSWindow;
+#elif SUPPORTS_UIKIT
+using NativeWindow = UIKit.UIWindow;
+#endif
+
 #if SUPPORTS_WINDOWS_RUNTIME
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel;
@@ -44,13 +55,15 @@ public static class OpenIddictClientSystemIntegrationHelpers
     public static HttpListenerContext? GetHttpListenerContext(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<HttpListenerContext>(typeof(HttpListenerContext).FullName!);
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
     /// <summary>
     /// Gets the AS web authentication callback URL associated with the current context.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
     /// <returns>The <see cref="NSUrl"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     [SupportedOSPlatform("ios12.0")]
+    [SupportedOSPlatform("maccatalyst13.0")]
+    [SupportedOSPlatform("macos10.15")]
     public static NSUrl? GetASWebAuthenticationCallbackUrl(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<NSUrl>(typeof(NSUrl).FullName!);
 #endif
@@ -65,27 +78,6 @@ public static class OpenIddictClientSystemIntegrationHelpers
     public static WebAuthenticationResult? GetWebAuthenticationResult(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<WebAuthenticationResult>(typeof(WebAuthenticationResult).FullName!);
 #endif
-
-    /// <summary>
-    /// Determines whether the current iOS version
-    /// is greater than or equals to the specified version.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> if the current iOS version is greater than
-    /// or equals to the specified version, <see langword="false"/> otherwise.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [SupportedOSPlatformGuard("ios")]
-    internal static bool IsIOSVersionAtLeast(int major, int minor = 0, int build = 0)
-    {
-#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
-        return OperatingSystem.IsIOSVersionAtLeast(major, minor, build);
-#else
-        return RuntimeInformation.OSDescription.StartsWith("iOS ", StringComparison.OrdinalIgnoreCase) &&
-               RuntimeInformation.OSDescription["iOS ".Length..] is string value &&
-               Version.TryParse(value, out Version? version) && version >= new Version(major, minor, build);
-#endif
-    }
 
     /// <summary>
     /// Determines whether the current Windows version
@@ -125,7 +117,16 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <returns><see langword="true"/> if the ASWebAuthenticationSession API is supported, <see langword="false"/> otherwise.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SupportedOSPlatformGuard("ios12.0")]
-    internal static bool IsASWebAuthenticationSessionSupported() => IsIOSVersionAtLeast(12);
+    [SupportedOSPlatformGuard("maccatalyst13.0")]
+    [SupportedOSPlatformGuard("macos10.15")]
+    internal static bool IsASWebAuthenticationSessionSupported()
+#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+        => OperatingSystem.IsIOSVersionAtLeast(12)         ||
+           OperatingSystem.IsMacCatalystVersionAtLeast(13) ||
+           OperatingSystem.IsMacOSVersionAtLeast(10, 15);
+#else
+        => false;
+#endif
 
     /// <summary>
     /// Determines whether the Windows Runtime APIs are supported on this platform.
@@ -250,11 +251,14 @@ public static class OpenIddictClientSystemIntegrationHelpers
 
 #if SUPPORTS_PRESENTATION_CONTEXT_PROVIDER
     /// <summary>
-    /// Gets a reference to the current <see cref="UIWindow"/>.
+    /// Gets a reference to the current <see cref="NativeWindow"/>.
     /// </summary>
-    /// <returns>The <see cref="UIWindow"/> or <see langword="null"/> if it couldn't be resolved.</returns>
-    internal static UIWindow? GetCurrentUIWindow()
+    /// <returns>The <see cref="NativeWindow"/> or <see langword="null"/> if it couldn't be resolved.</returns>
+    internal static NativeWindow? GetCurrentUIWindow()
     {
+#if SUPPORTS_APPKIT
+        return NSApplication.SharedApplication.KeyWindow;
+#elif SUPPORTS_UIKIT
         var window = GetKeyWindow();
         if (window is not null && window.WindowLevel == UIWindowLevel.Normal)
         {
@@ -269,7 +273,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
 
         static UIWindow? GetKeyWindow()
         {
-            if (IsIOSVersionAtLeast(13))
+            if (OperatingSystem.IsIOSVersionAtLeast(13))
             {
                 try
                 {
@@ -292,7 +296,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
 
         static UIWindow[]? GetWindows()
         {
-            if (IsIOSVersionAtLeast(13))
+            if (OperatingSystem.IsIOSVersionAtLeast(13))
             {
                 try
                 {
@@ -312,6 +316,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
 
             return UIApplication.SharedApplication.Windows;
         }
+#endif
     }
 #endif
 
@@ -344,7 +349,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <param name="uri">The <see cref="Uri"/> to use.</param>
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
     [MethodImpl(MethodImplOptions.NoInlining), SupportedOSPlatform("windows10.0.17763")]
-    internal static async Task<bool> TryLaunchBrowserWithWindowsRuntimeAsync(Uri uri)
+    internal static async ValueTask<bool> TryLaunchBrowserWithWindowsRuntimeAsync(Uri uri)
     {
         // Note: with the materialization of Project Centennial/Desktop Bridge in Windows 10 1607
         // (also known as Anniversary Update), desktop applications that don't have a package
@@ -393,7 +398,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("windows")]
-    internal static async Task<bool> TryLaunchBrowserWithShellExecuteAsync(Uri uri)
+    internal static async ValueTask<bool> TryLaunchBrowserWithShellExecuteAsync(Uri uri)
     {
         try
         {
@@ -417,15 +422,26 @@ public static class OpenIddictClientSystemIntegrationHelpers
         }
     }
 
+#if SUPPORTS_APPKIT
+    /// <summary>
+    /// Starts the system browser using <see href="NSWorkspace"/>.
+    /// </summary>
+    /// <param name="uri">The <see cref="Uri"/> to use.</param>
+    /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
+    [SupportedOSPlatform("macos")]
+    internal static ValueTask<bool> TryLaunchBrowserWithNSWorkspaceAsync(Uri uri)
+        => new(NSWorkspace.SharedWorkspace.OpenUrl(new NSUrl(uri.AbsoluteUri)));
+#endif
+
 #if SUPPORTS_UIKIT
     /// <summary>
-    /// Starts the system browser using xdg-open.
+    /// Starts the system browser using <see href="UIApplication"/>.
     /// </summary>
     /// <param name="uri">The <see cref="Uri"/> to use.</param>
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
     [SupportedOSPlatform("ios")]
-    internal static Task<bool> TryLaunchBrowserWithUIApplicationAsync(Uri uri)
-        => UIApplication.SharedApplication.OpenUrlAsync(new NSUrl(uri.AbsoluteUri), new UIApplicationOpenUrlOptions());
+    internal static ValueTask<bool> TryLaunchBrowserWithUIApplicationAsync(Uri uri)
+        => new(UIApplication.SharedApplication.OpenUrlAsync(new NSUrl(uri.AbsoluteUri), new UIApplicationOpenUrlOptions()));
 #endif
 
     /// <summary>
@@ -434,7 +450,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <param name="uri">The <see cref="Uri"/> to use.</param>
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
     [SupportedOSPlatform("linux")]
-    internal static async Task<bool> TryLaunchBrowserWithXdgOpenAsync(Uri uri)
+    internal static async ValueTask<bool> TryLaunchBrowserWithXdgOpenAsync(Uri uri)
     {
         try
         {

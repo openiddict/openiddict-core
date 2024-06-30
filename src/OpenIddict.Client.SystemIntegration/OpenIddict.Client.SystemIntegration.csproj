@@ -5,6 +5,8 @@
       $(NetFrameworkTargetFrameworks);
       $(NetCoreTargetFrameworks);
       $(NetCoreIOSTargetFrameworks);
+      $(NetCoreMacCatalystTargetFrameworks);
+      $(NetCoreMacOSTargetFrameworks);
       $(NetCoreWindowsTargetFrameworks);
       $(NetStandardTargetFrameworks);
       $(UniversalWindowsPlatformTargetFrameworks)
@@ -14,7 +16,7 @@
 
   <PropertyGroup>
     <Description>Operating system integration package for the OpenIddict client.</Description>
-    <PackageTags>$(PackageTags);client;ios;linux;windows</PackageTags>
+    <PackageTags>$(PackageTags);client;ios;linux;maccatalyst;macos;windows</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,6 +56,8 @@
     <SupportedPlatform Remove="@(SupportedPlatform)" />
     <SupportedPlatform Include="ios" />
     <SupportedPlatform Include="linux" />
+    <SupportedPlatform Include="maccatalyst" />
+    <SupportedPlatform Include="macos" />
     <SupportedPlatform Include="windows" />
   </ItemGroup>
 

@@ -16,6 +16,16 @@ using OpenIddict.Extensions;
 using AuthenticationServices;
 #endif
 
+#if SUPPORTS_FOUNDATION
+using Foundation;
+#endif
+
+#if SUPPORTS_APPKIT
+using NativeWindow = AppKit.NSWindow;
+#elif SUPPORTS_UIKIT
+using NativeWindow = UIKit.UIWindow;
+#endif
+
 #if SUPPORTS_WINDOWS_RUNTIME
 using Windows.Security.Authentication.Web;
 using Windows.UI.Core;
@@ -90,7 +100,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
                 if (string.IsNullOrEmpty(context.RedirectUri))
                 {
                     return;
@@ -141,7 +151,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // which the Safari web view will be attached MUST be provided (otherwise, a code 2
                 // error is returned by ASWebAuthenticationSession). To avoid that, a default provider
                 // pointing to the current UI window is automatically attached on iOS 13.0 and higher.
-                if (OpenIddictClientSystemIntegrationHelpers.IsIOSVersionAtLeast(13))
+                if (OperatingSystem.IsIOSVersionAtLeast(13))
                 {
 #pragma warning disable CA1416
                     session.PresentationContextProvider = new ASWebAuthenticationPresentationContext(
@@ -199,10 +209,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             }
 
 #if SUPPORTS_AUTHENTICATION_SERVICES
-            class ASWebAuthenticationPresentationContext(UIWindow window) : NSObject,
+            class ASWebAuthenticationPresentationContext(NativeWindow window) : NSObject,
                 IASWebAuthenticationPresentationContextProviding
             {
-                UIWindow IASWebAuthenticationPresentationContextProviding.GetPresentationAnchor(
+                NativeWindow IASWebAuthenticationPresentationContextProviding.GetPresentationAnchor(
                     ASWebAuthenticationSession session) => window;
             }
 #endif
@@ -405,9 +415,14 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     }
                 }
 
-#if SUPPORTS_UIKIT
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) &&
-                    await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithUIApplicationAsync(uri))
+#if SUPPORTS_APPKIT
+                if (OperatingSystem.IsMacOS() && await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithNSWorkspaceAsync(uri))
+                {
+                    context.HandleRequest();
+                    return;
+                }
+#elif SUPPORTS_UIKIT
+                if (OperatingSystem.IsIOS() && await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithUIApplicationAsync(uri))
                 {
                     context.HandleRequest();
                     return;

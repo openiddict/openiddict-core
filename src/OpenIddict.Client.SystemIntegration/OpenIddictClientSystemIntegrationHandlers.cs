@@ -24,6 +24,10 @@ using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrati
 using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
 #endif
 
+#if SUPPORTS_FOUNDATION
+using Foundation;
+#endif
+
 #if SUPPORTS_WINDOWS_RUNTIME
 using Windows.Security.Authentication.Web;
 #endif
@@ -231,7 +235,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
             (context.BaseUri, context.RequestUri) = context.Transaction.GetASWebAuthenticationCallbackUrl() switch
             {
                 NSUrl url when Uri.TryCreate(url.AbsoluteString, UriKind.Absolute, out Uri? uri) => (
@@ -642,7 +646,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
             if (context.Transaction.GetASWebAuthenticationCallbackUrl()
                 is not NSUrl url || !Uri.TryCreate(url.AbsoluteString, UriKind.Absolute, out Uri? uri))
             {

@@ -32,5 +32,7 @@ public enum OpenIddictClientSystemIntegrationAuthenticationMode
     /// AS web authentication session-based authentication and logout.
     /// </summary>
     [SupportedOSPlatform("ios12.0")]
+    [SupportedOSPlatform("maccatalyst13.0")]
+    [SupportedOSPlatform("macos10.15")]
     ASWebAuthenticationSession = 2
 }
