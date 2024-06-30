@@ -72,8 +72,6 @@
 
     <NetCoreIOSTargetFrameworks
       Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSPlatformTargeting)' == 'true' ">
-      net7.0-ios12.0;
-      net7.0-ios13.0;
       net8.0-ios12.0;
       net8.0-ios13.0
     </NetCoreIOSTargetFrameworks>

@@ -1,4 +1,5 @@
 ﻿#if IOS || WINDOWS
+using System.Net.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
@@ -54,7 +55,14 @@ public static class MauiProgram
                 // assembly as a more specific user agent, which can be useful when dealing with
                 // providers that use the user agent as a way to throttle requests (e.g Reddit).
                 options.UseSystemNetHttp()
-                       .SetProductInformation(typeof(MauiProgram).Assembly);
+                       .SetProductInformation(typeof(MauiProgram).Assembly)
+#if IOS
+                       // Warning: server certificate validation is disabled to simplify testing the MAUI
+                       // application with the iOS simulator: in production, it SHOULD NEVER be disabled.
+                       .ConfigureHttpClientHandler("Local", handler => handler.ServerCertificateCustomValidationCallback =
+                           HttpClientHandler.DangerousAcceptAnyServerCertificateValidator)
+#endif
+                       ;
 
                 // Add a client registration matching the client application definition in the server project.
                 options.AddRegistration(new OpenIddictClientRegistration
