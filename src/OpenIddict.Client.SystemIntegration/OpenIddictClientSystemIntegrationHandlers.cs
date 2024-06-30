@@ -228,6 +228,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
         /// <inheritdoc/>
         [SupportedOSPlatform("ios12.0")]
+        [SupportedOSPlatform("maccatalyst13.1")]
+        [SupportedOSPlatform("macos10.15")]
         public ValueTask HandleAsync(ProcessRequestContext context)
         {
             if (context is null)
@@ -639,6 +641,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
         /// <inheritdoc/>
         [SupportedOSPlatform("ios12.0")]
+        [SupportedOSPlatform("maccatalyst13.1")]
+        [SupportedOSPlatform("macos10.15")]
         public ValueTask HandleAsync(TContext context)
         {
             if (context is null)
