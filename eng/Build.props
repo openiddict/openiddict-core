@@ -1,0 +1,17 @@
+<Project>
+
+  <ItemGroup>
+    <ProjectToBuild Include="$(RepoRoot)sandbox\**\*.csproj" />
+    <ProjectToBuild Include="$(RepoRoot)src\**\*.csproj" />
+    <ProjectToBuild Include="$(RepoRoot)test\**\*.csproj" />
+
+    <!--
+      When using Xcode 15.4, the MAUI sample takes a very long time to build (more than 40 minutes in
+      most cases) due to the trimming process. To ensure the CI build completes within a reasonable
+      time frame, the sandbox projects are excluded on when running on macOS.
+    -->
+    <ProjectToBuild Remove="$(RepoRoot)sandbox\**\*.csproj"
+                    Condition=" '$(GITHUB_ACTIONS)' == 'true' And $([System.OperatingSystem]::IsMacOS()) " />
+  </ItemGroup>
+
+</Project>
