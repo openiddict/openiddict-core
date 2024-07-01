@@ -83,6 +83,15 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 
+#if !SUPPORTS_APPKIT && !SUPPORTS_UIKIT
+        // When running on iOS, Mac Catalyst or macOS, ensure the version compiled for these platforms is used.
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
+        }
+#endif
 #pragma warning disable CA1416
         // If explicitly set, ensure the specified authentication mode is supported.
         if (options.AuthenticationMode is OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession &&

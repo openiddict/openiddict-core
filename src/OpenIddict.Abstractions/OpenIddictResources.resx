@@ -1680,6 +1680,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0448" xml:space="preserve">
     <value>An unknown error occurred while trying to start an AS web authentication session.</value>
   </data>
+  <data name="ID0449" xml:space="preserve">
+    <value>The generic version of the OpenIddict.Client.SystemIntegration package cannot be used on this platform. Make sure your application is referencing the correct version by using the appropriate OS-specific TFM (e.g on macOS, 'net8.0-macos10.15').</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

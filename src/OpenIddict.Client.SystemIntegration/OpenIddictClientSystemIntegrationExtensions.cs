@@ -40,6 +40,15 @@ public static class OpenIddictClientSystemIntegrationExtensions
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 
+#if !SUPPORTS_APPKIT && !SUPPORTS_UIKIT
+        // When running on iOS, Mac Catalyst or macOS, ensure the version compiled for these platforms is used.
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
+        }
+#endif
         // Note: the OpenIddict activation handler service is deliberately registered as early as possible to
         // ensure protocol activations can be handled before another service can stop the initialization of the
         // application (e.g Dapplo.Microsoft.Extensions.Hosting.AppServices relies on an IHostedService to implement
