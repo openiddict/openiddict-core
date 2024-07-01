@@ -41,6 +41,10 @@ jobs:
           os_name: windows
 
     steps:
+    - name: Select Xcode version
+      if: ${{ runner.os == 'macOS' }}
+      run: sudo xcode-select -s "/Applications/Xcode_15.4.app"
+
     - name: Checkout code
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 

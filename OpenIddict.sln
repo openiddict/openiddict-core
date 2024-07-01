@@ -60,6 +60,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{6E8E862C-3F26-47D9-9C20-E3E87FD7CDFC}"
 	ProjectSection(SolutionItems) = preProject
 		eng\AfterTargetFrameworkInference.targets = eng\AfterTargetFrameworkInference.targets
+		eng\Build.props = eng\Build.props
 		eng\CodeAnalysis.ruleset = eng\CodeAnalysis.ruleset
 		eng\key.snk = eng\key.snk
 		eng\Signing.props = eng\Signing.props
@@ -157,7 +158,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.WinForms
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.Console.Client", "sandbox\OpenIddict.Sandbox.Console.Client\OpenIddict.Sandbox.Console.Client.csproj", "{819CD7AA-01FD-4369-BABF-5DFCB7E94068}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Sandbox.Maui.Client", "sandbox\OpenIddict.Sandbox.Maui.Client\OpenIddict.Sandbox.Maui.Client.csproj", "{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.Maui.Client", "sandbox\OpenIddict.Sandbox.Maui.Client\OpenIddict.Sandbox.Maui.Client.csproj", "{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

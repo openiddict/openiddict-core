@@ -38,39 +38,41 @@
       built on machines that don't have the iOS workload installed, a directory check is used to
       ensure the iOS reference assemblies pack is present on the machine before targeting iOS.
     -->
-    <SupportsIOSPlatformTargeting
-      Condition=" '$(SupportsIOSPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) And
+    <SupportsIOSTargeting
+      Condition=" '$(SupportsIOSTargeting)' == '' And
+                  ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
                  ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.iOS.Ref')) Or
                                                    ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.iOS.Ref')) Or
-                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.iOS.Ref'))) ">true</SupportsIOSPlatformTargeting>
+                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.iOS.Ref'))) ">true</SupportsIOSTargeting>
     <!--
       Note: targeting Mac Catalyst requires installing the .NET Mac Catalyst workload. To ensure the solution
       can be built on machines that don't have the Mac Catalyst workload installed, a directory check is used to
       ensure the Mac Catalyst reference assemblies pack is present on the machine before targeting Mac Catalyst.
     -->
-    <SupportsMacCatalystPlatformTargeting
-      Condition=" '$(SupportsMacCatalystPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) And
+    <SupportsMacCatalystTargeting
+      Condition=" '$(SupportsMacCatalystTargeting)' == '' And
+                  ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
                  ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.MacCatalyst.Ref')) Or
                                                    ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.MacCatalyst.Ref')) Or
-                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.MacCatalyst.Ref'))) ">true</SupportsMacCatalystPlatformTargeting>
+                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.MacCatalyst.Ref'))) ">true</SupportsMacCatalystTargeting>
     <!--
       Note: targeting macOS requires installing the .NET macOS workload. To ensure the solution can be
       built on machines that don't have the macOS workload installed, a directory check is used to
       ensure the macOS reference assemblies pack is present on the machine before targeting macOS.
     -->
-    <SupportsMacOSPlatformTargeting
-      Condition=" '$(SupportsMacOSPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) And
+    <SupportsMacOSTargeting
+      Condition=" '$(SupportsMacOSTargeting)' == '' And
+                  ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
                  ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.macOS.Ref')) Or
                                                    ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.macOS.Ref')) Or
-                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.macOS.Ref'))) ">true</SupportsMacOSPlatformTargeting>
+                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.macOS.Ref'))) ">true</SupportsMacOSTargeting>
 
     <!--
       Note: while <EnableWindowsTargeting>true</EnableWindowsTargeting> can be used to allow targeting Windows,
       Windows targets are only used when running on Windows to speed up the build on non-Windows platforms.
     -->
-
-    <SupportsWindowsPlatformTargeting
-      Condition=" '$(SupportsWindowsPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) ">true</SupportsWindowsPlatformTargeting>
+    <SupportsWindowsTargeting
+      Condition=" '$(SupportsWindowsTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) ">true</SupportsWindowsTargeting>
 
     <!--
       Note: the .NET Core 5.0 reference assemblies or UWP contract assemblies may not be available if
@@ -96,23 +98,23 @@
     </NetCoreTargetFrameworks>
 
     <NetCoreIOSTargetFrameworks
-      Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSPlatformTargeting)' == 'true' ">
+      Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSTargeting)' == 'true' ">
       net8.0-ios12.0;
       net8.0-ios13.0
     </NetCoreIOSTargetFrameworks>
 
     <NetCoreMacCatalystTargetFrameworks
-      Condition=" '$(NetCoreMacCatalystTargetFrameworks)' == '' And '$(SupportsMacCatalystPlatformTargeting)' == 'true' ">
+      Condition=" '$(NetCoreMacCatalystTargetFrameworks)' == '' And '$(SupportsMacCatalystTargeting)' == 'true' ">
       net8.0-maccatalyst13.1
     </NetCoreMacCatalystTargetFrameworks>
 
     <NetCoreMacOSTargetFrameworks
-      Condition=" '$(NetCoreMacOSTargetFrameworks)' == '' And '$(SupportsMacOSPlatformTargeting)' == 'true' ">
+      Condition=" '$(NetCoreMacOSTargetFrameworks)' == '' And '$(SupportsMacOSTargeting)' == 'true' ">
       net8.0-macos10.15
     </NetCoreMacOSTargetFrameworks>
 
     <NetCoreWindowsTargetFrameworks
-      Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' And '$(SupportsWindowsPlatformTargeting)' == 'true' ">
+      Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' And '$(SupportsWindowsTargeting)' == 'true' ">
       net6.0-windows7.0;
       net6.0-windows10.0.17763;
       net7.0-windows7.0;
