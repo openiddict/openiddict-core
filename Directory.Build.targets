@@ -278,8 +278,4 @@
                       '$(TargetPlatformIdentifier)'  == 'UAP'      And '$(TargetPlatformVersion)' != '' And
                        $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0')) " />
 
-  <ItemGroup>
-    <Using Remove="System.Net.Http" />
-  </ItemGroup>
-
 </Project>
