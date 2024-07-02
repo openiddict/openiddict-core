@@ -40,11 +40,16 @@ public static class OpenIddictClientSystemIntegrationExtensions
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 
-#if !SUPPORTS_APPKIT && !SUPPORTS_UIKIT
+#if !SUPPORTS_APPKIT
         // When running on iOS, Mac Catalyst or macOS, ensure the version compiled for these platforms is used.
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         ||
-            RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) ||
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
+        }
+#endif
+#if !SUPPORTS_UIKIT
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
         }
