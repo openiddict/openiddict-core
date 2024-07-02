@@ -113,6 +113,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
                 }
 
+                if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) ||
+                   (string.Equals(uri.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0450));
+                }
+
                 var source = new TaskCompletionSource<NSUrl>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 // OpenIddict represents the complete interactive authentication dance as a two-phase process:
@@ -134,7 +141,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                         parameters: context.Transaction.Request.GetParameters().ToDictionary(
                             parameter => parameter.Key,
                             parameter => new StringValues((string?[]?) parameter.Value))).AbsoluteUri),
-                    callbackUrlScheme: new Uri(context.RedirectUri, UriKind.Absolute).Scheme,
+                    callbackUrlScheme: uri.Scheme,
                     completionHandler: (url, error) =>
                     {
                         if (url is not null)
