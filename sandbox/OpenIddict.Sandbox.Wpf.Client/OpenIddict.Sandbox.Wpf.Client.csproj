@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net48</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(SupportsWindowsPlatformTargeting)' == 'true' ">$(TargetFrameworks);net8.0-windows10.0.17763</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(SupportsWindowsTargeting)' == 'true' ">$(TargetFrameworks);net8.0-windows10.0.17763</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
   </PropertyGroup>

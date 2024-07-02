@@ -83,11 +83,16 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 
-#if !SUPPORTS_APPKIT && !SUPPORTS_UIKIT
+#if !SUPPORTS_APPKIT
         // When running on iOS, Mac Catalyst or macOS, ensure the version compiled for these platforms is used.
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         ||
-            RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) ||
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
+        }
+#endif
+#if !SUPPORTS_UIKIT
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
         }
@@ -138,34 +143,29 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0386));
             }
 
-            options.ApplicationDiscriminator = Base64UrlEncoder.Encode(
-                OpenIddictHelpers.ComputeSha256Hash(
-                    Encoding.UTF8.GetBytes(_environment.ApplicationName)));
+            var digest = OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(_environment.ApplicationName));
+
+            // Note: only the left-most half of the hash is used to limit the length of the resulting discriminator,
+            // which is required on platforms like macOS, where the name of pipes is always prefixed with a static part
+            // (e.g /var/folders/5j/jjxtct5j1gvg35z6sdh2fz0w0000gn/T/CoreFxPipe_) and must not exceed 104 characters.
+            options.ApplicationDiscriminator = Base64UrlEncoder.Encode(digest, 0, digest.Length / 2);
         }
 
-        // If no explicit instance identifier was specified, use a random GUID.
+        // If no explicit instance identifier was specified, use a 96-bit random identifier.
         if (string.IsNullOrEmpty(options.InstanceIdentifier))
         {
-            options.InstanceIdentifier = Guid.NewGuid().ToString();
+            options.InstanceIdentifier = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 96));
         }
 
         // If no explicit pipe name was specified, build one using the application discriminator.
         if (string.IsNullOrEmpty(options.PipeName))
         {
-            var builder = new StringBuilder();
-
             // Note: on Windows, the name is deliberately prefixed with "LOCAL\" to support
             // partial trust/sandboxed applications that are executed in an AppContainer
             // and cannot communicate with applications outside the sandbox container.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                builder.Append(@"LOCAL\");
-            }
-
-            options.PipeName = builder.Append("OpenIddict.Client.SystemIntegration")
-                .Append('-')
-                .Append(options.ApplicationDiscriminator)
-                .ToString();
+            options.PipeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+                @$"LOCAL\{options.ApplicationDiscriminator}" :
+                options.ApplicationDiscriminator;
         }
 
 #if SUPPORTS_CURRENT_USER_ONLY_PIPE_OPTION
@@ -183,31 +183,23 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
         // even if the flag was not explicitly set by the user.
         options.PipeOptions |= PipeOptions.Asynchronous;
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // On Windows, if no explicit pipe security policy was specified, grant the current
+        // user full control over the created pipe and allow cross-process communication
+        // between elevated and non-elevated processes. Note: if the process executes
+        // inside an AppContainer, don't override the default OS pipe security policy
+        // to allow all applications with the same identity to access the named pipe.
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && options.PipeSecurity is null)
         {
-            // If no explicit pipe security policy was specified, grant the current user
-            // full control over the created pipe and allow cross-process communication
-            // between elevated and non-elevated processes. Note: if the process executes
-            // inside an AppContainer, don't override the default OS pipe security policy
-            // to allow all applications with the same identity to access the named pipe.
-            if (options.PipeSecurity is null)
+            using var identity = WindowsIdentity.GetCurrent(TokenAccessLevels.Query);
+
+            if (!OpenIddictClientSystemIntegrationHelpers.IsWindowsVersionAtLeast(10, 0, 10240) ||
+                !OpenIddictClientSystemIntegrationHelpers.HasAppContainerToken(identity))
             {
-                using var identity = WindowsIdentity.GetCurrent(TokenAccessLevels.Query);
-
-                if (!IsRunningInAppContainer(identity))
-                {
-                    options.PipeSecurity = new PipeSecurity();
-                    options.PipeSecurity.SetOwner(identity.User!);
-                    options.PipeSecurity.AddAccessRule(new PipeAccessRule(identity.User!,
-                        PipeAccessRights.FullControl, AccessControlType.Allow));
-                }
+                options.PipeSecurity = new PipeSecurity();
+                options.PipeSecurity.SetOwner(identity.User!);
+                options.PipeSecurity.AddAccessRule(new PipeAccessRule(identity.User!,
+                    PipeAccessRights.FullControl, AccessControlType.Allow));
             }
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            [SupportedOSPlatform("windows")]
-            static bool IsRunningInAppContainer(WindowsIdentity identity)
-                => OpenIddictClientSystemIntegrationHelpers.IsWindowsVersionAtLeast(10, 0, 10240) &&
-                   OpenIddictClientSystemIntegrationHelpers.HasAppContainerToken(identity);
         }
     }
 }
