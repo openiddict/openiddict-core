@@ -1305,6 +1305,28 @@
   </Provider>
 
   <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ▄▄ █▄ ▄██ ▄▄ ██ ▄▄▄██ ▄▄▀██ ▄▄▀█▄ ▄██ ███ ██ ▄▄▄██
+                                      ██ ▀▀ ██ ███ ▀▀ ██ ▄▄▄██ ██ ██ ▀▀▄██ ████ █ ███ ▄▄▄██
+                                      ██ ████▀ ▀██ █████ ▀▀▀██ ▀▀ ██ ██ █▀ ▀███▄▀▄███ ▀▀▀██
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Pipedrive" Id="53475b6c-e59f-4104-864b-dbd770d7ba36"
+            Documentation="https://pipedrive.readme.io/docs/marketplace-oauth-authorization">
+    <Environment Issuer="https://www.pipedrive.com/">
+      <Configuration AuthorizationEndpoint="https://oauth.pipedrive.com/oauth/authorize"
+                     TokenEndpoint="https://oauth.pipedrive.com/oauth/token"
+                     UserinfoEndpoint="https://api.pipedrive.com/v1/users/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
               ██ ▄▄ ██ ▄▄▀██ ▄▄▄ ████ ▄▄▄ █ ▄▄▀██ ▀██ █▄▄ ▄▄██ ▄▄▄████ ▄▄▀██ ▄▄▄ ██ ▀██ ██ ▀██ ██ ▄▄▄██ ▄▄▀█▄▄ ▄▄██
               ██ ▀▀ ██ ▀▀▄██ ███ ████▄▄▄▀▀█ ▀▀ ██ █ █ ███ ████ ▄▄▄████ █████ ███ ██ █ █ ██ █ █ ██ ▄▄▄██ ██████ ████

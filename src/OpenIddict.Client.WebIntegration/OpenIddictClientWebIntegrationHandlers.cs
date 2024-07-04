@@ -307,7 +307,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
             }
 
-            else if (context.Registration.ProviderType is ProviderTypes.Mixcloud)
+            else if (context.Registration.ProviderType is ProviderTypes.Mixcloud or ProviderTypes.Pipedrive)
             {
                 var error = (string?) context.Request[Parameters.Error];
                 if (string.Equals(error, "user_denied", StringComparison.Ordinal))
@@ -1276,9 +1276,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Trovo returns the username as a custom "userName" node:
                 ProviderTypes.Trovo => (string?) context.UserinfoResponse?["userName"],
 
-                // Tumblr returns the username as a custom "name" node:
-                ProviderTypes.Tumblr => (string?) context.UserinfoResponse?["name"],
-
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
             });
 
@@ -1296,15 +1293,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Atlassian => (string?) context.UserinfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Basecamp   or ProviderTypes.Box      or ProviderTypes.Dailymotion   or
-                ProviderTypes.Deezer     or ProviderTypes.Discord  or ProviderTypes.Disqus        or
-                ProviderTypes.Facebook   or ProviderTypes.Gitee    or ProviderTypes.GitHub        or
-                ProviderTypes.Harvest    or ProviderTypes.Kook     or ProviderTypes.Kroger        or
-                ProviderTypes.Lichess    or ProviderTypes.Mastodon or ProviderTypes.Meetup        or
-                ProviderTypes.Nextcloud  or ProviderTypes.Patreon  or ProviderTypes.Reddit        or
-                ProviderTypes.Smartsheet or ProviderTypes.Spotify  or ProviderTypes.SubscribeStar or
-                ProviderTypes.Todoist    or ProviderTypes.Twitter  or ProviderTypes.Weibo         or
-                ProviderTypes.Zoom
+                ProviderTypes.Basecamp      or ProviderTypes.Box        or ProviderTypes.Dailymotion or
+                ProviderTypes.Deezer        or ProviderTypes.Discord    or ProviderTypes.Disqus      or
+                ProviderTypes.Facebook      or ProviderTypes.Gitee      or ProviderTypes.GitHub      or
+                ProviderTypes.Harvest       or ProviderTypes.Kook       or ProviderTypes.Kroger      or
+                ProviderTypes.Lichess       or ProviderTypes.Mastodon   or ProviderTypes.Meetup      or
+                ProviderTypes.Nextcloud     or ProviderTypes.Patreon    or ProviderTypes.Pipedrive   or
+                ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify     or
+                ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter     or
+                ProviderTypes.Weibo         or ProviderTypes.Zoom
                     => (string?) context.UserinfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:

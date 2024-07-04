@@ -15,7 +15,7 @@ namespace OpenIddict.Client.SystemIntegration;
 public sealed class OpenIddictClientSystemIntegrationOptions
 {
     /// <summary>
-    /// Gets or sets the authentication mode used to start interactive authentication and logout flows..
+    /// Gets or sets the authentication mode used to start interactive authentication and logout flows.
     /// </summary>
     /// <remarks>
     /// If this property is not explicitly set, its value is automatically set by OpenIddict.

@@ -413,7 +413,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     },
 
                     // These providers return a nested "data" object.
-                    ProviderTypes.Kook or ProviderTypes.Kroger or ProviderTypes.Patreon or ProviderTypes.Twitter
+                    ProviderTypes.Kook    or ProviderTypes.Kroger    or
+                    ProviderTypes.Patreon or ProviderTypes.Pipedrive or ProviderTypes.Twitter
                         => new(context.Response["data"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data"))),
 
