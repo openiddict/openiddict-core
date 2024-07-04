@@ -393,6 +393,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ["accounts"] = context.Response["accounts"]
                     },
 
+                    // Calendly returns a nested "resource" object.
+                    ProviderTypes.Calendly => new(context.Response["resource"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("resource"))),
+
                     // Disqus returns a nested "response" object.
                     ProviderTypes.Disqus => new(context.Response["response"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("response"))),

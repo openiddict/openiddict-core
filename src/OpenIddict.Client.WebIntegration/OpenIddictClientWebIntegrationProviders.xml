@@ -310,6 +310,30 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ▄▄▀█ ▄▄▀██ █████ ▄▄▄██ ▀██ ██ ▄▄▀██ █████ ███ ██
+                                        ██ ████ ▀▀ ██ █████ ▄▄▄██ █ █ ██ ██ ██ █████▄▀▀▀▄██
+                                        ██ ▀▀▄█ ██ ██ ▀▀ ██ ▀▀▀██ ██▄ ██ ▀▀ ██ ▀▀ ████ ████
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Calendly" Id="8cc37743-2939-4562-b029-05eaef4724c0"
+            Documentation="https://developer.calendly.com/api-docs/b3A6NTkxNDA5-get-authorization-code">
+    <Environment Issuer="https://calendly.com/">
+      <Configuration AuthorizationEndpoint="https://auth.calendly.com/oauth/authorize"
+                     IntrospectionEndpoint="https://auth.calendly.com/oauth/introspect"
+                     RevocationEndpoint="https://auth.calendly.com/oauth/revoke"
+                     TokenEndpoint="https://auth.calendly.com/oauth/token"
+                     UserinfoEndpoint="https://api.calendly.com/users/me">
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                       ██ ▄▄▀██ █████ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ████▄ ▄█ ▀██ ██ █▀▄██
                                       ██ █████ █████ ▀▀ ██▄▄▄▀▀██▄▄▄▀▀██ █████ ██ █ █ ██ ▄▀███
