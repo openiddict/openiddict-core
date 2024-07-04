@@ -1310,6 +1310,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Bitly returns the user identifier as a custom "login" node:
                 ProviderTypes.Bitly => (string?) context.UserinfoResponse?["login"],
 
+                // Calendly returns the user identifier (formatted as a URI) as a custom "uri" node:
+                ProviderTypes.Calendly => (string?) context.UserinfoResponse?["uri"],
+
                 // DeviantArt returns the user identifier as a custom "userid" node:
                 ProviderTypes.DeviantArt => (string?) context.UserinfoResponse?["userid"],
 
