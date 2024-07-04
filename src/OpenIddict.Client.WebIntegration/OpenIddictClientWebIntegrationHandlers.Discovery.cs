@@ -192,8 +192,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // are manually added to the list of supported code challenge methods by this handler.
 
                 if (context.Registration.ProviderType is
-                    ProviderTypes.Adobe  or ProviderTypes.Autodesk or
-                    ProviderTypes.FaceIt or ProviderTypes.Microsoft)
+                    ProviderTypes.Adobe  or ProviderTypes.Autodesk  or
+                    ProviderTypes.FaceIt or ProviderTypes.Microsoft or ProviderTypes.Zoho)
                 {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);

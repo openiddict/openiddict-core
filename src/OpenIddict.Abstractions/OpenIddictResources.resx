@@ -1686,6 +1686,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0450" xml:space="preserve">
     <value>An HTTP/HTTPS redirect_uri or post_logout_redirect_uri cannot be used when using AS web authentication sessions. Make sure you're using a custom protocol scheme for all the callback URIs attached to the client registration.</value>
   </data>
+  <data name="ID0451" xml:space="preserve">
+    <value>The Zoho integration requires sending the region of the server when using the client credentials or refresh token grants. For that, attach a ".location" authentication property containing the region to use.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
