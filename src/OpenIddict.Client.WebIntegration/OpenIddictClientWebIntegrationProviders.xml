@@ -1965,6 +1965,32 @@
   </Provider>
 
   <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      █▄▄ ▄▄██ ███ ██ ▄▄ ██ ▄▄▄██ ▄▄▄██ ▄▄▄ ██ ▄▄▀██ ▄▀▄ ██
+                                      ███ ████▄▀▀▀▄██ ▀▀ ██ ▄▄▄██ ▄▄███ ███ ██ ▀▀▄██ █ █ ██
+                                      ███ ██████ ████ █████ ▀▀▀██ █████ ▀▀▀ ██ ██ ██ ███ ██
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Typeform" Id="7100d684-c02b-4da2-86bc-d6c42b117fee"
+            Documentation="https://www.typeform.com/developers/get-started/applications/">
+    <Environment Issuer="https://www.typeform.com/">
+      <Configuration AuthorizationEndpoint="https://api.typeform.com/oauth/authorize"
+                     TokenEndpoint="https://api.typeform.com/oauth/token"
+                     UserinfoEndpoint="https://api.typeform.com/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <!--
+        Note: Typeform requires sending the "accounts:read" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="accounts:read" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                ██ ███ █ ▄▄▄██ ▄▄▀█▄ ▄██ ▄▀▄ █▄ ▄██
                                                ███ █ ██ ▄▄▄██ ▀▀▄██ ███ █ █ ██ ███
