@@ -45,6 +45,36 @@
   </Provider>
 
   <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          █ ▄▄▀█▄ ▄██ ▄▄▀█▄▄ ▄▄█ ▄▄▀██ ▄▄▀██ █████ ▄▄▄██
+                                          █ ▀▀ ██ ███ ▀▀▄███ ███ ▀▀ ██ ▄▄▀██ █████ ▄▄▄██
+                                          █ ██ █▀ ▀██ ██ ███ ███ ██ ██ ▀▀ ██ ▀▀ ██ ▀▀▀██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Airtable" Id="affd90a4-4393-483e-9862-3f2486d4b08b"
+            Documentation="https://airtable.com/developers/web/api/oauth-reference">
+    <Environment Issuer="https://airtable.com/">
+      <Configuration AuthorizationEndpoint="https://airtable.com/oauth2/v1/authorize"
+                     TokenEndpoint="https://airtable.com/oauth2/v1/token"
+                     UserinfoEndpoint="https://api.airtable.com/v0/meta/whoami">
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+
+      <!--
+        Note: Airtable requires requesting at least one scope for an authorization request to be considered valid.
+      -->
+
+      <Scope Name="user.email:read" Default="true" Required="false" />
+    </Environment>
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             █ ▄▄▀██ ▄▀▄ █ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▀██ ██
                                             █ ▀▀ ██ █ █ █ ▀▀ ██▀▀▀▄▄██ ███ ██ █ █ ██
