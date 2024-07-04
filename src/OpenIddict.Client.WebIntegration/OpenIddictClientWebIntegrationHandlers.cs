@@ -1276,13 +1276,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Trovo returns the username as a custom "userName" node:
                 ProviderTypes.Trovo => (string?) context.UserinfoResponse?["userName"],
 
+                // Typeform returns the username as a custom "alias" node:
+                ProviderTypes.Typeform => (string?) context.UserinfoResponse?["alias"],
+
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
             });
 
             context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
             {
                 // These providers return the user identifier as a custom "user_id" node:
-                ProviderTypes.Amazon or ProviderTypes.HubSpot or ProviderTypes.StackExchange
+                ProviderTypes.Amazon        or ProviderTypes.HubSpot or
+                ProviderTypes.StackExchange or ProviderTypes.Typeform
                     => (string?) context.UserinfoResponse?["user_id"],
 
                 // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
