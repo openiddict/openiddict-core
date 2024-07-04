@@ -7,9 +7,7 @@
 using System.ComponentModel;
 using System.IO.Pipes;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;

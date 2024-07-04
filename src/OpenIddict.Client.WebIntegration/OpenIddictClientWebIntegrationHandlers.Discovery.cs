@@ -62,8 +62,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // For more information about the special tenants supported by Microsoft Account/Entra ID, see
                     // https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc#find-your-apps-openid-configuration-document-uri.
                     ProviderTypes.Microsoft when context.Registration.GetMicrosoftSettings() is { Tenant: string tenant } =>
-                        string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase)        ? "https://login.microsoftonline.com/common/v2.0" :
-                        string.Equals(tenant, "consumers", StringComparison.OrdinalIgnoreCase)     ? "https://login.microsoftonline.com/consumers/v2.0" :
+                        string.Equals(tenant, "common",        StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/common/v2.0"        :
+                        string.Equals(tenant, "consumers",     StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/consumers/v2.0"     :
                         string.Equals(tenant, "organizations", StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/organizations/v2.0" :
                         context.Response[Metadata.Issuer],
 
