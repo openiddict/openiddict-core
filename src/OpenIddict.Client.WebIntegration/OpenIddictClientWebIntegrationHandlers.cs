@@ -389,6 +389,37 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
             }
 
+            // Zoho returns the region of the authenticated user as a non-standard "location" parameter
+            // that must be used to compute the address of the token and userinfo endpoints.
+            else if (context.Registration.ProviderType is ProviderTypes.Zoho)
+            {
+                var location = (string?) context.Request["location"];
+                if (string.IsNullOrEmpty(location))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029("location"),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return default;
+                }
+
+                // Ensure the specified location corresponds to well-known region.
+                if (location.ToUpperInvariant() is not ( "AU" or "CA" or "EU" or "IN" or "JP" or "SA" or "US"))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2052("location"),
+                        uri: SR.FormatID8000(SR.ID2052));
+
+                    return default;
+                }
+
+                // Store the validated location as an authentication property
+                // so it can be resolved later to determine the user region.
+                context.Properties[Zoho.Properties.Location] = location;
+            }
+
             return default;
         }
     }
@@ -434,6 +465,37 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // https://developer.trovo.live/docs/APIs.html#_4-3-refresh-access-token.
                 ProviderTypes.Trovo when context.GrantType is GrantTypes.RefreshToken
                     => new Uri("https://open-api.trovo.live/openplatform/refreshtoken", UriKind.Absolute),
+
+                // Zoho requires using a region-specific token endpoint determined using
+                // the "location" parameter returned from the authorization endpoint.
+                //
+                // For more information, see
+                // https://www.zoho.com/accounts/protocol/oauth/multi-dc/client-authorization.html.
+                ProviderTypes.Zoho when context.GrantType is GrantTypes.AuthorizationCode
+                    => ((string?) context.Request?["location"])?.ToUpperInvariant() switch
+                    {
+                        "AU" => new Uri("https://accounts.zoho.com.au/oauth/v2/token", UriKind.Absolute),
+                        "CA" => new Uri("https://accounts.zohocloud.ca/oauth/v2/token", UriKind.Absolute),
+                        "EU" => new Uri("https://accounts.zoho.eu/oauth/v2/token", UriKind.Absolute),
+                        "IN" => new Uri("https://accounts.zoho.in/oauth/v2/token", UriKind.Absolute),
+                        "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/token", UriKind.Absolute),
+                        "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/token", UriKind.Absolute),
+                         _   => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute)
+                    },
+
+                ProviderTypes.Zoho when context.GrantType is GrantTypes.RefreshToken
+                    => !context.Properties.TryGetValue(Zoho.Properties.Location, out string? location) ||
+                        string.IsNullOrEmpty(location) ? throw new InvalidOperationException(SR.GetResourceString(SR.ID0451)) :
+                        location?.ToUpperInvariant() switch
+                        {
+                            "AU" => new Uri("https://accounts.zoho.com.au/oauth/v2/token", UriKind.Absolute),
+                            "CA" => new Uri("https://accounts.zohocloud.ca/oauth/v2/token", UriKind.Absolute),
+                            "EU" => new Uri("https://accounts.zoho.eu/oauth/v2/token", UriKind.Absolute),
+                            "IN" => new Uri("https://accounts.zoho.in/oauth/v2/token", UriKind.Absolute),
+                            "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/token", UriKind.Absolute),
+                            "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/token", UriKind.Absolute),
+                             _   => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute)
+                        },
 
                 _ => context.TokenEndpoint
             };
@@ -778,6 +840,37 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                      context.FrontchannelIdentityTokenPrincipal) is ClaimsPrincipal principal &&
                     Uri.TryCreate(principal.GetClaim("http://schemes.superoffice.net/identity/webapi_url"), UriKind.Absolute, out Uri? uri)
                     => OpenIddictHelpers.CreateAbsoluteUri(uri, new Uri("v1/user/currentPrincipal", UriKind.Relative)),
+
+                // Zoho requires using a region-specific userinfo endpoint determined using
+                // the "location" parameter returned from the authorization endpoint.
+                //
+                // For more information, see
+                // https://www.zoho.com/accounts/protocol/oauth/multi-dc/client-authorization.html.
+                ProviderTypes.Zoho when context.GrantType is GrantTypes.AuthorizationCode
+                    => ((string?) context.Request?["location"])?.ToUpperInvariant() switch
+                    {
+                        "AU" => new Uri("https://accounts.zoho.com.au/oauth/user/info", UriKind.Absolute),
+                        "CA" => new Uri("https://accounts.zohocloud.ca/oauth/user/info", UriKind.Absolute),
+                        "EU" => new Uri("https://accounts.zoho.eu/oauth/user/info", UriKind.Absolute),
+                        "IN" => new Uri("https://accounts.zoho.in/oauth/user/info", UriKind.Absolute),
+                        "JP" => new Uri("https://accounts.zoho.jp/oauth/user/info", UriKind.Absolute),
+                        "SA" => new Uri("https://accounts.zoho.sa/oauth/user/info", UriKind.Absolute),
+                         _   => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
+                    },
+
+                ProviderTypes.Zoho when context.GrantType is GrantTypes.RefreshToken
+                    => !context.Properties.TryGetValue(Zoho.Properties.Location, out string? location) ||
+                        string.IsNullOrEmpty(location) ? throw new InvalidOperationException(SR.GetResourceString(SR.ID0451)) :
+                        location?.ToUpperInvariant() switch
+                        {
+                            "AU" => new Uri("https://accounts.zoho.com.au/oauth/user/info", UriKind.Absolute),
+                            "CA" => new Uri("https://accounts.zohocloud.ca/oauth/user/info", UriKind.Absolute),
+                            "EU" => new Uri("https://accounts.zoho.eu/oauth/user/info", UriKind.Absolute),
+                            "IN" => new Uri("https://accounts.zoho.in/oauth/user/info", UriKind.Absolute),
+                            "JP" => new Uri("https://accounts.zoho.jp/oauth/user/info", UriKind.Absolute),
+                            "SA" => new Uri("https://accounts.zoho.sa/oauth/user/info", UriKind.Absolute),
+                             _   => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
+                        },
 
                 _ => context.UserinfoEndpoint
             };
@@ -1195,8 +1288,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Patreon returns the email address as a custom "attributes/email" node:
                 ProviderTypes.Patreon => (string?) context.UserinfoResponse?["attributes"]?["email"],
 
-                // ServiceChannel returns the email address as a custom "Email" node:
-                ProviderTypes.ServiceChannel => (string?) context.UserinfoResponse?["Email"],
+                // ServiceChannel and Zoho return the email address as a custom "Email" node:
+                ProviderTypes.ServiceChannel or ProviderTypes.Zoho => (string?) context.UserinfoResponse?["Email"],
 
                 // Shopify returns the email address as a custom "associated_user/email" node in token responses:
                 ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["email"],
@@ -1278,6 +1371,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Typeform returns the username as a custom "alias" node:
                 ProviderTypes.Typeform => (string?) context.UserinfoResponse?["alias"],
+
+                // Zoho returns the username as a custom "Display_Name" node:
+                ProviderTypes.Zoho => (string?) context.UserinfoResponse?["Display_Name"],
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
             });
@@ -1363,6 +1459,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // WordPress returns the user identifier as a custom "ID" node:
                 ProviderTypes.WordPress => (string?) context.UserinfoResponse?["ID"],
+
+                // WordPress returns the user identifier as a custom "ZUID" node:
+                ProviderTypes.Zoho => (string?) context.UserinfoResponse?["ZUID"],
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
             });
@@ -1459,6 +1558,22 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     string.Equals(type, "express", StringComparison.OrdinalIgnoreCase) ?
                         new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute) :
                         new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
+
+                // Zoho requires using a region-specific authorization endpoint.
+                //
+                // For more information, see
+                // https://www.zoho.com/accounts/protocol/oauth/multi-dc/client-authorization.html.
+                ProviderTypes.Zoho when context.Properties.TryGetValue(Zoho.Properties.Location, out string? location)
+                    => location?.ToUpperInvariant() switch
+                    {
+                        "AU" => new Uri("https://accounts.zoho.com.au/oauth/v2/auth", UriKind.Absolute),
+                        "CA" => new Uri("https://accounts.zohocloud.ca/oauth/v2/auth", UriKind.Absolute),
+                        "EU" => new Uri("https://accounts.zoho.eu/oauth/v2/auth", UriKind.Absolute),
+                        "IN" => new Uri("https://accounts.zoho.in/oauth/v2/auth", UriKind.Absolute),
+                        "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/auth", UriKind.Absolute),
+                        "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/auth", UriKind.Absolute),
+                         _   => new Uri("https://accounts.zoho.com/oauth/v2/auth", UriKind.Absolute)
+                    },
 
                 _ => context.AuthorizationEndpoint
             };
@@ -1733,6 +1848,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["display"] = settings.Display;
                 context.Request["forcelogin"] = settings.ForceLogin;
                 context.Request["language"] = settings.Language;
+            }
+
+            // By default, Zoho doesn't return a refresh token but
+            // allows sending an "access_type" parameter to retrieve one.
+            else if (context.Registration.ProviderType is ProviderTypes.Zoho)
+            {
+                var settings = context.Registration.GetZohoSettings();
+
+                context.Request["access_type"] = settings.AccessType;
+                context.Request.Prompt = settings.Prompt;
             }
 
             return default;

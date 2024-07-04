@@ -269,11 +269,7 @@
       Note: most Battle.net regions use the same issuer URI but a different domain is required for China.
     -->
 
-    <Environment Issuer="https://oauth.{settings.Region switch {
-        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
-            => 'battlenet.com.cn',
-
-        _ => 'battle.net' }}/" />
+    <Environment Issuer="https://oauth.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'battlenet.com.cn' : 'battle.net')}/" />
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="US"
              Description="The preferred Battle.net region (by default, 'US')" />
@@ -967,23 +963,10 @@
       Note: Lark serves global users, but it is known as Feishu in China, which has a separate issuer and domain.
     -->
 
-    <Environment Issuer="https://passport.{settings.Region switch {
-        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
-            => 'feishu.cn',
-        _ => 'larksuite.com' }}/">
-      <Configuration AuthorizationEndpoint="https://passport.{settings.Region switch {
-        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
-            => 'feishu.cn',
-        _ => 'larksuite.com' }}/suite/passport/oauth/authorize"
-                     TokenEndpoint="https://passport.{settings.Region switch {
-        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
-            => 'feishu.cn',
-        _ => 'larksuite.com' }}/suite/passport/oauth/token"
-                     UserinfoEndpoint="https://passport.{settings.Region switch {
-        string region when string.Equals(region, 'CN', StringComparison.OrdinalIgnoreCase)
-            => 'feishu.cn',
-        _ => 'larksuite.com' }}/suite/passport/oauth/userinfo">
-
+    <Environment Issuer="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/">
+      <Configuration AuthorizationEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/authorize"
+                     TokenEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/token"
+                     UserinfoEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/userinfo">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -2148,6 +2131,58 @@
   <Provider Name="Yahoo" Id="874d78ec-3d79-4492-ab79-76a7dd7fa0b5"
             Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
     <Environment Issuer="https://api.login.yahoo.com/" />
+  </Provider>
+
+  <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                ██ ▄▄▄ ██ ▄▄▄ ██ ██ ██ ▄▄▄ ██
+                                                ██▀▀▀▄▄██ ███ ██ ▄▄ ██ ███ ██
+                                                ██ ▀▀▀ ██ ▀▀▀ ██ ██ ██ ▀▀▀ ██
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Zoho" Id="269dc1c7-388e-4f65-9c29-c7791914532b"
+            Documentation="https://www.zoho.com/accounts/protocol/oauth.html">
+    <Environment Issuer="https://accounts.zoho.com/">
+      <Configuration AuthorizationEndpoint="{settings.Region?.ToUpperInvariant() switch {
+        'AU' => 'https://accounts.zoho.com.au/oauth/v2/auth',
+        'CA' => 'https://accounts.zohocloud.ca/oauth/v2/auth',
+        'EU' => 'https://accounts.zoho.eu/oauth/v2/auth',
+        'IN' => 'https://accounts.zoho.in/oauth/v2/auth',
+        'JP' => 'https://accounts.zoho.jp/oauth/v2/auth',
+        'SA' => 'https://accounts.zoho.sa/oauth/v2/auth',
+         _   => 'https://accounts.zoho.com/oauth/v2/auth' }}"
+                     TokenEndpoint="{settings.Region?.ToUpperInvariant() switch {
+        'AU' => 'https://accounts.zoho.com.au/oauth/v2/token',
+        'CA' => 'https://accounts.zohocloud.ca/oauth/v2/token',
+        'EU' => 'https://accounts.zoho.eu/oauth/v2/token',
+        'IN' => 'https://accounts.zoho.in/oauth/v2/token',
+        'JP' => 'https://accounts.zoho.jp/oauth/v2/token',
+        'SA' => 'https://accounts.zoho.sa/oauth/v2/token',
+         _   => 'https://accounts.zoho.com/oauth/v2/token' }}">
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <!--
+        Note: Zoho requires sending the "AaaServer.profile.READ" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="AaaServer.profile.READ" Default="true" Required="true" />
+    </Environment>
+
+    <Property Name="Location" DictionaryKey=".location" />
+
+    <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
+             Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
+
+    <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="false"
+             Description="The value used as the 'prompt' parameter (can be set to 'consent' to display the consent form for each authorization demand)" />
+
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="US"
+             Description="The preferred Zoho region (by default, 'US')" />
   </Provider>
 
   <!--

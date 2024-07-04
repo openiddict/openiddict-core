@@ -17,7 +17,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Token response extraction:
+             * Device authorization response extraction:
              */
             MapNonStandardResponseParameters.Descriptor
         ]);
