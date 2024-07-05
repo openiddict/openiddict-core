@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Options;
+using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationAuthenticationMode;
 
 namespace OpenIddict.Client.SystemIntegration;
 
@@ -31,7 +32,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
 #if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
-            if (OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+            if (IsASWebAuthenticationSessionSupported())
             {
                 return new(ContainsASWebAuthenticationSessionResult(context.Transaction));
             }
@@ -64,7 +65,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
 #if SUPPORTS_AUTHENTICATION_SERVICES
-            if (OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+            if (IsASWebAuthenticationSessionSupported())
             {
                 if (!context.Transaction.Properties.TryGetValue(
                     typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) ||
@@ -73,7 +74,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
                     mode = _options.CurrentValue.AuthenticationMode.GetValueOrDefault();
                 }
 
-                return new(mode is OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession);
+                return new(mode is ASWebAuthenticationSession);
             }
 #endif
             return new(false);
@@ -95,6 +96,68 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
             return new(!string.IsNullOrEmpty(context.Nonce));
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the custom tabs intent integration was not enabled.
+    /// </summary>
+    public sealed class RequireCustomTabsIntent : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> _options;
+
+        public RequireCustomTabsIntent(IOptionsMonitor<OpenIddictClientSystemIntegrationOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+            if (IsCustomTabsIntentSupported())
+            {
+                if (!context.Transaction.Properties.TryGetValue(
+                    typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) ||
+                    result is not OpenIddictClientSystemIntegrationAuthenticationMode mode)
+                {
+                    mode = _options.CurrentValue.AuthenticationMode.GetValueOrDefault();
+                }
+
+                return new(mode is CustomTabsIntent);
+            }
+#endif
+            return new(false);
+        }
+    }
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no
+    /// custom tabs intent data can be found in the transaction properties.
+    /// </summary>
+    public sealed class RequireCustomTabsIntentData : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+            if (IsCustomTabsIntentSupported())
+            {
+                return new(ContainsCustomTabsIntentData(context.Transaction));
+            }
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            static bool ContainsCustomTabsIntentData(OpenIddictClientTransaction transaction)
+                => transaction.GetCustomTabsIntentData() is not null;
+#endif
+            return new(false);
         }
     }
 
@@ -197,7 +260,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
                 mode = _options.CurrentValue.AuthenticationMode.GetValueOrDefault();
             }
 
-            return new(mode is OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser);
+            return new(mode is SystemBrowser);
         }
     }
 
@@ -221,7 +284,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
 #if SUPPORTS_WINDOWS_RUNTIME
-            if (OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
+            if (IsWebAuthenticationBrokerSupported())
             {
                 if (!context.Transaction.Properties.TryGetValue(
                     typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) ||
@@ -230,7 +293,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
                     mode = _options.CurrentValue.AuthenticationMode.GetValueOrDefault();
                 }
 
-                return new(mode is OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker);
+                return new(mode is WebAuthenticationBroker);
             }
 #endif
             return new(false);
@@ -252,7 +315,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
 #if SUPPORTS_WINDOWS_RUNTIME
-            if (OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
+            if (IsWebAuthenticationBrokerSupported())
             {
                 return new(ContainsWebAuthenticationResult(context.Transaction));
             }

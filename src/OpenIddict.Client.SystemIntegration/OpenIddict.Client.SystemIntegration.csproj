@@ -4,6 +4,7 @@
     <TargetFrameworks>
       $(NetFrameworkTargetFrameworks);
       $(NetCoreTargetFrameworks);
+      $(NetCoreAndroidTargetFrameworks);
       $(NetCoreIOSTargetFrameworks);
       $(NetCoreMacCatalystTargetFrameworks);
       $(NetCoreMacOSTargetFrameworks);
@@ -12,11 +13,18 @@
       $(UniversalWindowsPlatformTargetFrameworks)
     </TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!--
+      Note: the Xamarin.AndroidX.Browser package is not strong-named. Since it's only referenced
+      by Android-specific TFMs that cannot be used with the .NET Framework runtime (that doesn't
+      allow loading dependencies that are not strong-named), the warning can be safely disabled.
+    -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <Description>Operating system integration package for the OpenIddict client.</Description>
-    <PackageTags>$(PackageTags);client;ios;linux;maccatalyst;macos;windows</PackageTags>
+    <PackageTags>$(PackageTags);client;android;ios;linux;maccatalyst;macos;windows</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,6 +49,13 @@
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" />
   </ItemGroup>
 
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                 '$(TargetPlatformIdentifier)'  == 'Android'     And '$(TargetPlatformVersion)' != '' And
+                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '21.0'))) ">
+    <PackageReference Include="Xamarin.AndroidX.Browser" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="OpenIddict.Abstractions" />
     <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
@@ -50,10 +65,12 @@
     <Using Include="OpenIddict.Client.OpenIddictClientHandlerFilters" Static="true" />
     <Using Include="OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlers" Static="true" />
     <Using Include="OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationHelpers" Static="true" />
   </ItemGroup>
 
   <ItemGroup>
     <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <SupportedPlatform Include="android" />
     <SupportedPlatform Include="ios" />
     <SupportedPlatform Include="linux" />
     <SupportedPlatform Include="maccatalyst" />

@@ -1468,7 +1468,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The payload extracted from the inter-process notification is malformed, incomplete or was created by a different version of the OpenIddict client library.</value>
   </data>
   <data name="ID0389" xml:space="preserve">
-    <value>The OpenIddict client system integration is not supported on this platform.</value>
+    <value>The OpenIddict client system integration is not supported on this platform (only Android 21+, iOS 12.0+, Linux, Mac Catalyst 13.1+, macOS 10.15+ and Windows 7 are supported).</value>
   </data>
   <data name="ID0390" xml:space="preserve">
     <value>The HTTP listener context cannot be resolved or contains invalid data.</value>
@@ -1688,6 +1688,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID0451" xml:space="preserve">
     <value>The Zoho integration requires sending the region of the server when using the client credentials or refresh token grants. For that, attach a ".location" authentication property containing the region to use.</value>
+  </data>
+  <data name="ID0452" xml:space="preserve">
+    <value>Custom tabs intents are only supported on Android.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>

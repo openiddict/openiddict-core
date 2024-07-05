@@ -31,7 +31,9 @@ public static class OpenIddictClientSystemIntegrationExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
+        // Ensure the operating system is supported.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("android"))     &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.Linux)                 &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)                   &&
@@ -40,8 +42,15 @@ public static class OpenIddictClientSystemIntegrationExtensions
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 
+#if !SUPPORTS_ANDROID
+        // When running on Android, iOS, Mac Catalyst or macOS, ensure the version compiled for
+        // these platforms is used to prevent the generic/non-OS specific TFM from being used.
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("android")))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
+        }
+#endif
 #if !SUPPORTS_APPKIT
-        // When running on iOS, Mac Catalyst or macOS, ensure the version compiled for these platforms is used.
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
@@ -54,6 +63,24 @@ public static class OpenIddictClientSystemIntegrationExtensions
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
         }
 #endif
+
+#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+        // Ensure the operating system version is supported.
+        if ((OperatingSystem.IsAndroid()     && !OperatingSystem.IsAndroidVersionAtLeast(21))        ||
+            (OperatingSystem.IsIOS()         && !OperatingSystem.IsIOSVersionAtLeast(12))            ||
+            (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) ||
+            (OperatingSystem.IsMacOS()       && !OperatingSystem.IsMacOSVersionAtLeast(10, 15))      ||
+            (OperatingSystem.IsWindows()     && !OperatingSystem.IsWindowsVersionAtLeast(7)))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
+        }
+#else
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsWindowsVersionAtLeast(7))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
+        }
+#endif
+
         // Note: the OpenIddict activation handler service is deliberately registered as early as possible to
         // ensure protocol activations can be handled before another service can stop the initialization of the
         // application (e.g Dapplo.Microsoft.Extensions.Hosting.AppServices relies on an IHostedService to implement
@@ -78,6 +105,8 @@ public static class OpenIddictClientSystemIntegrationExtensions
         builder.Services.TryAddSingleton<RequireASWebAuthenticationSession>();
         builder.Services.TryAddSingleton<RequireASWebAuthenticationCallbackUrl>();
         builder.Services.TryAddSingleton<RequireAuthenticationNonce>();
+        builder.Services.TryAddSingleton<RequireCustomTabsIntent>();
+        builder.Services.TryAddSingleton<RequireCustomTabsIntentData>();
         builder.Services.TryAddSingleton<RequireEmbeddedWebServerEnabled>();
         builder.Services.TryAddSingleton<RequireHttpListenerContext>();
         builder.Services.TryAddSingleton<RequireInteractiveSession>();

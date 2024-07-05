@@ -72,15 +72,13 @@ public sealed class OpenIddictClientSystemIntegrationActivationHandler : IHosted
         {
 #if SUPPORTS_WINDOWS_RUNTIME
             // On platforms that support WinRT, always favor the AppInstance.GetActivatedEventArgs() API.
-            if (OpenIddictClientSystemIntegrationHelpers.IsAppInstanceActivationSupported() &&
-                OpenIddictClientSystemIntegrationHelpers.GetProtocolActivationUriWithWindowsRuntime() is Uri uri)
+            if (IsAppInstanceActivationSupported() && GetProtocolActivationUriWithWindowsRuntime() is Uri uri)
             {
                 return new OpenIddictClientSystemIntegrationActivation(uri);
             }
 #endif
             // Otherwise, try to extract the protocol activation from the command line arguments.
-            if (OpenIddictClientSystemIntegrationHelpers.GetProtocolActivationUriFromCommandLineArguments(
-                Environment.GetCommandLineArgs()) is Uri value)
+            if (GetProtocolActivationUriFromCommandLineArguments(Environment.GetCommandLineArgs()) is Uri value)
             {
                 return new OpenIddictClientSystemIntegrationActivation(value);
             }

@@ -4,6 +4,7 @@
     <TargetFrameworks>
       $(NetFrameworkTargetFrameworks);
       $(NetCoreTargetFrameworks);
+      $(NetCoreAndroidTargetFrameworks);
       $(NetCoreIOSTargetFrameworks);
       $(NetCoreMacCatalystTargetFrameworks);
       $(NetCoreMacOSTargetFrameworks);

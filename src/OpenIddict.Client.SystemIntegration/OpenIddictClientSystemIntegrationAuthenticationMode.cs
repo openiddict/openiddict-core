@@ -34,5 +34,11 @@ public enum OpenIddictClientSystemIntegrationAuthenticationMode
     [SupportedOSPlatform("ios12.0")]
     [SupportedOSPlatform("maccatalyst13.1")]
     [SupportedOSPlatform("macos10.15")]
-    ASWebAuthenticationSession = 2
+    ASWebAuthenticationSession = 2,
+
+    /// <summary>
+    /// Custom tabs intent-based authentication and logout.
+    /// </summary>
+    [SupportedOSPlatform("android21.0")]
+    CustomTabsIntent = 3
 }

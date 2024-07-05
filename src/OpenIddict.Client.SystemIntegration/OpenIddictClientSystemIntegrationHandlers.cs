@@ -24,6 +24,10 @@ using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrati
 using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
 #endif
 
+#if SUPPORTS_ANDROID
+using NativeUri = Android.Net.Uri;
+#endif
+
 #if SUPPORTS_FOUNDATION
 using Foundation;
 #endif
@@ -44,6 +48,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         ResolveRequestUriFromHttpListenerRequest.Descriptor,
         ResolveRequestUriFromProtocolActivation.Descriptor,
         ResolveRequestUriFromASWebAuthenticationCallbackUrl.Descriptor,
+        ResolveRequestUriFromCustomTabsIntentData.Descriptor,
         ResolveRequestUriFromWebAuthenticationResult.Descriptor,
         InferEndpointTypeFromDynamicAddress.Descriptor,
         RejectUnknownHttpRequests.Descriptor,
@@ -255,6 +260,49 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for resolving the request URI from the custom tabs intent data.
+    /// Note: this handler is not used when the OpenID Connect request is not an custom tabs intent callback.
+    /// </summary>
+    public sealed class ResolveRequestUriFromCustomTabsIntentData : IOpenIddictClientHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .AddFilter<RequireCustomTabsIntentData>()
+                .UseSingletonHandler<ResolveRequestUriFromCustomTabsIntentData>()
+                .SetOrder(ResolveRequestUriFromASWebAuthenticationCallbackUrl.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        [SupportedOSPlatform("android21.0")]
+        public ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_ANDROID
+            (context.BaseUri, context.RequestUri) = context.Transaction.GetCustomTabsIntentData() switch
+            {
+                NativeUri url when Uri.TryCreate(url.ToString(), UriKind.Absolute, out Uri? uri) => (
+                    BaseUri: new UriBuilder(uri) { Path = null, Query = null, Fragment = null }.Uri,
+                    RequestUri: uri),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0393))
+            };
+
+            return default;
+#else
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0452));
+#endif
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the request URI from the web authentication result.
     /// Note: this handler is not used when the OpenID Connect request is not a web authentication result.
     /// </summary>
@@ -267,7 +315,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                 .AddFilter<RequireWebAuthenticationResult>()
                 .UseSingletonHandler<ResolveRequestUriFromWebAuthenticationResult>()
-                .SetOrder(ResolveRequestUriFromASWebAuthenticationCallbackUrl.Descriptor.Order + 1_000)
+                .SetOrder(ResolveRequestUriFromCustomTabsIntentData.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -689,6 +737,70 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for extracting OpenID Connect requests from the callback URL of a custom tabs intent.
+    /// Note: this handler is not used when the OpenID Connect request is not a custom tabs intent result.
+    /// </summary>
+    public sealed class ExtractCustomTabsIntentData<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireCustomTabsIntentData>()
+                .UseSingletonHandler<ExtractCustomTabsIntentData<TContext>>()
+                .SetOrder(ExtractProtocolActivationParameters<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        [SupportedOSPlatform("android21.0")]
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_ANDROID
+            if (context.Transaction.GetCustomTabsIntentData()
+                is not NativeUri url || !Uri.TryCreate(url.ToString(), UriKind.Absolute, out Uri? uri))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0393));
+            }
+
+            var parameters = new Dictionary<string, StringValues>(StringComparer.Ordinal);
+
+            if (!string.IsNullOrEmpty(uri.Query))
+            {
+                foreach (var parameter in OpenIddictHelpers.ParseQuery(uri.Query))
+                {
+                    parameters[parameter.Key] = parameter.Value;
+                }
+            }
+
+            // Note: the fragment is always processed after the query string to ensure that
+            // parameters extracted from the fragment are preferred to parameters extracted
+            // from the query string when they are present in both parts.
+
+            if (!string.IsNullOrEmpty(uri.Fragment))
+            {
+                foreach (var parameter in OpenIddictHelpers.ParseFragment(uri.Fragment))
+                {
+                    parameters[parameter.Key] = parameter.Value;
+                }
+            }
+
+            context.Transaction.Request = new OpenIddictRequest(parameters);
+
+            return default;
+#else
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
+#endif
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for extracting OpenID Connect
     /// requests from the response data of a web authentication result.
     /// Note: this handler is not used when the OpenID Connect request is not a web authentication result.
@@ -702,7 +814,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireWebAuthenticationResult>()
                 .UseSingletonHandler<ExtractWebAuthenticationResultData<TContext>>()
-                .SetOrder(ExtractASWebAuthenticationCallbackUrlData<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(ExtractCustomTabsIntentData<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -2499,6 +2611,42 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .AddFilter<RequireProtocolActivation>()
                 .UseSingletonHandler<ProcessProtocolActivationResponse<TContext>>()
                 .SetOrder(ProcessWebAuthenticationResultResponse<TContext>.Descriptor.Order - 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // For both protocol activations (initial or redirected) and web-view-like results,
+            // no proper response can be generated and eventually displayed to the user. In this
+            // case, simply stop processing the response and mark the request as fully handled.
+            //
+            // Note: this logic applies to both successful and errored responses.
+
+            context.HandleRequest();
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for marking OpenID Connect responses returned via a custom tabs intent web as processed.
+    /// </summary>
+    public sealed class ProcessCustomTabsIntentResponse<TContext> : IOpenIddictClientHandler<TContext>
+        where TContext : BaseRequestContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireCustomTabsIntentData>()
+                .UseSingletonHandler<ProcessCustomTabsIntentResponse<TContext>>()
+                .SetOrder(int.MaxValue)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 

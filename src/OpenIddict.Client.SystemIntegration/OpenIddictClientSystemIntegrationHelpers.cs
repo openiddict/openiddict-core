@@ -13,6 +13,11 @@ using System.Runtime.Versioning;
 using System.Security.Principal;
 using OpenIddict.Extensions;
 
+#if SUPPORTS_ANDROID
+using Android.Content;
+using NativeUri = Android.Net.Uri;
+#endif
+
 #if SUPPORTS_FOUNDATION
 using Foundation;
 #endif
@@ -66,6 +71,17 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatform("macos10.15")]
     public static NSUrl? GetASWebAuthenticationCallbackUrl(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<NSUrl>(typeof(NSUrl).FullName!);
+#endif
+
+#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+    /// <summary>
+    /// Gets the custom tabs intent data associated with the current context.
+    /// </summary>
+    /// <param name="transaction">The transaction instance.</param>
+    /// <returns>The <see cref="NativeUri"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    [SupportedOSPlatform("android21.0")]
+    public static NativeUri? GetCustomTabsIntentData(this OpenIddictClientTransaction transaction)
+        => transaction.GetProperty<NativeUri>(typeof(NativeUri).FullName!);
 #endif
 
 #if SUPPORTS_WINDOWS_RUNTIME
@@ -124,6 +140,19 @@ public static class OpenIddictClientSystemIntegrationHelpers
         => OperatingSystem.IsIOSVersionAtLeast(12)         ||
            OperatingSystem.IsMacCatalystVersionAtLeast(13) ||
            OperatingSystem.IsMacOSVersionAtLeast(10, 15);
+#else
+        => false;
+#endif
+
+    /// <summary>
+    /// Determines whether the CustomTabsIntent API is supported on this platform.
+    /// </summary>
+    /// <returns><see langword="true"/> if the CustomTabsIntent API is supported, <see langword="false"/> otherwise.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SupportedOSPlatformGuard("android21.0")]
+    internal static bool IsCustomTabsIntentSupported()
+#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+        => OperatingSystem.IsAndroidVersionAtLeast(21);
 #else
         => false;
 #endif
@@ -422,6 +451,33 @@ public static class OpenIddictClientSystemIntegrationHelpers
         }
     }
 
+#if SUPPORTS_ANDROID
+    /// <summary>
+    /// Starts the system browser using <see href="NSWorkspace"/>.
+    /// </summary>
+    /// <param name="uri">The <see cref="Uri"/> to use.</param>
+    /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
+    [SupportedOSPlatform("android")]
+    internal static bool TryLaunchBrowserWithGenericIntent(Uri uri)
+    {
+        using var intent = new Intent(Intent.ActionView);
+        intent.AddFlags(ActivityFlags.NewTask);
+        intent.SetData(NativeUri.Parse(uri.AbsoluteUri));
+
+        try
+        {
+            Application.Context.StartActivity(intent);
+
+            return true;
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            return false;
+        }
+    }
+#endif
+
 #if SUPPORTS_APPKIT
     /// <summary>
     /// Starts the system browser using <see href="NSWorkspace"/>.
@@ -429,8 +485,18 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <param name="uri">The <see cref="Uri"/> to use.</param>
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
     [SupportedOSPlatform("macos")]
-    internal static ValueTask<bool> TryLaunchBrowserWithNSWorkspaceAsync(Uri uri)
-        => new(NSWorkspace.SharedWorkspace.OpenUrl(new NSUrl(uri.AbsoluteUri)));
+    internal static bool TryLaunchBrowserWithNSWorkspace(Uri uri)
+    {
+        try
+        {
+            return NSWorkspace.SharedWorkspace.OpenUrl(new NSUrl(uri.AbsoluteUri));
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            return false;
+        }
+    }
 #endif
 
 #if SUPPORTS_UIKIT
@@ -440,8 +506,19 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <param name="uri">The <see cref="Uri"/> to use.</param>
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
     [SupportedOSPlatform("ios")]
-    internal static ValueTask<bool> TryLaunchBrowserWithUIApplicationAsync(Uri uri)
-        => new(UIApplication.SharedApplication.OpenUrlAsync(new NSUrl(uri.AbsoluteUri), new UIApplicationOpenUrlOptions()));
+    [SupportedOSPlatform("maccatalyst")]
+    internal static async ValueTask<bool> TryLaunchBrowserWithUIApplicationAsync(Uri uri)
+    {
+        try
+        {
+            return await UIApplication.SharedApplication.OpenUrlAsync(new NSUrl(uri.AbsoluteUri), new UIApplicationOpenUrlOptions());
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            return false;
+        }
+    }
 #endif
 
     /// <summary>

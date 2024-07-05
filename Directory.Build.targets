@@ -15,39 +15,31 @@
     <PublicSign>false</PublicSign>
   </PropertyGroup>
 
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) ">
-    <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
-  </PropertyGroup>
+  <PropertyGroup>
+    <SupportedOSPlatformVersion
+      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                   '$(TargetPlatformIdentifier)'  == 'Android'     And '$(TargetPlatformVersion)' != '' And
+                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '21.0'))) ">21.0</SupportedOSPlatformVersion>
 
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'MacCatalyst' And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '13.1'))) ">
-    <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
-  </PropertyGroup>
+    <SupportedOSPlatformVersion
+      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                   '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
+                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) ">12.0</SupportedOSPlatformVersion>
 
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'macOS'       And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.15'))) ">
-    <SupportedOSPlatformVersion>10.15</SupportedOSPlatformVersion>
-  </PropertyGroup>
+    <SupportedOSPlatformVersion
+      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                   '$(TargetPlatformIdentifier)'  == 'MacCatalyst' And '$(TargetPlatformVersion)' != '' And
+                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '13.1'))) ">13.1</SupportedOSPlatformVersion>
 
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'Windows'     And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionEquals($(TargetPlatformVersion), '7.0'))) ">
-    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-  </PropertyGroup>
+    <SupportedOSPlatformVersion
+      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                   '$(TargetPlatformIdentifier)'  == 'macOS'       And '$(TargetPlatformVersion)' != '' And
+                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.15'))) ">10.15</SupportedOSPlatformVersion>
 
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'Windows'     And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0.17763'))) ">
-    <SupportedOSPlatformVersion>10.0.17763</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion
+      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                   '$(TargetPlatformIdentifier)'  == 'Windows'     And '$(TargetPlatformVersion)' != '' And
+                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '7.0'))) ">7.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <!--
@@ -155,6 +147,14 @@
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_RESILIENCE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TIME_PROVIDER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
+                 '$(TargetPlatformIdentifier)'  == 'Android'     And '$(TargetPlatformVersion)' != '' And
+                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '21.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_ANDROID</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ANDROIDX_BROWSER</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
