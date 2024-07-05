@@ -8,7 +8,7 @@
     Restore the .NET workloads immediately after the .NET tooling has been installed by Arcade.
   -->
 
-  <Target Name="RestoreWorkloads" AfterTargets="InstallDotNetCore">
+  <Target Name="RestoreWorkloads" AfterTargets="InstallDotNetCore" Condition=" '$(RestoreDotNetWorkloads)' == 'true' ">
     <Message Text="Installing the .NET workloads required to build the solution..." />
 
     <Exec Command='"$(DotNetTool)" workload restore' WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true">
