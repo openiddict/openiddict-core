@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
+using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationAuthenticationMode;
 
 #if !SUPPORTS_HOST_ENVIRONMENT
 using IHostEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
@@ -72,7 +73,9 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             throw new ArgumentNullException(nameof(options));
         }
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
+        // Ensure the operating system is supported.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("android"))     &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.Linux)                 &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)                   &&
@@ -81,8 +84,15 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 
+#if !SUPPORTS_ANDROID
+        // When running on Android, iOS, Mac Catalyst or macOS, ensure the version compiled for
+        // these platforms is used to prevent the generic/non-OS specific TFM from being used.
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("android")))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
+        }
+#endif
 #if !SUPPORTS_APPKIT
-        // When running on iOS, Mac Catalyst or macOS, ensure the version compiled for these platforms is used.
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
@@ -95,26 +105,49 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
         }
 #endif
+
+#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+        // Ensure the operating system version is supported.
+        if ((OperatingSystem.IsAndroid()     && !OperatingSystem.IsAndroidVersionAtLeast(21))        ||
+            (OperatingSystem.IsIOS()         && !OperatingSystem.IsIOSVersionAtLeast(12))            ||
+            (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) ||
+            (OperatingSystem.IsMacOS()       && !OperatingSystem.IsMacOSVersionAtLeast(10, 15))      ||
+            (OperatingSystem.IsWindows()     && !OperatingSystem.IsWindowsVersionAtLeast(7)))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
+        }
+#else
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsWindowsVersionAtLeast(7))
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
+        }
+#endif
+
 #pragma warning disable CA1416
         // If explicitly set, ensure the specified authentication mode is supported.
-        if (options.AuthenticationMode is OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession &&
-            !OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+        if (options.AuthenticationMode is ASWebAuthenticationSession && !IsASWebAuthenticationSessionSupported())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
         }
 
-        else if (options.AuthenticationMode is OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker &&
-            !OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
+        else if (options.AuthenticationMode is CustomTabsIntent && !IsCustomTabsIntentSupported())
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0452));
+        }
+
+        else if (options.AuthenticationMode is WebAuthenticationBroker && !IsWebAuthenticationBrokerSupported())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
         }
 #pragma warning restore CA1416
 
-        options.AuthenticationMode ??= OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported() ?
-            OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession :
-            OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser;
+        // When possible, always prefer OS-managed modes. Otherwise, fall back to the system browser.
+        options.AuthenticationMode ??=
+            IsASWebAuthenticationSessionSupported() ? ASWebAuthenticationSession :
+            IsCustomTabsIntentSupported()           ? CustomTabsIntent           : SystemBrowser;
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("android"))     &&
+            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -190,8 +223,7 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
         {
             using var identity = WindowsIdentity.GetCurrent(TokenAccessLevels.Query);
 
-            if (!OpenIddictClientSystemIntegrationHelpers.IsWindowsVersionAtLeast(10, 0, 10240) ||
-                !OpenIddictClientSystemIntegrationHelpers.HasAppContainerToken(identity))
+            if (!IsWindowsVersionAtLeast(10, 0, 10240) || !HasAppContainerToken(identity))
             {
                 options.PipeSecurity = new PipeSecurity();
                 options.PipeSecurity.SetOwner(identity.User!);

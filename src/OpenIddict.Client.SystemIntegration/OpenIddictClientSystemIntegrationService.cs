@@ -12,6 +12,11 @@ using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+#if SUPPORTS_ANDROID
+using Android.Content;
+using NativeUri = Android.Net.Uri;
+#endif
+
 #if SUPPORTS_FOUNDATION
 using Foundation;
 #endif
@@ -57,6 +62,19 @@ public sealed class OpenIddictClientSystemIntegrationService
     public Task HandleProtocolActivationAsync(
         OpenIddictClientSystemIntegrationActivation activation, CancellationToken cancellationToken = default)
         => HandleRequestAsync(activation ?? throw new ArgumentNullException(nameof(activation)), cancellationToken);
+
+#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+    /// <summary>
+    /// Handles the specified intent.
+    /// </summary>
+    /// <param name="intent">The intent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="intent"/> is <see langword="null"/>.</exception>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public Task HandleCustomTabsIntentAsync(Intent intent, CancellationToken cancellationToken = default)
+        => HandleRequestAsync(intent?.Data ?? throw new ArgumentNullException(nameof(intent)), cancellationToken);
+#endif
 
     /// <summary>
     /// Handles the specified HTTP request.

@@ -9,6 +9,7 @@ using System.IO.Pipes;
 using System.Net;
 using System.Runtime.Versioning;
 using OpenIddict.Client.SystemIntegration;
+using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationAuthenticationMode;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -58,13 +59,27 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     [SupportedOSPlatform("macos10.15")]
     public OpenIddictClientSystemIntegrationBuilder UseASWebAuthenticationSession()
     {
-        if (!OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+        if (!IsASWebAuthenticationSessionSupported())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
         }
 
-        return Configure(options => options.AuthenticationMode =
-            OpenIddictClientSystemIntegrationAuthenticationMode.ASWebAuthenticationSession);
+        return Configure(options => options.AuthenticationMode = ASWebAuthenticationSession);
+    }
+
+    /// <summary>
+    /// Uses a custom tabs intent to start interactive authentication and logout flows.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
+    [SupportedOSPlatform("android21.0")]
+    public OpenIddictClientSystemIntegrationBuilder UseCustomTabsIntent()
+    {
+        if (!IsCustomTabsIntentSupported())
+        {
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0452));
+        }
+
+        return Configure(options => options.AuthenticationMode = CustomTabsIntent);
     }
 
     /// <summary>
@@ -78,13 +93,12 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     [SupportedOSPlatform("windows10.0.17763")]
     public OpenIddictClientSystemIntegrationBuilder UseWebAuthenticationBroker()
     {
-        if (!OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported())
+        if (!IsWebAuthenticationBrokerSupported())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
         }
 
-        return Configure(options => options.AuthenticationMode =
-            OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker);
+        return Configure(options => options.AuthenticationMode = WebAuthenticationBroker);
     }
 
     /// <summary>
@@ -92,8 +106,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     /// </summary>
     /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
     public OpenIddictClientSystemIntegrationBuilder UseSystemBrowser()
-        => Configure(options => options.AuthenticationMode =
-            OpenIddictClientSystemIntegrationAuthenticationMode.SystemBrowser);
+        => Configure(options => options.AuthenticationMode = SystemBrowser);
 
     /// <summary>
     /// Sets the list of static ports the embedded web server will be allowed to

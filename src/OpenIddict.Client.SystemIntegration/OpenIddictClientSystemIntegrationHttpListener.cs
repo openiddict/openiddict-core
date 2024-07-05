@@ -155,7 +155,7 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                     // configured to reject such requests) without requiring administrator rights.
                     //
                     // See https://www.rfc-editor.org/rfc/rfc8252#section-8.3 for more information.
-                    if (OpenIddictClientSystemIntegrationHelpers.IsWindowsVersionAtLeast(10, 0, 10586))
+                    if (IsWindowsVersionAtLeast(10, 0, 10586))
                     {
                         if (Socket.OSSupportsIPv4)
                         {

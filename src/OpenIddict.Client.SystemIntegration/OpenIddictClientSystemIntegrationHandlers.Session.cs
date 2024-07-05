@@ -12,12 +12,17 @@ using System.Text;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
-using AuthenticationServices;
+#if SUPPORTS_ANDROID
+using Android.Content;
+using NativeUri = Android.Net.Uri;
 #endif
 
-#if SUPPORTS_FOUNDATION
-using Foundation;
+#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+using AndroidX.Browser.CustomTabs;
+#endif
+
+#if SUPPORTS_AUTHENTICATION_SERVICES
+using AuthenticationServices;
 #endif
 
 #if SUPPORTS_APPKIT
@@ -41,7 +46,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /*
              * Logout request processing:
              */
-            InvokeASWebAuthenticationSession.Descriptor,
+            StartASWebAuthenticationSession.Descriptor,
+            LaunchCustomTabsIntent.Descriptor,
             InvokeWebAuthenticationBroker.Descriptor,
             LaunchSystemBrowser.Descriptor,
 
@@ -51,6 +57,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             ExtractGetOrPostHttpListenerRequest<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
             ExtractProtocolActivationParameters<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
             ExtractASWebAuthenticationCallbackUrlData<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
+            ExtractCustomTabsIntentData<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
             ExtractWebAuthenticationResultData<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
 
             /*
@@ -61,18 +68,19 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             ProcessEmptyHttpResponse.Descriptor,
             ProcessProtocolActivationResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
             ProcessASWebAuthenticationSessionResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
+            ProcessCustomTabsIntentResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
             ProcessWebAuthenticationResultResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor
         ]);
 
         /// <summary>
-        /// Contains the logic responsible for initiating authorization requests using the web authentication broker.
+        /// Contains the logic responsible for initiating logout requests using an AS web authentication session.
         /// Note: this handler is not used when the user session is not interactive.
         /// </summary>
-        public class InvokeASWebAuthenticationSession : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public class StartASWebAuthenticationSession : IOpenIddictClientHandler<ApplyLogoutRequestContext>
         {
             private readonly OpenIddictClientSystemIntegrationService _service;
 
-            public InvokeASWebAuthenticationSession(OpenIddictClientSystemIntegrationService service)
+            public StartASWebAuthenticationSession(OpenIddictClientSystemIntegrationService service)
                 => _service = service ?? throw new ArgumentNullException(nameof(service));
 
             /// <summary>
@@ -82,7 +90,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
                     .AddFilter<RequireInteractiveSession>()
                     .AddFilter<RequireASWebAuthenticationSession>()
-                    .UseSingletonHandler<InvokeASWebAuthenticationSession>()
+                    .UseSingletonHandler<StartASWebAuthenticationSession>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -108,7 +116,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     return;
                 }
 
-                if (!OpenIddictClientSystemIntegrationHelpers.IsASWebAuthenticationSessionSupported())
+                if (!IsASWebAuthenticationSessionSupported())
                 {
                     throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
                 }
@@ -164,8 +172,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 {
 #pragma warning disable CA1416
                     session.PresentationContextProvider = new ASWebAuthenticationPresentationContext(
-                        OpenIddictClientSystemIntegrationHelpers.GetCurrentUIWindow() ??
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0447)));
+                        GetCurrentUIWindow() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0447)));
 #pragma warning restore CA1416
                 }
 #endif
@@ -187,8 +194,9 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // Since the result of this operation is known by the time the task signaled by ASWebAuthenticationSession
                 // returns, canceled demands can directly be handled and surfaced here, as part of the challenge handling.
 
-                catch (NSErrorException exception) when (exception.Error.Code is
-                    (int) ASWebAuthenticationSessionErrorCode.CanceledLogin)
+                catch (NSErrorException exception) when (exception.Error is {
+                    Domain: "com.apple.AuthenticationServices.WebAuthenticationSession",
+                    Code  : (int) ASWebAuthenticationSessionErrorCode.CanceledLogin })
                 {
                     context.Reject(
                         error: Errors.AccessDenied,
@@ -224,6 +232,74 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     ASWebAuthenticationSession session) => window;
             }
 #endif
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for initiating logout requests using a custom tabs intent.
+        /// Note: this handler is not used when the user session is not interactive.
+        /// </summary>
+        public class LaunchCustomTabsIntent : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
+                    .AddFilter<RequireInteractiveSession>()
+                    .AddFilter<RequireCustomTabsIntent>()
+                    .UseSingletonHandler<LaunchCustomTabsIntent>()
+                    .SetOrder(100_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            [SupportedOSPlatform("android21.0")]
+#pragma warning disable CS1998
+            public async ValueTask HandleAsync(ApplyLogoutRequestContext context)
+#pragma warning restore CS1998
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+                if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
+                {
+                    return;
+                }
+
+                if (!IsCustomTabsIntentSupported())
+                {
+                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0452));
+                }
+
+                using var builder = new CustomTabsIntent.Builder();
+                using var intent = builder.Build();
+
+                // Note: using ActivityFlags.NewTask is required when
+                // creating intents without a parent activity attached.
+                intent.Intent.AddFlags(ActivityFlags.NewTask);
+
+                // Note: unlike iOS's ASWebAuthenticationSession or UWP's WebAuthenticationBroker,
+                // Android's CustomTabsIntent API doesn't support specifying a "target" URI and uses
+                // an asynchronous and isolated model that doesn't allow tracking the current URI.
+                //
+                // As such, the callback request can only be handled at a later stage by creating a
+                // custom activity responsible for handling callback URIs pointing to a custom scheme.
+                intent.LaunchUrl(Application.Context, NativeUri.Parse(OpenIddictHelpers.AddQueryStringParameters(
+                    uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
+                    parameters: context.Transaction.Request.GetParameters().ToDictionary(
+                        parameter => parameter.Key,
+                        parameter => new StringValues((string?[]?) parameter.Value))).AbsoluteUri)!);
+
+                context.HandleRequest();
+#else
+                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0452));
+#endif
+            }
         }
 
         /// <summary>
@@ -276,8 +352,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // incompatible application model (e.g WinUI 3.0), the presence of a CoreWindow is verified here.
                 //
                 // See https://github.com/microsoft/WindowsAppSDK/issues/398 for more information.
-                if (!OpenIddictClientSystemIntegrationHelpers.IsWebAuthenticationBrokerSupported() ||
-                    CoreWindow.GetForCurrentThread() is null)
+                if (!IsWebAuthenticationBrokerSupported() || CoreWindow.GetForCurrentThread() is null)
                 {
                     throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
                 }
@@ -409,35 +484,41 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     // Runtime APIs and favor the Launcher.LaunchUriAsync() API when it's offered by the platform.
 
 #if SUPPORTS_WINDOWS_RUNTIME
-                    if (OpenIddictClientSystemIntegrationHelpers.IsUriLauncherSupported() && await
-                        OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithWindowsRuntimeAsync(uri))
+                    if (IsUriLauncherSupported() && await TryLaunchBrowserWithWindowsRuntimeAsync(uri))
                     {
                         context.HandleRequest();
                         return;
                     }
 #endif
-                    if (await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithShellExecuteAsync(uri))
+                    if (await TryLaunchBrowserWithShellExecuteAsync(uri))
                     {
                         context.HandleRequest();
                         return;
                     }
                 }
 
-#if SUPPORTS_APPKIT
-                if (OperatingSystem.IsMacOS() && await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithNSWorkspaceAsync(uri))
-                {
-                    context.HandleRequest();
-                    return;
-                }
-#elif SUPPORTS_UIKIT
-                if (OperatingSystem.IsIOS() && await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithUIApplicationAsync(uri))
+#if SUPPORTS_ANDROID
+                if (OperatingSystem.IsAndroid() && TryLaunchBrowserWithGenericIntent(uri))
                 {
                     context.HandleRequest();
                     return;
                 }
 #endif
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
-                    await OpenIddictClientSystemIntegrationHelpers.TryLaunchBrowserWithXdgOpenAsync(uri))
+
+#if SUPPORTS_UIKIT
+                if ((OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst()) && await TryLaunchBrowserWithUIApplicationAsync(uri))
+                {
+                    context.HandleRequest();
+                    return;
+                }
+#elif SUPPORTS_APPKIT
+                if (OperatingSystem.IsMacOS() && TryLaunchBrowserWithNSWorkspace(uri))
+                {
+                    context.HandleRequest();
+                    return;
+                }
+#endif
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && await TryLaunchBrowserWithXdgOpenAsync(uri))
                 {
                     context.HandleRequest();
                     return;

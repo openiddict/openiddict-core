@@ -35,6 +35,18 @@
 
   <PropertyGroup>
     <!--
+      Note: targeting Android requires installing the .NET Android workload. To ensure the solution can
+      be built on machines that don't have the Android workload installed, a directory check is used to
+      ensure the Android reference assemblies pack is present on the machine before targeting Android.
+    -->
+    <SupportsAndroidTargeting
+      Condition=" '$(SupportsAndroidTargeting)' == '' And
+                  ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
+                 ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.Android.Ref.34')) Or
+                                                   ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.Android.Ref.34')) Or
+                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.Android.Ref.34'))) ">true</SupportsAndroidTargeting>
+
+    <!--
       Note: targeting iOS requires installing the .NET iOS workload. To ensure the solution can be
       built on machines that don't have the iOS workload installed, a directory check is used to
       ensure the iOS reference assemblies pack is present on the machine before targeting iOS.
@@ -69,8 +81,9 @@
                                                    ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.macOS.Ref'))) ">true</SupportsMacOSTargeting>
 
     <!--
-      Note: while <EnableWindowsTargeting>true</EnableWindowsTargeting> can be used to allow targeting Windows,
-      Windows targets are only used when running on Windows to speed up the build on non-Windows platforms.
+      Note: while <EnableWindowsTargeting>true</EnableWindowsTargeting> can be used to force targeting
+      Windows on non-Windows platforms, Windows-specific targets are only used when running on Windows
+      to speed up the build on non-Windows platforms.
     -->
     <SupportsWindowsTargeting
       Condition=" '$(SupportsWindowsTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) ">true</SupportsWindowsTargeting>
@@ -97,6 +110,11 @@
       net7.0;
       net8.0
     </NetCoreTargetFrameworks>
+
+    <NetCoreAndroidTargetFrameworks
+      Condition=" '$(NetCoreAndroidTargetFrameworks)' == '' And '$(SupportsAndroidTargeting)' == 'true' ">
+      net8.0-android34.0
+    </NetCoreAndroidTargetFrameworks>
 
     <NetCoreIOSTargetFrameworks
       Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSTargeting)' == 'true' ">
