@@ -1952,7 +1952,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             // Weibo implements a non-standard client authentication method for its endpoints that
             // requires sending the token as "access_token" instead of the standard "token" parameter.
-            if (context.Registration.ProviderType is ProviderTypes.Weibo)
+            else if (context.Registration.ProviderType is ProviderTypes.Weibo)
             {
                 context.RevocationRequest.AccessToken = context.RevocationRequest.Token;
                 context.RevocationRequest.Token = null;

@@ -62,7 +62,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <param name="transaction">The transaction instance.</param>
     /// <returns>The <see cref="NSUrl"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     [SupportedOSPlatform("ios12.0")]
-    [SupportedOSPlatform("maccatalyst13.0")]
+    [SupportedOSPlatform("maccatalyst13.1")]
     [SupportedOSPlatform("macos10.15")]
     public static NSUrl? GetASWebAuthenticationCallbackUrl(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<NSUrl>(typeof(NSUrl).FullName!);
@@ -117,7 +117,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// <returns><see langword="true"/> if the ASWebAuthenticationSession API is supported, <see langword="false"/> otherwise.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SupportedOSPlatformGuard("ios12.0")]
-    [SupportedOSPlatformGuard("maccatalyst13.0")]
+    [SupportedOSPlatformGuard("maccatalyst13.1")]
     [SupportedOSPlatformGuard("macos10.15")]
     internal static bool IsASWebAuthenticationSessionSupported()
 #if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
