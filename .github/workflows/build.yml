@@ -67,12 +67,12 @@ jobs:
 
     - name: Build, test and pack
       if: ${{ runner.os == 'Windows' }}
-      run: eng\common\CIBuild.cmd -configuration Release -prepareMachine -integrationTest /p:SuppressSymbolPackageFormatValidation=true
+      run: eng\common\CIBuild.cmd -configuration Release -prepareMachine -integrationTest /p:RestoreDotNetWorkloads=true
 
     - name: Build, test and pack
       if: ${{ runner.os != 'Windows' }}
       shell: pwsh
-      run: ./eng/common/cibuild.sh -configuration Release -prepareMachine -integrationTest /p:SuppressSymbolPackageFormatValidation=true
+      run: ./eng/common/cibuild.sh -configuration Release -prepareMachine -integrationTest /p:RestoreDotNetWorkloads=true
 
     - name: Attest artifacts
       uses: actions/attest-build-provenance@bdd51370e0416ac948727f861e03c2f05d32d78e # v1.3.2
