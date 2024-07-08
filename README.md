@@ -108,6 +108,7 @@ Instead, **developers are encouraged to execute the conformance tests against th
 - **[P41.OpenIddict.CouchDB](https://github.com/panoukos41/couchdb-openiddict)** by [Panos Athanasiou](https://github.com/panoukos41): CouchDB stores for OpenIddict
 - **[pixel-identity](https://github.com/Nfactor26/pixel-identity)** by [Nishant Singh](https://github.com/Nfactor26): Ready to host OpenID Connect service using OpenIddict and ASP.NET Identity with a Blazor-based UI for managing users, roles, applications and scopes with support for multiple databases.
 - **[SharpGrip.OpenIddict.Api](https://github.com/SharpGrip/OpenIddict.Api)** by [SharpGrip](https://github.com/SharpGrip): SharpGrip OpenIddict API is an extension of the OpenIddict library exposing the OpenIddict entities through a RESTful API.
+- **[OpenIddict.AmazonDynamoDB](https://github.com/ganhammar/OpenIddict.AmazonDynamoDB)** by [ganhammar](https://github.com/ganhammar): Amazon DynamoDB stores for OpenIddict
 
 --------------
 
