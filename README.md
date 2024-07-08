@@ -85,6 +85,7 @@ Instead, **developers are encouraged to execute the conformance tests against th
 
 **Looking for additional resources to help you get started with OpenIddict?** Don't miss these interesting blog posts:
 
+- **[OpenIddict on AWS Serverless: Flexible OAuth2/OIDC Provider](https://www.ganhammar.se/posts/openiddict-on-aws-serverless-flexible-oauth2-oidc-provider)** by [Anton Ganhammar](https://github.com/ganhammar)
 - **[OpenIddict 5.0 general availability](https://kevinchalet.com/2023/12/18/openiddict-5-0-general-availability/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Introducing native applications, per-client token lifetimes and client assertions support in OpenIddict 5.0 preview1](https://kevinchalet.com/2023/10/20/introducing-native-applications-per-client-token-lifetimes-and-client-assertions-support-in-openiddict-5-0-preview1/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Can you use the ASP.NET Core Identity API endpoints with OpenIddict?](https://kevinchalet.com/2023/10/04/can-you-use-the-asp-net-core-identity-api-endpoints-with-openiddict/)** by [Kévin Chalet](https://github.com/kevinchalet)
@@ -103,6 +104,7 @@ Instead, **developers are encouraged to execute the conformance tests against th
 **OpenIddict-based projects maintained by third parties**:
 
 - **[ABP Framework OpenIddict module](https://abp.io/)**: full-stack Web application framework for .NET
+- **[OpenIddict.AmazonDynamoDB](https://github.com/ganhammar/OpenIddict.AmazonDynamoDB)** by [ganhammar](https://github.com/ganhammar): Amazon DynamoDB stores for OpenIddict
 - **[OpenIddict UI](https://github.com/thomasduft/openiddict-ui)** by [Thomas Duft](https://github.com/thomasduft): headless UI for managing client applications and scopes
 - **[OrchardCore OpenID module](https://github.com/OrchardCMS/OrchardCore)**: turnkey OpenID Connect server and token validation solution, built with multitenancy in mind
 - **[P41.OpenIddict.CouchDB](https://github.com/panoukos41/couchdb-openiddict)** by [Panos Athanasiou](https://github.com/panoukos41): CouchDB stores for OpenIddict
