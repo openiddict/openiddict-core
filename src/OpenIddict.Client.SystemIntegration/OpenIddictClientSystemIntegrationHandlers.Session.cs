@@ -157,9 +157,14 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                             source.SetResult(url);
                         }
 
-                        else
+                        else if (error is not null)
                         {
                             source.SetException(new NSErrorException(error));
+                        }
+
+                        else
+                        {
+                            source.SetException(new InvalidOperationException(SR.GetResourceString(SR.ID0448)));
                         }
                     });
 
