@@ -43,7 +43,8 @@ public static class OpenIddictValidationSystemNetHttpExtensions
         builder.Services.TryAddEnumerable(
         [
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationSystemNetHttpConfiguration>(),
-            ServiceDescriptor.Singleton<IConfigureOptions<HttpClientFactoryOptions>, OpenIddictValidationSystemNetHttpConfiguration>()
+            ServiceDescriptor.Singleton<IConfigureOptions<HttpClientFactoryOptions>, OpenIddictValidationSystemNetHttpConfiguration>(),
+            ServiceDescriptor.Singleton<IPostConfigureOptions<HttpClientFactoryOptions>, OpenIddictValidationSystemNetHttpConfiguration>()
         ]);
 
         return new OpenIddictValidationSystemNetHttpBuilder(builder.Services);

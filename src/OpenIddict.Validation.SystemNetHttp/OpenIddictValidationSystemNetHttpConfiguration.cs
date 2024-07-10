@@ -23,7 +23,8 @@ namespace OpenIddict.Validation.SystemNetHttp;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
-                                                                     IConfigureNamedOptions<HttpClientFactoryOptions>
+                                                                     IConfigureNamedOptions<HttpClientFactoryOptions>,
+                                                                     IPostConfigureOptions<HttpClientFactoryOptions>
 {
     private readonly IServiceProvider _provider;
     
@@ -66,7 +67,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
 
         var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>().CurrentValue;
 
-        options.HttpClientActions.Add(client =>
+        options.HttpClientActions.Add(static client =>
         {
             // By default, HttpClient uses a default timeout of 100 seconds and allows payloads of up to 2GB.
             // To help reduce the effects of malicious responses (e.g responses returned at a very slow pace
@@ -88,6 +89,61 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
 #else
             var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
 #endif
+            // If applicable, add the handler responsible for replaying failed HTTP requests.
+            //
+            // Note: on .NET 8.0 and higher, the HTTP error policy is always set
+            // to null by default and an HTTP resilience pipeline is used instead.
+            if (options.CurrentValue.HttpErrorPolicy is IAsyncPolicy<HttpResponseMessage> policy)
+            {
+                builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
+            }
+
+#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+            else if (options.CurrentValue.HttpResiliencePipeline is ResiliencePipeline<HttpResponseMessage> pipeline)
+            {
+#pragma warning disable EXTEXP0001
+                builder.AdditionalHandlers.Add(new ResilienceHandler(pipeline));
+#pragma warning restore EXTEXP0001
+            }
+#endif
+        });
+
+        // Register the user-defined HTTP client handler actions.
+        foreach (var action in settings.HttpClientHandlerActions)
+        {
+            options.HttpMessageHandlerBuilderActions.Add(builder => action(builder.PrimaryHandler as HttpClientHandler ??
+                throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
+        }
+    }
+
+    /// <inheritdoc/>
+    public void PostConfigure(string? name, HttpClientFactoryOptions options)
+    {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        // Only amend the HTTP client factory options if the instance is managed by OpenIddict.
+        var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
+        if (!string.Equals(name, assembly.Name, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        options.HttpMessageHandlerBuilderActions.Insert(0, static builder =>
+        {
+            // Note: Microsoft.Extensions.Http 9.0+ no longer uses HttpClientHandler as the default instance
+            // for PrimaryHandler on platforms that support SocketsHttpHandler. Since OpenIddict requires an
+            // HttpClientHandler instance, it is manually reassigned here if it's not an HttpClientHandler.
+            if (builder.PrimaryHandler is not HttpClientHandler)
+            {
+                builder.PrimaryHandler = new HttpClientHandler();
+            }
+        });
+
+        options.HttpMessageHandlerBuilderActions.Add(static builder =>
+        {
             if (builder.PrimaryHandler is not HttpClientHandler handler)
             {
                 throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName));
@@ -128,31 +184,6 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
             //
             // To avoid that, cookies support is explicitly disabled here, for security reasons.
             handler.UseCookies = false;
-
-            // If applicable, add the handler responsible for replaying failed HTTP requests.
-            //
-            // Note: on .NET 8.0 and higher, the HTTP error policy is always set
-            // to null by default and an HTTP resilience pipeline is used instead.
-            if (options.CurrentValue.HttpErrorPolicy is IAsyncPolicy<HttpResponseMessage> policy)
-            {
-                builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
-            }
-
-#if SUPPORTS_HTTP_CLIENT_RESILIENCE
-            else if (options.CurrentValue.HttpResiliencePipeline is ResiliencePipeline<HttpResponseMessage> pipeline)
-            {
-#pragma warning disable EXTEXP0001
-                builder.AdditionalHandlers.Add(new ResilienceHandler(pipeline));
-#pragma warning restore EXTEXP0001
-            }
-#endif
         });
-
-        // Register the user-defined HTTP client handler actions.
-        foreach (var action in settings.HttpClientHandlerActions)
-        {
-            options.HttpMessageHandlerBuilderActions.Add(builder => action(builder.PrimaryHandler as HttpClientHandler ??
-                throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
-        }
     }
 }
