@@ -118,18 +118,17 @@
 
     <NetCoreIOSTargetFrameworks
       Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSTargeting)' == 'true' ">
-      net8.0-ios12.0;
-      net8.0-ios13.0
+      net8.0-ios17.2
     </NetCoreIOSTargetFrameworks>
 
     <NetCoreMacCatalystTargetFrameworks
       Condition=" '$(NetCoreMacCatalystTargetFrameworks)' == '' And '$(SupportsMacCatalystTargeting)' == 'true' ">
-      net8.0-maccatalyst13.1
+      net8.0-maccatalyst17.2
     </NetCoreMacCatalystTargetFrameworks>
 
     <NetCoreMacOSTargetFrameworks
       Condition=" '$(NetCoreMacOSTargetFrameworks)' == '' And '$(SupportsMacOSTargeting)' == 'true' ">
-      net8.0-macos10.15
+      net8.0-macos14.2
     </NetCoreMacOSTargetFrameworks>
 
     <NetCoreWindowsTargetFrameworks
