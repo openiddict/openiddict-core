@@ -158,7 +158,7 @@
     <Product>OpenIddict</Product>
     <_ProjectCopyright>© Kévin Chalet. All rights reserved.</_ProjectCopyright>
     <PackageIconFullPath>$(MSBuildThisFileDirectory)package-icon.png</PackageIconFullPath>
-    <PackageProjectUrl>https://github.com/openiddict/openiddict-core</PackageProjectUrl>
+    <PackageProjectUrl>https://openiddict.com/</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>authentication;jwt;openidconnect;openiddict;security</PackageTags>
     <RepositoryType>git</RepositoryType>
