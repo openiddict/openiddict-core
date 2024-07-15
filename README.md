@@ -173,6 +173,13 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
     <img src="https://volosoft.com/assets/logos/volosoft-logo-dark.svg" width="500px" alt="Volosoft logo" />
   </picture>
 </a>
+<p></p>
+<a href="https://openiddictcomponents.com">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png">
+    <img src="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png" width="400px" alt="OpenIddict Components Logo" />
+  </picture>
+</a>
 
 <br />
 <br />
