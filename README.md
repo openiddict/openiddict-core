@@ -177,7 +177,7 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
 <br />
 <br />
 
-<a href="https://openiddictcomponents.com">
+<a href="https://www.openiddictcomponents.com/">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png">
     <img src="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png" width="400px" alt="OpenIddict Components Logo" />
