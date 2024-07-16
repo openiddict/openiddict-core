@@ -20,13 +20,18 @@ out-of-the-box and custom stores can be implemented to support other providers.
 
 ## Getting started
 
-**Developers looking for a simple and turnkey solution are strongly encouraged to use [OrchardCore and its OpenID module](https://docs.orchardcore.net/en/latest/docs/reference/modules/OpenId/)**,
-which is based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
-
-**To implement a custom OpenID Connect server using OpenIddict, read [Getting started](https://documentation.openiddict.com/guides/getting-started.html)**.
+**To implement a custom OpenID Connect server using OpenIddict, read [Getting started](https://documentation.openiddict.com/guides/getting-started/)**.
 
 **Samples demonstrating how to use OpenIddict with the different OAuth 2.0/OpenID Connect flows**
 can be found in the [dedicated repository](https://github.com/openiddict/openiddict-samples).
+
+**Developers looking for a simple and turnkey solution are strongly encouraged to use [OrchardCore and its OpenID module](https://docs.orchardcore.net/en/latest/docs/reference/modules/OpenId/)**,
+which is based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
+
+**Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge, a sponsor of OpenIddict, is developing a range of identity components to enhance your OpenIddict solution.
+The first of these is their popular [SAML2P component](https://www.openiddictcomponents.com/?utm_source=openiddictgithubmain&utm_campaign=openiddict).
+
+
 
 --------------
 
@@ -167,6 +172,16 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://volosoft.com/assets/logos/volosoft-logo-light.svg">
     <img src="https://volosoft.com/assets/logos/volosoft-logo-dark.svg" width="500px" alt="Volosoft logo" />
+  </picture>
+</a>
+
+<br />
+<br />
+
+<a href="https://www.openiddictcomponents.com/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png">
+    <img src="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png" width="400px" alt="OpenIddict Components Logo" />
   </picture>
 </a>
 
