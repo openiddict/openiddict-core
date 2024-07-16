@@ -28,7 +28,8 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 **Developers looking for a simple and turnkey solution are strongly encouraged to use [OrchardCore and its OpenID module](https://docs.orchardcore.net/en/latest/docs/reference/modules/OpenId/)**,
 which is based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
 
-**Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge, a sponsor of OpenIddict, is developing a range of identity components to enhance your OpenIddict solution. The first of these is their popular [SAML2P component](https://www.openiddictcomponents.com/?utm_source=openiddictgithubmain&utm_campaign=openiddict).
+**Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge, a sponsor of OpenIddict, is developing a range of identity components to enhance your OpenIddict solution.
+The first of these is their popular [SAML2P component](https://www.openiddictcomponents.com/?utm_source=openiddictgithubmain&utm_campaign=openiddict).
 
 
 
