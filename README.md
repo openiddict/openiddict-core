@@ -31,8 +31,6 @@ which is based on OpenIddict, comes with sensible defaults and offers a built-in
 **Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge, a sponsor of OpenIddict, is developing a range of identity components to enhance your OpenIddict solution.
 The first of these is their popular [SAML2P component](https://www.openiddictcomponents.com/?utm_source=openiddictgithubmain&utm_campaign=openiddict).
 
-
-
 --------------
 
 ## Compatibility matrix
@@ -179,10 +177,7 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
 <br />
 
 <a href="https://www.openiddictcomponents.com/">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png">
-    <img src="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png" width="400px" alt="OpenIddict Components Logo" />
-  </picture>
+  <img src="https://www.openiddictcomponents.com/media/kz1aymji/openiddict-components-logo-poweredbyrsk.png" width="400px" alt="OpenIddict Components Logo" />
 </a>
 
 <br />
