@@ -199,8 +199,8 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
 
         if (!name.StartsWith(assembly.Name!, StringComparison.Ordinal) ||
-                name.Length < assembly.Name!.Length + 1 ||
-                name[assembly.Name.Length] is not ':')
+             name.Length < assembly.Name!.Length + 1 ||
+             name[assembly.Name.Length] is not ':')
         {
             value = null;
             return false;
