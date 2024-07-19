@@ -202,7 +202,7 @@ public sealed class OpenIddictClientSystemIntegrationService
         using var writer = new BinaryWriter(buffer);
         using var stream = new NamedPipeClientStream(
             serverName        : ".",
-            pipeName          : $@"{_options.CurrentValue.PipeName}\{identifier}",
+            pipeName          : $@"{_options.CurrentValue.PipeName}-{identifier}",
             direction         : PipeDirection.Out,
             options           : PipeOptions.Asynchronous,
             impersonationLevel: TokenImpersonationLevel.None,

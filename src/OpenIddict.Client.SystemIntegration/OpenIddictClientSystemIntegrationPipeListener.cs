@@ -140,7 +140,7 @@ public sealed class OpenIddictClientSystemIntegrationPipeListener : BackgroundSe
 #else
                 NamedPipeServerStreamConstructors.New(
 #endif
-                    pipeName                  : $@"{options.PipeName}\{options.InstanceIdentifier}",
+                    pipeName                  : $@"{options.PipeName}-{options.InstanceIdentifier}",
                     direction                 : PipeDirection.In,
                     maxNumberOfServerInstances: NamedPipeServerStream.MaxAllowedServerInstances,
                     transmissionMode          : PipeTransmissionMode.Byte,
@@ -151,7 +151,7 @@ public sealed class OpenIddictClientSystemIntegrationPipeListener : BackgroundSe
                     inheritability            : HandleInheritability.None,
                     additionalAccessRights    : default) :
                 new NamedPipeServerStream(
-                    pipeName                  : $@"{options.PipeName}\{options.InstanceIdentifier}",
+                    pipeName                  : $@"{options.PipeName}-{options.InstanceIdentifier}",
                     direction                 : PipeDirection.In,
                     maxNumberOfServerInstances: NamedPipeServerStream.MaxAllowedServerInstances,
                     transmissionMode          : PipeTransmissionMode.Byte,
