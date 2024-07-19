@@ -232,7 +232,7 @@
 
   <ItemGroup Label="Package versions for .NET 6.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '6.0')) ">
-    <PackageVersion Include="EntityFramework"                                                 Version="6.4.4"           />
+    <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"           />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="6.0.31"          />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="6.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="6.0.1"           />
@@ -278,7 +278,7 @@
 
   <ItemGroup Label="Package versions for .NET 7.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '7.0')) ">
-    <PackageVersion Include="EntityFramework"                                                 Version="6.4.4"           />
+    <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"           />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="7.0.20"          />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="7.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="7.0.0"           />
@@ -324,7 +324,7 @@
 
   <ItemGroup Label="Package versions for .NET 8.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0')) ">
-    <PackageVersion Include="EntityFramework"                                                 Version="6.4.4"           />
+    <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"           />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="8.0.6"           />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="8.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="8.0.0"           />
