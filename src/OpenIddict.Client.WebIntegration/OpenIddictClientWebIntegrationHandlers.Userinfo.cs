@@ -49,7 +49,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<OverrideHttpMethod>()
                     .SetOrder(PreparePostHttpRequest<PrepareUserinfoRequestContext>.Descriptor.Order + 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -96,7 +96,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachRequestHeaders>()
                     .SetOrder(AttachUserAgentHeader<PrepareUserinfoRequestContext>.Descriptor.Order + 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -151,7 +151,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachAccessTokenParameter>()
                     .SetOrder(AttachBearerAccessToken.Descriptor.Order + 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -250,7 +250,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachNonStandardRequestPayload>()
                     .SetOrder(AttachHttpParameters<PrepareUserinfoRequestContext>.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -299,6 +299,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<NormalizeContentType>()
                     .SetOrder(ExtractUserinfoTokenHttpResponse.Descriptor.Order - 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)

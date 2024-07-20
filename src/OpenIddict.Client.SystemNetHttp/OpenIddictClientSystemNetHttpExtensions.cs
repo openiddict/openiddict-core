@@ -37,7 +37,10 @@ public static class OpenIddictClientSystemNetHttpExtensions
         builder.Services.TryAdd(OpenIddictClientSystemNetHttpHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict System.Net.Http event handlers.
+#pragma warning disable CS0618
         builder.Services.TryAddSingleton<RequireHttpMetadataUri>();
+#pragma warning restore CS0618
+        builder.Services.TryAddSingleton<RequireHttpUri>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(

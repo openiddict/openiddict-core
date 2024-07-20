@@ -129,7 +129,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachNonStandardBasicAuthenticationCredentials>()
                     .SetOrder(AttachBasicAuthenticationCredentials.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -232,7 +232,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachNonStandardRequestHeaders>()
                     .SetOrder(AttachUserAgentHeader<PrepareTokenRequestContext>.Descriptor.Order + 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -276,7 +276,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachNonStandardQueryStringParameters>()
                     .SetOrder(AttachHttpParameters<PrepareTokenRequestContext>.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -323,7 +323,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachNonStandardRequestPayload>()
                     .SetOrder(AttachHttpParameters<PrepareTokenRequestContext>.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)

@@ -43,7 +43,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareRevocationRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachNonStandardBasicAuthenticationCredentials>()
                     .SetOrder(AttachBasicAuthenticationCredentials.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -106,6 +106,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractRevocationResponseContext>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<NormalizeContentType>()
                     .SetOrder(ExtractJsonHttpResponse<ExtractRevocationResponseContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)

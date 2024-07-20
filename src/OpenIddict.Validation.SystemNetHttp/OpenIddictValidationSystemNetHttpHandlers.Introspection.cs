@@ -51,7 +51,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
                     .SetOrder(AttachHttpParameters<PrepareIntrospectionRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
