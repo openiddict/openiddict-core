@@ -52,7 +52,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareRevocationRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
                     .SetOrder(AttachHttpParameters<PrepareRevocationRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)

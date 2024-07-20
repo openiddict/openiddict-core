@@ -52,7 +52,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachBearerAccessToken>()
                     .SetOrder(AttachHttpParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -93,7 +93,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<ExtractUserinfoTokenHttpResponse>()
                     .SetOrder(ExtractJsonHttpResponse<ExtractUserinfoResponseContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)

@@ -51,7 +51,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
-                    .AddFilter<RequireHttpMetadataUri>()
+                    .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
                     .SetOrder(AttachHttpParameters<PrepareIntrospectionRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
