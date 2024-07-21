@@ -7,6 +7,10 @@ using OpenIddict.Client;
 using OpenIddict.Sandbox.WinForms.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
+#if SUPPORTS_APPLICATION_CONFIGURATION_INITIALIZATION
+ApplicationConfiguration.Initialize();
+#endif
+
 var host = new HostBuilder()
     // Note: applications for which a single instance is preferred can reference
     // the Dapplo.Microsoft.Extensions.Hosting.AppServices package and call this
