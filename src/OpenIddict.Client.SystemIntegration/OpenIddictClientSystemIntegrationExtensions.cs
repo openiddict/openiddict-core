@@ -121,16 +121,17 @@ public static class OpenIddictClientSystemIntegrationExtensions
 
         // Register the option initializer and the background service used by the OpenIddict client system integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers and the background service are only registered once.
-        builder.Services.TryAddEnumerable(
-        [
-            ServiceDescriptor.Singleton<IHostedService, OpenIddictClientSystemIntegrationHttpListener>(),
-            ServiceDescriptor.Singleton<IHostedService, OpenIddictClientSystemIntegrationPipeListener>(),
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, OpenIddictClientSystemIntegrationHttpListener>());
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, OpenIddictClientSystemIntegrationPipeListener>());
 
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientSystemIntegrationConfiguration>(),
-            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictClientOptions>, OpenIddictClientSystemIntegrationConfiguration>(),
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientSystemIntegrationConfiguration>());
 
-            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictClientSystemIntegrationOptions>, OpenIddictClientSystemIntegrationConfiguration>()
-        ]);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictClientOptions>, OpenIddictClientSystemIntegrationConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictClientSystemIntegrationOptions>, OpenIddictClientSystemIntegrationConfiguration>());
 
         return new OpenIddictClientSystemIntegrationBuilder(builder.Services);
     }

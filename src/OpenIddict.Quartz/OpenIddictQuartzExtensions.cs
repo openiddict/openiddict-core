@@ -35,11 +35,11 @@ public static class OpenIddictQuartzExtensions
         builder.Services.TryAddTransient<OpenIddictQuartzJob>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
-        builder.Services.TryAddEnumerable(
-        [
-            ServiceDescriptor.Singleton<IConfigureOptions<QuartzOptions>, OpenIddictQuartzConfiguration>(),
-            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictQuartzOptions>, OpenIddictQuartzConfiguration>()
-        ]);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<QuartzOptions>, OpenIddictQuartzConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictQuartzOptions>, OpenIddictQuartzConfiguration>());
 
         return new OpenIddictQuartzBuilder(builder.Services);
     }

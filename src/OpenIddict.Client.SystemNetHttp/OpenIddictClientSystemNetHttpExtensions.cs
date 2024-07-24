@@ -43,12 +43,14 @@ public static class OpenIddictClientSystemNetHttpExtensions
         builder.Services.TryAddSingleton<RequireHttpUri>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
-        builder.Services.TryAddEnumerable(
-        [
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientSystemNetHttpConfiguration>(),
-            ServiceDescriptor.Singleton<IConfigureOptions<HttpClientFactoryOptions>, OpenIddictClientSystemNetHttpConfiguration>(),
-            ServiceDescriptor.Singleton<IPostConfigureOptions<HttpClientFactoryOptions>, OpenIddictClientSystemNetHttpConfiguration>()
-        ]);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientSystemNetHttpConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<HttpClientFactoryOptions>, OpenIddictClientSystemNetHttpConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<HttpClientFactoryOptions>, OpenIddictClientSystemNetHttpConfiguration>());
 
         return new OpenIddictClientSystemNetHttpBuilder(builder.Services);
     }

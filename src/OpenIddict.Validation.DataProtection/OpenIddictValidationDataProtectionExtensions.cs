@@ -36,11 +36,11 @@ public static class OpenIddictValidationDataProtectionExtensions
         builder.Services.TryAdd(OpenIddictValidationDataProtectionHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
-        builder.Services.TryAddEnumerable(
-        [
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationDataProtectionConfiguration>(),
-            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationDataProtectionOptions>, OpenIddictValidationDataProtectionConfiguration>()
-        ]);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationDataProtectionConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictValidationDataProtectionOptions>, OpenIddictValidationDataProtectionConfiguration>());
 
         return new OpenIddictValidationDataProtectionBuilder(builder.Services);
     }
