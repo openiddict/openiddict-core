@@ -48,14 +48,17 @@ public static class OpenIddictClientAspNetCoreExtensions
 
         // Register the option initializer used by the OpenIddict ASP.NET Core client integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
-        builder.Services.TryAddEnumerable(
-        [
-            ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>(),
-            ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>(),
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>());
 
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientAspNetCoreConfiguration>(),
-            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictClientAspNetCoreOptions>, OpenIddictClientAspNetCoreConfiguration>()
-        ]);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientAspNetCoreConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictClientAspNetCoreOptions>, OpenIddictClientAspNetCoreConfiguration>());
 
         return new OpenIddictClientAspNetCoreBuilder(builder.Services);
     }

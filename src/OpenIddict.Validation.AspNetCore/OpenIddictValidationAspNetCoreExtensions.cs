@@ -45,13 +45,14 @@ public static class OpenIddictValidationAspNetCoreExtensions
 
         // Register the option initializer used by the OpenIddict ASP.NET Core validation integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
-        builder.Services.TryAddEnumerable(
-        [
-            ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictValidationAspNetCoreConfiguration>(),
-            ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, OpenIddictValidationAspNetCoreConfiguration>(),
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<AuthenticationOptions>, OpenIddictValidationAspNetCoreConfiguration>());
 
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationAspNetCoreConfiguration>()
-        ]);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<AuthenticationOptions>, OpenIddictValidationAspNetCoreConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationAspNetCoreConfiguration>());
 
         return new OpenIddictValidationAspNetCoreBuilder(builder.Services);
     }
