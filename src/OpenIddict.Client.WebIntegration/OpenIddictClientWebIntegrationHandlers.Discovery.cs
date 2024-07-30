@@ -132,7 +132,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 else if (context.Registration.ProviderType is
-                    ProviderTypes.Cognito or ProviderTypes.EpicGames or ProviderTypes.Salesforce)
+                    ProviderTypes.Cognito or ProviderTypes.EpicGames or ProviderTypes.Salesforce or ProviderTypes.Twitch)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
