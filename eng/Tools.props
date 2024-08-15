@@ -5,13 +5,51 @@
   </ItemGroup>
 
   <!--
-    Restore the .NET workloads immediately after the .NET tooling has been installed by Arcade.
+    Install the .NET workloads immediately after the .NET tooling has been installed by Arcade.
+
+    Note: the workload versions are pinned in the WorkloadRollback.json file.
   -->
 
   <Target Name="RestoreWorkloads" AfterTargets="InstallDotNetCore" Condition=" '$(RestoreDotNetWorkloads)' == 'true' ">
     <Message Text="Installing the .NET workloads required to build the solution..." />
 
-    <Exec Command='"$(DotNetTool)" workload restore' WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true">
+    <Exec Command='"$(DotNetTool)" workload update --from-rollback-file WorkloadRollback.json'
+          WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+
+    <Exec Command='"$(DotNetTool)" workload install android --skip-manifest-update'
+          WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+
+    <Exec Command='"$(DotNetTool)" workload install ios --skip-manifest-update'
+          WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true"
+          Condition=" $([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows()) ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+
+    <Exec Command='"$(DotNetTool)" workload install maccatalyst --skip-manifest-update'
+          WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true"
+          Condition=" $([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows()) ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+
+    <Exec Command='"$(DotNetTool)" workload install macos --skip-manifest-update'
+          WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true"
+          Condition=" $([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows()) ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+
+    <Exec Command='"$(DotNetTool)" workload install maui-maccatalyst --skip-manifest-update'
+          WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true"
+          Condition=" $([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows()) ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+
+    <Exec Command='"$(DotNetTool)" workload install maui-ios --skip-manifest-update'
+          WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true"
+          Condition=" $([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows()) ">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
     </Exec>
   </Target>
