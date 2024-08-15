@@ -1004,7 +1004,7 @@
 
   <Provider Name="LinkedIn" Id="eb3bc226-ed25-4258-8a37-2bfcc4d628a2"
             Documentation="https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2">
-    <Environment Issuer="https://www.linkedin.com/"
+    <Environment Issuer="https://www.linkedin.com/oauth"
                  ConfigurationEndpoint="https://www.linkedin.com/oauth/.well-known/openid-configuration">
       <!--
         Note: LinkedIn requires sending the "profile" scope to be able to use the userinfo endpoint.
