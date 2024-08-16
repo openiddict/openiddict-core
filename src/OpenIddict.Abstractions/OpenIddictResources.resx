@@ -1684,7 +1684,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The generic version of the OpenIddict.Client.SystemIntegration package cannot be used on this platform. Make sure your application is referencing the correct version by using the appropriate OS-specific TFM (e.g on macOS, 'net8.0-macos10.15').</value>
   </data>
   <data name="ID0450" xml:space="preserve">
-    <value>An HTTP/HTTPS redirect_uri or post_logout_redirect_uri cannot be used when using AS web authentication sessions. Make sure you're using a custom protocol scheme for all the callback URIs attached to the client registration.</value>
+    <value>An HTTP redirect_uri or post_logout_redirect_uri cannot be used when using AS web authentication sessions. Make sure you're using a custom protocol scheme for all the callback URIs attached to the client registration. Alternatively, you can register an associated domain and use an HTTPS redirect_uri or post_logout_redirect_uri pointing to that domain (supported only on iOS 17.4+, Mac Catalyst 17.4+ and macOS 14.4+).</value>
   </data>
   <data name="ID0451" xml:space="preserve">
     <value>The Zoho integration requires sending the region of the server when using the client credentials or refresh token grants. For that, attach a ".location" authentication property containing the region to use.</value>
@@ -2873,6 +2873,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6230" xml:space="preserve">
     <value>The revocation request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6231" xml:space="preserve">
+    <value>An error was returned by ASWebAuthenticationSession while trying to start a challenge operation.</value>
+  </data>
+  <data name="ID6232" xml:space="preserve">
+    <value>An error was returned by ASWebAuthenticationSession while trying to start a sign-out operation.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
