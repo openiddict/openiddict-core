@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;
 
@@ -111,7 +112,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
 #if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
-                if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
+                if (string.IsNullOrEmpty(context.PostLogoutRedirectUri) ||
+                    !Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri))
                 {
                     return;
                 }
@@ -119,13 +121,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 if (!IsASWebAuthenticationSessionSupported())
                 {
                     throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
-                }
-
-                if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) ||
-                   (string.Equals(uri.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)))
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0450));
                 }
 
                 var source = new TaskCompletionSource<NSUrl>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -143,30 +138,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // doesn't return until the specified callback URI is reached or the modal closed by the user.
                 // To accomodate OpenIddict's model, successful results are processed as any other callback request.
 
-                using var session = new ASWebAuthenticationSession(
-                    url: new NSUrl(OpenIddictHelpers.AddQueryStringParameters(
-                        uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
-                        parameters: context.Transaction.Request.GetParameters().ToDictionary(
-                            parameter => parameter.Key,
-                            parameter => new StringValues((string?[]?) parameter.Value))).AbsoluteUri),
-                    callbackUrlScheme: uri.Scheme,
-                    completionHandler: (url, error) =>
-                    {
-                        if (url is not null)
-                        {
-                            source.SetResult(url);
-                        }
-
-                        else if (error is not null)
-                        {
-                            source.SetException(new NSErrorException(error));
-                        }
-
-                        else
-                        {
-                            source.SetException(new InvalidOperationException(SR.GetResourceString(SR.ID0448)));
-                        }
-                    });
+                using var session = CreateASWebAuthenticationSession();
 
 #if SUPPORTS_PRESENTATION_CONTEXT_PROVIDER
                 // On iOS 13.0 and higher, a presentation context provider returning the UI window to
@@ -211,8 +183,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     return;
                 }
 
-                catch (NSErrorException)
+                catch (NSErrorException exception)
                 {
+                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6232));
+
                     context.Reject(
                         error: Errors.ServerError,
                         description: SR.GetResourceString(SR.ID2136),
@@ -224,6 +198,72 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 await _service.HandleASWebAuthenticationCallbackUrlAsync(url, context.CancellationToken);
                 context.HandleRequest();
                 return;
+
+                ASWebAuthenticationSession CreateASWebAuthenticationSession()
+                {
+                    // Starting with iOS 17.4+, Mac Catalyst 17.4+ and macOS 14.4+, the ASWebAuthenticationSession initializer
+                    // accepting a custom scheme string is now deprecated and is replaced by an initializer taking an
+                    // ASWebAuthenticationSessionCallback object, which allows supporting HTTPS callback URIs/Universal Links.
+                    if (OperatingSystem.IsIOSVersionAtLeast(17, 4) ||
+                        OperatingSystem.IsMacCatalystVersionAtLeast(17, 4) ||
+                        OperatingSystem.IsMacOSVersionAtLeast(14, 4))
+                    {
+                        return new ASWebAuthenticationSession(
+                            url: CreateUrl(),
+                            callback: uri switch
+                            {
+                                // Note: non-default ports are not allowed in associated domains, that are
+                                // required to use HTTPS URIs with the ASWebAuthenticationSessionCallback API.
+                                Uri { IsDefaultPort: true } uri when string.Equals(
+                                    uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+                                    => ASWebAuthenticationSessionCallback.Create(
+                                        httpsHost: uri.Host,
+                                        path     : uri.AbsolutePath is ['/', _, ..] ? uri.AbsolutePath[1..] : uri.AbsoluteUri),
+
+                                Uri uri when !string.Equals(uri.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) &&
+                                             !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+                                    => ASWebAuthenticationSessionCallback.Create(uri.Scheme),
+
+                                // HTTP-only callback URIs and HTTPS URIs using non-default ports
+                                // are not supported by the ASWebAuthenticationSessionCallback API.
+                                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0450))
+                            },
+                            completionHandler: HandleCallback);
+                    }
+
+                    // On older platforms, only callback URIs using a custom scheme can be used.
+                    if (string.Equals(uri.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0450));
+                    }
+
+                    return new ASWebAuthenticationSession(CreateUrl(), uri.Scheme, HandleCallback);
+
+                    NSUrl CreateUrl() => new(OpenIddictHelpers.AddQueryStringParameters(
+                        uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
+                        parameters: context.Transaction.Request.GetParameters().ToDictionary(
+                            parameter => parameter.Key,
+                            parameter => new StringValues((string?[]?) parameter.Value))).AbsoluteUri);
+
+                    void HandleCallback(NSUrl? url, NSError? error)
+                    {
+                        if (url is not null)
+                        {
+                            source.SetResult(url);
+                        }
+
+                        else if (error is not null)
+                        {
+                            source.SetException(new NSErrorException(error));
+                        }
+
+                        else
+                        {
+                            source.SetException(new InvalidOperationException(SR.GetResourceString(SR.ID0448)));
+                        }
+                    }
+                }
 #else
                 throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
 #endif
