@@ -45,6 +45,14 @@ namespace OpenIddict.Client.SystemIntegration;
 public static class OpenIddictClientSystemIntegrationHelpers
 {
     /// <summary>
+    /// Gets the <see cref="OpenIddictClientSystemIntegrationPlatformCallback"/> associated with the current context.
+    /// </summary>
+    /// <param name="transaction">The transaction instance.</param>
+    /// <returns>The <see cref="OpenIddictClientSystemIntegrationPlatformCallback"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    public static OpenIddictClientSystemIntegrationPlatformCallback? GetPlatformCallback(this OpenIddictClientTransaction transaction)
+        => transaction.GetProperty<OpenIddictClientSystemIntegrationPlatformCallback>(typeof(OpenIddictClientSystemIntegrationPlatformCallback).FullName!);
+
+    /// <summary>
     /// Gets the <see cref="OpenIddictClientSystemIntegrationActivation"/> associated with the current context.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
@@ -60,39 +68,17 @@ public static class OpenIddictClientSystemIntegrationHelpers
     public static HttpListenerContext? GetHttpListenerContext(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<HttpListenerContext>(typeof(HttpListenerContext).FullName!);
 
-#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
-    /// <summary>
-    /// Gets the AS web authentication callback URL associated with the current context.
-    /// </summary>
-    /// <param name="transaction">The transaction instance.</param>
-    /// <returns>The <see cref="NSUrl"/> instance or <see langword="null"/> if it couldn't be found.</returns>
-    [SupportedOSPlatform("ios12.0")]
-    [SupportedOSPlatform("maccatalyst13.1")]
-    [SupportedOSPlatform("macos10.15")]
-    public static NSUrl? GetASWebAuthenticationCallbackUrl(this OpenIddictClientTransaction transaction)
-        => transaction.GetProperty<NSUrl>(typeof(NSUrl).FullName!);
-#endif
-
-#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
-    /// <summary>
-    /// Gets the custom tabs intent data associated with the current context.
-    /// </summary>
-    /// <param name="transaction">The transaction instance.</param>
-    /// <returns>The <see cref="NativeUri"/> instance or <see langword="null"/> if it couldn't be found.</returns>
-    [SupportedOSPlatform("android21.0")]
-    public static NativeUri? GetCustomTabsIntentData(this OpenIddictClientTransaction transaction)
-        => transaction.GetProperty<NativeUri>(typeof(NativeUri).FullName!);
-#endif
-
 #if SUPPORTS_WINDOWS_RUNTIME
     /// <summary>
     /// Gets the <see cref="WebAuthenticationResult"/> associated with the current context.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
     /// <returns>The <see cref="HttpListenerContext"/> instance or <see langword="null"/> if it couldn't be found.</returns>
-    [SupportedOSPlatform("windows10.0.17763")]
+    [Obsolete("This extension is obsolete and will be removed in a future version."), SupportedOSPlatform("windows10.0.17763")]
     public static WebAuthenticationResult? GetWebAuthenticationResult(this OpenIddictClientTransaction transaction)
-        => transaction.GetProperty<WebAuthenticationResult>(typeof(WebAuthenticationResult).FullName!);
+        => transaction.GetPlatformCallback() is OpenIddictClientSystemIntegrationPlatformCallback callback &&
+            callback.Properties.TryGetValue(typeof(WebAuthenticationResult).FullName!, out object? property) &&
+            property is WebAuthenticationResult result ? result : null;
 #endif
 
     /// <summary>

@@ -263,7 +263,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for amending the client authentication methods
         /// supported by the device authorization endpoint for the providers that require it.
         /// </summary>
-        [Obsolete("This class is obsolete and will be removed in a future version.", error: true)]
+        [Obsolete("This event handler is obsolete and will be removed in a future version.", error: true)]
         public sealed class AmendDeviceAuthorizationEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
@@ -285,7 +285,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for amending the client authentication
         /// methods supported by the token endpoint for the providers that require it.
         /// </summary>
-        [Obsolete("This class is obsolete and will be removed in a future version.", error: true)]
+        [Obsolete("This event handler is obsolete and will be removed in a future version.", error: true)]
         public sealed class AmendTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>

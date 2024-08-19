@@ -1562,7 +1562,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for beautifying user-typed tokens.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        [Obsolete("This class is obsolete and will be removed in a future version.", error: true)]
+        [Obsolete("This event handler is obsolete and will be removed in a future version.", error: true)]
         public sealed class BeautifyToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>

@@ -18,34 +18,6 @@ namespace OpenIddict.Client.SystemIntegration;
 public static class OpenIddictClientSystemIntegrationHandlerFilters
 {
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if no AS web
-    /// authentication callback URL can be found in the transaction properties.
-    /// </summary>
-    public sealed class RequireASWebAuthenticationCallbackUrl : IOpenIddictClientHandlerFilter<BaseContext>
-    {
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
-            if (IsASWebAuthenticationSessionSupported())
-            {
-                return new(ContainsASWebAuthenticationSessionResult(context.Transaction));
-            }
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            static bool ContainsASWebAuthenticationSessionResult(OpenIddictClientTransaction transaction)
-                => transaction.GetASWebAuthenticationCallbackUrl() is not null;
-#endif
-            return new(false);
-        }
-    }
-
-    /// <summary>
     /// Represents a filter that excludes the associated handlers if
     /// the AS web authentication session integration was not enabled.
     /// </summary>
@@ -133,33 +105,6 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             return new(false);
         }
     }
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if no
-    /// custom tabs intent data can be found in the transaction properties.
-    /// </summary>
-    public sealed class RequireCustomTabsIntentData : IOpenIddictClientHandlerFilter<BaseContext>
-    {
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
-            if (IsCustomTabsIntentSupported())
-            {
-                return new(ContainsCustomTabsIntentData(context.Transaction));
-            }
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            static bool ContainsCustomTabsIntentData(OpenIddictClientTransaction transaction)
-                => transaction.GetCustomTabsIntentData() is not null;
-#endif
-            return new(false);
-        }
-    }
 
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the embedded web server was not enabled.
@@ -214,6 +159,24 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             }
 
             return new(Environment.UserInteractive);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no
+    /// platform callback can be found in the transaction properties.
+    /// </summary>
+    public sealed class RequirePlatformCallback : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.Transaction.GetPlatformCallback() is not null);
         }
     }
 
@@ -304,6 +267,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
     /// Represents a filter that excludes the associated handlers if no
     /// web authentication operation was triggered during the transaction.
     /// </summary>
+    [Obsolete("This filter is obsolete and will be removed in a future version.")]
     public sealed class RequireWebAuthenticationResult : IOpenIddictClientHandlerFilter<BaseContext>
     {
         /// <inheritdoc/>

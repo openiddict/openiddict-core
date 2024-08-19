@@ -1480,7 +1480,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The web authentication broker is only supported on UWP and requires running Windows 10 version 1709 (Fall Creators) or higher.</value>
   </data>
   <data name="ID0393" xml:space="preserve">
-    <value>The web authentication result cannot be resolved or contains invalid data.</value>
+    <value>The platform callback cannot be resolved or contains invalid data.</value>
   </data>
   <data name="ID0394" xml:space="preserve">
     <value>The issuer attached to the static configuration must be the same as the one configured in the validation options.</value>
@@ -1691,6 +1691,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID0452" xml:space="preserve">
     <value>Custom tabs intents are only supported on Android.</value>
+  </data>
+  <data name="ID0453" xml:space="preserve">
+    <value>The specified intent doesn't contain a valid data URI.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>

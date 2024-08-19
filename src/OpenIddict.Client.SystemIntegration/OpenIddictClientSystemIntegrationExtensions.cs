@@ -103,17 +103,18 @@ public static class OpenIddictClientSystemIntegrationExtensions
 
         // Register the built-in filters used by the default OpenIddict client system integration event handlers.
         builder.Services.TryAddSingleton<RequireASWebAuthenticationSession>();
-        builder.Services.TryAddSingleton<RequireASWebAuthenticationCallbackUrl>();
         builder.Services.TryAddSingleton<RequireAuthenticationNonce>();
         builder.Services.TryAddSingleton<RequireCustomTabsIntent>();
-        builder.Services.TryAddSingleton<RequireCustomTabsIntentData>();
         builder.Services.TryAddSingleton<RequireEmbeddedWebServerEnabled>();
         builder.Services.TryAddSingleton<RequireHttpListenerContext>();
         builder.Services.TryAddSingleton<RequireInteractiveSession>();
+        builder.Services.TryAddSingleton<RequirePlatformCallback>();
         builder.Services.TryAddSingleton<RequireProtocolActivation>();
         builder.Services.TryAddSingleton<RequireSystemBrowser>();
         builder.Services.TryAddSingleton<RequireWebAuthenticationBroker>();
+#pragma warning disable CS0618
         builder.Services.TryAddSingleton<RequireWebAuthenticationResult>();
+#pragma warning restore CS0618
 
         // Register the built-in event handlers used by the OpenIddict client system integration components.
         // Note: the order used here is not important, as the actual order is set in the options.

@@ -57,9 +57,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
              */
             ExtractGetOrPostHttpListenerRequest<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
             ExtractProtocolActivationParameters<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
-            ExtractASWebAuthenticationCallbackUrlData<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
-            ExtractCustomTabsIntentData<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
-            ExtractWebAuthenticationResultData<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
+            ExtractPlatformCallbackParameters<ExtractPostLogoutRedirectionRequestContext>.Descriptor,
 
             /*
              * Post-logout redirection response handling:
@@ -68,9 +66,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             AttachCacheControlHeader<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
             ProcessEmptyHttpResponse.Descriptor,
             ProcessProtocolActivationResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
-            ProcessASWebAuthenticationSessionResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
-            ProcessCustomTabsIntentResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
-            ProcessWebAuthenticationResultResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor
+            ProcessPlatformCallbackResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor
         ]);
 
         /// <summary>
@@ -123,7 +119,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
                 }
 
-                var source = new TaskCompletionSource<NSUrl>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var source = new TaskCompletionSource<OpenIddictClientSystemIntegrationPlatformCallback>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
 
                 // OpenIddict represents the complete interactive logout dance as a two-phase process:
                 //   - The sign-out, during which the user is redirected to the authorization server, either
@@ -161,11 +158,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0448));
                 }
 
-                NSUrl url;
+                OpenIddictClientSystemIntegrationPlatformCallback callback;
 
                 try
                 {
-                    url = await source.Task.WaitAsync(context.CancellationToken);
+                    callback = await source.Task.WaitAsync(context.CancellationToken);
                 }
 
                 // Since the result of this operation is known by the time the task signaled by ASWebAuthenticationSession
@@ -195,7 +192,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     return;
                 }
 
-                await _service.HandleASWebAuthenticationCallbackUrlAsync(url, context.CancellationToken);
+                await _service.HandlePlatformCallbackAsync(callback, context.CancellationToken);
                 context.HandleRequest();
                 return;
 
@@ -250,7 +247,43 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     {
                         if (url is not null)
                         {
-                            source.SetResult(url);
+                            var parameters = new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
+
+                            if (!string.IsNullOrEmpty(url.Query))
+                            {
+                                foreach (var parameter in OpenIddictHelpers.ParseQuery(url.Query))
+                                {
+                                    parameters[parameter.Key] = parameter.Value.Count switch
+                                    {
+                                        0 => default,
+                                        1 => parameter.Value[0],
+                                        _ => parameter.Value.ToArray()
+                                    };
+                                }
+                            }
+
+                            // Note: the fragment is always processed after the query string to ensure that
+                            // parameters extracted from the fragment are preferred to parameters extracted
+                            // from the query string when they are present in both parts.
+
+                            if (!string.IsNullOrEmpty(url.Fragment))
+                            {
+                                foreach (var parameter in OpenIddictHelpers.ParseFragment(url.Fragment))
+                                {
+                                    parameters[parameter.Key] = parameter.Value.Count switch
+                                    {
+                                        0 => default,
+                                        1 => parameter.Value[0],
+                                        _ => parameter.Value.ToArray()
+                                    };
+                                }
+                            }
+
+                            source.SetResult(new OpenIddictClientSystemIntegrationPlatformCallback(url!, parameters)
+                            {
+                                // Attach the raw URL to the callback properties.
+                                Properties = { [typeof(NSUrl).FullName!] = url }
+                            });
                         }
 
                         else if (error is not null)
@@ -426,8 +459,47 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                             parameter => new StringValues((string?[]?) parameter.Value))),
                     callbackUri: new Uri(context.PostLogoutRedirectUri, UriKind.Absolute)))
                 {
-                    case { ResponseStatus: WebAuthenticationStatus.Success } result:
-                        await _service.HandleWebAuthenticationResultAsync(result, context.CancellationToken);
+                    case { ResponseStatus: WebAuthenticationStatus.Success } result
+                        when Uri.TryCreate(result.ResponseData, UriKind.Absolute, out Uri? uri):
+                        var parameters = new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
+
+                        if (!string.IsNullOrEmpty(uri.Query))
+                        {
+                            foreach (var parameter in OpenIddictHelpers.ParseQuery(uri.Query))
+                            {
+                                parameters[parameter.Key] = parameter.Value.Count switch
+                                {
+                                    0 => default,
+                                    1 => parameter.Value[0],
+                                    _ => parameter.Value.ToArray()
+                                };
+                            }
+                        }
+
+                        // Note: the fragment is always processed after the query string to ensure that
+                        // parameters extracted from the fragment are preferred to parameters extracted
+                        // from the query string when they are present in both parts.
+
+                        if (!string.IsNullOrEmpty(uri.Fragment))
+                        {
+                            foreach (var parameter in OpenIddictHelpers.ParseFragment(uri.Fragment))
+                            {
+                                parameters[parameter.Key] = parameter.Value.Count switch
+                                {
+                                    0 => default,
+                                    1 => parameter.Value[0],
+                                    _ => parameter.Value.ToArray()
+                                };
+                            }
+                        }
+
+                        var callback = new OpenIddictClientSystemIntegrationPlatformCallback(uri, parameters)
+                        {
+                            // Attach the authentication result to the properties.
+                            Properties = { [typeof(WebAuthenticationResult).FullName!] = result }
+                        };
+
+                        await _service.HandlePlatformCallbackAsync(callback, context.CancellationToken);
                         context.HandleRequest();
                         return;
 
