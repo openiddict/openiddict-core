@@ -7,22 +7,13 @@
 using System.ComponentModel;
 using System.IO.Pipes;
 using System.Net;
-using System.Runtime.Versioning;
 using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 
 #if SUPPORTS_ANDROID
 using Android.Content;
-using NativeUri = Android.Net.Uri;
-#endif
-
-#if SUPPORTS_FOUNDATION
-using Foundation;
-#endif
-
-#if SUPPORTS_WINDOWS_RUNTIME
-using Windows.Security.Authentication.Web;
 #endif
 
 namespace OpenIddict.Client.SystemIntegration;
@@ -51,6 +42,82 @@ public sealed class OpenIddictClientSystemIntegrationService
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
+#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+    /// <summary>
+    /// Handles the specified intent.
+    /// </summary>
+    /// <param name="intent">The intent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="intent"/> is <see langword="null"/>.</exception>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public Task HandleCustomTabsIntentAsync(Intent intent, CancellationToken cancellationToken = default)
+    {
+        if (intent is null)
+        {
+            throw new ArgumentNullException(nameof(intent));
+        }
+
+        if (intent.Data is null)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0453), nameof(intent));
+        }
+
+        var parameters = new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
+
+        if (!string.IsNullOrEmpty(intent.Data.Query))
+        {
+            foreach (var parameter in OpenIddictHelpers.ParseQuery(intent.Data.Query))
+            {
+                parameters[parameter.Key] = parameter.Value.Count switch
+                {
+                    0 => default,
+                    1 => parameter.Value[0],
+                    _ => parameter.Value.ToArray()
+                };
+            }
+        }
+
+        // Note: the fragment is always processed after the query string to ensure that
+        // parameters extracted from the fragment are preferred to parameters extracted
+        // from the query string when they are present in both parts.
+
+        if (!string.IsNullOrEmpty(intent.Data.Fragment))
+        {
+            foreach (var parameter in OpenIddictHelpers.ParseFragment(intent.Data.Fragment))
+            {
+                parameters[parameter.Key] = parameter.Value.Count switch
+                {
+                    0 => default,
+                    1 => parameter.Value[0],
+                    _ => parameter.Value.ToArray()
+                };
+            }
+        }
+
+        var uri = new Uri(intent.Data.ToString()!, UriKind.Absolute);
+        var callback = new OpenIddictClientSystemIntegrationPlatformCallback(uri, parameters)
+        {
+            // Attach the intent to the properties.
+            Properties = { [typeof(Intent).FullName!] = intent }
+        };
+
+        return HandlePlatformCallbackAsync(callback, cancellationToken);
+    }
+#endif
+
+    /// <summary>
+    /// Handles the specified platform callback.
+    /// </summary>
+    /// <param name="callback">The platform callback details.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="callback"/> is <see langword="null"/>.</exception>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public Task HandlePlatformCallbackAsync(
+        OpenIddictClientSystemIntegrationPlatformCallback callback, CancellationToken cancellationToken = default)
+        => HandleRequestAsync(callback ?? throw new ArgumentNullException(nameof(callback)), cancellationToken);
+
     /// <summary>
     /// Handles the specified protocol activation.
     /// </summary>
@@ -63,19 +130,6 @@ public sealed class OpenIddictClientSystemIntegrationService
         OpenIddictClientSystemIntegrationActivation activation, CancellationToken cancellationToken = default)
         => HandleRequestAsync(activation ?? throw new ArgumentNullException(nameof(activation)), cancellationToken);
 
-#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
-    /// <summary>
-    /// Handles the specified intent.
-    /// </summary>
-    /// <param name="intent">The intent.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="intent"/> is <see langword="null"/>.</exception>
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public Task HandleCustomTabsIntentAsync(Intent intent, CancellationToken cancellationToken = default)
-        => HandleRequestAsync(intent?.Data ?? throw new ArgumentNullException(nameof(intent)), cancellationToken);
-#endif
-
     /// <summary>
     /// Handles the specified HTTP request.
     /// </summary>
@@ -85,34 +139,6 @@ public sealed class OpenIddictClientSystemIntegrationService
     /// <exception cref="ArgumentNullException"><paramref name="request"/> is <see langword="null"/>.</exception>
     internal Task HandleHttpRequestAsync(HttpListenerContext request, CancellationToken cancellationToken = default)
         => HandleRequestAsync(request ?? throw new ArgumentNullException(nameof(request)), cancellationToken);
-
-#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
-    /// <summary>
-    /// Handles the specified AS web authentication session callback URL.
-    /// </summary>
-    /// <param name="url">The AS web authentication session callback URL.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="url"/> is <see langword="null"/>.</exception>
-    [SupportedOSPlatform("ios12.0")]
-    [SupportedOSPlatform("maccatalyst13.1")]
-    [SupportedOSPlatform("macos10.15")]
-    internal Task HandleASWebAuthenticationCallbackUrlAsync(NSUrl url, CancellationToken cancellationToken = default)
-        => HandleRequestAsync(url, cancellationToken);
-#endif
-
-#if SUPPORTS_WINDOWS_RUNTIME
-    /// <summary>
-    /// Handles the specified web authentication result.
-    /// </summary>
-    /// <param name="result">The web authentication result.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
-    [SupportedOSPlatform("windows10.0.17763")]
-    internal Task HandleWebAuthenticationResultAsync(WebAuthenticationResult result, CancellationToken cancellationToken = default)
-        => HandleRequestAsync(result ?? throw new ArgumentNullException(nameof(result)), cancellationToken);
-#endif
 
     /// <summary>
     /// Handles the request using the specified property.
