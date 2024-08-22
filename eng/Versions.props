@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <MajorVersion>5</MajorVersion>
-    <MinorVersion>8</MinorVersion>
+    <MinorVersion>9</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <PreReleaseVersionLabel>preview1</PreReleaseVersionLabel>
