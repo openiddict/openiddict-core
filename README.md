@@ -4,10 +4,16 @@
 
 [![Build status](https://github.com/openiddict/openiddict-core/workflows/build/badge.svg?branch=dev&event=push)](https://github.com/openiddict/openiddict-core/actions?query=workflow%3Abuild+branch%3Adev+event%3Apush)
 
-## What's OpenIddict?
+## What is OpenIddict?
 
-OpenIddict aims at providing a **versatile solution** to implement **OpenID Connect client, server and token validation support in any ASP.NET Core 2.1 (and higher) application**.
-**ASP.NET 4.6.1 (and higher) applications are also fully supported thanks to a native Microsoft.Owin 4.2 integration**.
+OpenIddict aims at providing a **versatile solution** to implement **OpenID Connect client, server and token validation support in .NET applications**.
+
+> [!TIP]
+> While the client, server and token validation features can be used in any ASP.NET 4.6.1+ or
+> [ASP.NET Core 2.1+ web application](https://documentation.openiddict.com/integrations/aspnet-core),
+> the client feature can also be used in
+> [Android, iOS, Linux, Mac Catalyst, macOS and Windows applications](https://documentation.openiddict.com/integrations/operating-systems)
+> to integrate with OpenIddict-based identity providers or any other OAuth 2.0/OpenID Connect-compliant implementation.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**,
 the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628).
@@ -30,41 +36,6 @@ which is based on OpenIddict, comes with sensible defaults and offers a built-in
 
 **Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge, a sponsor of OpenIddict, is developing a range of identity components to enhance your OpenIddict solution.
 The first of these is their popular [SAML2P component](https://www.openiddictcomponents.com/?utm_source=openiddictgithubmain&utm_campaign=openiddict).
-
---------------
-
-## Compatibility matrix
-
-| Web framework version | .NET runtime version | OpenIddict 4.x                          | OpenIddict 5.x                          |
-|-----------------------|----------------------|-----------------------------------------|-----------------------------------------|
-| ASP.NET Core 2.1      | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
-| ASP.NET Core 2.1      | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
-| ASP.NET Core 2.1      | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      |
-| ASP.NET Core 2.1      | .NET Core 2.1        | :exclamation:                           | :exclamation:                           |
-|                       |                      |                                         |                                         |
-| ASP.NET Core 3.1      | .NET Core 3.1        | :heavy_check_mark:                      | :exclamation:                           |
-|                       |                      |                                         |                                         |
-| ASP.NET Core 5.0      | .NET 5.0             | :exclamation:                           | :exclamation:                           |
-| ASP.NET Core 6.0      | .NET 6.0             | :heavy_check_mark:                      | :heavy_check_mark:                      |
-| ASP.NET Core 7.0      | .NET 7.0             | :heavy_check_mark:                      | :heavy_check_mark:                      |
-| ASP.NET Core 8.0      | .NET 8.0             | :heavy_check_mark:                      | :heavy_check_mark:                      |
-|                       |                      |                                         |                                         |
-| Microsoft.Owin 4.2    | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
-| Microsoft.Owin 4.2    | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
-| Microsoft.Owin 4.2    | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      |
-
-> [!WARNING]
-> **ASP.NET Core 2.1 on .NET Core 2.1, ASP.NET Core 3.1 and 5.0 are no longer supported by Microsoft. While OpenIddict can still be used
-> on these platforms thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
->
-> ASP.NET Core 2.1 on .NET Framework 4.6.1 (and higher) is still fully supported.
-
-> [!TIP]
-> **The following features are not available when targeting .NET Framework 4.6.1**:
->  - X.509 development encryption/signing certificates: calling `AddDevelopmentEncryptionCertificate()` or `AddDevelopmentSigningCertificate()`
-> will result in a `PlatformNotSupportedException` being thrown at runtime if no valid development certificate can be found and a new one must be generated.
->  - X.509 ECDSA signing certificates/keys: calling `AddSigningCertificate()` or `AddSigningKey()`
-> with an ECDSA certificate/key will always result in a `PlatformNotSupportedException` being thrown at runtime.
 
 --------------
 
@@ -131,7 +102,7 @@ Depending on the tier you selected, you can open a GitHub ticket or send an emai
 Alternatively, you can also post your question on [Gitter](https://app.gitter.im/#/room/#openiddict_openiddict-core:gitter.im).
 
 > [!IMPORTANT]
-> With OpenIddict 5.x being now generally available, the previous version, OpenIddict 4.x, stops being supported and won't receive bug
+> With OpenIddict 5.x now being generally available, the previous version, OpenIddict 4.x, stops being supported and won't receive bug
 > fixes or security updates. As such, it is recommended to migrate to OpenIddict 5.x to continue receiving bug and security fixes.
 > 
 > **There are, however, two exceptions to this policy**:
