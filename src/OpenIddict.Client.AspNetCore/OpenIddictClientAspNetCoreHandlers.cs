@@ -564,6 +564,11 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is { Items.Count: > 0 })
             {
@@ -575,7 +580,19 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 context.RegistrationId      = GetProperty(properties, Properties.RegistrationId);
                 context.ResponseMode        = GetProperty(properties, Properties.ResponseMode);
                 context.ResponseType        = GetProperty(properties, Properties.ResponseType);
-                context.TargetLinkUri       = properties.RedirectUri;
+
+                context.TargetLinkUri = properties.RedirectUri switch
+                {
+                    // If a return URL - local or not - was explicitly set in the authentication properties, always honor it.
+                    { Length: > 0 } uri => uri,
+
+                    // If no return URL was explicitly set in the authentication properties (e.g because
+                    // the challenge was triggered automatically by ASP.NET Core or because no return URL
+                    // was specified by the user), use the current location as the default target link URI.
+                    _ => (request.HttpContext.Features.Get<IAuthenticationFeature>()?.OriginalPathBase ?? request.PathBase) +
+                         (request.HttpContext.Features.Get<IAuthenticationFeature>()?.OriginalPath     ?? request.Path)     +
+                          request.QueryString
+                };
 
                 if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
                 {
@@ -880,6 +897,11 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is { Items.Count: > 0 })
             {
@@ -887,7 +909,19 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 context.LoginHint         = GetProperty(properties, Properties.LoginHint);
                 context.ProviderName      = GetProperty(properties, Properties.ProviderName);
                 context.RegistrationId    = GetProperty(properties, Properties.RegistrationId);
-                context.TargetLinkUri     = properties.RedirectUri;
+
+                context.TargetLinkUri = properties.RedirectUri switch
+                {
+                    // If a return URL - local or not - was explicitly set in the authentication properties, always honor it.
+                    { Length: > 0 } uri => uri,
+
+                    // If no return URL was explicitly set in the authentication properties (e.g because
+                    // the challenge was triggered automatically by ASP.NET Core or because no return URL
+                    // was specified by the user), use the current location as the default target link URI.
+                    _ => (request.HttpContext.Features.Get<IAuthenticationFeature>()?.OriginalPathBase ?? request.PathBase) +
+                         (request.HttpContext.Features.Get<IAuthenticationFeature>()?.OriginalPath     ?? request.Path)     +
+                          request.QueryString
+                };
 
                 if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
                 {

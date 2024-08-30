@@ -573,6 +573,11 @@ public static partial class OpenIddictClientOwinHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // This handler only applies to OWIN requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is not { Dictionary.Count: > 0 })
             {
@@ -587,7 +592,16 @@ public static partial class OpenIddictClientOwinHandlers
             context.RegistrationId      = GetProperty(properties, Properties.RegistrationId);
             context.ResponseMode        = GetProperty(properties, Properties.ResponseMode);
             context.ResponseType        = GetProperty(properties, Properties.ResponseType);
-            context.TargetLinkUri       = properties.RedirectUri;
+
+            context.TargetLinkUri = properties.RedirectUri switch
+            {
+                // If a return URL - local or not - was explicitly set in the authentication properties, always honor it.
+                { Length: > 0 } uri => uri,
+
+                // If no return URL was explicitly set in the authentication properties (e.g because no return
+                // URL was specified by the user), use the current address as the default target link URI.
+                _ => request.PathBase + request.Path + request.QueryString
+            };
 
             if (properties.Dictionary.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
             {
@@ -915,6 +929,11 @@ public static partial class OpenIddictClientOwinHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // This handler only applies to OWIN requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is not { Dictionary.Count: > 0 })
             {
@@ -925,7 +944,16 @@ public static partial class OpenIddictClientOwinHandlers
             context.LoginHint         = GetProperty(properties, Properties.LoginHint);
             context.ProviderName      = GetProperty(properties, Properties.ProviderName);
             context.RegistrationId    = GetProperty(properties, Properties.RegistrationId);
-            context.TargetLinkUri     = properties.RedirectUri;
+
+            context.TargetLinkUri = properties.RedirectUri switch
+            {
+                // If a return URL - local or not - was explicitly set in the authentication properties, always honor it.
+                { Length: > 0 } uri => uri,
+
+                // If no return URL was explicitly set in the authentication properties (e.g because no return
+                // URL was specified by the user), use the current address as the default target link URI.
+                _ => request.PathBase + request.Path + request.QueryString
+            };
 
             if (properties.Dictionary.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
             {
