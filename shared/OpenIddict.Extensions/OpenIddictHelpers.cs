@@ -1387,7 +1387,7 @@ internal static class OpenIddictHelpers
             {
                 foreach (var entry in _expandingAccumulator)
                 {
-                    _accumulator[entry.Key] = new StringValues(entry.Value.ToArray());
+                    _accumulator[entry.Key] = new StringValues([.. entry.Value]);
                 }
             }
 

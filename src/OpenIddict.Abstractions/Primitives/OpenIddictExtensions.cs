@@ -660,7 +660,7 @@ public static class OpenIddictExtensions
                     }
                 }
 
-                builder.Add(group.Key, destinations.ToArray());
+                builder.Add(group.Key, [.. destinations]);
             }
         }
 
@@ -697,7 +697,7 @@ public static class OpenIddictExtensions
                     }
                 }
 
-                builder.Add(group.Key, destinations.ToArray());
+                builder.Add(group.Key, [.. destinations]);
             }
         }
 
