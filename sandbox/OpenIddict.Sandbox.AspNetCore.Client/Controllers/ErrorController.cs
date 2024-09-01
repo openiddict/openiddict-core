@@ -12,21 +12,20 @@ namespace OpenIddict.Sandbox.AspNetCore.Client;
 
 public class ErrorController : Controller
 {
-    [HttpGet, HttpPost, Route("~/error")]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true), Route("~/error")]
     public IActionResult Error()
     {
-        // If the error was not caused by an invalid
-        // OIDC request, display a generic error page.
+        // If the error originated from the OpenIddict client, render the error details.
         var response = HttpContext.GetOpenIddictClientResponse();
-        if (response is null)
+        if (response is not null)
         {
-            return View(new ErrorViewModel());
+            return View(new ErrorViewModel
+            {
+                Error = response.Error,
+                ErrorDescription = response.ErrorDescription
+            });
         }
 
-        return View(new ErrorViewModel
-        {
-            Error = response.Error,
-            ErrorDescription = response.ErrorDescription
-        });
+        return View(new ErrorViewModel());
     }
 }
