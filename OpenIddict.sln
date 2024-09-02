@@ -61,7 +61,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{6E8E862C-3F2
 	ProjectSection(SolutionItems) = preProject
 		eng\AfterTargetFrameworkInference.targets = eng\AfterTargetFrameworkInference.targets
 		eng\Build.props = eng\Build.props
-		eng\CodeAnalysis.ruleset = eng\CodeAnalysis.ruleset
 		eng\key.snk = eng\key.snk
 		eng\Signing.props = eng\Signing.props
 		eng\Tools.props = eng\Tools.props
@@ -72,6 +71,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{6E8E862C-3F2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{F6F3C8E0-BBD7-41A5-9E20-385DC185DBC0}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		Build.cmd = Build.cmd
