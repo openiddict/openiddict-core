@@ -15,7 +15,6 @@
     <DebugType>portable</DebugType>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <SuppressSymbolPackageFormatValidation>true</SuppressSymbolPackageFormatValidation>
-    <CodeAnalysisRuleset>$(MSBuildThisFileDirectory)eng\CodeAnalysis.ruleset</CodeAnalysisRuleset>
     <EnableXlfLocalization>false</EnableXlfLocalization>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
