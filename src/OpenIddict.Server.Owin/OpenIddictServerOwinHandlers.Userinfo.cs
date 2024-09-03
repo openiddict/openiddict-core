@@ -10,29 +10,29 @@ namespace OpenIddict.Server.Owin;
 
 public static partial class OpenIddictServerOwinHandlers
 {
-    public static class Userinfo
+    public static class UserInfo
     {
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Userinfo request extraction:
+             * UserInfo request extraction:
              */
-            ExtractGetOrPostRequest<ExtractUserinfoRequestContext>.Descriptor,
-            ExtractAccessToken<ExtractUserinfoRequestContext>.Descriptor,
+            ExtractGetOrPostRequest<ExtractUserInfoRequestContext>.Descriptor,
+            ExtractAccessToken<ExtractUserInfoRequestContext>.Descriptor,
 
             /*
-             * Userinfo request handling:
+             * UserInfo request handling:
              */
-            EnablePassthroughMode<HandleUserinfoRequestContext, RequireUserinfoEndpointPassthroughEnabled>.Descriptor,
+            EnablePassthroughMode<HandleUserInfoRequestContext, RequireUserInfoEndpointPassthroughEnabled>.Descriptor,
 
             /*
-             * Userinfo response processing:
+             * UserInfo response processing:
              */
-            AttachHttpResponseCode<ApplyUserinfoResponseContext>.Descriptor,
-            AttachOwinResponseChallenge<ApplyUserinfoResponseContext>.Descriptor,
-            SuppressFormsAuthenticationRedirect<ApplyUserinfoResponseContext>.Descriptor,
-            AttachWwwAuthenticateHeader<ApplyUserinfoResponseContext>.Descriptor,
-            ProcessChallengeErrorResponse<ApplyUserinfoResponseContext>.Descriptor,
-            ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor
+            AttachHttpResponseCode<ApplyUserInfoResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyUserInfoResponseContext>.Descriptor,
+            SuppressFormsAuthenticationRedirect<ApplyUserInfoResponseContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ApplyUserInfoResponseContext>.Descriptor,
+            ProcessChallengeErrorResponse<ApplyUserInfoResponseContext>.Descriptor,
+            ProcessJsonResponse<ApplyUserInfoResponseContext>.Descriptor
         ]);
     }
 }

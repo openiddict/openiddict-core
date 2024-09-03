@@ -96,7 +96,7 @@ public class AuthenticationController : Controller
         context.Authentication.SignOut(CookieAuthenticationDefaults.AuthenticationType);
 
         // Extract the client registration identifier and retrieve the associated server configuration.
-        // If the provider is known to support remote sign-out, ask OpenIddict to initiate a logout request.
+        // If the provider is known to support remote sign-out, ask OpenIddict to initiate a end session request.
         if (identity.FindFirst(Claims.Private.RegistrationId)?.Value is string identifier &&
             await _service.GetServerConfigurationByRegistrationIdAsync(identifier) is { EndSessionEndpoint: Uri })
         {

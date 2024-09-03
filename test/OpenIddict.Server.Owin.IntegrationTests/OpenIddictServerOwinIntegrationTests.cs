@@ -34,9 +34,9 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate/properties");
+            options.SetUserInfoEndpointUris("/authenticate/properties");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -85,9 +85,9 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate/properties");
+            options.SetUserInfoEndpointUris("/authenticate/properties");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -249,7 +249,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
     [InlineData("/connect/authorize")]
     [InlineData("/connect/device")]
     [InlineData("/connect/introspect")]
-    [InlineData("/connect/logout")]
+    [InlineData("/connect/endsession")]
     [InlineData("/connect/revoke")]
     [InlineData("/connect/token")]
     [InlineData("/connect/userinfo")]
@@ -283,7 +283,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
     [InlineData("/connect/authorize")]
     [InlineData("/connect/device")]
     [InlineData("/connect/introspect")]
-    [InlineData("/connect/logout")]
+    [InlineData("/connect/endsession")]
     [InlineData("/connect/revoke")]
     [InlineData("/connect/token")]
     [InlineData("/connect/userinfo")]
@@ -325,7 +325,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
     [InlineData("/connect/authorize")]
     [InlineData("/connect/device")]
     [InlineData("/connect/introspect")]
-    [InlineData("/connect/logout")]
+    [InlineData("/connect/endsession")]
     [InlineData("/connect/revoke")]
     [InlineData("/connect/token")]
     [InlineData("/connect/userinfo")]
@@ -441,9 +441,9 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetLogoutEndpointUris("/signout/custom");
+            options.SetEndSessionEndpointUris("/signout/custom");
 
-            options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+            options.AddEventHandler<HandleEndSessionRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -480,9 +480,9 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetLogoutEndpointUris("/signout/custom");
+            options.SetEndSessionEndpointUris("/signout/custom");
 
-            options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+            options.AddEventHandler<HandleEndSessionRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();

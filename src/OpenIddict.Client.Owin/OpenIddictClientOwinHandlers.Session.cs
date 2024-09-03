@@ -15,7 +15,7 @@ public static partial class OpenIddictClientOwinHandlers
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Session request processing:
+             * End session request processing:
              */
             ProcessQueryRequest.Descriptor,
 
@@ -39,16 +39,16 @@ public static partial class OpenIddictClientOwinHandlers
         ]);
 
         /// <summary>
-        /// Contains the logic responsible for processing authorization requests using 302 redirects.
+        /// Contains the logic responsible for processing end session requests using 302 redirects.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public sealed class ProcessQueryRequest : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public sealed class ProcessQueryRequest : IOpenIddictClientHandler<ApplyEndSessionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyEndSessionRequestContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessQueryRequest>()
                     .SetOrder(250_000)
@@ -56,7 +56,7 @@ public static partial class OpenIddictClientOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutRequestContext context)
+            public ValueTask HandleAsync(ApplyEndSessionRequestContext context)
             {
                 if (context is null)
                 {

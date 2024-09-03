@@ -414,10 +414,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // limitation, the userinfo endpoint is replaced by the generic /me endpoint URI.
                 if (context.Registration.ProviderType is ProviderTypes.Atlassian)
                 {
-                    context.Configuration.UserinfoEndpoint = new Uri("https://api.atlassian.com/me", UriKind.Absolute);
+                    context.Configuration.UserInfoEndpoint = new Uri("https://api.atlassian.com/me", UriKind.Absolute);
                 }
 
-                // While Auth0 exposes an OpenID Connect-compliant logout endpoint, its address is not returned
+                // While Auth0 exposes an OpenID Connect-compliant end session endpoint, its address is not returned
                 // as part of the configuration document. To ensure RP-initiated logout is supported with Auth0,
                 // "end_session_endpoint" is manually computed using the issuer URI and added to the configuration.
                 else if (context.Registration.ProviderType is ProviderTypes.Auth0)
@@ -439,7 +439,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // in its configuration document. To work around that, the endpoint URI is manually added here.
                 else if (context.Registration.ProviderType is ProviderTypes.OrangeFrance)
                 {
-                    context.Configuration.UserinfoEndpoint ??=
+                    context.Configuration.UserInfoEndpoint ??=
                         new Uri("https://api.orange.com/openidconnect/fr/v1/userinfo", UriKind.Absolute);
                 }
 
@@ -458,7 +458,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/revoke", UriKind.Absolute);
                     context.Configuration.TokenEndpoint =
                         new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token", UriKind.Absolute);
-                    context.Configuration.UserinfoEndpoint =
+                    context.Configuration.UserInfoEndpoint =
                         new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token/userinfo", UriKind.Absolute);
                 }
 

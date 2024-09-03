@@ -561,7 +561,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no userinfo request is expected to be sent.
     /// </summary>
-    public sealed class RequireUserinfoRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireUserInfoRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
@@ -571,14 +571,14 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.SendUserinfoRequest);
+            return new(context.SendUserInfoRequest);
         }
     }
 
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no userinfo token is extracted.
     /// </summary>
-    public sealed class RequireUserinfoTokenExtracted : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireUserInfoTokenExtracted : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
@@ -588,14 +588,14 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.ExtractUserinfoToken);
+            return new(context.ExtractUserInfoToken);
         }
     }
 
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no userinfo token principal is available.
     /// </summary>
-    public sealed class RequireUserinfoTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireUserInfoTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
@@ -605,14 +605,14 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.UserinfoTokenPrincipal is not null);
+            return new(context.UserInfoTokenPrincipal is not null);
         }
     }
 
     /// <summary>
     /// Represents a filter that excludes the associated handlers if userinfo validation was disabled.
     /// </summary>
-    public sealed class RequireUserinfoValidationEnabled : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireUserInfoValidationEnabled : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
@@ -622,7 +622,7 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(!context.DisableUserinfoValidation);
+            return new(!context.DisableUserInfoValidation);
         }
     }
 

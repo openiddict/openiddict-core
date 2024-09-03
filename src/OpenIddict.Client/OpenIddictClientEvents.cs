@@ -373,7 +373,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the URI of the userinfo endpoint, if applicable.
         /// </summary>
-        public Uri? UserinfoEndpoint { get; set; }
+        public Uri? UserInfoEndpoint { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a token request should be sent.
@@ -383,7 +383,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether a token request should be sent.
         /// </summary>
-        public bool SendUserinfoRequest { get; set; }
+        public bool SendUserInfoRequest { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
@@ -455,7 +455,7 @@ public static partial class OpenIddictClientEvents
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool ExtractUserinfoToken { get; set; }
+        public bool ExtractUserInfoToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
@@ -527,7 +527,7 @@ public static partial class OpenIddictClientEvents
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool RequireUserinfoToken { get; set; }
+        public bool RequireUserInfoToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the authorization
@@ -599,7 +599,7 @@ public static partial class OpenIddictClientEvents
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool ValidateUserinfoToken { get; set; }
+        public bool ValidateUserInfoToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid authorization code
@@ -671,7 +671,7 @@ public static partial class OpenIddictClientEvents
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool RejectUserinfoToken { get; set; }
+        public bool RejectUserInfoToken { get; set; }
 
         /// <summary>
         /// Gets or sets the authorization code to validate, if applicable.
@@ -736,7 +736,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the userinfo token to validate, if applicable.
         /// </summary>
-        public string? UserinfoToken { get; set; }
+        public string? UserInfoToken { get; set; }
 
         /// <summary>
         /// Gets or sets the principal extracted from the authorization code, if applicable.
@@ -781,7 +781,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the principal extracted from the userinfo token, if applicable.
         /// </summary>
-        public ClaimsPrincipal? UserinfoTokenPrincipal { get; set; }
+        public ClaimsPrincipal? UserInfoTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the request sent to the token endpoint, if applicable.
@@ -796,12 +796,12 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the request sent to the userinfo endpoint, if applicable.
         /// </summary>
-        public OpenIddictRequest? UserinfoRequest { get; set; }
+        public OpenIddictRequest? UserInfoRequest { get; set; }
 
         /// <summary>
         /// Gets or sets the response returned by the userinfo endpoint, if applicable.
         /// </summary>
-        public OpenIddictResponse? UserinfoResponse { get; set; }
+        public OpenIddictResponse? UserInfoResponse { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a client assertion
@@ -862,7 +862,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets a boolean indicating whether userinfo retrieval should be disabled.
         /// </summary>
-        public bool DisableUserinfoRetrieval { get; set; }
+        public bool DisableUserInfoRetrieval { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether userinfo validation should be disabled.
@@ -870,7 +870,7 @@ public static partial class OpenIddictClientEvents
         /// <remarks>
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
-        public bool DisableUserinfoValidation { get; set; }
+        public bool DisableUserInfoValidation { get; set; }
     }
 
     /// <summary>

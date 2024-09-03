@@ -113,7 +113,7 @@ public partial class MainWindow : Window, IWpfShell
                 // Ask OpenIddict to initiate the logout flow (typically, by starting the system browser).
                 var result = await _service.SignOutInteractivelyAsync(new()
                 {
-                    AdditionalLogoutRequestParameters = parameters,
+                    AdditionalEndSessionRequestParameters = parameters,
                     CancellationToken = source.Token,
                     ProviderName = provider
                 });

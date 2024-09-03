@@ -1037,8 +1037,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     TokenEndpoint = new Uri($""{{ environment.configuration.token_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
-                    {{~ if environment.configuration.userinfo_endpoint ~}}
-                    UserinfoEndpoint = new Uri($""{{ environment.configuration.userinfo_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    {{~ if environment.configuration.user_info_endpoint ~}}
+                    UserInfoEndpoint = new Uri($""{{ environment.configuration.user_info_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     CodeChallengeMethodsSupported =
@@ -1157,7 +1157,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                     IntrospectionEndpoint = (string?) configuration.Attribute("IntrospectionEndpoint"),
                                     RevocationEndpoint = (string?) configuration.Attribute("RevocationEndpoint"),
                                     TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
-                                    UserinfoEndpoint = (string?) configuration.Attribute("UserinfoEndpoint"),
+                                    UserInfoEndpoint = (string?) configuration.Attribute("UserInfoEndpoint"),
 
                                     CodeChallengeMethodsSupported = configuration.Elements("CodeChallengeMethod").ToList() switch
                                     {

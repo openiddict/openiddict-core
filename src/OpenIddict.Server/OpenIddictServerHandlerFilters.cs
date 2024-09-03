@@ -216,23 +216,6 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if the request is not a cryptography request.
-    /// </summary>
-    public sealed class RequireCryptographyRequest : IOpenIddictServerHandlerFilter<BaseContext>
-    {
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(context.EndpointType is OpenIddictServerEndpointType.Cryptography);
-        }
-    }
-
-    /// <summary>
     /// Represents a filter that excludes the associated handlers if the degraded mode was not enabled.
     /// </summary>
     public sealed class RequireDegradedModeDisabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -246,6 +229,23 @@ public static class OpenIddictServerHandlerFilters
             }
 
             return new(!context.Options.EnableDegradedMode);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a device request.
+    /// </summary>
+    public sealed class RequireDeviceAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.EndpointType is OpenIddictServerEndpointType.DeviceAuthorization);
         }
     }
 
@@ -284,23 +284,6 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if the request is not a device request.
-    /// </summary>
-    public sealed class RequireDeviceRequest : IOpenIddictServerHandlerFilter<BaseContext>
-    {
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(context.EndpointType is OpenIddictServerEndpointType.Device);
-        }
-    }
-
-    /// <summary>
     /// Represents a filter that excludes the associated handlers if endpoint permissions were disabled.
     /// </summary>
     public sealed class RequireEndpointPermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -314,6 +297,40 @@ public static class OpenIddictServerHandlerFilters
             }
 
             return new(!context.Options.IgnoreEndpointPermissions);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a end session request.
+    /// </summary>
+    public sealed class RequireEndSessionRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.EndpointType is OpenIddictServerEndpointType.EndSession);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a verification request.
+    /// </summary>
+    public sealed class RequireEndUserVerificationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.EndpointType is OpenIddictServerEndpointType.EndUserVerification);
         }
     }
 
@@ -403,6 +420,23 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a JSON Web Key Set request.
+    /// </summary>
+    public sealed class RequireJsonWebKeySetRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.EndpointType is OpenIddictServerEndpointType.JsonWebKeySet);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the selected token format is not JSON Web Token.
     /// </summary>
     public sealed class RequireJsonWebTokenFormat : IOpenIddictServerHandlerFilter<GenerateTokenContext>
@@ -416,23 +450,6 @@ public static class OpenIddictServerHandlerFilters
             }
 
             return new(context.TokenFormat is TokenFormats.Jwt);
-        }
-    }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if the request is not a logout request.
-    /// </summary>
-    public sealed class RequireLogoutRequest : IOpenIddictServerHandlerFilter<BaseContext>
-    {
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(context.EndpointType is OpenIddictServerEndpointType.Logout);
         }
     }
 
@@ -745,7 +762,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a userinfo request.
     /// </summary>
-    public sealed class RequireUserinfoRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireUserInfoRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
@@ -755,24 +772,7 @@ public static class OpenIddictServerHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.EndpointType is OpenIddictServerEndpointType.Userinfo);
-        }
-    }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if the request is not a verification request.
-    /// </summary>
-    public sealed class RequireVerificationRequest : IOpenIddictServerHandlerFilter<BaseContext>
-    {
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(context.EndpointType is OpenIddictServerEndpointType.Verification);
+            return new(context.EndpointType is OpenIddictServerEndpointType.UserInfo);
         }
     }
 }

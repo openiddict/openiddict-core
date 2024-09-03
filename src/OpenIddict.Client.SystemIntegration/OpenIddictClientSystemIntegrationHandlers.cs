@@ -60,7 +60,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         RestoreBackchannelIdentityTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreBackchannelAccessTokenPrincipalFromMarshalledAuthentication.Descriptor,
         RestoreRefreshTokenPrincipalFromMarshalledAuthentication.Descriptor,
-        RestoreUserinfoDetailsFromMarshalledAuthentication.Descriptor,
+        RestoreUserInfoDetailsFromMarshalledAuthentication.Descriptor,
         RestoreMergedPrincipalFromMarshalledAuthentication.Descriptor,
 
         CompleteAuthenticationOperation.Descriptor,
@@ -1506,11 +1506,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     /// Contains the logic responsible for restoring the userinfo details
     /// from the marshalled authentication context, if applicable.
     /// </summary>
-    public sealed class RestoreUserinfoDetailsFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class RestoreUserInfoDetailsFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
 
-        public RestoreUserinfoDetailsFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
+        public RestoreUserInfoDetailsFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
             => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
 
         /// <summary>
@@ -1519,8 +1519,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAuthenticationNonce>()
-                .UseSingletonHandler<RestoreUserinfoDetailsFromMarshalledAuthentication>()
-                .SetOrder(ValidateUserinfoTokenSubject.Descriptor.Order + 500)
+                .UseSingletonHandler<RestoreUserInfoDetailsFromMarshalledAuthentication>()
+                .SetOrder(ValidateUserInfoTokenSubject.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -1534,14 +1534,14 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
 
-            (context.UserinfoResponse, context.UserinfoTokenPrincipal, context.UserinfoToken) = context.EndpointType switch
+            (context.UserInfoResponse, context.UserInfoTokenPrincipal, context.UserInfoToken) = context.EndpointType switch
             {
                 // When the authentication context is marshalled, restore the userinfo details from the other instance.
                 OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => (notification.UserinfoResponse, notification.UserinfoTokenPrincipal, notification.UserinfoToken),
+                    => (notification.UserInfoResponse, notification.UserInfoTokenPrincipal, notification.UserInfoToken),
 
                 // Otherwise, don't alter the current context.
-                _ => (context.UserinfoResponse, context.UserinfoTokenPrincipal, context.UserinfoToken)
+                _ => (context.UserInfoResponse, context.UserInfoTokenPrincipal, context.UserInfoToken)
             };
 
             return default;

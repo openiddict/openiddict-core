@@ -263,13 +263,13 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.SetAuthorizationEndpointUris("https://www.fabrikam.com/path/authorization_endpoint")
-                   .SetCryptographyEndpointUris("https://www.fabrikam.com/path/cryptography_endpoint")
-                   .SetDeviceEndpointUris("https://www.fabrikam.com/path/device_endpoint")
+                   .SetJsonWebKeySetEndpointUris("https://www.fabrikam.com/path/cryptography_endpoint")
+                   .SetDeviceAuthorizationEndpointUris("https://www.fabrikam.com/path/device_endpoint")
                    .SetIntrospectionEndpointUris("https://www.fabrikam.com/path/introspection_endpoint")
-                   .SetLogoutEndpointUris("https://www.fabrikam.com/path/logout_endpoint")
+                   .SetEndSessionEndpointUris("https://www.fabrikam.com/path/logout_endpoint")
                    .SetRevocationEndpointUris("https://www.fabrikam.com/path/revocation_endpoint")
                    .SetTokenEndpointUris("https://www.fabrikam.com/path/token_endpoint")
-                   .SetUserinfoEndpointUris("https://www.fabrikam.com/path/userinfo_endpoint");
+                   .SetUserInfoEndpointUris("https://www.fabrikam.com/path/userinfo_endpoint");
         });
 
         await using var client = await server.CreateClientAsync();
@@ -303,7 +303,7 @@ public abstract partial class OpenIddictServerIntegrationTests
             (string?) response[Metadata.TokenEndpoint]);
 
         Assert.Equal("https://www.fabrikam.com/path/userinfo_endpoint",
-            (string?) response[Metadata.UserinfoEndpoint]);
+            (string?) response[Metadata.UserInfoEndpoint]);
     }
 
     [Fact]
@@ -313,13 +313,13 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.SetAuthorizationEndpointUris("path/authorization_endpoint")
-                   .SetCryptographyEndpointUris("path/cryptography_endpoint")
-                   .SetDeviceEndpointUris("path/device_endpoint")
+                   .SetJsonWebKeySetEndpointUris("path/cryptography_endpoint")
+                   .SetDeviceAuthorizationEndpointUris("path/device_endpoint")
                    .SetIntrospectionEndpointUris("path/introspection_endpoint")
-                   .SetLogoutEndpointUris("path/logout_endpoint")
+                   .SetEndSessionEndpointUris("path/logout_endpoint")
                    .SetRevocationEndpointUris("path/revocation_endpoint")
                    .SetTokenEndpointUris("path/token_endpoint")
-                   .SetUserinfoEndpointUris("path/userinfo_endpoint");
+                   .SetUserInfoEndpointUris("path/userinfo_endpoint");
         });
 
         await using var client = await server.CreateClientAsync();
@@ -335,7 +335,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("http://localhost/path/logout_endpoint", (string?) response[Metadata.EndSessionEndpoint]);
         Assert.Equal("http://localhost/path/revocation_endpoint", (string?) response[Metadata.RevocationEndpoint]);
         Assert.Equal("http://localhost/path/token_endpoint", (string?) response[Metadata.TokenEndpoint]);
-        Assert.Equal("http://localhost/path/userinfo_endpoint", (string?) response[Metadata.UserinfoEndpoint]);
+        Assert.Equal("http://localhost/path/userinfo_endpoint", (string?) response[Metadata.UserInfoEndpoint]);
     }
 
     [Fact]
@@ -345,13 +345,13 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.SetAuthorizationEndpointUris("path/authorization_endpoint")
-                   .SetCryptographyEndpointUris("path/cryptography_endpoint")
-                   .SetDeviceEndpointUris("path/device_endpoint")
+                   .SetJsonWebKeySetEndpointUris("path/cryptography_endpoint")
+                   .SetDeviceAuthorizationEndpointUris("path/device_endpoint")
                    .SetIntrospectionEndpointUris("path/introspection_endpoint")
-                   .SetLogoutEndpointUris("path/logout_endpoint")
+                   .SetEndSessionEndpointUris("path/logout_endpoint")
                    .SetRevocationEndpointUris("path/revocation_endpoint")
                    .SetTokenEndpointUris("path/token_endpoint")
-                   .SetUserinfoEndpointUris("path/userinfo_endpoint");
+                   .SetUserInfoEndpointUris("path/userinfo_endpoint");
 
             options.AddEventHandler<HandleConfigurationRequestContext>(builder =>
             {
@@ -379,7 +379,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("https://contoso.com/issuer/path/logout_endpoint", (string?) response[Metadata.EndSessionEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/revocation_endpoint", (string?) response[Metadata.RevocationEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/token_endpoint", (string?) response[Metadata.TokenEndpoint]);
-        Assert.Equal("https://contoso.com/issuer/path/userinfo_endpoint", (string?) response[Metadata.UserinfoEndpoint]);
+        Assert.Equal("https://contoso.com/issuer/path/userinfo_endpoint", (string?) response[Metadata.UserInfoEndpoint]);
     }
 
     [Fact]
@@ -391,8 +391,8 @@ public abstract partial class OpenIddictServerIntegrationTests
             options.Configure(options => options.GrantTypes.Clear());
             options.Configure(options => options.GrantTypes.Add(GrantTypes.Implicit));
             options.Configure(options => options.ResponseTypes.Clear());
-            options.Configure(options => options.DeviceEndpointUris.Clear());
-            options.Configure(options => options.VerificationEndpointUris.Clear());
+            options.Configure(options => options.DeviceAuthorizationEndpointUris.Clear());
+            options.Configure(options => options.EndUserVerificationEndpointUris.Clear());
             options.SetTokenEndpointUris(Array.Empty<Uri>());
         });
 
@@ -514,13 +514,13 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleConfigurationRequest_NoClientAuthenticationMethodIsIncludedWhenDeviceEndpointIsDisabled()
+    public async Task HandleConfigurationRequest_NoClientAuthenticationMethodIsIncludedWhenDeviceAuthorizationEndpointIsDisabled()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
-            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
         });
 
         await using var client = await server.CreateClientAsync();
@@ -533,7 +533,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenDeviceEndpointIsEnabled()
+    public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenDeviceAuthorizationEndpointIsEnabled()
     {
         // Arrange
         await using var server = await CreateServerAsync(options => options.Configure(options =>
@@ -1067,7 +1067,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(nameof(HttpMethod.Post))]
     [InlineData(nameof(HttpMethod.Put))]
     [InlineData(nameof(HttpMethod.Trace))]
-    public async Task ExtractCryptographyRequest_UnexpectedMethodReturnsAnError(string method)
+    public async Task ExtractJsonWebKeySetRequest_UnexpectedMethodReturnsAnError(string method)
     {
         // Arrange
         await using var server = await CreateServerAsync();
@@ -1090,14 +1090,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ExtractCryptographyRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ExtractJsonWebKeySetRequest_AllowsRejectingRequest(string error, string description, string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ExtractCryptographyRequestContext>(builder =>
+            options.AddEventHandler<ExtractJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Reject(error, description, uri);
@@ -1118,14 +1118,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ExtractCryptographyRequest_AllowsHandlingResponse()
+    public async Task ExtractJsonWebKeySetRequest_AllowsHandlingResponse()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ExtractCryptographyRequestContext>(builder =>
+            options.AddEventHandler<ExtractJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Transaction.SetProperty("custom_response", new
@@ -1149,14 +1149,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ExtractCryptographyRequest_AllowsSkippingHandler()
+    public async Task ExtractJsonWebKeySetRequest_AllowsSkippingHandler()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ExtractCryptographyRequestContext>(builder =>
+            options.AddEventHandler<ExtractJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -1182,14 +1182,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ValidateCryptographyRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ValidateJsonWebKeySetRequest_AllowsRejectingRequest(string error, string description, string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ValidateCryptographyRequestContext>(builder =>
+            options.AddEventHandler<ValidateJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Reject(error, description, uri);
@@ -1210,14 +1210,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateCryptographyRequest_AllowsHandlingResponse()
+    public async Task ValidateJsonWebKeySetRequest_AllowsHandlingResponse()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ValidateCryptographyRequestContext>(builder =>
+            options.AddEventHandler<ValidateJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Transaction.SetProperty("custom_response", new
@@ -1241,14 +1241,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateCryptographyRequest_AllowsSkippingHandler()
+    public async Task ValidateJsonWebKeySetRequest_AllowsSkippingHandler()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ValidateCryptographyRequestContext>(builder =>
+            options.AddEventHandler<ValidateJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -1275,7 +1275,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(SecurityAlgorithms.EcdsaSha384Signature)]
     [InlineData(SecurityAlgorithms.EcdsaSha512Signature)]
 #endif
-    public async Task HandleCryptographyRequest_UnsupportedSecurityKeysAreIgnored(string algorithm)
+    public async Task HandleJsonWebKeySetRequest_UnsupportedSecurityKeysAreIgnored(string algorithm)
     {
         // Arrange
         var key = Mock.Of<SecurityKey>(mock => !mock.IsSupportedAlgorithm(algorithm));
@@ -1297,7 +1297,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleCryptographyRequest_RsaSecurityKeysAreCorrectlyExposed()
+    public async Task HandleJsonWebKeySetRequest_RsaSecurityKeysAreCorrectlyExposed()
     {
         // Arrange
         var parameters = new RSAParameters
@@ -1352,7 +1352,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         /* d: */ "ALong1stsWvTLufObn3SPfM8s9VsTG73nXv4mkzGFUmB1r7rda+cpYXU99rFV/kX6zBkFl7Y9TZ2ZyZLFnyUpE4j",
         /* x: */ "AS+aCMpMbSO4ga/hUsVIIidqmcQiiT+N9o/5hJ9UVA/vHAKDvWTjuKz+JZfOiR9J+GDUcDZS56UbGG83IosMJMM6",
         /* y: */ "AcYkfsb/kTKpcPhYsRPAYV7ibwTN/CdiAM8QuCElAV6wBGfuX1LUmK6ldDVJjytpSz1EmGvzR0T7UCcZcgITqWc2")]
-    public async Task HandleCryptographyRequest_EcdsaSecurityKeysAreCorrectlyExposed(string oid, string d, string x, string y)
+    public async Task HandleJsonWebKeySetRequest_EcdsaSecurityKeysAreCorrectlyExposed(string oid, string d, string x, string y)
     {
         // Arrange
         var parameters = new ECParameters
@@ -1389,7 +1389,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 #endif
 
     [Fact]
-    public async Task HandleCryptographyRequest_X509CertificatesAreCorrectlyExposed()
+    public async Task HandleJsonWebKeySetRequest_X509CertificatesAreCorrectlyExposed()
     {
         // Arrange
         await using var server = await CreateServerAsync();
@@ -1412,14 +1412,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task HandleCryptographyRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task HandleJsonWebKeySetRequest_AllowsRejectingRequest(string error, string description, string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<HandleCryptographyRequestContext>(builder =>
+            options.AddEventHandler<HandleJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Reject(error, description, uri);
@@ -1440,14 +1440,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleCryptographyRequest_AllowsHandlingResponse()
+    public async Task HandleJsonWebKeySetRequest_AllowsHandlingResponse()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<HandleCryptographyRequestContext>(builder =>
+            options.AddEventHandler<HandleJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Transaction.SetProperty("custom_response", new
@@ -1471,14 +1471,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleCryptographyRequest_AllowsSkippingHandler()
+    public async Task HandleJsonWebKeySetRequest_AllowsSkippingHandler()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<HandleCryptographyRequestContext>(builder =>
+            options.AddEventHandler<HandleJsonWebKeySetRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -1497,14 +1497,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ApplyCryptographyResponse_AllowsHandlingResponse()
+    public async Task ApplyJsonWebKeySetResponse_AllowsHandlingResponse()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ApplyCryptographyResponseContext>(builder =>
+            options.AddEventHandler<ApplyJsonWebKeySetResponseContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Transaction.SetProperty("custom_response", new
@@ -1528,14 +1528,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ApplyCryptographyResponse_ResponseContainsCustomParameters()
+    public async Task ApplyJsonWebKeySetResponse_ResponseContainsCustomParameters()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ApplyCryptographyResponseContext>(builder =>
+            options.AddEventHandler<ApplyJsonWebKeySetResponseContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Response["custom_parameter"] = "custom_value";

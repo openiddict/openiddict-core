@@ -4,8 +4,8 @@
     <h1>Log out</h1>
     <p class="lead text-left">Are you sure you want to sign out?</p>
 
-    <form asp-controller="Authorization" asp-action="Logout" method="post">
-        @* Flow the request parameters so they can be received by the LogoutPost action: *@
+    <form asp-controller="Authorization" asp-action="EndSession" method="post">
+        @* Flow the request parameters so they can be received by the EndSessionPost action: *@
         @foreach (var parameter in Context.Request.HasFormContentType ?
            (IEnumerable<KeyValuePair<string, StringValues>>) Context.Request.Form : Context.Request.Query)
         {

@@ -14,11 +14,11 @@ namespace OpenIddict.Client;
 
 public static partial class OpenIddictClientHandlers
 {
-    public static class Userinfo
+    public static class UserInfo
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Userinfo response handling:
+             * UserInfo response handling:
              */
             ValidateWellKnownParameters.Descriptor,
             HandleErrorResponse.Descriptor,
@@ -28,20 +28,20 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the userinfo response.
         /// </summary>
-        public sealed class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        public sealed class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleUserInfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserinfoResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserInfoResponseContext>()
                     .UseSingletonHandler<ValidateWellKnownParameters>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleUserinfoResponseContext context)
+            public ValueTask HandleAsync(HandleUserInfoResponseContext context)
             {
                 if (context is null)
                 {
@@ -49,7 +49,7 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 // Ignore the response instance if a userinfo token was extracted.
-                if (!string.IsNullOrEmpty(context.UserinfoToken))
+                if (!string.IsNullOrEmpty(context.UserInfoToken))
                 {
                     return default;
                 }
@@ -94,20 +94,20 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the userinfo response.
         /// </summary>
-        public sealed class HandleErrorResponse : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        public sealed class HandleErrorResponse : IOpenIddictClientHandler<HandleUserInfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserinfoResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserInfoResponseContext>()
                     .UseSingletonHandler<HandleErrorResponse>()
                     .SetOrder(ValidateWellKnownParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleUserinfoResponseContext context)
+            public ValueTask HandleAsync(HandleUserInfoResponseContext context)
             {
                 if (context is null)
                 {
@@ -140,20 +140,20 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the claims from the introspection response.
         /// </summary>
-        public sealed class PopulateClaims : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        public sealed class PopulateClaims : IOpenIddictClientHandler<HandleUserInfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserinfoResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserInfoResponseContext>()
                     .UseSingletonHandler<PopulateClaims>()
                     .SetOrder(HandleErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleUserinfoResponseContext context)
+            public ValueTask HandleAsync(HandleUserInfoResponseContext context)
             {
                 if (context is null)
                 {
@@ -163,7 +163,7 @@ public static partial class OpenIddictClientHandlers
                 Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
                 // Ignore the response instance if a userinfo token was extracted.
-                if (!string.IsNullOrEmpty(context.UserinfoToken))
+                if (!string.IsNullOrEmpty(context.UserInfoToken))
                 {
                     return default;
                 }

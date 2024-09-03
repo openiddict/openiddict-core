@@ -312,7 +312,7 @@ public class AuthorizationController : Controller
     #endregion
 
     #region Device flow
-    // Note: to support the device flow, you must provide your own verification endpoint action:
+    // Note: to support the device authorization flow, you must provide your own verification endpoint action:
     [Authorize, HttpGet("~/connect/verify"), IgnoreAntiforgeryToken]
     public async Task<IActionResult> Verify()
     {
@@ -411,15 +411,15 @@ public class AuthorizationController : Controller
         });
     #endregion
 
-    #region Logout support for interactive flows like code and implicit
-    // Note: the logout action is only useful when implementing interactive
+    #region End session support for interactive flows like code and implicit
+    // Note: the end session action is only useful when implementing interactive
     // flows like the authorization code flow or the implicit flow.
 
-    [HttpGet("~/connect/logout")]
-    public IActionResult Logout() => View();
+    [HttpGet("~/connect/endsession")]
+    public IActionResult EndSession() => View();
 
-    [ActionName(nameof(Logout)), HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
-    public async Task<IActionResult> LogoutPost()
+    [ActionName(nameof(EndSession)), HttpPost("~/connect/endsession"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> EndSessionPost()
     {
         // Ask ASP.NET Core Identity to delete the local and external cookies created
         // when the user agent is redirected from the external identity provider

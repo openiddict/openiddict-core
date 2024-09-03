@@ -40,14 +40,14 @@ public static class OpenIddictServerAspNetCoreExtensions
         // Register the built-in filters used by the default OpenIddict ASP.NET Core server event handlers.
         builder.Services.TryAddSingleton<RequireAuthorizationRequestCachingEnabled>();
         builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireEndSessionRequestCachingEnabled>();
+        builder.Services.TryAddSingleton<RequireEndSessionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireHttpRequest>();
-        builder.Services.TryAddSingleton<RequireLogoutRequestCachingEnabled>();
-        builder.Services.TryAddSingleton<RequireLogoutEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
         builder.Services.TryAddSingleton<RequireStatusCodePagesIntegrationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenEndpointPassthroughEnabled>();
-        builder.Services.TryAddSingleton<RequireUserinfoEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireUserInfoEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireVerificationEndpointPassthroughEnabled>();
 
         // Register the option initializer used by the OpenIddict ASP.NET Core server integration services.

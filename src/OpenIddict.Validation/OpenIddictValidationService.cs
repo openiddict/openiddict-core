@@ -233,7 +233,7 @@ public class OpenIddictValidationService
     }
 
     /// <summary>
-    /// Retrieves the security keys exposed by the specified JWKS endpoint.
+    /// Retrieves the security keys exposed by the specified JSON Web Key Set endpoint.
     /// </summary>
     /// <param name="uri">The URI of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -266,17 +266,17 @@ public class OpenIddictValidationService
             var transaction = await factory.CreateTransactionAsync();
 
             var request = new OpenIddictRequest();
-            request = await PrepareCryptographyRequestAsync();
-            request = await ApplyCryptographyRequestAsync();
+            request = await PrepareJsonWebKeySetRequestAsync();
+            request = await ApplyJsonWebKeySetRequestAsync();
 
-            var response = await ExtractCryptographyResponseAsync();
+            var response = await ExtractJsonWebKeySetResponseAsync();
 
-            return await HandleCryptographyResponseAsync() ??
+            return await HandleJsonWebKeySetResponseAsync() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
 
-            async ValueTask<OpenIddictRequest> PrepareCryptographyRequestAsync()
+            async ValueTask<OpenIddictRequest> PrepareJsonWebKeySetRequestAsync()
             {
-                var context = new PrepareCryptographyRequestContext(transaction)
+                var context = new PrepareJsonWebKeySetRequestContext(transaction)
                 {
                     RemoteUri = uri,
                     Request = request
@@ -294,9 +294,9 @@ public class OpenIddictValidationService
                 return context.Request;
             }
 
-            async ValueTask<OpenIddictRequest> ApplyCryptographyRequestAsync()
+            async ValueTask<OpenIddictRequest> ApplyJsonWebKeySetRequestAsync()
             {
-                var context = new ApplyCryptographyRequestContext(transaction)
+                var context = new ApplyJsonWebKeySetRequestContext(transaction)
                 {
                     RemoteUri = uri,
                     Request = request
@@ -316,9 +316,9 @@ public class OpenIddictValidationService
                 return context.Request;
             }
 
-            async ValueTask<OpenIddictResponse> ExtractCryptographyResponseAsync()
+            async ValueTask<OpenIddictResponse> ExtractJsonWebKeySetResponseAsync()
             {
-                var context = new ExtractCryptographyResponseContext(transaction)
+                var context = new ExtractJsonWebKeySetResponseContext(transaction)
                 {
                     RemoteUri = uri,
                     Request = request
@@ -340,9 +340,9 @@ public class OpenIddictValidationService
                 return context.Response;
             }
 
-            async ValueTask<JsonWebKeySet> HandleCryptographyResponseAsync()
+            async ValueTask<JsonWebKeySet> HandleJsonWebKeySetResponseAsync()
             {
-                var context = new HandleCryptographyResponseContext(transaction)
+                var context = new HandleJsonWebKeySetResponseContext(transaction)
                 {
                     Request = request,
                     Response = response

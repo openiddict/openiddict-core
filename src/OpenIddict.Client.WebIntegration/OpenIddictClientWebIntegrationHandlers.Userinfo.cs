@@ -12,18 +12,18 @@ using System.Net.Http.Json;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
-using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.Userinfo;
+using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.UserInfo;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
 
 public static partial class OpenIddictClientWebIntegrationHandlers
 {
-    public static class Userinfo
+    public static class UserInfo
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Userinfo request preparation:
+             * UserInfo request preparation:
              */
             OverrideHttpMethod.Descriptor,
             AttachRequestHeaders.Descriptor,
@@ -32,31 +32,31 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             AttachNonStandardRequestPayload.Descriptor,
 
             /*
-             * Userinfo response extraction:
+             * UserInfo response extraction:
              */
             NormalizeContentType.Descriptor,
-            UnwrapUserinfoResponse.Descriptor,
+            UnwrapUserInfoResponse.Descriptor,
             MapNonStandardResponseParameters.Descriptor,
         ]);
 
         /// <summary>
         /// Contains the logic responsible for overriding the HTTP method for the providers that require it.
         /// </summary>
-        public sealed class OverrideHttpMethod : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        public sealed class OverrideHttpMethod : IOpenIddictClientHandler<PrepareUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserInfoRequestContext>()
                     .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<OverrideHttpMethod>()
-                    .SetOrder(PreparePostHttpRequest<PrepareUserinfoRequestContext>.Descriptor.Order + 250)
+                    .SetOrder(PreparePostHttpRequest<PrepareUserInfoRequestContext>.Descriptor.Order + 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
                 if (context is null)
                 {
@@ -89,21 +89,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for attaching additional
         /// headers to the request for the providers that require it.
         /// </summary>
-        public sealed class AttachRequestHeaders : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        public sealed class AttachRequestHeaders : IOpenIddictClientHandler<PrepareUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserInfoRequestContext>()
                     .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachRequestHeaders>()
-                    .SetOrder(AttachUserAgentHeader<PrepareUserinfoRequestContext>.Descriptor.Order + 250)
+                    .SetOrder(AttachUserAgentHeader<PrepareUserInfoRequestContext>.Descriptor.Order + 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
                 if (context is null)
                 {
@@ -144,13 +144,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for attaching the access token
         /// parameter to the request for the providers that require it.
         /// </summary>
-        public sealed class AttachAccessTokenParameter : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        public sealed class AttachAccessTokenParameter : IOpenIddictClientHandler<PrepareUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserInfoRequestContext>()
                     .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachAccessTokenParameter>()
                     .SetOrder(AttachBearerAccessToken.Descriptor.Order + 250)
@@ -158,7 +158,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
                 if (context is null)
                 {
@@ -209,20 +209,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for attaching non-standard
         /// parameters to the request for the providers that require it.
         /// </summary>
-        public sealed class AttachNonStandardParameters : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        public sealed class AttachNonStandardParameters : IOpenIddictClientHandler<PrepareUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserInfoRequestContext>()
                     .UseSingletonHandler<AttachNonStandardParameters>()
-                    .SetOrder(AttachHttpParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 250)
+                    .SetOrder(AttachHttpParameters<PrepareUserInfoRequestContext>.Descriptor.Order - 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
                 if (context is null)
                 {
@@ -243,21 +243,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <summary>
         /// Contains the logic responsible for attaching a non-standard payload for the providers that require it.
         /// </summary>
-        public sealed class AttachNonStandardRequestPayload : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        public sealed class AttachNonStandardRequestPayload : IOpenIddictClientHandler<PrepareUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserInfoRequestContext>()
                     .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<AttachNonStandardRequestPayload>()
-                    .SetOrder(AttachHttpParameters<PrepareUserinfoRequestContext>.Descriptor.Order + 500)
+                    .SetOrder(AttachHttpParameters<PrepareUserInfoRequestContext>.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
                 if (context is null)
                 {
@@ -292,21 +292,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for normalizing the returned content
         /// type of userinfo responses for the providers that require it.
         /// </summary>
-        public sealed class NormalizeContentType : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
+        public sealed class NormalizeContentType : IOpenIddictClientHandler<ExtractUserInfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserInfoResponseContext>()
                     .AddFilter<RequireHttpUri>()
                     .UseSingletonHandler<NormalizeContentType>()
-                    .SetOrder(ExtractUserinfoTokenHttpResponse.Descriptor.Order - 250)
+                    .SetOrder(ExtractUserInfoTokenHttpResponse.Descriptor.Order - 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ExtractUserinfoResponseContext context)
+            public ValueTask HandleAsync(ExtractUserInfoResponseContext context)
             {
                 if (context is null)
                 {
@@ -358,20 +358,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for extracting the userinfo response
         /// from nested JSON nodes (e.g "data") for the providers that require it.
         /// </summary>
-        public sealed class UnwrapUserinfoResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
+        public sealed class UnwrapUserInfoResponse : IOpenIddictClientHandler<ExtractUserInfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
-                    .UseSingletonHandler<UnwrapUserinfoResponse>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserInfoResponseContext>()
+                    .UseSingletonHandler<UnwrapUserInfoResponse>()
                     .SetOrder(int.MaxValue - 50_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ExtractUserinfoResponseContext context)
+            public ValueTask HandleAsync(ExtractUserInfoResponseContext context)
             {
                 if (context is null)
                 {
@@ -458,20 +458,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for mapping non-standard response parameters
         /// to their standard equivalent for the providers that require it.
         /// </summary>
-        public sealed class MapNonStandardResponseParameters : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
+        public sealed class MapNonStandardResponseParameters : IOpenIddictClientHandler<ExtractUserInfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserInfoResponseContext>()
                     .UseSingletonHandler<MapNonStandardResponseParameters>()
-                    .SetOrder(UnwrapUserinfoResponse.Descriptor.Order + 1_000)
+                    .SetOrder(UnwrapUserInfoResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ExtractUserinfoResponseContext context)
+            public ValueTask HandleAsync(ExtractUserInfoResponseContext context)
             {
                 if (context is null)
                 {

@@ -30,7 +30,7 @@ public static partial class OpenIddictClientHandlers
             ExtractLogoutEndpoint.Descriptor,
             ExtractRevocationEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
-            ExtractUserinfoEndpoint.Descriptor,
+            ExtractUserInfoEndpoint.Descriptor,
             ExtractGrantTypes.Descriptor,
             ExtractResponseModes.Descriptor,
             ExtractResponseTypes.Descriptor,
@@ -108,7 +108,7 @@ public static partial class OpenIddictClientHandlers
                     Metadata.Issuer                      or
                     Metadata.JwksUri                     or
                     Metadata.TokenEndpoint               or
-                    Metadata.UserinfoEndpoint
+                    Metadata.UserInfoEndpoint
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as arrays of strings:
@@ -293,7 +293,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the JWKS endpoint URI from the discovery document.
+        /// Contains the logic responsible for extracting the JSON Web Key Set endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractCryptographyEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -431,7 +431,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the logout endpoint URI from the discovery document.
+        /// Contains the logic responsible for extracting the end session endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractLogoutEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -562,14 +562,14 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the userinfo endpoint URI from the discovery document.
         /// </summary>
-        public sealed class ExtractUserinfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractUserInfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<ExtractUserinfoEndpoint>()
+                    .UseSingletonHandler<ExtractUserInfoEndpoint>()
                     .SetOrder(ExtractTokenEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -582,20 +582,20 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var endpoint = (string?) context.Response[Metadata.UserinfoEndpoint];
+                var endpoint = (string?) context.Response[Metadata.UserInfoEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
                 {
                     if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.FormatID2100(Metadata.UserinfoEndpoint),
+                            description: SR.FormatID2100(Metadata.UserInfoEndpoint),
                             uri: SR.FormatID8000(SR.ID2100));
 
                         return default;
                     }
 
-                    context.Configuration.UserinfoEndpoint = uri;
+                    context.Configuration.UserInfoEndpoint = uri;
                 }
 
                 return default;
@@ -1019,22 +1019,22 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for validating the well-known parameters contained in the JWKS response.
+        /// Contains the logic responsible for validating the well-known parameters contained in the JSON Web Key Set response.
         /// </summary>
-        public sealed class ValidateWellKnownCryptographyParameters : IOpenIddictClientHandler<HandleCryptographyResponseContext>
+        public sealed class ValidateWellKnownCryptographyParameters : IOpenIddictClientHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
                     .UseSingletonHandler<ValidateWellKnownCryptographyParameters>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
+            public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
                 if (context is null)
                 {
@@ -1093,22 +1093,22 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for surfacing potential errors from the cryptography response.
+        /// Contains the logic responsible for surfacing potential errors from the JSON Web Key Set response.
         /// </summary>
-        public sealed class HandleCryptographyErrorResponse : IOpenIddictClientHandler<HandleCryptographyResponseContext>
+        public sealed class HandleCryptographyErrorResponse : IOpenIddictClientHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
                     .UseSingletonHandler<HandleCryptographyErrorResponse>()
                     .SetOrder(ValidateWellKnownCryptographyParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
+            public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
                 if (context is null)
                 {
@@ -1136,22 +1136,22 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the signing keys from the JWKS document.
+        /// Contains the logic responsible for extracting the signing keys from the JSON Web Key Set document.
         /// </summary>
-        public sealed class ExtractSigningKeys : IOpenIddictClientHandler<HandleCryptographyResponseContext>
+        public sealed class ExtractSigningKeys : IOpenIddictClientHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
                     .UseSingletonHandler<ExtractSigningKeys>()
                     .SetOrder(HandleCryptographyErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
+            public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
                 if (context is null)
                 {
@@ -1171,7 +1171,7 @@ public static partial class OpenIddictClientHandlers
 
                 for (var index = 0; index < keys.Count; index++)
                 {
-                    // Note: the "use" parameter is defined as optional by the JWKS specification
+                    // Note: the "use" parameter is defined as optional by the JSON Web Key Set specification
                     // but is required by the OpenID Connect discovery specification if both signing
                     // and encryption keys are present in the returned list. If the "use" parameter
                     // is not explicitly specified or has an empty value, assume it is a signing key.
@@ -1261,7 +1261,7 @@ public static partial class OpenIddictClientHandlers
                         }
                     }
 
-                    context.SecurityKeys.Keys.Add(key);
+                    context.JsonWebKeySet.Keys.Add(key);
                 }
 
                 return default;

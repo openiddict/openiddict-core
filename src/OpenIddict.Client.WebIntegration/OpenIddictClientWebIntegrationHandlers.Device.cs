@@ -73,9 +73,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     if (!string.IsNullOrEmpty(context.Response.UserCode) &&
                         Uri.TryCreate((string?) context.Response["verification_url"], UriKind.Absolute, out Uri? uri))
                     {
-                        // Note: the user verification URI returned by Huawei points to an endpoint that always returns
+                        // Note: the end-user verification URI returned by Huawei points to an endpoint that always returns
                         // a JSON error when it is accessed without the "user_code" parameter attached. To ensure the
-                        // user verification URI returned by the OpenIddict client service to the caller can be used
+                        // end-user verification URI returned by the OpenIddict client service to the caller can be used
                         // as-is, both parameters are replaced to always include the user code in the query string.
                         context.Response[Parameters.VerificationUri] =
                         context.Response[Parameters.VerificationUriComplete] = OpenIddictHelpers.AddQueryStringParameter(

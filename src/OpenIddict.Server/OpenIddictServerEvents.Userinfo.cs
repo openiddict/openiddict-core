@@ -15,12 +15,12 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the userinfo endpoint to give the user code
     /// a chance to manually extract the userinfo request from the ambient HTTP context.
     /// </summary>
-    public sealed class ExtractUserinfoRequestContext : BaseValidatingContext
+    public sealed class ExtractUserInfoRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ExtractUserinfoRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ExtractUserInfoRequestContext"/> class.
         /// </summary>
-        public ExtractUserinfoRequestContext(OpenIddictServerTransaction transaction)
+        public ExtractUserInfoRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -39,12 +39,12 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the userinfo endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public sealed class ValidateUserinfoRequestContext : BaseValidatingContext
+    public sealed class ValidateUserInfoRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ValidateUserinfoRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ValidateUserInfoRequestContext"/> class.
         /// </summary>
-        public ValidateUserinfoRequestContext(OpenIddictServerTransaction transaction)
+        public ValidateUserInfoRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -68,12 +68,12 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated userinfo request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public sealed class HandleUserinfoRequestContext : BaseValidatingContext
+    public sealed class HandleUserInfoRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="HandleUserinfoRequestContext"/> class.
+        /// Creates a new instance of the <see cref="HandleUserInfoRequestContext"/> class.
         /// </summary>
-        public HandleUserinfoRequestContext(OpenIddictServerTransaction transaction)
+        public HandleUserInfoRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -194,12 +194,12 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the userinfo response is returned to the caller.
     /// </summary>
-    public sealed class ApplyUserinfoResponseContext : BaseRequestContext
+    public sealed class ApplyUserInfoResponseContext : BaseRequestContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ApplyUserinfoResponseContext"/> class.
+        /// Creates a new instance of the <see cref="ApplyUserInfoResponseContext"/> class.
         /// </summary>
-        public ApplyUserinfoResponseContext(OpenIddictServerTransaction transaction)
+        public ApplyUserInfoResponseContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }

@@ -53,7 +53,7 @@ public sealed class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOpti
 
     /// <summary>
     /// Gets or sets a boolean indicating whether OpenIddict should allow the rest of the request processing pipeline
-    /// to be invoked when returning an error from the interactive authorization and logout endpoints.
+    /// to be invoked when returning an error from the interactive authorization and end session endpoints.
     /// When this option is enabled, special logic must be added to these actions to handle errors, that can be
     /// retrieved using <see cref="OpenIddictClientAspNetCoreHelpers.GetOpenIddictClientResponse(HttpContext)"/>.
     /// </summary>

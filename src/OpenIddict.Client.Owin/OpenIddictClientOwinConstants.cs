@@ -42,7 +42,7 @@ public static class OpenIddictClientOwinConstants
         public const string ResponseType = ".response_type";
         public const string Scope = ".scope";
         public const string StateTokenPrincipal = ".state_token_principal";
-        public const string UserinfoTokenPrincipal = ".userinfo_token_principal";
+        public const string UserInfoTokenPrincipal = ".userinfo_token_principal";
     }
 
     public static class PropertyTypes
@@ -64,6 +64,6 @@ public static class OpenIddictClientOwinConstants
         public const string FrontchannelIdentityToken = "frontchannel_id_token";
         public const string RefreshToken = "refresh_token";
         public const string StateToken = "state_token";
-        public const string UserinfoToken = "userinfo_token";
+        public const string UserInfoToken = "userinfo_token";
     }
 }

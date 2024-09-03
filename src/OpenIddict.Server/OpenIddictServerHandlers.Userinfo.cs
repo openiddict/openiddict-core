@@ -13,27 +13,27 @@ namespace OpenIddict.Server;
 
 public static partial class OpenIddictServerHandlers
 {
-    public static class Userinfo
+    public static class UserInfo
     {
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Userinfo request top-level processing:
+             * UserInfo request top-level processing:
              */
-            ExtractUserinfoRequest.Descriptor,
-            ValidateUserinfoRequest.Descriptor,
-            HandleUserinfoRequest.Descriptor,
-            ApplyUserinfoResponse<ProcessChallengeContext>.Descriptor,
-            ApplyUserinfoResponse<ProcessErrorContext>.Descriptor,
-            ApplyUserinfoResponse<ProcessRequestContext>.Descriptor,
+            ExtractUserInfoRequest.Descriptor,
+            ValidateUserInfoRequest.Descriptor,
+            HandleUserInfoRequest.Descriptor,
+            ApplyUserInfoResponse<ProcessChallengeContext>.Descriptor,
+            ApplyUserInfoResponse<ProcessErrorContext>.Descriptor,
+            ApplyUserInfoResponse<ProcessRequestContext>.Descriptor,
 
             /*
-             * Userinfo request validation:
+             * UserInfo request validation:
              */
             ValidateAccessTokenParameter.Descriptor,
             ValidateAuthentication.Descriptor,
 
             /*
-             * Userinfo request handling:
+             * UserInfo request handling:
              */
             AttachPrincipal.Descriptor,
             AttachAudiences.Descriptor,
@@ -43,11 +43,11 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting userinfo requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ExtractUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractUserInfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ExtractUserinfoRequest(IOpenIddictServerDispatcher dispatcher)
+            public ExtractUserInfoRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -55,8 +55,8 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireUserinfoRequest>()
-                    .UseScopedHandler<ExtractUserinfoRequest>()
+                    .AddFilter<RequireUserInfoRequest>()
+                    .UseScopedHandler<ExtractUserInfoRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -69,7 +69,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ExtractUserinfoRequestContext(context.Transaction);
+                var notification = new ExtractUserInfoRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -105,11 +105,11 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating userinfo requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ValidateUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateUserInfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateUserinfoRequest(IOpenIddictServerDispatcher dispatcher)
+            public ValidateUserInfoRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -117,9 +117,9 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireUserinfoRequest>()
-                    .UseScopedHandler<ValidateUserinfoRequest>()
-                    .SetOrder(ExtractUserinfoRequest.Descriptor.Order + 1_000)
+                    .AddFilter<RequireUserInfoRequest>()
+                    .UseScopedHandler<ValidateUserInfoRequest>()
+                    .SetOrder(ExtractUserInfoRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -131,12 +131,12 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ValidateUserinfoRequestContext(context.Transaction);
+                var notification = new ValidateUserInfoRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 // Store the context object in the transaction so it can be later retrieved by handlers
                 // that want to access the principal without triggering a new validation process.
-                context.Transaction.SetProperty(typeof(ValidateUserinfoRequestContext).FullName!, notification);
+                context.Transaction.SetProperty(typeof(ValidateUserInfoRequestContext).FullName!, notification);
 
                 if (notification.IsRequestHandled)
                 {
@@ -166,11 +166,11 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling userinfo requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class HandleUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleUserInfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public HandleUserinfoRequest(IOpenIddictServerDispatcher dispatcher)
+            public HandleUserInfoRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -178,9 +178,9 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireUserinfoRequest>()
-                    .UseScopedHandler<HandleUserinfoRequest>()
-                    .SetOrder(ValidateUserinfoRequest.Descriptor.Order + 1_000)
+                    .AddFilter<RequireUserInfoRequest>()
+                    .UseScopedHandler<HandleUserInfoRequest>()
+                    .SetOrder(ValidateUserInfoRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -192,7 +192,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new HandleUserinfoRequestContext(context.Transaction);
+                var notification = new HandleUserInfoRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -258,11 +258,11 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing userinfo responses and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ApplyUserinfoResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyUserInfoResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ApplyUserinfoResponse(IOpenIddictServerDispatcher dispatcher)
+            public ApplyUserInfoResponse(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -270,8 +270,8 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
-                    .AddFilter<RequireUserinfoRequest>()
-                    .UseScopedHandler<ApplyUserinfoResponse<TContext>>()
+                    .AddFilter<RequireUserInfoRequest>()
+                    .UseScopedHandler<ApplyUserInfoResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -284,7 +284,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ApplyUserinfoResponseContext(context.Transaction);
+                var notification = new ApplyUserInfoResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -306,20 +306,20 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting userinfo requests that don't specify an access token.
         /// </summary>
-        public sealed class ValidateAccessTokenParameter : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
+        public sealed class ValidateAccessTokenParameter : IOpenIddictServerHandler<ValidateUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateUserinfoRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateUserInfoRequestContext>()
                     .UseSingletonHandler<ValidateAccessTokenParameter>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateUserinfoRequestContext context)
+            public ValueTask HandleAsync(ValidateUserInfoRequestContext context)
             {
                 if (context is null)
                 {
@@ -345,7 +345,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for applying the authentication logic to userinfo requests.
         /// </summary>
-        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
+        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateUserInfoRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -356,14 +356,14 @@ public static partial class OpenIddictServerHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateUserinfoRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateUserInfoRequestContext>()
                     .UseScopedHandler<ValidateAuthentication>()
                     .SetOrder(ValidateAccessTokenParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateUserinfoRequestContext context)
+            public async ValueTask HandleAsync(ValidateUserInfoRequestContext context)
             {
                 if (context is null)
                 {
@@ -407,28 +407,28 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the principal
         /// extracted from the access token to the event context.
         /// </summary>
-        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleUserinfoRequestContext>
+        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleUserinfoRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleUserInfoRequestContext>()
                     .UseSingletonHandler<AttachPrincipal>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleUserinfoRequestContext context)
+            public ValueTask HandleAsync(HandleUserInfoRequestContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = context.Transaction.GetProperty<ValidateUserinfoRequestContext>(
-                    typeof(ValidateUserinfoRequestContext).FullName!) ??
+                var notification = context.Transaction.GetProperty<ValidateUserInfoRequestContext>(
+                    typeof(ValidateUserInfoRequestContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 Debug.Assert(notification.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
@@ -442,20 +442,20 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the audiences to the userinfo response.
         /// </summary>
-        public sealed class AttachAudiences : IOpenIddictServerHandler<HandleUserinfoRequestContext>
+        public sealed class AttachAudiences : IOpenIddictServerHandler<HandleUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleUserinfoRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleUserInfoRequestContext>()
                     .UseSingletonHandler<AttachAudiences>()
                     .SetOrder(AttachPrincipal.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleUserinfoRequestContext context)
+            public ValueTask HandleAsync(HandleUserInfoRequestContext context)
             {
                 if (context is null)
                 {
@@ -476,20 +476,20 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching well known claims to the userinfo response.
         /// </summary>
-        public sealed class AttachClaims : IOpenIddictServerHandler<HandleUserinfoRequestContext>
+        public sealed class AttachClaims : IOpenIddictServerHandler<HandleUserInfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleUserinfoRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleUserInfoRequestContext>()
                     .UseSingletonHandler<AttachClaims>()
                     .SetOrder(AttachAudiences.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleUserinfoRequestContext context)
+            public ValueTask HandleAsync(HandleUserInfoRequestContext context)
             {
                 if (context is null)
                 {

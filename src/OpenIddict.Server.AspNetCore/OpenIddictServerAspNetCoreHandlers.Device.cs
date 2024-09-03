@@ -18,38 +18,38 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             /*
              * Device request extraction:
              */
-            ExtractPostRequest<ExtractDeviceRequestContext>.Descriptor,
-            ValidateClientAuthenticationMethod<ExtractDeviceRequestContext>.Descriptor,
-            ExtractBasicAuthenticationCredentials<ExtractDeviceRequestContext>.Descriptor,
+            ExtractPostRequest<ExtractDeviceAuthorizationRequestContext>.Descriptor,
+            ValidateClientAuthenticationMethod<ExtractDeviceAuthorizationRequestContext>.Descriptor,
+            ExtractBasicAuthenticationCredentials<ExtractDeviceAuthorizationRequestContext>.Descriptor,
 
             /*
              * Device response processing:
              */
-            AttachHttpResponseCode<ApplyDeviceResponseContext>.Descriptor,
-            AttachCacheControlHeader<ApplyDeviceResponseContext>.Descriptor,
-            AttachWwwAuthenticateHeader<ApplyDeviceResponseContext>.Descriptor,
-            ProcessJsonResponse<ApplyDeviceResponseContext>.Descriptor,
+            AttachHttpResponseCode<ApplyDeviceAuthorizationResponseContext>.Descriptor,
+            AttachCacheControlHeader<ApplyDeviceAuthorizationResponseContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ApplyDeviceAuthorizationResponseContext>.Descriptor,
+            ProcessJsonResponse<ApplyDeviceAuthorizationResponseContext>.Descriptor,
 
             /*
              * Verification request extraction:
              */
-            ExtractGetOrPostRequest<ExtractVerificationRequestContext>.Descriptor,
+            ExtractGetOrPostRequest<ExtractEndUserVerificationRequestContext>.Descriptor,
 
             /*
              * Verification request handling:
              */
-            EnablePassthroughMode<HandleVerificationRequestContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,
+            EnablePassthroughMode<HandleEndUserVerificationRequestContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,
 
             /*
              * Verification response processing:
              */
-            AttachHttpResponseCode<ApplyVerificationResponseContext>.Descriptor,
-            AttachCacheControlHeader<ApplyVerificationResponseContext>.Descriptor,
+            AttachHttpResponseCode<ApplyEndUserVerificationResponseContext>.Descriptor,
+            AttachCacheControlHeader<ApplyEndUserVerificationResponseContext>.Descriptor,
             ProcessHostRedirectionResponse.Descriptor,
-            ProcessPassthroughErrorResponse<ApplyVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,
-            ProcessStatusCodePagesErrorResponse<ApplyVerificationResponseContext>.Descriptor,
-            ProcessLocalErrorResponse<ApplyVerificationResponseContext>.Descriptor,
-            ProcessEmptyResponse<ApplyVerificationResponseContext>.Descriptor
+            ProcessPassthroughErrorResponse<ApplyEndUserVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,
+            ProcessStatusCodePagesErrorResponse<ApplyEndUserVerificationResponseContext>.Descriptor,
+            ProcessLocalErrorResponse<ApplyEndUserVerificationResponseContext>.Descriptor,
+            ProcessEmptyResponse<ApplyEndUserVerificationResponseContext>.Descriptor
         ]);
     }
 
@@ -57,21 +57,21 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for processing verification responses that should trigger a host redirection.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public sealed class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyVerificationResponseContext>
+    public sealed class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyEndUserVerificationResponseContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-            = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyVerificationResponseContext>()
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyEndUserVerificationResponseContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ProcessHostRedirectionResponse>()
-                .SetOrder(ProcessPassthroughErrorResponse<ApplyVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor.Order - 1_000)
+                .SetOrder(ProcessPassthroughErrorResponse<ApplyEndUserVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ApplyVerificationResponseContext context)
+        public ValueTask HandleAsync(ApplyEndUserVerificationResponseContext context)
         {
             if (context is null)
             {

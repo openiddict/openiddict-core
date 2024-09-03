@@ -54,7 +54,7 @@ public static partial class OpenIddictServerOwinHandlers
         .. Introspection.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
-        .. Userinfo.DefaultHandlers
+        .. UserInfo.DefaultHandlers
     ]);
 
     /// <summary>
@@ -983,15 +983,15 @@ public static partial class OpenIddictServerOwinHandlers
                 // errors returned by API endpoints implementing bearer token authentication and MUST be returned
                 // as part of the standard WWW-Authenticate header. For more information, see
                 // https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
-                (OpenIddictServerEndpointType.Userinfo, Errors.InvalidToken       or Errors.MissingToken)      => 401,
-                (OpenIddictServerEndpointType.Userinfo, Errors.InsufficientAccess or Errors.InsufficientScope) => 403,
+                (OpenIddictServerEndpointType.UserInfo, Errors.InvalidToken       or Errors.MissingToken)      => 401,
+                (OpenIddictServerEndpointType.UserInfo, Errors.InsufficientAccess or Errors.InsufficientScope) => 403,
 
                 // When client authentication is made using basic authentication, the authorization server
                 // MUST return a 401 response with a valid WWW-Authenticate header containing the HTTP Basic
                 // authentication scheme. A similar error MAY be returned even when using client_secret_post.
                 // To simplify the logic, a 401 response with the Basic scheme is returned for invalid_client
                 // errors, even if credentials were specified in the form, as allowed by the specification.
-                (not OpenIddictServerEndpointType.Userinfo, Errors.InvalidClient) => 401,
+                (not OpenIddictServerEndpointType.UserInfo, Errors.InvalidClient) => 401,
 
                 (_, Errors.ServerError) => 500,
 
@@ -1211,7 +1211,7 @@ public static partial class OpenIddictServerOwinHandlers
                 // logic as errors returned by API endpoints implementing bearer token authentication and
                 // MUST be returned as part of the standard WWW-Authenticate header. For more information,
                 // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
-                (OpenIddictServerEndpointType.Userinfo, _) => Schemes.Bearer,
+                (OpenIddictServerEndpointType.UserInfo, _) => Schemes.Bearer,
 
                 // When client authentication is made using basic authentication, the authorization server
                 // MUST return a 401 response with a valid WWW-Authenticate header containing the HTTP Basic

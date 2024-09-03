@@ -1422,7 +1422,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="application">The application.</param>
     /// <param name="uri">The URI that should be compared to one of the post_logout_redirect_uri stored in the database.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <remarks>Note: if no client_id parameter is specified in logout requests, this method may not be called.</remarks>
+    /// <remarks>Note: if no client_id parameter is specified in end session requests, this method may not be called.</remarks>
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the post_logout_redirect_uri was valid.

@@ -337,7 +337,7 @@ public class OpenIddictClientService
                     RefreshToken = context.RefreshToken,
                     StateTokenPrincipal = context.StateTokenPrincipal,
                     TokenResponse = context.TokenResponse ?? new(),
-                    UserinfoTokenPrincipal = context.UserinfoTokenPrincipal
+                    UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
                 };
             }
         }
@@ -521,8 +521,8 @@ public class OpenIddictClientService
                 Properties = context.Properties,
                 RefreshToken = context.RefreshToken,
                 TokenResponse = context.TokenResponse,
-                UserinfoToken = context.UserinfoToken,
-                UserinfoTokenPrincipal = context.UserinfoTokenPrincipal
+                UserInfoToken = context.UserInfoToken,
+                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
             };
         }
 
@@ -579,8 +579,8 @@ public class OpenIddictClientService
             var context = new ProcessAuthenticationContext(transaction)
             {
                 CancellationToken = request.CancellationToken,
-                DisableUserinfoRetrieval = request.DisableUserinfo,
-                DisableUserinfoValidation = request.DisableUserinfo,
+                DisableUserInfoRetrieval = request.DisableUserInfo,
+                DisableUserInfoValidation = request.DisableUserInfo,
                 GrantType = request.GrantType,
                 ProviderName = request.ProviderName,
                 RegistrationId = request.RegistrationId,
@@ -623,8 +623,8 @@ public class OpenIddictClientService
                 Properties = context.Properties,
                 RefreshToken = context.RefreshToken,
                 TokenResponse = context.TokenResponse,
-                UserinfoToken = context.UserinfoToken,
-                UserinfoTokenPrincipal = context.UserinfoTokenPrincipal
+                UserInfoToken = context.UserInfoToken,
+                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
             };
         }
 
@@ -683,8 +683,8 @@ public class OpenIddictClientService
                     {
                         CancellationToken = source.Token,
                         DeviceCode = request.DeviceCode,
-                        DisableUserinfoRetrieval = request.DisableUserinfo,
-                        DisableUserinfoValidation = request.DisableUserinfo,
+                        DisableUserInfoRetrieval = request.DisableUserInfo,
+                        DisableUserInfoValidation = request.DisableUserInfo,
                         GrantType = GrantTypes.DeviceCode,
                         Issuer = request.Issuer,
                         ProviderName = request.ProviderName,
@@ -729,8 +729,8 @@ public class OpenIddictClientService
                             Properties = context.Properties,
                             RefreshToken = context.RefreshToken,
                             TokenResponse = context.TokenResponse ?? new(),
-                            UserinfoToken = context.UserinfoToken,
-                            UserinfoTokenPrincipal = context.UserinfoTokenPrincipal
+                            UserInfoToken = context.UserInfoToken,
+                            UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
                         };
                     }
                 }
@@ -887,8 +887,8 @@ public class OpenIddictClientService
             var context = new ProcessAuthenticationContext(transaction)
             {
                 CancellationToken = request.CancellationToken,
-                DisableUserinfoRetrieval = request.DisableUserinfo,
-                DisableUserinfoValidation = request.DisableUserinfo,
+                DisableUserInfoRetrieval = request.DisableUserInfo,
+                DisableUserInfoValidation = request.DisableUserInfo,
                 GrantType = GrantTypes.Password,
                 Issuer = request.Issuer,
                 Password = request.Password,
@@ -934,8 +934,8 @@ public class OpenIddictClientService
                 Properties = context.Properties,
                 RefreshToken = context.RefreshToken,
                 TokenResponse = context.TokenResponse,
-                UserinfoToken = context.UserinfoToken,
-                UserinfoTokenPrincipal = context.UserinfoTokenPrincipal
+                UserInfoToken = context.UserInfoToken,
+                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
             };
         }
 
@@ -984,8 +984,8 @@ public class OpenIddictClientService
             var context = new ProcessAuthenticationContext(transaction)
             {
                 CancellationToken = request.CancellationToken,
-                DisableUserinfoRetrieval = request.DisableUserinfo,
-                DisableUserinfoValidation = request.DisableUserinfo,
+                DisableUserInfoRetrieval = request.DisableUserInfo,
+                DisableUserInfoValidation = request.DisableUserInfo,
                 GrantType = GrantTypes.RefreshToken,
                 Issuer = request.Issuer,
                 ProviderName = request.ProviderName,
@@ -1030,8 +1030,8 @@ public class OpenIddictClientService
                 Properties = context.Properties,
                 RefreshToken = context.RefreshToken,
                 TokenResponse = context.TokenResponse,
-                UserinfoToken = context.UserinfoToken,
-                UserinfoTokenPrincipal = context.UserinfoTokenPrincipal
+                UserInfoToken = context.UserInfoToken,
+                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
             };
         }
 
@@ -1403,7 +1403,7 @@ public class OpenIddictClientService
                 Principal = new ClaimsPrincipal(new ClaimsIdentity()),
                 ProviderName = request.ProviderName,
                 RegistrationId = request.RegistrationId,
-                Request = request.AdditionalLogoutRequestParameters
+                Request = request.AdditionalEndSessionRequestParameters
                     is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
             };
 
@@ -1451,7 +1451,7 @@ public class OpenIddictClientService
     }
 
     /// <summary>
-    /// Retrieves the security keys exposed by the specified JWKS endpoint.
+    /// Retrieves the security keys exposed by the specified JSON Web Key Set endpoint.
     /// </summary>
     /// <param name="registration">The client registration.</param>
     /// <param name="uri">The uri of the remote metadata endpoint.</param>
@@ -1491,17 +1491,17 @@ public class OpenIddictClientService
             var transaction = await factory.CreateTransactionAsync();
 
             var request = new OpenIddictRequest();
-            request = await PrepareCryptographyRequestAsync();
-            request = await ApplyCryptographyRequestAsync();
+            request = await PrepareJsonWebKeySetRequestAsync();
+            request = await ApplyJsonWebKeySetRequestAsync();
 
-            var response = await ExtractCryptographyResponseAsync();
+            var response = await ExtractJsonWebKeySetResponseAsync();
 
-            return await HandleCryptographyResponseAsync() ??
+            return await HandleJsonWebKeySetResponseAsync() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
 
-            async ValueTask<OpenIddictRequest> PrepareCryptographyRequestAsync()
+            async ValueTask<OpenIddictRequest> PrepareJsonWebKeySetRequestAsync()
             {
-                var context = new PrepareCryptographyRequestContext(transaction)
+                var context = new PrepareJsonWebKeySetRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
                     RemoteUri = uri,
@@ -1521,9 +1521,9 @@ public class OpenIddictClientService
                 return context.Request;
             }
 
-            async ValueTask<OpenIddictRequest> ApplyCryptographyRequestAsync()
+            async ValueTask<OpenIddictRequest> ApplyJsonWebKeySetRequestAsync()
             {
-                var context = new ApplyCryptographyRequestContext(transaction)
+                var context = new ApplyJsonWebKeySetRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
                     RemoteUri = uri,
@@ -1545,9 +1545,9 @@ public class OpenIddictClientService
                 return context.Request;
             }
 
-            async ValueTask<OpenIddictResponse> ExtractCryptographyResponseAsync()
+            async ValueTask<OpenIddictResponse> ExtractJsonWebKeySetResponseAsync()
             {
-                var context = new ExtractCryptographyResponseContext(transaction)
+                var context = new ExtractJsonWebKeySetResponseContext(transaction)
                 {
                     CancellationToken = cancellationToken,
                     RemoteUri = uri,
@@ -1571,9 +1571,9 @@ public class OpenIddictClientService
                 return context.Response;
             }
 
-            async ValueTask<JsonWebKeySet> HandleCryptographyResponseAsync()
+            async ValueTask<JsonWebKeySet> HandleJsonWebKeySetResponseAsync()
             {
-                var context = new HandleCryptographyResponseContext(transaction)
+                var context = new HandleJsonWebKeySetResponseContext(transaction)
                 {
                     CancellationToken = cancellationToken,
                     RemoteUri = uri,
@@ -1591,7 +1591,7 @@ public class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                return context.SecurityKeys;
+                return context.JsonWebKeySet;
             }
         }
 
@@ -2306,7 +2306,7 @@ public class OpenIddictClientService
     /// <param name="uri">The uri of the remote userinfo endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
-    internal async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserinfoRequestAsync(
+    internal async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserInfoRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
     {
@@ -2345,16 +2345,16 @@ public class OpenIddictClientService
             var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
             var transaction = await factory.CreateTransactionAsync();
 
-            request = await PrepareUserinfoRequestAsync();
-            request = await ApplyUserinfoRequestAsync();
+            request = await PrepareUserInfoRequestAsync();
+            request = await ApplyUserInfoRequestAsync();
 
-            var (response, token) = await ExtractUserinfoResponseAsync();
+            var (response, token) = await ExtractUserInfoResponseAsync();
 
-            return await HandleUserinfoResponseAsync();
+            return await HandleUserInfoResponseAsync();
 
-            async ValueTask<OpenIddictRequest> PrepareUserinfoRequestAsync()
+            async ValueTask<OpenIddictRequest> PrepareUserInfoRequestAsync()
             {
-                var context = new PrepareUserinfoRequestContext(transaction)
+                var context = new PrepareUserInfoRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
                     Configuration = configuration,
@@ -2375,9 +2375,9 @@ public class OpenIddictClientService
                 return context.Request;
             }
 
-            async ValueTask<OpenIddictRequest> ApplyUserinfoRequestAsync()
+            async ValueTask<OpenIddictRequest> ApplyUserInfoRequestAsync()
             {
-                var context = new ApplyUserinfoRequestContext(transaction)
+                var context = new ApplyUserInfoRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
                     Configuration = configuration,
@@ -2400,9 +2400,9 @@ public class OpenIddictClientService
                 return context.Request;
             }
 
-            async ValueTask<(OpenIddictResponse, string?)> ExtractUserinfoResponseAsync()
+            async ValueTask<(OpenIddictResponse, string?)> ExtractUserInfoResponseAsync()
             {
-                var context = new ExtractUserinfoResponseContext(transaction)
+                var context = new ExtractUserInfoResponseContext(transaction)
                 {
                     CancellationToken = cancellationToken,
                     Configuration = configuration,
@@ -2424,12 +2424,12 @@ public class OpenIddictClientService
 
                 context.Logger.LogInformation(SR.GetResourceString(SR.ID6195), context.RemoteUri, context.Response);
 
-                return (context.Response, context.UserinfoToken);
+                return (context.Response, context.UserInfoToken);
             }
 
-            async ValueTask<(OpenIddictResponse, (ClaimsPrincipal?, string?))> HandleUserinfoResponseAsync()
+            async ValueTask<(OpenIddictResponse, (ClaimsPrincipal?, string?))> HandleUserInfoResponseAsync()
             {
-                var context = new HandleUserinfoResponseContext(transaction)
+                var context = new HandleUserInfoResponseContext(transaction)
                 {
                     CancellationToken = cancellationToken,
                     Configuration = configuration,
@@ -2437,7 +2437,7 @@ public class OpenIddictClientService
                     RemoteUri = uri,
                     Request = request,
                     Response = response,
-                    UserinfoToken = token
+                    UserInfoToken = token
                 };
 
                 await dispatcher.DispatchAsync(context);
@@ -2449,7 +2449,7 @@ public class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                return (context.Response, (context.Principal, context.UserinfoToken));
+                return (context.Response, (context.Principal, context.UserInfoToken));
             }
         }
 

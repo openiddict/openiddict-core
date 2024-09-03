@@ -12,15 +12,15 @@ namespace OpenIddict.Server;
 public static partial class OpenIddictServerEvents
 {
     /// <summary>
-    /// Represents an event called for each request to the logout endpoint to give the user code
-    /// a chance to manually extract the logout request from the ambient HTTP context.
+    /// Represents an event called for each request to the end session endpoint to give the user code
+    /// a chance to manually extract the end session request from the ambient HTTP context.
     /// </summary>
-    public sealed class ExtractLogoutRequestContext : BaseValidatingContext
+    public sealed class ExtractEndSessionRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ExtractLogoutRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ExtractEndSessionRequestContext"/> class.
         /// </summary>
-        public ExtractLogoutRequestContext(OpenIddictServerTransaction transaction)
+        public ExtractEndSessionRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -36,15 +36,15 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called for each request to the logout endpoint
+    /// Represents an event called for each request to the end session endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public sealed class ValidateLogoutRequestContext : BaseValidatingContext
+    public sealed class ValidateEndSessionRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ValidateLogoutRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ValidateEndSessionRequestContext"/> class.
         /// </summary>
-        public ValidateLogoutRequestContext(OpenIddictServerTransaction transaction)
+        public ValidateEndSessionRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
             // Infer the post_logout_redirect_uri from the value specified by the client application.
             => PostLogoutRedirectUri = Request?.PostLogoutRedirectUri;
@@ -99,15 +99,15 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called for each validated logout request
+    /// Represents an event called for each validated end session request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public sealed class HandleLogoutRequestContext : BaseValidatingContext
+    public sealed class HandleEndSessionRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="HandleLogoutRequestContext"/> class.
+        /// Creates a new instance of the <see cref="HandleEndSessionRequestContext"/> class.
         /// </summary>
-        public HandleLogoutRequestContext(OpenIddictServerTransaction transaction)
+        public HandleEndSessionRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -155,14 +155,14 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called before the logout response is returned to the caller.
+    /// Represents an event called before the end session response is returned to the caller.
     /// </summary>
-    public sealed class ApplyLogoutResponseContext : BaseRequestContext
+    public sealed class ApplyEndSessionResponseContext : BaseRequestContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ApplyLogoutResponseContext"/> class.
+        /// Creates a new instance of the <see cref="ApplyEndSessionResponseContext"/> class.
         /// </summary>
-        public ApplyLogoutResponseContext(OpenIddictServerTransaction transaction)
+        public ApplyEndSessionResponseContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }

@@ -60,6 +60,51 @@ public static class OpenIddictServerOwinHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if end session request caching was not enabled.
+    /// </summary>
+    public sealed class RequireEndSessionRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
+
+        public RequireEndSessionRequestCachingEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(_options.CurrentValue.EnableEndSessionRequestCaching);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the
+    /// pass-through mode was not enabled for the end session endpoint.
+    /// </summary>
+    public sealed class RequireEndSessionEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
+
+        public RequireEndSessionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(_options.CurrentValue.EnableEndSessionEndpointPassthrough);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if error pass-through was not enabled.
     /// </summary>
     public sealed class RequireErrorPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -78,51 +123,6 @@ public static class OpenIddictServerOwinHandlerFilters
             }
 
             return new(_options.CurrentValue.EnableErrorPassthrough);
-        }
-    }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if logout request caching was not enabled.
-    /// </summary>
-    public sealed class RequireLogoutRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-    {
-        private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
-
-        public RequireLogoutRequestCachingEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(_options.CurrentValue.EnableLogoutRequestCaching);
-        }
-    }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if the
-    /// pass-through mode was not enabled for the logout endpoint.
-    /// </summary>
-    public sealed class RequireLogoutEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-    {
-        private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
-
-        public RequireLogoutEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(_options.CurrentValue.EnableLogoutEndpointPassthrough);
         }
     }
 
@@ -192,11 +192,11 @@ public static class OpenIddictServerOwinHandlerFilters
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the userinfo endpoint.
     /// </summary>
-    public sealed class RequireUserinfoEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireUserInfoEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-        public RequireUserinfoEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
+        public RequireUserInfoEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
         /// <inheritdoc/>
@@ -207,13 +207,13 @@ public static class OpenIddictServerOwinHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(_options.CurrentValue.EnableUserinfoEndpointPassthrough);
+            return new(_options.CurrentValue.EnableUserInfoEndpointPassthrough);
         }
     }
 
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the
-    /// pass-through mode was not enabled for the verification endpoint.
+    /// pass-through mode was not enabled for the end-user verification endpoint.
     /// </summary>
     public sealed class RequireVerificationEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
@@ -230,7 +230,7 @@ public static class OpenIddictServerOwinHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(_options.CurrentValue.EnableVerificationEndpointPassthrough);
+            return new(_options.CurrentValue.EnableEndUserVerificationEndpointPassthrough);
         }
     }
 }

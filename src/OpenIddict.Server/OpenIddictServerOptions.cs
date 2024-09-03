@@ -72,17 +72,14 @@ public sealed class OpenIddictServerOptions
     ];
 
     /// <summary>
-    /// Gets the absolute and relative URIs associated to the cryptography endpoint.
+    /// Gets the absolute and relative URIs associated to the device authorization endpoint.
     /// </summary>
-    public List<Uri> CryptographyEndpointUris { get; } =
-    [
-        new Uri(".well-known/jwks", UriKind.Relative)
-    ];
+    public List<Uri> DeviceAuthorizationEndpointUris { get; } = [];
 
     /// <summary>
-    /// Gets the absolute and relative URIs associated to the device endpoint.
+    /// Gets the absolute and relative URIs associated to the end session endpoint.
     /// </summary>
-    public List<Uri> DeviceEndpointUris { get; } = [];
+    public List<Uri> EndSessionEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the introspection endpoint.
@@ -90,9 +87,12 @@ public sealed class OpenIddictServerOptions
     public List<Uri> IntrospectionEndpointUris { get; } = [];
 
     /// <summary>
-    /// Gets the absolute and relative URIs associated to the logout endpoint.
+    /// Gets the absolute and relative URIs associated to the JSON Web Key Set endpoint.
     /// </summary>
-    public List<Uri> LogoutEndpointUris { get; } = [];
+    public List<Uri> JsonWebKeySetEndpointUris { get; } =
+    [
+        new Uri(".well-known/jwks", UriKind.Relative)
+    ];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the revocation endpoint.
@@ -107,12 +107,12 @@ public sealed class OpenIddictServerOptions
     /// <summary>
     /// Gets the absolute and relative URIs associated to the userinfo endpoint.
     /// </summary>
-    public List<Uri> UserinfoEndpointUris { get; } = [];
+    public List<Uri> UserInfoEndpointUris { get; } = [];
 
     /// <summary>
-    /// Gets the absolute and relative URIs associated to the verification endpoint.
+    /// Gets the absolute and relative URIs associated to the end-user verification endpoint.
     /// </summary>
-    public List<Uri> VerificationEndpointUris { get; } = [];
+    public List<Uri> EndUserVerificationEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets or sets the JWT handler used to protect and unprotect tokens.

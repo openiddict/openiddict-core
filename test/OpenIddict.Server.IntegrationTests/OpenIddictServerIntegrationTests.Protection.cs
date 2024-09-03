@@ -23,9 +23,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -75,9 +75,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -127,9 +127,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -177,9 +177,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -227,9 +227,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -277,9 +277,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -327,9 +327,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -376,9 +376,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -425,9 +425,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -514,9 +514,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetUserinfoEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();

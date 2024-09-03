@@ -21,7 +21,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(nameof(HttpMethod.Options))]
     [InlineData(nameof(HttpMethod.Put))]
     [InlineData(nameof(HttpMethod.Trace))]
-    public async Task ExtractUserinfoRequest_UnexpectedMethodReturnsAnError(string method)
+    public async Task ExtractUserInfoRequest_UnexpectedMethodReturnsAnError(string method)
     {
         // Arrange
         await using var server = await CreateServerAsync();
@@ -44,14 +44,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ExtractUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ExtractUserInfoRequest_AllowsRejectingRequest(string error, string description, string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ExtractUserinfoRequestContext>(builder =>
+            options.AddEventHandler<ExtractUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Reject(error, description, uri);
@@ -72,14 +72,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ExtractUserinfoRequest_AllowsHandlingResponse()
+    public async Task ExtractUserInfoRequest_AllowsHandlingResponse()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ExtractUserinfoRequestContext>(builder =>
+            options.AddEventHandler<ExtractUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Transaction.SetProperty("custom_response", new
@@ -103,14 +103,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ExtractUserinfoRequest_AllowsSkippingHandler()
+    public async Task ExtractUserInfoRequest_AllowsSkippingHandler()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.AddEventHandler<ExtractUserinfoRequestContext>(builder =>
+            options.AddEventHandler<ExtractUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -129,7 +129,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateUserinfoRequest_MissingTokenCausesAnError()
+    public async Task ValidateUserInfoRequest_MissingTokenCausesAnError()
     {
         // Arrange
         await using var server = await CreateServerAsync();
@@ -146,7 +146,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateUserinfoRequest_InvalidTokenCausesAnError()
+    public async Task ValidateUserInfoRequest_InvalidTokenCausesAnError()
     {
         // Arrange
         await using var server = await CreateServerAsync();
@@ -165,7 +165,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateUserinfoRequest_ExpiredTokenCausesAnError()
+    public async Task ValidateUserInfoRequest_ExpiredTokenCausesAnError()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -211,7 +211,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ValidateUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ValidateUserInfoRequest_AllowsRejectingRequest(string error, string description, string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -233,7 +233,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<ValidateUserinfoRequestContext>(builder =>
+            options.AddEventHandler<ValidateUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Reject(error, description, uri);
@@ -257,7 +257,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateUserinfoRequest_AllowsHandlingResponse()
+    public async Task ValidateUserInfoRequest_AllowsHandlingResponse()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -279,7 +279,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<ValidateUserinfoRequestContext>(builder =>
+            options.AddEventHandler<ValidateUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Transaction.SetProperty("custom_response", new
@@ -306,7 +306,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateUserinfoRequest_AllowsSkippingHandler()
+    public async Task ValidateUserInfoRequest_AllowsSkippingHandler()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -328,7 +328,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<ValidateUserinfoRequestContext>(builder =>
+            options.AddEventHandler<ValidateUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -350,7 +350,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleUserinfoRequest_BasicClaimsAreCorrectlyReturned()
+    public async Task HandleUserInfoRequest_BasicClaimsAreCorrectlyReturned()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -391,7 +391,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleUserinfoRequest_NonBasicClaimsAreNotReturnedWhenNoScopeWasGranted()
+    public async Task HandleUserInfoRequest_NonBasicClaimsAreNotReturnedWhenNoScopeWasGranted()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -440,7 +440,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleUserinfoRequest_ProfileClaimsAreCorrectlyReturned()
+    public async Task HandleUserInfoRequest_ProfileClaimsAreCorrectlyReturned()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -487,7 +487,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleUserinfoRequest_EmailClaimIsCorrectlyReturned()
+    public async Task HandleUserInfoRequest_EmailClaimIsCorrectlyReturned()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -527,7 +527,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleUserinfoRequest_PhoneClaimIsCorrectlyReturned()
+    public async Task HandleUserInfoRequest_PhoneClaimIsCorrectlyReturned()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -574,7 +574,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task HandleUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task HandleUserInfoRequest_AllowsRejectingRequest(string error, string description, string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -596,7 +596,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Reject(error, description, uri);
@@ -620,7 +620,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleUserinfoRequest_AllowsHandlingResponse()
+    public async Task HandleUserInfoRequest_AllowsHandlingResponse()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -642,7 +642,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Transaction.SetProperty("custom_response", new
@@ -669,7 +669,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task HandleUserinfoRequest_AllowsSkippingHandler()
+    public async Task HandleUserInfoRequest_AllowsSkippingHandler()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -691,7 +691,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -713,7 +713,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ApplyUserinfoResponse_AllowsHandlingResponse()
+    public async Task ApplyUserInfoResponse_AllowsHandlingResponse()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -735,7 +735,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<ApplyUserinfoResponseContext>(builder =>
+            options.AddEventHandler<ApplyUserInfoResponseContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Transaction.SetProperty("custom_response", new
@@ -762,7 +762,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ApplyUserinfoResponse_ResponseContainsCustomParameters()
+    public async Task ApplyUserInfoResponse_ResponseContainsCustomParameters()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -784,7 +784,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<ApplyUserinfoResponseContext>(builder =>
+            options.AddEventHandler<ApplyUserInfoResponseContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.Response["custom_parameter"] = "custom_value";

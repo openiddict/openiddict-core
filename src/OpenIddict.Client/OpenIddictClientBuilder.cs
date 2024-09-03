@@ -973,11 +973,11 @@ public sealed class OpenIddictClientBuilder
     }
 
     /// <summary>
-    /// Enables device code flow support. For more information about this
+    /// Enables device authorization flow support. For more information about this
     /// specific OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc8628.
     /// </summary>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder AllowDeviceCodeFlow()
+    public OpenIddictClientBuilder AllowDeviceAuthorizationFlow()
         => Configure(options => options.GrantTypes.Add(GrantTypes.DeviceCode));
 
     /// <summary>
@@ -1063,6 +1063,53 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.GrantTypes.Add(GrantTypes.RefreshToken));
 
     /// <summary>
+    /// Sets the relative or absolute URIs associated to the post-logout redirection endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
+    {
+        if (uris is null)
+        {
+            throw new ArgumentNullException(nameof(uris));
+        }
+
+        return SetPostLogoutRedirectionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the post-logout redirection endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(params Uri[] uris)
+    {
+        if (uris is null)
+        {
+            throw new ArgumentNullException(nameof(uris));
+        }
+
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
+        }
+
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
+        }
+
+        return Configure(options =>
+        {
+            options.PostLogoutRedirectionEndpointUris.Clear();
+            options.PostLogoutRedirectionEndpointUris.AddRange(uris);
+        });
+    }
+
+    /// <summary>
     /// Sets the relative or absolute URIs associated to the redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// </summary>
@@ -1118,53 +1165,6 @@ public sealed class OpenIddictClientBuilder
         {
             options.RedirectionEndpointUris.Clear();
             options.RedirectionEndpointUris.AddRange(uris);
-        });
-    }
-
-    /// <summary>
-    /// Sets the relative or absolute URIs associated to the post-logout redirection endpoint.
-    /// If an empty array is specified, the endpoint will be considered disabled.
-    /// </summary>
-    /// <param name="uris">The URIs associated to the endpoint.</param>
-    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
-    {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
-
-        return SetPostLogoutRedirectionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
-    }
-
-    /// <summary>
-    /// Sets the relative or absolute URIs associated to the post-logout redirection endpoint.
-    /// If an empty array is specified, the endpoint will be considered disabled.
-    /// </summary>
-    /// <param name="uris">The URIs associated to the endpoint.</param>
-    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(params Uri[] uris)
-    {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
-
-        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
-        }
-
-        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
-        }
-
-        return Configure(options =>
-        {
-            options.PostLogoutRedirectionEndpointUris.Clear();
-            options.PostLogoutRedirectionEndpointUris.AddRange(uris);
         });
     }
 

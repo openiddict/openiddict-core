@@ -9,17 +9,17 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server.Controllers;
 
-public class UserinfoController : Controller
+public class UserInfoController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public UserinfoController(UserManager<ApplicationUser> userManager)
+    public UserInfoController(UserManager<ApplicationUser> userManager)
         => _userManager = userManager;
 
     [Authorize(AuthenticationSchemes = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)]
     [HttpGet("~/connect/userinfo"), HttpPost("~/connect/userinfo")]
     [IgnoreAntiforgeryToken, Produces("application/json")]
-    public async Task<IActionResult> Userinfo()
+    public async Task<IActionResult> UserInfo()
     {
         var user = await _userManager.FindByIdAsync(User.GetClaim(Claims.Subject));
         if (user is null)

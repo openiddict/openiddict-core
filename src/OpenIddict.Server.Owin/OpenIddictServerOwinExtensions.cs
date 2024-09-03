@@ -43,13 +43,13 @@ public static class OpenIddictServerOwinExtensions
         // Register the built-in filters used by the default OpenIddict OWIN server event handlers.
         builder.Services.TryAddSingleton<RequireAuthorizationRequestCachingEnabled>();
         builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireEndSessionRequestCachingEnabled>();
+        builder.Services.TryAddSingleton<RequireEndSessionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
-        builder.Services.TryAddSingleton<RequireLogoutRequestCachingEnabled>();
-        builder.Services.TryAddSingleton<RequireLogoutEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
         builder.Services.TryAddSingleton<RequireOwinRequest>();
         builder.Services.TryAddSingleton<RequireTokenEndpointPassthroughEnabled>();
-        builder.Services.TryAddSingleton<RequireUserinfoEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireUserInfoEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireVerificationEndpointPassthroughEnabled>();
 
         // Register the option initializers used by the OpenIddict OWIN server integration services.

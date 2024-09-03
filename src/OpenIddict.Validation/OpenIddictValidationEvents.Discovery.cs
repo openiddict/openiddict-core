@@ -123,15 +123,15 @@ public static partial class OpenIddictValidationEvents
     }
 
     /// <summary>
-    /// Represents an event called for each request to the cryptography endpoint
-    /// to give the user code a chance to add parameters to the cryptography request.
+    /// Represents an event called for each request to the JSON Web Key Set endpoint
+    /// to give the user code a chance to add parameters to the JSON Web Key Set request.
     /// </summary>
-    public sealed class PrepareCryptographyRequestContext : BaseExternalContext
+    public sealed class PrepareJsonWebKeySetRequestContext : BaseExternalContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="PrepareCryptographyRequestContext"/> class.
+        /// Creates a new instance of the <see cref="PrepareJsonWebKeySetRequestContext"/> class.
         /// </summary>
-        public PrepareCryptographyRequestContext(OpenIddictValidationTransaction transaction)
+        public PrepareJsonWebKeySetRequestContext(OpenIddictValidationTransaction transaction)
             : base(transaction)
         {
         }
@@ -147,15 +147,15 @@ public static partial class OpenIddictValidationEvents
     }
 
     /// <summary>
-    /// Represents an event called for each request to the cryptography endpoint
-    /// to send the cryptography request to the remote authorization server.
+    /// Represents an event called for each request to the JSON Web Key Set endpoint
+    /// to send the JSON Web Key Set request to the remote authorization server.
     /// </summary>
-    public sealed class ApplyCryptographyRequestContext : BaseExternalContext
+    public sealed class ApplyJsonWebKeySetRequestContext : BaseExternalContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ApplyCryptographyRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ApplyJsonWebKeySetRequestContext"/> class.
         /// </summary>
-        public ApplyCryptographyRequestContext(OpenIddictValidationTransaction transaction)
+        public ApplyJsonWebKeySetRequestContext(OpenIddictValidationTransaction transaction)
             : base(transaction)
         {
         }
@@ -171,15 +171,15 @@ public static partial class OpenIddictValidationEvents
     }
 
     /// <summary>
-    /// Represents an event called for each cryptography response
+    /// Represents an event called for each JSON Web Key Set response
     /// to extract the response parameters from the server response.
     /// </summary>
-    public sealed class ExtractCryptographyResponseContext : BaseExternalContext
+    public sealed class ExtractJsonWebKeySetResponseContext : BaseExternalContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ExtractCryptographyResponseContext"/> class.
+        /// Creates a new instance of the <see cref="ExtractJsonWebKeySetResponseContext"/> class.
         /// </summary>
-        public ExtractCryptographyResponseContext(OpenIddictValidationTransaction transaction)
+        public ExtractJsonWebKeySetResponseContext(OpenIddictValidationTransaction transaction)
             : base(transaction)
         {
         }
@@ -204,14 +204,14 @@ public static partial class OpenIddictValidationEvents
     }
 
     /// <summary>
-    /// Represents an event called for each cryptography response.
+    /// Represents an event called for each JSON Web Key Set response.
     /// </summary>
-    public sealed class HandleCryptographyResponseContext : BaseExternalContext
+    public sealed class HandleJsonWebKeySetResponseContext : BaseExternalContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="HandleCryptographyResponseContext"/> class.
+        /// Creates a new instance of the <see cref="HandleJsonWebKeySetResponseContext"/> class.
         /// </summary>
-        public HandleCryptographyResponseContext(OpenIddictValidationTransaction transaction)
+        public HandleJsonWebKeySetResponseContext(OpenIddictValidationTransaction transaction)
             : base(transaction)
         {
         }

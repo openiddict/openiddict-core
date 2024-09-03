@@ -27,9 +27,9 @@ public enum OpenIddictServerEndpointType
     Token = 2,
 
     /// <summary>
-    /// Logout endpoint.
+    /// End session endpoint.
     /// </summary>
-    Logout = 3,
+    EndSession = 3,
 
     /// <summary>
     /// Configuration endpoint.
@@ -37,14 +37,14 @@ public enum OpenIddictServerEndpointType
     Configuration = 4,
 
     /// <summary>
-    /// Cryptography endpoint.
+    /// JSON Web Key Set endpoint.
     /// </summary>
-    Cryptography = 5,
+    JsonWebKeySet = 5,
 
     /// <summary>
-    /// Userinfo endpoint.
+    /// UserInfo endpoint.
     /// </summary>
-    Userinfo = 6,
+    UserInfo = 6,
 
     /// <summary>
     /// Introspection endpoint.
@@ -57,12 +57,12 @@ public enum OpenIddictServerEndpointType
     Revocation = 8,
 
     /// <summary>
-    /// Device endpoint.
+    /// Device authorization endpoint.
     /// </summary>
-    Device = 9,
+    DeviceAuthorization = 9,
 
     /// <summary>
-    /// Verification endpoint.
+    /// User verification endpoint.
     /// </summary>
-    Verification = 10
+    EndUserVerification = 10
 }

@@ -52,19 +52,20 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireClientIdParameter>();
         builder.Services.TryAddSingleton<RequireClientSecretParameter>();
         builder.Services.TryAddSingleton<RequireConfigurationRequest>();
-        builder.Services.TryAddSingleton<RequireCryptographyRequest>();
         builder.Services.TryAddSingleton<RequireDegradedModeDisabled>();
+        builder.Services.TryAddSingleton<RequireDeviceAuthorizationRequest>();
         builder.Services.TryAddSingleton<RequireDeviceCodeGenerated>();
         builder.Services.TryAddSingleton<RequireDeviceCodeValidated>();
-        builder.Services.TryAddSingleton<RequireDeviceRequest>();
         builder.Services.TryAddSingleton<RequireEndpointPermissionsEnabled>();
+        builder.Services.TryAddSingleton<RequireEndSessionRequest>();
+        builder.Services.TryAddSingleton<RequireEndUserVerificationRequest>();
         builder.Services.TryAddSingleton<RequireGenericTokenValidated>();
         builder.Services.TryAddSingleton<RequireGrantTypePermissionsEnabled>();
         builder.Services.TryAddSingleton<RequireIdentityTokenGenerated>();
         builder.Services.TryAddSingleton<RequireIdentityTokenValidated>();
         builder.Services.TryAddSingleton<RequireIntrospectionRequest>();
+        builder.Services.TryAddSingleton<RequireJsonWebKeySetRequest>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenFormat>();
-        builder.Services.TryAddSingleton<RequireLogoutRequest>();
         builder.Services.TryAddSingleton<RequirePostLogoutRedirectUriParameter>();
         builder.Services.TryAddSingleton<RequireReferenceAccessTokensEnabled>();
         builder.Services.TryAddSingleton<RequireReferenceRefreshTokensEnabled>();
@@ -83,8 +84,7 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
         builder.Services.TryAddSingleton<RequireUserCodeGenerated>();
         builder.Services.TryAddSingleton<RequireUserCodeValidated>();
-        builder.Services.TryAddSingleton<RequireUserinfoRequest>();
-        builder.Services.TryAddSingleton<RequireVerificationRequest>();
+        builder.Services.TryAddSingleton<RequireUserInfoRequest>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

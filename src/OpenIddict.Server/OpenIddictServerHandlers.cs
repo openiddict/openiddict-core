@@ -119,7 +119,7 @@ public static partial class OpenIddictServerHandlers
         .. Protection.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
-        .. Userinfo.DefaultHandlers
+        .. UserInfo.DefaultHandlers
     ]);
 
     /// <summary>
@@ -151,17 +151,17 @@ public static partial class OpenIddictServerHandlers
             }
 
             context.EndpointType =
-                Matches(context.Options.AuthorizationEndpointUris) ? OpenIddictServerEndpointType.Authorization :
-                Matches(context.Options.ConfigurationEndpointUris) ? OpenIddictServerEndpointType.Configuration :
-                Matches(context.Options.CryptographyEndpointUris)  ? OpenIddictServerEndpointType.Cryptography  :
-                Matches(context.Options.DeviceEndpointUris)        ? OpenIddictServerEndpointType.Device        :
-                Matches(context.Options.IntrospectionEndpointUris) ? OpenIddictServerEndpointType.Introspection :
-                Matches(context.Options.LogoutEndpointUris)        ? OpenIddictServerEndpointType.Logout        :
-                Matches(context.Options.RevocationEndpointUris)    ? OpenIddictServerEndpointType.Revocation    :
-                Matches(context.Options.TokenEndpointUris)         ? OpenIddictServerEndpointType.Token         :
-                Matches(context.Options.UserinfoEndpointUris)      ? OpenIddictServerEndpointType.Userinfo      :
-                Matches(context.Options.VerificationEndpointUris)  ? OpenIddictServerEndpointType.Verification  :
-                                                                     OpenIddictServerEndpointType.Unknown;
+                Matches(context.Options.AuthorizationEndpointUris)       ? OpenIddictServerEndpointType.Authorization       :
+                Matches(context.Options.ConfigurationEndpointUris)       ? OpenIddictServerEndpointType.Configuration       :
+                Matches(context.Options.DeviceAuthorizationEndpointUris) ? OpenIddictServerEndpointType.DeviceAuthorization :
+                Matches(context.Options.EndSessionEndpointUris)          ? OpenIddictServerEndpointType.EndSession          :
+                Matches(context.Options.EndUserVerificationEndpointUris) ? OpenIddictServerEndpointType.EndUserVerification :
+                Matches(context.Options.IntrospectionEndpointUris)       ? OpenIddictServerEndpointType.Introspection       :
+                Matches(context.Options.JsonWebKeySetEndpointUris)       ? OpenIddictServerEndpointType.JsonWebKeySet       :
+                Matches(context.Options.RevocationEndpointUris)          ? OpenIddictServerEndpointType.Revocation          :
+                Matches(context.Options.TokenEndpointUris)               ? OpenIddictServerEndpointType.Token               :
+                Matches(context.Options.UserInfoEndpointUris)            ? OpenIddictServerEndpointType.UserInfo            :
+                                                                           OpenIddictServerEndpointType.Unknown;
 
             if (context.EndpointType is not OpenIddictServerEndpointType.Unknown)
             {
@@ -240,10 +240,10 @@ public static partial class OpenIddictServerHandlers
 
             return context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Device or
-                OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Logout or
-                OpenIddictServerEndpointType.Revocation    or OpenIddictServerEndpointType.Token  or
-                OpenIddictServerEndpointType.Userinfo      or OpenIddictServerEndpointType.Verification
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.DeviceAuthorization or
+                OpenIddictServerEndpointType.EndSession    or OpenIddictServerEndpointType.EndUserVerification or
+                OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation          or
+                OpenIddictServerEndpointType.Token         or OpenIddictServerEndpointType.UserInfo
                     => default,
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0002)),
@@ -280,7 +280,7 @@ public static partial class OpenIddictServerHandlers
              context.RejectAccessToken) = context.EndpointType switch
             {
                 // The userinfo endpoint requires sending a valid access token.
-                OpenIddictServerEndpointType.Userinfo => (true, true, true, true),
+                OpenIddictServerEndpointType.UserInfo => (true, true, true, true),
 
                 _ => (false, false, false, false)
             };
@@ -305,7 +305,7 @@ public static partial class OpenIddictServerHandlers
                 // Client assertions can be used with all the endpoints that support client authentication.
                 // By default, client assertions are not required, but they are extracted and validated if
                 // present and invalid client assertions are always automatically rejected by OpenIddict.
-                OpenIddictServerEndpointType.Device     or OpenIddictServerEndpointType.Introspection or
+                OpenIddictServerEndpointType.DeviceAuthorization     or OpenIddictServerEndpointType.Introspection or
                 OpenIddictServerEndpointType.Revocation or OpenIddictServerEndpointType.Token
                     => (true, false, true, true),
 
@@ -347,7 +347,7 @@ public static partial class OpenIddictServerHandlers
                 //
                 // As such, identity token hints are extracted and validated, but
                 // the authentication demand is not rejected if they are not valid.
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
                     => (true, false, true, false),
 
                 _ => (false, false, false, false)
@@ -370,9 +370,9 @@ public static partial class OpenIddictServerHandlers
              context.ValidateUserCode,
              context.RejectUserCode) = context.EndpointType switch
             {
-                // Note: the verification endpoint can be accessed without specifying a
+                // Note: the end-user verification endpoint can be accessed without specifying a
                 // user code (that can be later set by the user using a form, for instance).
-                OpenIddictServerEndpointType.Verification => (true, false, true, false),
+                OpenIddictServerEndpointType.EndUserVerification => (true, false, true, false),
 
                 _ => (false, false, false, false)
             };
@@ -406,7 +406,7 @@ public static partial class OpenIddictServerHandlers
 
             context.AccessToken = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Userinfo when context.ExtractAccessToken
+                OpenIddictServerEndpointType.UserInfo when context.ExtractAccessToken
                     => context.Request.AccessToken,
 
                 _ => null
@@ -422,8 +422,8 @@ public static partial class OpenIddictServerHandlers
 
             (context.ClientAssertion, context.ClientAssertionType) = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Device     or OpenIddictServerEndpointType.Introspection or
-                OpenIddictServerEndpointType.Revocation or OpenIddictServerEndpointType.Token
+                OpenIddictServerEndpointType.DeviceAuthorization or OpenIddictServerEndpointType.Introspection or
+                OpenIddictServerEndpointType.Revocation          or OpenIddictServerEndpointType.Token
                     when context.ExtractClientAssertion
                     => (context.Request.ClientAssertion, context.Request.ClientAssertionType),
 
@@ -450,7 +450,7 @@ public static partial class OpenIddictServerHandlers
             context.IdentityToken = context.EndpointType switch
             {
                 OpenIddictServerEndpointType.Authorization or
-                OpenIddictServerEndpointType.Logout when context.ExtractIdentityToken
+                OpenIddictServerEndpointType.EndSession when context.ExtractIdentityToken
                     => context.Request.IdTokenHint,
 
                 _ => null
@@ -466,7 +466,7 @@ public static partial class OpenIddictServerHandlers
 
             context.UserCode = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Verification when context.ExtractUserCode
+                OpenIddictServerEndpointType.EndUserVerification when context.ExtractUserCode
                     => context.Request.UserCode,
 
                 _ => null
@@ -885,9 +885,9 @@ public static partial class OpenIddictServerHandlers
                     }
 
                     // If the current request is a device request, consider the audience valid
-                    // if the address matches one of the URIs assigned to the device endpoint.
-                    if (context.EndpointType is OpenIddictServerEndpointType.Device &&
-                        MatchesAnyUri(uri, context.Options.DeviceEndpointUris))
+                    // if the address matches one of the URIs assigned to the device authorization endpoint.
+                    if (context.EndpointType is OpenIddictServerEndpointType.DeviceAuthorization &&
+                        MatchesAnyUri(uri, context.Options.DeviceAuthorizationEndpointUris))
                     {
                         return true;
                     }
@@ -987,7 +987,8 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Don't validate the client identifier on endpoints that don't support client identification.
-            if (context.EndpointType is OpenIddictServerEndpointType.Userinfo or OpenIddictServerEndpointType.Verification)
+            if (context.EndpointType is OpenIddictServerEndpointType.EndUserVerification or
+                                        OpenIddictServerEndpointType.UserInfo)
             {
                 return;
             }
@@ -999,7 +1000,7 @@ public static partial class OpenIddictServerHandlers
                     // Note: support for the client_id parameter was only added in the second draft of the
                     // https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RPLogout specification
                     // and is optional. As such, the client identifier is only validated if it was specified.
-                    case OpenIddictServerEndpointType.Logout:
+                    case OpenIddictServerEndpointType.EndSession:
                         return;
 
                     case OpenIddictServerEndpointType.Introspection when context.Options.AcceptAnonymousClients:
@@ -1036,7 +1037,7 @@ public static partial class OpenIddictServerHandlers
                         error: context.EndpointType switch
                         {
                             // For non-interactive endpoints, return "invalid_client" instead of "invalid_request".
-                            OpenIddictServerEndpointType.Device     or OpenIddictServerEndpointType.Introspection or
+                            OpenIddictServerEndpointType.DeviceAuthorization     or OpenIddictServerEndpointType.Introspection or
                             OpenIddictServerEndpointType.Revocation or OpenIddictServerEndpointType.Token
                                 => Errors.InvalidClient,
 
@@ -1088,10 +1089,10 @@ public static partial class OpenIddictServerHandlers
             Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
             // Don't validate the client type on endpoints that don't support client authentication.
-            if (context.EndpointType is OpenIddictServerEndpointType.Authorization or
-                                        OpenIddictServerEndpointType.Logout        or
-                                        OpenIddictServerEndpointType.Userinfo      or
-                                        OpenIddictServerEndpointType.Verification)
+            if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
+                                        OpenIddictServerEndpointType.EndSession          or
+                                        OpenIddictServerEndpointType.EndUserVerification or
+                                        OpenIddictServerEndpointType.UserInfo)
             {
                 return;
             }
@@ -1197,10 +1198,10 @@ public static partial class OpenIddictServerHandlers
             Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID4000(Parameters.ClientSecret));
 
             // Don't validate the client secret on endpoints that don't support client authentication.
-            if (context.EndpointType is OpenIddictServerEndpointType.Authorization or
-                                        OpenIddictServerEndpointType.Logout        or
-                                        OpenIddictServerEndpointType.Userinfo      or
-                                        OpenIddictServerEndpointType.Verification)
+            if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
+                                        OpenIddictServerEndpointType.EndSession          or
+                                        OpenIddictServerEndpointType.EndUserVerification or
+                                        OpenIddictServerEndpointType.UserInfo)
             {
                 return;
             }
@@ -1572,7 +1573,7 @@ public static partial class OpenIddictServerHandlers
             {
                 // Don't validate the lifetime of id_tokens used as id_token_hints.
                 DisableLifetimeValidation = context.EndpointType is OpenIddictServerEndpointType.Authorization or
-                                                                    OpenIddictServerEndpointType.Logout,
+                                                                    OpenIddictServerEndpointType.EndSession,
                 Token = context.IdentityToken,
                 ValidTokenTypes = { TokenTypeHints.IdToken }
             };
@@ -1789,7 +1790,7 @@ public static partial class OpenIddictServerHandlers
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
                     => context.RefreshTokenPrincipal,
 
-                OpenIddictServerEndpointType.Verification => context.UserCodePrincipal,
+                OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
 
                 _ => null
             };
@@ -1903,10 +1904,10 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
-                                             OpenIddictServerEndpointType.Token         or
-                                             OpenIddictServerEndpointType.Userinfo      or
-                                             OpenIddictServerEndpointType.Verification))
+            if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization       or
+                                             OpenIddictServerEndpointType.EndUserVerification or
+                                             OpenIddictServerEndpointType.Token               or
+                                             OpenIddictServerEndpointType.UserInfo))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
             }
@@ -1940,33 +1941,33 @@ public static partial class OpenIddictServerHandlers
 
             context.Response.Error ??= context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndUserVerification
                     => Errors.AccessDenied,
 
                 OpenIddictServerEndpointType.Token    => Errors.InvalidGrant,
-                OpenIddictServerEndpointType.Userinfo => Errors.InsufficientAccess,
+                OpenIddictServerEndpointType.UserInfo => Errors.InsufficientAccess,
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
             };
 
             context.Response.ErrorDescription ??= context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndUserVerification
                     => SR.GetResourceString(SR.ID2015),
 
                 OpenIddictServerEndpointType.Token    => SR.GetResourceString(SR.ID2024),
-                OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2025),
+                OpenIddictServerEndpointType.UserInfo => SR.GetResourceString(SR.ID2025),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
             };
 
             context.Response.ErrorUri ??= context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndUserVerification
                     => SR.FormatID8000(SR.ID2015),
 
                 OpenIddictServerEndpointType.Token    => SR.FormatID8000(SR.ID2024),
-                OpenIddictServerEndpointType.Userinfo => SR.FormatID8000(SR.ID2025),
+                OpenIddictServerEndpointType.UserInfo => SR.FormatID8000(SR.ID2025),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
             };
@@ -2008,7 +2009,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.EndpointType is not OpenIddictServerEndpointType.Verification)
+            if (context.EndpointType is not OpenIddictServerEndpointType.EndUserVerification)
             {
                 return;
             }
@@ -2067,7 +2068,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.EndpointType is not OpenIddictServerEndpointType.Verification)
+            if (context.EndpointType is not OpenIddictServerEndpointType.EndUserVerification)
             {
                 return;
             }
@@ -2153,10 +2154,10 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
-                                             OpenIddictServerEndpointType.Device        or
-                                             OpenIddictServerEndpointType.Token         or
-                                             OpenIddictServerEndpointType.Verification))
+            if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization       or
+                                             OpenIddictServerEndpointType.DeviceAuthorization or
+                                             OpenIddictServerEndpointType.EndUserVerification or
+                                             OpenIddictServerEndpointType.Token))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0010));
             }
@@ -2166,10 +2167,10 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0011));
             }
 
-            // Note: sign-in operations triggered from the device endpoint can't be associated to specific users
-            // as users' identity is not known until they reach the verification endpoint and validate the user code.
+            // Note: sign-in operations triggered from the device authorization endpoint can't be associated to specific users
+            // as users' identity is not known until they reach the end-user verification endpoint and validate the user code.
             // As such, the principal used in this case cannot contain an authenticated identity or a subject claim.
-            if (context.EndpointType is OpenIddictServerEndpointType.Device)
+            if (context.EndpointType is OpenIddictServerEndpointType.DeviceAuthorization)
             {
                 if (context.Principal.Identity.IsAuthenticated)
                 {
@@ -2283,11 +2284,11 @@ public static partial class OpenIddictServerHandlers
 
             switch (context.EndpointType)
             {
+                case OpenIddictServerEndpointType.EndUserVerification:
                 case OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType():
                 case OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType():
                 case OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() &&
                                                             !context.Options.DisableRollingRefreshTokens:
-                case OpenIddictServerEndpointType.Verification:
                     break;
 
                 default: return;
@@ -2308,7 +2309,7 @@ public static partial class OpenIddictServerHandlers
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
                     => notification.RefreshTokenPrincipal,
 
-                OpenIddictServerEndpointType.Verification => notification.UserCodePrincipal,
+                OpenIddictServerEndpointType.EndUserVerification => notification.UserCodePrincipal,
 
                 _ => null
             };
@@ -2389,10 +2390,10 @@ public static partial class OpenIddictServerHandlers
 
             switch (context.EndpointType)
             {
+                case OpenIddictServerEndpointType.EndUserVerification:
                 case OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType():
                 case OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType():
                 case OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType():
-                case OpenIddictServerEndpointType.Verification:
                     break;
 
                 default: return default;
@@ -2406,6 +2407,8 @@ public static partial class OpenIddictServerHandlers
 
             var principal = context.EndpointType switch
             {
+                OpenIddictServerEndpointType.EndUserVerification => notification.UserCodePrincipal,
+
                 OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
                     => notification.AuthorizationCodePrincipal,
 
@@ -2414,8 +2417,6 @@ public static partial class OpenIddictServerHandlers
 
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
                     => notification.RefreshTokenPrincipal,
-
-                OpenIddictServerEndpointType.Verification => notification.UserCodePrincipal,
 
                 _ => null
             };
@@ -2436,8 +2437,8 @@ public static partial class OpenIddictServerHandlers
                     continue;
                 }
 
-                // When the request is a verification request, don't flow the scopes from the user code.
-                if (context.EndpointType is OpenIddictServerEndpointType.Verification &&
+                // When the request is a end-user verification request, don't flow the scopes from the user code.
+                if (context.EndpointType is OpenIddictServerEndpointType.EndUserVerification &&
                     string.Equals(claims.Key, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
@@ -2645,13 +2646,13 @@ public static partial class OpenIddictServerHandlers
             (context.GenerateDeviceCode, context.IncludeDeviceCode) = context.EndpointType switch
             {
                 // For device requests, always generate and return a device code.
-                OpenIddictServerEndpointType.Device => (true, true),
+                OpenIddictServerEndpointType.DeviceAuthorization => (true, true),
 
-                // Note: a device code is not directly returned by the verification endpoint (that generally
+                // Note: a device code is not directly returned by the end-user verification endpoint (that generally
                 // returns an empty response or redirects the user agent to another page), but a device code
                 // must be generated to replace the payload of the device code initially returned to the client.
                 // In this case, the device code is not returned as part of the response but persisted in the DB.
-                OpenIddictServerEndpointType.Verification => (true, false),
+                OpenIddictServerEndpointType.EndUserVerification => (true, false),
 
                 _ => (false, false)
             };
@@ -2683,7 +2684,7 @@ public static partial class OpenIddictServerHandlers
             (context.GenerateUserCode, context.IncludeUserCode) = context.EndpointType switch
             {
                 // Only generate and return a user code if the request is a device authorization request.
-                OpenIddictServerEndpointType.Device => (true, true),
+                OpenIddictServerEndpointType.DeviceAuthorization => (true, true),
 
                 _ => (false, false)
             };
@@ -3189,8 +3190,8 @@ public static partial class OpenIddictServerHandlers
             principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
 
             // Restore the device code internal token identifier from the principal
-            // resolved from the user code used in the user code verification request.
-            if (context.EndpointType is OpenIddictServerEndpointType.Verification)
+            // resolved from the user code used in the end-user verification request.
+            if (context.EndpointType is OpenIddictServerEndpointType.EndUserVerification)
             {
                 principal.SetClaim(Claims.Private.TokenId, context.Principal.GetClaim(Claims.Private.DeviceCodeId));
             }
@@ -3765,19 +3766,19 @@ public static partial class OpenIddictServerHandlers
             {
                 ClientId = context.ClientId,
                 // Don't create a new entry if the device code is generated as part
-                // of a device code swap made by the user code verification endpoint.
+                // of a device code swap made by the end-user verification endpoint.
                 CreateTokenEntry = context.EndpointType switch
                 {
-                    OpenIddictServerEndpointType.Verification => false,
+                    OpenIddictServerEndpointType.EndUserVerification => false,
 
                     _ => !context.Options.DisableTokenStorage
                 },
                 IsReferenceToken = !context.Options.DisableTokenStorage,
                 // Device codes are not persisted using the generic logic if they are generated
-                // as part of a device code swap made by the user code verification endpoint.
+                // as part of a device code swap made by the end-user verification endpoint.
                 PersistTokenPayload = context.EndpointType switch
                 {
-                    OpenIddictServerEndpointType.Verification => false,
+                    OpenIddictServerEndpointType.EndUserVerification => false,
 
                     _ => !context.Options.DisableTokenStorage
                 },
@@ -3956,7 +3957,8 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.EndpointType is not OpenIddictServerEndpointType.Verification || string.IsNullOrEmpty(context.DeviceCode))
+            if (context.EndpointType is not OpenIddictServerEndpointType.EndUserVerification ||
+                string.IsNullOrEmpty(context.DeviceCode))
             {
                 return;
             }
@@ -4366,17 +4368,17 @@ public static partial class OpenIddictServerHandlers
                 context.Response.UserCode = context.UserCode;
             }
 
-            if (context.EndpointType is OpenIddictServerEndpointType.Device)
+            if (context.EndpointType is OpenIddictServerEndpointType.DeviceAuthorization)
             {
                 var uri = OpenIddictHelpers.CreateAbsoluteUri(
                     left : context.BaseUri ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0127)),
-                    right: context.Options.VerificationEndpointUris.First());
+                    right: context.Options.EndUserVerificationEndpointUris.First());
 
                 context.Response.VerificationUri = uri.AbsoluteUri;
 
                 if (!string.IsNullOrEmpty(context.UserCode))
                 {
-                    // Build the "verification_uri_complete" parameter using the verification endpoint URI
+                    // Build the "verification_uri_complete" parameter using the end-user verification endpoint URI
                     // with the generated user code appended to the query string as a unique parameter.
                     context.Response.VerificationUriComplete = OpenIddictHelpers.AddQueryStringParameter(
                         uri, Parameters.UserCode, context.UserCode).AbsoluteUri;
@@ -4469,7 +4471,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.EndpointType is not OpenIddictServerEndpointType.Logout)
+            if (context.EndpointType is not OpenIddictServerEndpointType.EndSession)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
             }

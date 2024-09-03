@@ -66,8 +66,28 @@ public sealed class OpenIddictServerAspNetCoreBuilder
         => Configure(options => options.EnableAuthorizationEndpointPassthrough = true);
 
     /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect end session endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictServerAspNetCoreBuilder EnableEndSessionEndpointPassthrough()
+        => Configure(options => options.EnableEndSessionEndpointPassthrough = true);
+
+    /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect end-user verification endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictServerAspNetCoreBuilder EnableEndUserVerificationEndpointPassthrough()
+        => Configure(options => options.EnableEndUserVerificationEndpointPassthrough = true);
+
+    /// <summary>
     /// Enables error pass-through support, so that the rest of the request processing pipeline is
-    /// automatically invoked when returning an error from the interactive authorization and logout endpoints.
+    /// automatically invoked when returning an error from the interactive authorization and end session endpoints.
     /// When this option is enabled, special logic must be added to these actions to handle errors, that can be
     /// retrieved using <see cref="OpenIddictServerAspNetCoreHelpers.GetOpenIddictServerResponse(HttpContext)"/>.
     /// </summary>
@@ -78,16 +98,6 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerAspNetCoreBuilder EnableErrorPassthrough()
         => Configure(options => options.EnableErrorPassthrough = true);
-
-    /// <summary>
-    /// Enables the pass-through mode for the OpenID Connect logout endpoint.
-    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
-    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
-    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
-    /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
-    public OpenIddictServerAspNetCoreBuilder EnableLogoutEndpointPassthrough()
-        => Configure(options => options.EnableLogoutEndpointPassthrough = true);
 
     /// <summary>
     /// Enables the pass-through mode for the OpenID Connect token endpoint.
@@ -106,18 +116,8 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
-    public OpenIddictServerAspNetCoreBuilder EnableUserinfoEndpointPassthrough()
-        => Configure(options => options.EnableUserinfoEndpointPassthrough = true);
-
-    /// <summary>
-    /// Enables the pass-through mode for the OpenID Connect user verification endpoint.
-    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
-    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
-    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
-    /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
-    public OpenIddictServerAspNetCoreBuilder EnableVerificationEndpointPassthrough()
-        => Configure(options => options.EnableVerificationEndpointPassthrough = true);
+    public OpenIddictServerAspNetCoreBuilder EnableUserInfoEndpointPassthrough()
+        => Configure(options => options.EnableUserInfoEndpointPassthrough = true);
 
     /// <summary>
     /// Enables authorization request caching, so that authorization requests
@@ -131,12 +131,12 @@ public sealed class OpenIddictServerAspNetCoreBuilder
         => Configure(options => options.EnableAuthorizationRequestCaching = true);
 
     /// <summary>
-    /// Enables logout request caching, so that logout requests
+    /// Enables end session request caching, so that end session requests
     /// are automatically stored in the distributed cache.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
-    public OpenIddictServerAspNetCoreBuilder EnableLogoutRequestCaching()
-        => Configure(options => options.EnableLogoutRequestCaching = true);
+    public OpenIddictServerAspNetCoreBuilder EnableEndSessionRequestCaching()
+        => Configure(options => options.EnableEndSessionRequestCaching = true);
 
     /// <summary>
     /// Enables status code pages integration support. Once enabled, errors
@@ -185,19 +185,19 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     }
 
     /// <summary>
-    /// Sets the caching policy used by the logout endpoint.
+    /// Sets the caching policy used by the end session endpoint.
     /// Note: the specified policy is only used when caching is explicitly enabled.
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
-    public OpenIddictServerAspNetCoreBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy)
+    public OpenIddictServerAspNetCoreBuilder SetEndSessionRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)
         {
             throw new ArgumentNullException(nameof(policy));
         }
 
-        return Configure(options => options.LogoutRequestCachingPolicy = policy);
+        return Configure(options => options.EndSessionRequestCachingPolicy = policy);
     }
 
     /// <inheritdoc/>

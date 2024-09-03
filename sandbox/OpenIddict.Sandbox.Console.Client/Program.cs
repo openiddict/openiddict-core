@@ -40,7 +40,7 @@ var host = new HostBuilder()
                 // you can restrict the list of enabled flows if necessary.
                 options.AllowAuthorizationCodeFlow()
                        .AllowClientCredentialsFlow()
-                       .AllowDeviceCodeFlow()
+                       .AllowDeviceAuthorizationFlow()
                        .AllowHybridFlow()
                        .AllowImplicitFlow()
                        .AllowNoneFlow()

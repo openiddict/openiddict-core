@@ -11,15 +11,15 @@ namespace OpenIddict.Client;
 public static partial class OpenIddictClientEvents
 {
     /// <summary>
-    /// Represents an event called for each request to the logout endpoint to give the user code
-    /// a chance to manually update the logout request before it is sent to the identity provider.
+    /// Represents an event called for each request to the end session endpoint to give the user code
+    /// a chance to manually update the end session request before it is sent to the identity provider.
     /// </summary>
-    public sealed class PrepareLogoutRequestContext : BaseValidatingContext
+    public sealed class PrepareEndSessionRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="PrepareLogoutRequestContext"/> class.
+        /// Creates a new instance of the <see cref="PrepareEndSessionRequestContext"/> class.
         /// </summary>
-        public PrepareLogoutRequestContext(OpenIddictClientTransaction transaction)
+        public PrepareEndSessionRequestContext(OpenIddictClientTransaction transaction)
             : base(transaction)
         {
         }
@@ -40,15 +40,15 @@ public static partial class OpenIddictClientEvents
     }
 
     /// <summary>
-    /// Represents an event called for each request to the logout endpoint
-    /// to give the user code a chance to manually send the logout request.
+    /// Represents an event called for each request to the end session endpoint
+    /// to give the user code a chance to manually send the end session request.
     /// </summary>
-    public sealed class ApplyLogoutRequestContext : BaseValidatingContext
+    public sealed class ApplyEndSessionRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="PrepareLogoutRequestContext"/> class.
+        /// Creates a new instance of the <see cref="PrepareEndSessionRequestContext"/> class.
         /// </summary>
-        public ApplyLogoutRequestContext(OpenIddictClientTransaction transaction)
+        public ApplyEndSessionRequestContext(OpenIddictClientTransaction transaction)
             : base(transaction)
         {
         }
@@ -75,8 +75,8 @@ public static partial class OpenIddictClientEvents
     }
 
     /// <summary>
-    /// Represents an event called for each request to the post-logout redirection endpoint to give the user code
-    /// a chance to manually extract the redirection request from the ambient HTTP context.
+    /// Represents an event called for each request to the post-logout redirection endpoint to give the
+    /// user code a chance to manually extract the redirection request from the ambient HTTP context.
     /// </summary>
     public sealed class ExtractPostLogoutRedirectionRequestContext : BaseValidatingContext
     {

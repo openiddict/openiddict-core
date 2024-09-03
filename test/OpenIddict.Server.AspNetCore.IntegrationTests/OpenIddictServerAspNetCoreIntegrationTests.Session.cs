@@ -13,14 +13,14 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests;
 public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServerIntegrationTests
 {
     [Fact(Skip = "The handler responsible for rejecting such requests has not been ported yet.")]
-    public async Task ExtractLogoutRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled()
+    public async Task ExtractEndSessionRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled()
     {
         // Arrange
         await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
         await using var client = await server.CreateClientAsync();
 
         // Act
-        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        var response = await client.PostAsync("/connect/endsession", new OpenIddictRequest
         {
             RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
         });
@@ -31,7 +31,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
     }
 
     [Fact]
-    public async Task ExtractLogoutRequest_InvalidRequestIdParameterIsRejected()
+    public async Task ExtractEndSessionRequest_InvalidRequestIdParameterIsRejected()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -39,13 +39,13 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
             options.Services.AddDistributedMemoryCache();
 
             options.UseAspNetCore()
-                   .EnableLogoutRequestCaching();
+                   .EnableEndSessionRequestCaching();
         });
 
         await using var client = await server.CreateClientAsync();
 
         // Act
-        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        var response = await client.PostAsync("/connect/endsession", new OpenIddictRequest
         {
             RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
         });

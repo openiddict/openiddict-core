@@ -86,14 +86,14 @@ public sealed class OpenIddictClientOptions
     };
 
     /// <summary>
-    /// Gets the absolute and relative URIs associated to the redirection endpoint.
-    /// </summary>
-    public List<Uri> RedirectionEndpointUris { get; } = [];
-
-    /// <summary>
     /// Gets the absolute and relative URIs associated to the post-logout redirection endpoint.
     /// </summary>
     public List<Uri> PostLogoutRedirectionEndpointUris { get; } = [];
+
+    /// <summary>
+    /// Gets the absolute and relative URIs associated to the redirection endpoint.
+    /// </summary>
+    public List<Uri> RedirectionEndpointUris { get; } = [];
 
     /// <summary>
     /// Gets the static client registrations used by the OpenIddict client services.
