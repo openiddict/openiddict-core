@@ -211,7 +211,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the JWKS endpoint URI from the discovery document.
+        /// Contains the logic responsible for extracting the JSON Web Key Set endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractCryptographyEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
@@ -349,22 +349,22 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for validating the well-known parameters contained in the JWKS response.
+        /// Contains the logic responsible for validating the well-known parameters contained in the JSON Web Key Set response.
         /// </summary>
-        public sealed class ValidateWellKnownCryptographyParameters : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
+        public sealed class ValidateWellKnownCryptographyParameters : IOpenIddictValidationHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
                     .UseSingletonHandler<ValidateWellKnownCryptographyParameters>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
+            public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
                 if (context is null)
                 {
@@ -423,22 +423,22 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for surfacing potential errors from the cryptography response.
+        /// Contains the logic responsible for surfacing potential errors from the JSON Web Key Set response.
         /// </summary>
-        public sealed class HandleCryptographyErrorResponse : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
+        public sealed class HandleCryptographyErrorResponse : IOpenIddictValidationHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
                     .UseSingletonHandler<HandleCryptographyErrorResponse>()
                     .SetOrder(ValidateWellKnownCryptographyParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
+            public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
                 if (context is null)
                 {
@@ -466,22 +466,22 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the signing keys from the JWKS document.
+        /// Contains the logic responsible for extracting the signing keys from the JSON Web Key Set document.
         /// </summary>
-        public sealed class ExtractSigningKeys : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
+        public sealed class ExtractSigningKeys : IOpenIddictValidationHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
                     .UseSingletonHandler<ExtractSigningKeys>()
                     .SetOrder(HandleCryptographyErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
+            public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
                 if (context is null)
                 {
@@ -501,7 +501,7 @@ public static partial class OpenIddictValidationHandlers
 
                 for (var index = 0; index < keys.Count; index++)
                 {
-                    // Note: the "use" parameter is defined as optional by the JWKS specification
+                    // Note: the "use" parameter is defined as optional by the JSON Web Key Set specification
                     // but is required by the OpenID Connect discovery specification if both signing
                     // and encryption keys are present in the returned list. If the "use" parameter
                     // is not explicitly specified or has an empty value, assume it is a signing key.

@@ -123,13 +123,14 @@ public class OpenIddictServerExtensionsTests
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireAuthorizationRequest))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireClientIdParameter))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireConfigurationRequest))]
-    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireCryptographyRequest))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireDegradedModeDisabled))]
-    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireDeviceRequest))]
+    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireDeviceAuthorizationRequest))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireEndpointPermissionsEnabled))]
+    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireEndSessionRequest))]
+    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireEndUserVerificationRequest))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireGrantTypePermissionsEnabled))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireIntrospectionRequest))]
-    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireLogoutRequest))]
+    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireJsonWebKeySetRequest))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequirePostLogoutRedirectUriParameter))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireReferenceAccessTokensEnabled))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireReferenceRefreshTokensEnabled))]
@@ -139,8 +140,7 @@ public class OpenIddictServerExtensionsTests
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireScopeValidationEnabled))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireTokenStorageEnabled))]
     [InlineData(typeof(OpenIddictServerHandlerFilters.RequireTokenRequest))]
-    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireUserinfoRequest))]
-    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireVerificationRequest))]
+    [InlineData(typeof(OpenIddictServerHandlerFilters.RequireUserInfoRequest))]
     public void AddServer_RegistersRequiredSingletons(Type type)
     {
         // Arrange

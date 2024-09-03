@@ -38,24 +38,24 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             /*
              * Cryptography request processing:
              */
-            CreateHttpClient<PrepareCryptographyRequestContext>.Descriptor,
-            PrepareGetHttpRequest<PrepareCryptographyRequestContext>.Descriptor,
-            AttachHttpVersion<PrepareCryptographyRequestContext>.Descriptor,
-            AttachJsonAcceptHeaders<PrepareCryptographyRequestContext>.Descriptor,
-            AttachUserAgentHeader<PrepareCryptographyRequestContext>.Descriptor,
-            AttachFromHeader<PrepareCryptographyRequestContext>.Descriptor,
-            AttachHttpParameters<PrepareCryptographyRequestContext>.Descriptor,
-            SendHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
-            DisposeHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
+            CreateHttpClient<PrepareJsonWebKeySetRequestContext>.Descriptor,
+            PrepareGetHttpRequest<PrepareJsonWebKeySetRequestContext>.Descriptor,
+            AttachHttpVersion<PrepareJsonWebKeySetRequestContext>.Descriptor,
+            AttachJsonAcceptHeaders<PrepareJsonWebKeySetRequestContext>.Descriptor,
+            AttachUserAgentHeader<PrepareJsonWebKeySetRequestContext>.Descriptor,
+            AttachFromHeader<PrepareJsonWebKeySetRequestContext>.Descriptor,
+            AttachHttpParameters<PrepareJsonWebKeySetRequestContext>.Descriptor,
+            SendHttpRequest<ApplyJsonWebKeySetRequestContext>.Descriptor,
+            DisposeHttpRequest<ApplyJsonWebKeySetRequestContext>.Descriptor,
 
             /*
              * Configuration response processing:
              */
-            DecompressResponseContent<ExtractCryptographyResponseContext>.Descriptor,
-            ExtractJsonHttpResponse<ExtractCryptographyResponseContext>.Descriptor,
-            ExtractWwwAuthenticateHeader<ExtractCryptographyResponseContext>.Descriptor,
-            ValidateHttpResponse<ExtractCryptographyResponseContext>.Descriptor,
-            DisposeHttpResponse<ExtractCryptographyResponseContext>.Descriptor
+            DecompressResponseContent<ExtractJsonWebKeySetResponseContext>.Descriptor,
+            ExtractJsonHttpResponse<ExtractJsonWebKeySetResponseContext>.Descriptor,
+            ExtractWwwAuthenticateHeader<ExtractJsonWebKeySetResponseContext>.Descriptor,
+            ValidateHttpResponse<ExtractJsonWebKeySetResponseContext>.Descriptor,
+            DisposeHttpResponse<ExtractJsonWebKeySetResponseContext>.Descriptor
         ]);
     }
 }

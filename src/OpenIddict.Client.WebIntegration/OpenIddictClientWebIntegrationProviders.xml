@@ -57,7 +57,7 @@
     <Environment Issuer="https://airtable.com/">
       <Configuration AuthorizationEndpoint="https://airtable.com/oauth2/v1/authorize"
                      TokenEndpoint="https://airtable.com/oauth2/v1/token"
-                     UserinfoEndpoint="https://api.airtable.com/v0/meta/whoami">
+                     UserInfoEndpoint="https://api.airtable.com/v0/meta/whoami">
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="authorization_code" />
@@ -88,7 +88,7 @@
       <Configuration AuthorizationEndpoint="https://www.amazon.com/ap/oa"
                      DeviceAuthorizationEndpoint="https://api.amazon.com/auth/o2/create/codepair"
                      TokenEndpoint="https://api.amazon.com/auth/o2/token"
-                     UserinfoEndpoint="https://api.amazon.com/user/profile">
+                     UserInfoEndpoint="https://api.amazon.com/user/profile">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
@@ -144,7 +144,7 @@
     <Environment Issuer="https://www.arcgis.com/">
       <Configuration AuthorizationEndpoint="https://www.arcgis.com/sharing/rest/oauth2/authorize"
                      TokenEndpoint="https://www.arcgis.com/sharing/rest/oauth2/token"
-                     UserinfoEndpoint="https://www.arcgis.com/sharing/rest/community/self">
+                     UserInfoEndpoint="https://www.arcgis.com/sharing/rest/community/self">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
@@ -248,7 +248,7 @@
     <Environment Issuer="https://launchpad.37signals.com/">
       <Configuration AuthorizationEndpoint="https://launchpad.37signals.com/authorization/new"
                      TokenEndpoint="https://launchpad.37signals.com/authorization/token"
-                     UserinfoEndpoint="https://launchpad.37signals.com/authorization.json">
+                     UserInfoEndpoint="https://launchpad.37signals.com/authorization.json">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -288,7 +288,7 @@
     <Environment Issuer="https://bitbucket.org/">
       <Configuration AuthorizationEndpoint="https://bitbucket.org/site/oauth2/authorize"
                      TokenEndpoint="https://bitbucket.org/site/oauth2/access_token"
-                     UserinfoEndpoint="https://api.bitbucket.org/2.0/user">
+                     UserInfoEndpoint="https://api.bitbucket.org/2.0/user">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -308,7 +308,7 @@
     <Environment Issuer="https://bitly.com/">
       <Configuration AuthorizationEndpoint="https://bitly.com/oauth/authorize"
                      TokenEndpoint="https://api-ssl.bitly.com/oauth/access_token"
-                     UserinfoEndpoint="https://api-ssl.bitly.com/v4/user">
+                     UserInfoEndpoint="https://api-ssl.bitly.com/v4/user">
         <GrantType Value="authorization_code" />
         <GrantType Value="password" />
       </Configuration>
@@ -328,7 +328,7 @@
     <Environment Issuer="https://account.box.com/">
       <Configuration AuthorizationEndpoint="https://account.box.com/api/oauth2/authorize"
                      TokenEndpoint="https://api.box.com/oauth2/token"
-                     UserinfoEndpoint="https://api.box.com/2.0/users/me">
+                     UserInfoEndpoint="https://api.box.com/2.0/users/me">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -350,7 +350,7 @@
                      IntrospectionEndpoint="https://auth.calendly.com/oauth/introspect"
                      RevocationEndpoint="https://auth.calendly.com/oauth/revoke"
                      TokenEndpoint="https://auth.calendly.com/oauth/token"
-                     UserinfoEndpoint="https://api.calendly.com/users/me">
+                     UserInfoEndpoint="https://api.calendly.com/users/me">
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="authorization_code" />
@@ -479,7 +479,7 @@
     <Environment Issuer="https://deezer.com/">
       <Configuration AuthorizationEndpoint="https://connect.deezer.com/oauth/auth.php"
                      TokenEndpoint="https://connect.deezer.com/oauth/access_token.php"
-                     UserinfoEndpoint="https://api.deezer.com/user/me" />
+                     UserInfoEndpoint="https://api.deezer.com/user/me" />
     </Environment>
   </Provider>
 
@@ -497,7 +497,7 @@
       <Configuration AuthorizationEndpoint="https://www.deviantart.com/oauth2/authorize"
                      RevocationEndpoint="https://www.deviantart.com/oauth2/revoke"
                      TokenEndpoint="https://www.deviantart.com/oauth2/token"
-                     UserinfoEndpoint="https://www.deviantart.com/api/v1/oauth2/user/whoami">
+                     UserInfoEndpoint="https://www.deviantart.com/api/v1/oauth2/user/whoami">
         <GrantType Value="authorization_code" />
         <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
@@ -519,7 +519,7 @@
       <Configuration AuthorizationEndpoint="https://discord.com/oauth2/authorize"
                      RevocationEndpoint="https://discord.com/api/oauth2/token/revoke"
                      TokenEndpoint="https://discord.com/api/oauth2/token"
-                     UserinfoEndpoint="https://discord.com/api/oauth2/@me">
+                     UserInfoEndpoint="https://discord.com/api/oauth2/@me">
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="authorization_code" />
@@ -546,7 +546,7 @@
     <Environment Issuer="https://disqus.com/">
       <Configuration AuthorizationEndpoint="https://disqus.com/api/oauth/2.0/authorize/"
                      TokenEndpoint="https://disqus.com/api/oauth/2.0/access_token/"
-                     UserinfoEndpoint="https://disqus.com/api/3.0/users/details.json">
+                     UserInfoEndpoint="https://disqus.com/api/3.0/users/details.json">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -612,7 +612,7 @@
     <Environment Issuer="{settings.Issuer}">
       <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/oauth2/auth')}"
                      TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/oauth2/token')}"
-                     UserinfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/v1/current/Me')}">
+                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/v1/current/Me')}">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -635,7 +635,7 @@
     <Environment Issuer="https://www.facebook.com/">
       <Configuration AuthorizationEndpoint="https://www.facebook.com/v16.0/dialog/oauth"
                      TokenEndpoint="https://graph.facebook.com/v16.0/oauth/access_token"
-                     UserinfoEndpoint="https://graph.facebook.com/v16.0/me">
+                     UserInfoEndpoint="https://graph.facebook.com/v16.0/me">
         <CodeChallengeMethod Value="S256" />
       </Configuration>
     </Environment>
@@ -676,7 +676,7 @@
     <Environment Issuer="https://www.fitbit.com/">
       <Configuration AuthorizationEndpoint="https://www.fitbit.com/oauth2/authorize"
                      TokenEndpoint="https://api.fitbit.com/oauth2/token"
-                     UserinfoEndpoint="https://api.fitbit.com/1/user/-/profile.json">
+                     UserInfoEndpoint="https://api.fitbit.com/1/user/-/profile.json">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
@@ -704,7 +704,7 @@
     <Environment Issuer="https://gitee.com/">
       <Configuration AuthorizationEndpoint="https://gitee.com/oauth/authorize"
                      TokenEndpoint="https://gitee.com/oauth/token"
-                     UserinfoEndpoint="https://gitee.com/api/v5/user">
+                     UserInfoEndpoint="https://gitee.com/api/v5/user">
         <GrantType Value="authorization_code" />
         <GrantType Value="password" />
         <GrantType Value="refresh_token" />
@@ -732,7 +732,7 @@
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
                      DeviceAuthorizationEndpoint="https://github.com/login/device/code"
                      TokenEndpoint="https://github.com/login/oauth/access_token"
-                     UserinfoEndpoint="https://api.github.com/user">
+                     UserInfoEndpoint="https://api.github.com/user">
         <GrantType Value="authorization_code" />
         <GrantType Value="urn:ietf:params:oauth:grant-type:device_code" />
       </Configuration>
@@ -781,7 +781,7 @@
     <Environment Issuer="https://id.getharvest.com/">
       <Configuration AuthorizationEndpoint="https://id.getharvest.com/oauth2/authorize"
                      TokenEndpoint="https://id.getharvest.com/api/v2/oauth2/token"
-                     UserinfoEndpoint="https://id.getharvest.com/api/v2/accounts">
+                     UserInfoEndpoint="https://id.getharvest.com/api/v2/accounts">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -892,7 +892,7 @@
     <Environment Issuer="https://www.kookapp.cn/">
       <Configuration AuthorizationEndpoint="https://www.kookapp.cn/app/oauth2/authorize"
                      TokenEndpoint="https://www.kookapp.cn/api/oauth2/token"
-                     UserinfoEndpoint="https://www.kookapp.cn/api/v3/user/me" />
+                     UserInfoEndpoint="https://www.kookapp.cn/api/v3/user/me" />
 
       <!--
         Note: Kook requires sending the "get_user_info" scope to be able to use the userinfo endpoint.
@@ -915,7 +915,7 @@
     <Environment Name="Production" Issuer="https://www.kroger.com/">
       <Configuration AuthorizationEndpoint="https://api.kroger.com/v1/connect/oauth2/authorize"
                      TokenEndpoint="https://api.kroger.com/v1/connect/oauth2/token"
-                     UserinfoEndpoint="https://api.kroger.com/v1/identity/profile">
+                     UserInfoEndpoint="https://api.kroger.com/v1/identity/profile">
         <GrantType Value="authorization_code" />
         <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
@@ -933,7 +933,7 @@
     <Environment Name="Certification" Issuer="https://www.kroger.com/">
       <Configuration AuthorizationEndpoint="https://api-ce.kroger.com/v1/connect/oauth2/authorize"
                      TokenEndpoint="https://api-ce.kroger.com/v1/connect/oauth2/token"
-                     UserinfoEndpoint="https://api-ce.kroger.com/v1/identity/profile">
+                     UserInfoEndpoint="https://api-ce.kroger.com/v1/identity/profile">
         <GrantType Value="authorization_code" />
         <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
@@ -966,7 +966,7 @@
     <Environment Issuer="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/">
       <Configuration AuthorizationEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/authorize"
                      TokenEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/token"
-                     UserinfoEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/userinfo">
+                     UserInfoEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/userinfo">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -988,7 +988,7 @@
     <Environment Issuer="https://lichess.org/">
       <Configuration AuthorizationEndpoint="https://lichess.org/oauth"
                      TokenEndpoint="https://lichess.org/api/token"
-                     UserinfoEndpoint="https://lichess.org/api/account">
+                     UserInfoEndpoint="https://lichess.org/api/account">
         <CodeChallengeMethod Value="S256" />
       </Configuration>
     </Environment>
@@ -1026,7 +1026,7 @@
     <Environment Issuer="https://login.mailchimp.com/">
       <Configuration AuthorizationEndpoint="https://login.mailchimp.com/oauth2/authorize"
                      TokenEndpoint="https://login.mailchimp.com/oauth2/token"
-                     UserinfoEndpoint="https://login.mailchimp.com/oauth2/metadata" />
+                     UserInfoEndpoint="https://login.mailchimp.com/oauth2/metadata" />
     </Environment>
   </Provider>
 
@@ -1048,7 +1048,7 @@
     <Environment Issuer="{settings.Issuer}">
       <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, 'oauth/authorize')}"
                      TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, 'oauth/token')}"
-                     UserinfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/v1/accounts/verify_credentials')}">
+                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/v1/accounts/verify_credentials')}">
         <GrantType Value="authorization_code" />
         <GrantType Value="client_credentials" />
         <GrantType Value="password" />
@@ -1072,7 +1072,7 @@
     <Environment Issuer="https://www.meetup.com/">
       <Configuration AuthorizationEndpoint="https://secure.meetup.com/oauth2/authorize"
                      TokenEndpoint="https://secure.meetup.com/oauth2/access"
-                     UserinfoEndpoint="https://api.meetup.com/gql">
+                     UserInfoEndpoint="https://api.meetup.com/gql">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1133,7 +1133,7 @@
     <Environment Issuer="https://www.mixcloud.com/">
       <Configuration AuthorizationEndpoint="https://www.mixcloud.com/oauth/authorize"
                      TokenEndpoint="https://www.mixcloud.com/oauth/access_token"
-                     UserinfoEndpoint="https://api.mixcloud.com/me" />
+                     UserInfoEndpoint="https://api.mixcloud.com/me" />
     </Environment>
   </Provider>
 
@@ -1151,7 +1151,7 @@
       <Configuration AuthorizationEndpoint="https://musicbrainz.org/oauth2/authorize"
                      RevocationEndpoint="https://musicbrainz.org/oauth2/revoke"
                      TokenEndpoint="https://musicbrainz.org/oauth2/token"
-                     UserinfoEndpoint="https://musicbrainz.org/oauth2/userinfo">
+                     UserInfoEndpoint="https://musicbrainz.org/oauth2/userinfo">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
@@ -1186,7 +1186,7 @@
     <Environment Issuer="{settings.Issuer}">
       <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, 'index.php/apps/oauth2/authorize')}"
                      TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, 'index.php/apps/oauth2/api/v1/token')}"
-                     UserinfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'ocs/v2.php/cloud/user?format=json')}">
+                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'ocs/v2.php/cloud/user?format=json')}">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1209,7 +1209,7 @@
     <Environment Issuer="https://www.notion.com/">
       <Configuration AuthorizationEndpoint="https://api.notion.com/v1/oauth/authorize"
                      TokenEndpoint="https://api.notion.com/v1/oauth/token"
-                     UserinfoEndpoint="https://api.notion.com/v1/users/me">
+                     UserInfoEndpoint="https://api.notion.com/v1/users/me">
         <TokenEndpointAuthMethod Value="client_secret_basic" />
       </Configuration>
     </Environment>
@@ -1275,7 +1275,7 @@
     <Environment Issuer="https://www.patreon.com/">
       <Configuration AuthorizationEndpoint="https://www.patreon.com/oauth2/authorize"
                      TokenEndpoint="https://www.patreon.com/api/oauth2/token"
-                     UserinfoEndpoint="https://www.patreon.com/api/oauth2/v2/identity">
+                     UserInfoEndpoint="https://www.patreon.com/api/oauth2/v2/identity">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1353,7 +1353,7 @@
     <Environment Issuer="https://www.pipedrive.com/">
       <Configuration AuthorizationEndpoint="https://oauth.pipedrive.com/oauth/authorize"
                      TokenEndpoint="https://oauth.pipedrive.com/oauth/token"
-                     UserinfoEndpoint="https://api.pipedrive.com/v1/users/me">
+                     UserInfoEndpoint="https://api.pipedrive.com/v1/users/me">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
 
@@ -1424,7 +1424,7 @@
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
                      RevocationEndpoint="https://www.reddit.com/api/v1/revoke_token"
                      TokenEndpoint="https://www.reddit.com/api/v1/access_token"
-                     UserinfoEndpoint="https://oauth.reddit.com/api/v1/me">
+                     UserInfoEndpoint="https://oauth.reddit.com/api/v1/me">
         <GrantType Value="authorization_code" />
         <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
@@ -1477,7 +1477,7 @@
     <Environment Name="Production" Issuer="https://servicechannel.com/">
       <Configuration AuthorizationEndpoint="https://login.servicechannel.com/oauth/authorize"
                      TokenEndpoint="https://login.servicechannel.com/oauth/token"
-                     UserinfoEndpoint="https://api.servicechannel.com/v3/users/current/profile">
+                     UserInfoEndpoint="https://api.servicechannel.com/v3/users/current/profile">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
 
@@ -1488,7 +1488,7 @@
     <Environment Name="Sandbox" Issuer="https://servicechannel.com/">
       <Configuration AuthorizationEndpoint="https://sb2login.servicechannel.com/oauth/authorize"
                      TokenEndpoint="https://sb2login.servicechannel.com/oauth/token"
-                     UserinfoEndpoint="https://sb2api.servicechannel.com/v3/users/current/profile">
+                     UserInfoEndpoint="https://sb2api.servicechannel.com/v3/users/current/profile">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
 
@@ -1566,7 +1566,7 @@
     <Environment Issuer="https://www.smartsheet.com/">
       <Configuration AuthorizationEndpoint="https://app.smartsheet.com/b/authorize"
                      TokenEndpoint="https://api.smartsheet.com/2.0/token"
-                     UserinfoEndpoint="https://api.smartsheet.com/2.0/users/me">
+                     UserInfoEndpoint="https://api.smartsheet.com/2.0/users/me">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1586,7 +1586,7 @@
     <Environment Issuer="https://accounts.spotify.com/">
       <Configuration AuthorizationEndpoint="https://accounts.spotify.com/authorize"
                      TokenEndpoint="https://accounts.spotify.com/api/token"
-                     UserinfoEndpoint="https://api.spotify.com/v1/me">
+                     UserInfoEndpoint="https://api.spotify.com/v1/me">
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="authorization_code" />
@@ -1609,7 +1609,7 @@
     <Environment Issuer="https://api.stackexchange.com/">
       <Configuration AuthorizationEndpoint="https://stackoverflow.com/oauth"
                      TokenEndpoint="https://stackoverflow.com/oauth/access_token/json"
-                     UserinfoEndpoint="https://api.stackexchange.com/2.3/me" />
+                     UserInfoEndpoint="https://api.stackexchange.com/2.3/me" />
     </Environment>
 
     <Setting PropertyName="ApplicationKey" ParameterName="key" Type="String" Required="true"
@@ -1694,7 +1694,7 @@
     <Environment Issuer="https://streamlabs.com/">
       <Configuration AuthorizationEndpoint="https://streamlabs.com/api/v2.0/authorize"
                      TokenEndpoint="https://streamlabs.com/api/v2.0/token"
-                     UserinfoEndpoint="https://streamlabs.com/api/v2.0/user">
+                     UserInfoEndpoint="https://streamlabs.com/api/v2.0/user">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1713,7 +1713,7 @@
     <Environment Issuer="https://www.subscribestar.com/">
       <Configuration AuthorizationEndpoint="https://www.subscribestar.com/oauth2/authorize"
                      TokenEndpoint="https://www.subscribestar.com/oauth2/token"
-                     UserinfoEndpoint="https://www.subscribestar.com/api/graphql/v1">
+                     UserInfoEndpoint="https://www.subscribestar.com/api/graphql/v1">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1783,7 +1783,7 @@
     <Environment Issuer="https://todoist.com/">
       <Configuration AuthorizationEndpoint="https://todoist.com/oauth/authorize"
                      TokenEndpoint="https://todoist.com/oauth/access_token"
-                     UserinfoEndpoint="https://api.todoist.com/sync/v9/sync" />
+                     UserInfoEndpoint="https://api.todoist.com/sync/v9/sync" />
 
       <!--
         Note: Todoist requires sending the "data:read" scope to be able to use the userinfo endpoint.
@@ -1807,7 +1807,7 @@
       <Configuration AuthorizationEndpoint="https://trakt.tv/oauth/authorize"
                      RevocationEndpoint="https://api.trakt.tv/oauth/revoke"
                      TokenEndpoint="https://api.trakt.tv/oauth/token"
-                     UserinfoEndpoint="https://api.trakt.tv/users/me">
+                     UserInfoEndpoint="https://api.trakt.tv/users/me">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1833,7 +1833,7 @@
 
       <Configuration AuthorizationEndpoint="https://open.trovo.live/page/login.html"
                      TokenEndpoint="https://open-api.trovo.live/openplatform/exchangetoken"
-                     UserinfoEndpoint="https://open-api.trovo.live/openplatform/getuserinfo">
+                     UserInfoEndpoint="https://open-api.trovo.live/openplatform/getuserinfo">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1859,7 +1859,7 @@
     <Environment Issuer="https://www.tumblr.com/">
       <Configuration AuthorizationEndpoint="https://www.tumblr.com/oauth2/authorize"
                      TokenEndpoint="https://api.tumblr.com/v2/oauth2/token"
-                     UserinfoEndpoint="https://api.tumblr.com/v2/user/info">
+                     UserInfoEndpoint="https://api.tumblr.com/v2/user/info">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1891,7 +1891,7 @@
     <Environment Issuer="https://twitter.com/">
       <Configuration AuthorizationEndpoint="https://twitter.com/i/oauth2/authorize"
                      TokenEndpoint="https://api.twitter.com/2/oauth2/token"
-                     UserinfoEndpoint="https://api.twitter.com/2/users/me">
+                     UserInfoEndpoint="https://api.twitter.com/2/users/me">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
@@ -1971,7 +1971,7 @@
     <Environment Issuer="https://www.typeform.com/">
       <Configuration AuthorizationEndpoint="https://api.typeform.com/oauth/authorize"
                      TokenEndpoint="https://api.typeform.com/oauth/token"
-                     UserinfoEndpoint="https://api.typeform.com/me">
+                     UserInfoEndpoint="https://api.typeform.com/me">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -2010,7 +2010,7 @@
     <Environment Issuer="https://api.vimeo.com/">
       <Configuration AuthorizationEndpoint="https://api.vimeo.com/oauth/authorize"
                      TokenEndpoint="https://api.vimeo.com/oauth/access_token"
-                     UserinfoEndpoint="https://api.vimeo.com/me" />
+                     UserInfoEndpoint="https://api.vimeo.com/me" />
     </Environment>
   </Provider>
 
@@ -2048,7 +2048,7 @@
       <Configuration AuthorizationEndpoint="https://api.weibo.com/oauth2/authorize"
                      RevocationEndpoint="https://api.weibo.com/oauth2/revokeoauth2"
                      TokenEndpoint="https://api.weibo.com/oauth2/access_token"
-                     UserinfoEndpoint="https://api.weibo.com/2/users/show.json" />
+                     UserInfoEndpoint="https://api.weibo.com/2/users/show.json" />
     </Environment>
 
     <Setting PropertyName="Display" ParameterName="display" Type="String" Required="false"
@@ -2074,7 +2074,7 @@
     <Environment Issuer="https://www.wikimedia.org/">
       <Configuration AuthorizationEndpoint="https://meta.wikimedia.org/w/rest.php/oauth2/authorize"
                      TokenEndpoint="https://meta.wikimedia.org/w/rest.php/oauth2/access_token"
-                     UserinfoEndpoint="https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile">
+                     UserInfoEndpoint="https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile">
         <GrantType Value="authorization_code" />
         <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
@@ -2094,7 +2094,7 @@
     <Environment Issuer="https://wordpress.com/">
       <Configuration AuthorizationEndpoint="https://public-api.wordpress.com/oauth2/authorize"
                      TokenEndpoint="https://public-api.wordpress.com/oauth2/token"
-                     UserinfoEndpoint="https://public-api.wordpress.com/rest/v1/me" />
+                     UserInfoEndpoint="https://public-api.wordpress.com/rest/v1/me" />
       <!--
         Note: by default, if no specific scope is requested, an unlimited access is granted by
         WordPress. To avoid that, the special "auth" scope (that shouldn't be used with any
@@ -2210,7 +2210,7 @@
       <Configuration AuthorizationEndpoint="https://zoom.us/oauth/authorize"
                      RevocationEndpoint="https://zoom.us/oauth/revoke"
                      TokenEndpoint="https://zoom.us/oauth/token"
-                     UserinfoEndpoint="https://api.zoom.us/v2/users/me">
+                     UserInfoEndpoint="https://api.zoom.us/v2/users/me">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 

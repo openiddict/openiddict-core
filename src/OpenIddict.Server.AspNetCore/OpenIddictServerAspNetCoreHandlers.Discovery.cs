@@ -28,14 +28,14 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             /*
              * Cryptography request extraction:
              */
-            ExtractGetRequest<ExtractCryptographyRequestContext>.Descriptor,
+            ExtractGetRequest<ExtractJsonWebKeySetRequestContext>.Descriptor,
 
             /*
              * Cryptography response processing:
              */
-            AttachHttpResponseCode<ApplyCryptographyResponseContext>.Descriptor,
-            AttachWwwAuthenticateHeader<ApplyCryptographyResponseContext>.Descriptor,
-            ProcessJsonResponse<ApplyCryptographyResponseContext>.Descriptor
+            AttachHttpResponseCode<ApplyJsonWebKeySetResponseContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ApplyJsonWebKeySetResponseContext>.Descriptor,
+            ProcessJsonResponse<ApplyJsonWebKeySetResponseContext>.Descriptor
         ]);
     }
 }

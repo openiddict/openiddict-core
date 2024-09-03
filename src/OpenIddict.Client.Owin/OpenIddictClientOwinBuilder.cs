@@ -115,7 +115,7 @@ public sealed class OpenIddictClientOwinBuilder
 
     /// <summary>
     /// Enables error pass-through support, so that the rest of the request processing pipeline is
-    /// automatically invoked when returning an error from the interactive authorization and logout endpoints.
+    /// automatically invoked when returning an error from the interactive authorization and end session endpoints.
     /// When this option is enabled, special logic must be added to these actions to handle errors, that can be
     /// retrieved using <see cref="OpenIddictClientOwinHelpers.GetOpenIddictClientResponse(IOwinContext)"/>.
     /// </summary>

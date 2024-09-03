@@ -281,13 +281,13 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 });
             }
 
-            if (!string.IsNullOrEmpty(context.UserinfoToken))
+            if (!string.IsNullOrEmpty(context.UserInfoToken))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = Tokens.UserinfoToken,
-                    Value = context.UserinfoToken
+                    Name = Tokens.UserInfoToken,
+                    Value = context.UserInfoToken
                 });
             }
 
@@ -331,9 +331,9 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 properties.SetParameter(Properties.StateTokenPrincipal, context.StateTokenPrincipal);
             }
 
-            if (context.UserinfoTokenPrincipal is not null)
+            if (context.UserInfoTokenPrincipal is not null)
             {
-                properties.SetParameter(Properties.UserinfoTokenPrincipal, context.UserinfoTokenPrincipal);
+                properties.SetParameter(Properties.UserInfoTokenPrincipal, context.UserInfoTokenPrincipal);
             }
 
             return AuthenticateResult.Success(new AuthenticationTicket(

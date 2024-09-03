@@ -166,8 +166,10 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
             // A single main claims-based principal instance can be attached to an authentication ticket.
             var principal = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
                     => context.IdentityTokenPrincipal,
+
+                OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
 
                 OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
                     => context.AccessTokenPrincipal       ??
@@ -184,9 +186,7 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
                     => context.RefreshTokenPrincipal,
 
-                OpenIddictServerEndpointType.Userinfo => context.AccessTokenPrincipal,
-
-                OpenIddictServerEndpointType.Verification => context.UserCodePrincipal,
+                OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
 
                 _ => null
             };

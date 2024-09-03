@@ -30,16 +30,16 @@ public static partial class OpenIddictServerOwinHandlers
             /*
              * Cryptography request extraction:
              */
-            ExtractGetRequest<ExtractCryptographyRequestContext>.Descriptor,
+            ExtractGetRequest<ExtractJsonWebKeySetRequestContext>.Descriptor,
 
             /*
              * Cryptography response processing:
              */
-            AttachHttpResponseCode<ApplyCryptographyResponseContext>.Descriptor,
-            AttachOwinResponseChallenge<ApplyCryptographyResponseContext>.Descriptor,
-            SuppressFormsAuthenticationRedirect<ApplyCryptographyResponseContext>.Descriptor,
-            AttachWwwAuthenticateHeader<ApplyCryptographyResponseContext>.Descriptor,
-            ProcessJsonResponse<ApplyCryptographyResponseContext>.Descriptor
+            AttachHttpResponseCode<ApplyJsonWebKeySetResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyJsonWebKeySetResponseContext>.Descriptor,
+            SuppressFormsAuthenticationRedirect<ApplyJsonWebKeySetResponseContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ApplyJsonWebKeySetResponseContext>.Descriptor,
+            ProcessJsonResponse<ApplyJsonWebKeySetResponseContext>.Descriptor
         ]);
     }
 }

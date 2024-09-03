@@ -86,24 +86,22 @@ public class Startup
             // Register the OpenIddict server components.
             .AddServer(options =>
             {
-                // Enable the authorization, device, introspection,
-                // logout, token, userinfo and verification endpoints.
+                // Enable the flows that will be used by the client applications.
                 options.SetAuthorizationEndpointUris("connect/authorize")
-                       .SetDeviceEndpointUris("connect/device")
+                       .SetDeviceAuthorizationEndpointUris("connect/device")
+                       .SetEndSessionEndpointUris("connect/endsession")
+                       .SetEndUserVerificationEndpointUris("connect/verify")
                        .SetIntrospectionEndpointUris("connect/introspect")
-                       .SetLogoutEndpointUris("connect/logout")
                        .SetTokenEndpointUris("connect/token")
-                       .SetUserinfoEndpointUris("connect/userinfo")
-                       .SetVerificationEndpointUris("connect/verify");
+                       .SetUserInfoEndpointUris("connect/userinfo");
 
-                // Note: this sample uses the code, device code, password and refresh token flows, but you
-                // can enable the other flows if you need to support implicit or client credentials.
+                // Enable the flows that will be used by the client applications.
                 options.AllowAuthorizationCodeFlow()
-                       .AllowDeviceCodeFlow()
+                       .AllowDeviceAuthorizationFlow()
                        .AllowPasswordFlow()
                        .AllowRefreshTokenFlow();
 
-                // Mark the "email", "profile", "roles" and "demo_api" scopes as supported scopes.
+                // Register the public scopes that will be exposed by the configuration endpoint.
                 options.RegisterScopes(Scopes.Email, Scopes.Profile, Scopes.Roles, "demo_api");
 
                 // Register the signing and encryption credentials.
@@ -116,7 +114,7 @@ public class Startup
                 // Register the OWIN host and configure the OWIN-specific options.
                 options.UseOwin()
                        .EnableAuthorizationEndpointPassthrough()
-                       .EnableLogoutEndpointPassthrough()
+                       .EnableEndSessionEndpointPassthrough()
                        .EnableTokenEndpointPassthrough();
             })
 
@@ -221,7 +219,7 @@ public class Startup
                     Permissions =
                     {
                         Permissions.Endpoints.Authorization,
-                        Permissions.Endpoints.Logout,
+                        Permissions.Endpoints.EndSession,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,
@@ -254,7 +252,7 @@ public class Startup
                     Permissions =
                     {
                         Permissions.Endpoints.Authorization,
-                        Permissions.Endpoints.Device,
+                        Permissions.Endpoints.DeviceAuthorization,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.DeviceCode,

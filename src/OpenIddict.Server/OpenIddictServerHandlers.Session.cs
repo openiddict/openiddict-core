@@ -23,12 +23,12 @@ public static partial class OpenIddictServerHandlers
             /*
              * Logout request top-level processing:
              */
-            ExtractLogoutRequest.Descriptor,
-            ValidateLogoutRequest.Descriptor,
-            HandleLogoutRequest.Descriptor,
-            ApplyLogoutResponse<ProcessErrorContext>.Descriptor,
-            ApplyLogoutResponse<ProcessRequestContext>.Descriptor,
-            ApplyLogoutResponse<ProcessSignOutContext>.Descriptor,
+            ExtractEndSessionRequest.Descriptor,
+            ValidateEndSessionRequest.Descriptor,
+            HandleEndSessionRequest.Descriptor,
+            ApplyEndSessionResponse<ProcessErrorContext>.Descriptor,
+            ApplyEndSessionResponse<ProcessRequestContext>.Descriptor,
+            ApplyEndSessionResponse<ProcessSignOutContext>.Descriptor,
 
             /*
              * Logout request validation:
@@ -52,13 +52,13 @@ public static partial class OpenIddictServerHandlers
         ]);
 
         /// <summary>
-        /// Contains the logic responsible for extracting logout requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for extracting end session requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ExtractLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractEndSessionRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ExtractLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+            public ExtractEndSessionRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -66,8 +66,8 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireLogoutRequest>()
-                    .UseScopedHandler<ExtractLogoutRequest>()
+                    .AddFilter<RequireEndSessionRequest>()
+                    .UseScopedHandler<ExtractEndSessionRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -80,7 +80,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ExtractLogoutRequestContext(context.Transaction);
+                var notification = new ExtractEndSessionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -114,13 +114,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for validating logout requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for validating end session requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ValidateLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateEndSessionRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+            public ValidateEndSessionRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -128,9 +128,9 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireLogoutRequest>()
-                    .UseScopedHandler<ValidateLogoutRequest>()
-                    .SetOrder(ExtractLogoutRequest.Descriptor.Order + 1_000)
+                    .AddFilter<RequireEndSessionRequest>()
+                    .UseScopedHandler<ValidateEndSessionRequest>()
+                    .SetOrder(ExtractEndSessionRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -142,12 +142,12 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ValidateLogoutRequestContext(context.Transaction);
+                var notification = new ValidateEndSessionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 // Store the context object in the transaction so it can be later retrieved by handlers
                 // that want to access the redirect_uri without triggering a new validation process.
-                context.Transaction.SetProperty(typeof(ValidateLogoutRequestContext).FullName!, notification);
+                context.Transaction.SetProperty(typeof(ValidateEndSessionRequestContext).FullName!, notification);
 
                 if (notification.IsRequestHandled)
                 {
@@ -175,13 +175,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for handling logout requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for handling end session requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class HandleLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleEndSessionRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public HandleLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+            public HandleEndSessionRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -189,9 +189,9 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireLogoutRequest>()
-                    .UseScopedHandler<HandleLogoutRequest>()
-                    .SetOrder(ValidateLogoutRequest.Descriptor.Order + 1_000)
+                    .AddFilter<RequireEndSessionRequest>()
+                    .UseScopedHandler<HandleEndSessionRequest>()
+                    .SetOrder(ValidateEndSessionRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -203,7 +203,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new HandleLogoutRequestContext(context.Transaction);
+                var notification = new HandleEndSessionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -273,11 +273,11 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing sign-in responses and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ApplyLogoutResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyEndSessionResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ApplyLogoutResponse(IOpenIddictServerDispatcher dispatcher)
+            public ApplyEndSessionResponse(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -285,8 +285,8 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
-                    .AddFilter<RequireLogoutRequest>()
-                    .UseScopedHandler<ApplyLogoutResponse<TContext>>()
+                    .AddFilter<RequireEndSessionRequest>()
+                    .UseScopedHandler<ApplyEndSessionResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -299,7 +299,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ApplyLogoutResponseContext(context.Transaction);
+                var notification = new ApplyEndSessionResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -319,22 +319,22 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting logout requests that specify an invalid post_logout_redirect_uri parameter.
+        /// Contains the logic responsible for rejecting end session requests that specify an invalid post_logout_redirect_uri parameter.
         /// </summary>
-        public sealed class ValidatePostLogoutRedirectUriParameter : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidatePostLogoutRedirectUriParameter : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
                     .UseSingletonHandler<ValidatePostLogoutRedirectUriParameter>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateLogoutRequestContext context)
+            public ValueTask HandleAsync(ValidateEndSessionRequestContext context)
             {
                 if (context is null)
                 {
@@ -376,9 +376,9 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for applying the authentication logic to logout requests.
+        /// Contains the logic responsible for applying the authentication logic to end session requests.
         /// </summary>
-        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateAuthentication : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -389,14 +389,14 @@ public static partial class OpenIddictServerHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
                     .UseScopedHandler<ValidateAuthentication>()
                     .SetOrder(ValidatePostLogoutRedirectUriParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateLogoutRequestContext context)
+            public async ValueTask HandleAsync(ValidateEndSessionRequestContext context)
             {
                 if (context is null)
                 {
@@ -441,7 +441,7 @@ public static partial class OpenIddictServerHandlers
         /// requests that use an invalid post_logout_redirect_uri.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public sealed class ValidateClientPostLogoutRedirectUri : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateClientPostLogoutRedirectUri : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -454,7 +454,7 @@ public static partial class OpenIddictServerHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequirePostLogoutRedirectUriParameter>()
                     .UseScopedHandler<ValidateClientPostLogoutRedirectUri>()
@@ -463,7 +463,7 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateLogoutRequestContext context)
+            public async ValueTask HandleAsync(ValidateEndSessionRequestContext context)
             {
                 if (context is null)
                 {
@@ -527,8 +527,10 @@ public static partial class OpenIddictServerHandlers
 
                     await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(uri))
                     {
+                        // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                         if (!context.Options.IgnoreEndpointPermissions &&
-                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
+                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
+                            !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
                         {
                             continue;
                         }
@@ -558,8 +560,10 @@ public static partial class OpenIddictServerHandlers
                         await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(
                             uri: new UriBuilder(value) { Port = -1 }.Uri.AbsoluteUri))
                         {
+                            // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                             if (!context.Options.IgnoreEndpointPermissions &&
-                                !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
+                                !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
+                                !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
                             {
                                 continue;
                             }
@@ -578,10 +582,10 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting logout requests made by unauthorized applications.
+        /// Contains the logic responsible for rejecting end session requests made by unauthorized applications.
         /// Note: this handler is not used when the degraded mode is enabled or when endpoint permissions are disabled.
         /// </summary>
-        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -594,7 +598,7 @@ public static partial class OpenIddictServerHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
                     .AddFilter<RequireEndpointPermissionsEnabled>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     // Note: support for the client_id parameter was only added in the second draft of the
@@ -610,7 +614,7 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateLogoutRequestContext context)
+            public async ValueTask HandleAsync(ValidateEndSessionRequestContext context)
             {
                 if (context is null)
                 {
@@ -622,8 +626,11 @@ public static partial class OpenIddictServerHandlers
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-                // Reject the request if the application is not allowed to use the logout endpoint.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
+                // Reject the request if the application is not allowed to use the end session endpoint.
+                //
+                // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
+                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
+                    !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6048), context.ClientId);
 
@@ -638,10 +645,10 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting logout requests that specify an identity
-        /// token hint that cannot be used by the client application sending the logout request.
+        /// Contains the logic responsible for rejecting end session requests that specify an identity
+        /// token hint that cannot be used by the client application sending the end session request.
         /// </summary>
-        public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
         {
             private readonly IOpenIddictApplicationManager? _applicationManager;
 
@@ -652,7 +659,7 @@ public static partial class OpenIddictServerHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
                     .UseScopedHandler<ValidateAuthorizedParty>(static provider =>
                     {
                         // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
@@ -669,7 +676,7 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateLogoutRequestContext context)
+            public async ValueTask HandleAsync(ValidateEndSessionRequestContext context)
             {
                 if (context is null)
                 {
@@ -754,8 +761,10 @@ public static partial class OpenIddictServerHandlers
                             continue;
                         }
 
+                        // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                         if (!context.Options.IgnoreEndpointPermissions &&
-                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
+                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
+                            !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
                         {
                             continue;
                         }
@@ -775,28 +784,28 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the principal
         /// extracted from the identity token hint to the event context.
         /// </summary>
-        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleLogoutRequestContext>
+        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleEndSessionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleLogoutRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleEndSessionRequestContext>()
                     .UseSingletonHandler<AttachPrincipal>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleLogoutRequestContext context)
+            public ValueTask HandleAsync(HandleEndSessionRequestContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = context.Transaction.GetProperty<ValidateLogoutRequestContext>(
-                    typeof(ValidateLogoutRequestContext).FullName!) ??
+                var notification = context.Transaction.GetProperty<ValidateEndSessionRequestContext>(
+                    typeof(ValidateEndSessionRequestContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 context.IdentityTokenHintPrincipal ??= notification.IdentityTokenHintPrincipal;
@@ -809,20 +818,20 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for inferring the redirect URI
         /// used to send the response back to the client application.
         /// </summary>
-        public sealed class AttachPostLogoutRedirectUri : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class AttachPostLogoutRedirectUri : IOpenIddictServerHandler<ApplyEndSessionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyEndSessionResponseContext>()
                     .UseSingletonHandler<AttachPostLogoutRedirectUri>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            public ValueTask HandleAsync(ApplyEndSessionResponseContext context)
             {
                 if (context is null)
                 {
@@ -834,11 +843,11 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                var notification = context.Transaction.GetProperty<ValidateLogoutRequestContext>(
-                    typeof(ValidateLogoutRequestContext).FullName!);
+                var notification = context.Transaction.GetProperty<ValidateEndSessionRequestContext>(
+                    typeof(ValidateEndSessionRequestContext).FullName!);
 
                 // Note: at this stage, the validated redirect URI property may be null (e.g if
-                // an error is returned from the ExtractLogoutRequest/ValidateLogoutRequest events).
+                // an error is returned from the ExtractEndSessionRequest/ValidateEndSessionRequest events).
                 if (notification is { IsRejected: false })
                 {
                     context.PostLogoutRedirectUri = notification.PostLogoutRedirectUri;
@@ -851,27 +860,27 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the state to the response.
         /// </summary>
-        public sealed class AttachResponseState : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class AttachResponseState : IOpenIddictServerHandler<ApplyEndSessionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyEndSessionResponseContext>()
                     .UseSingletonHandler<AttachResponseState>()
                     .SetOrder(AttachPostLogoutRedirectUri.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            public ValueTask HandleAsync(ApplyEndSessionResponseContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Attach the request state to the logout response.
+                // Attach the request state to the end session response.
                 if (string.IsNullOrEmpty(context.Response.State))
                 {
                     context.Response.State = context.Request?.State;

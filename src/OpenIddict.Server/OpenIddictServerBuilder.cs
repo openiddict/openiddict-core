@@ -944,11 +944,11 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
-    /// Enables device code flow support. For more information about this
+    /// Enables device authorization flow support. For more information about this
     /// specific OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc8628.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder AllowDeviceCodeFlow()
+    public OpenIddictServerBuilder AllowDeviceAuthorizationFlow()
         => Configure(options => options.GrantTypes.Add(GrantTypes.DeviceCode));
 
     /// <summary>
@@ -1129,13 +1129,13 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
-    /// Sets the relative or absolute URIs associated to the cryptography endpoint.
+    /// Sets the relative or absolute URIs associated to the device authorization endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetCryptographyEndpointUris(
+    public OpenIddictServerBuilder SetDeviceAuthorizationEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
         if (uris is null)
@@ -1143,17 +1143,17 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetCryptographyEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetDeviceAuthorizationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URIs associated to the cryptography endpoint.
+    /// Sets the relative or absolute URIs associated to the device authorization endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetCryptographyEndpointUris(params Uri[] uris)
+    public OpenIddictServerBuilder SetDeviceAuthorizationEndpointUris(params Uri[] uris)
     {
         if (uris is null)
         {
@@ -1172,19 +1172,19 @@ public sealed class OpenIddictServerBuilder
 
         return Configure(options =>
         {
-            options.CryptographyEndpointUris.Clear();
-            options.CryptographyEndpointUris.AddRange(uris);
+            options.DeviceAuthorizationEndpointUris.Clear();
+            options.DeviceAuthorizationEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URIs associated to the device endpoint.
+    /// Sets the relative or absolute URIs associated to the end session endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetDeviceEndpointUris(
+    public OpenIddictServerBuilder SetEndSessionEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
         if (uris is null)
@@ -1192,17 +1192,17 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetDeviceEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetEndSessionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URIs associated to the device endpoint.
+    /// Sets the relative or absolute URIs associated to the end session endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetDeviceEndpointUris(params Uri[] uris)
+    public OpenIddictServerBuilder SetEndSessionEndpointUris(params Uri[] uris)
     {
         if (uris is null)
         {
@@ -1221,8 +1221,8 @@ public sealed class OpenIddictServerBuilder
 
         return Configure(options =>
         {
-            options.DeviceEndpointUris.Clear();
-            options.DeviceEndpointUris.AddRange(uris);
+            options.EndSessionEndpointUris.Clear();
+            options.EndSessionEndpointUris.AddRange(uris);
         });
     }
 
@@ -1276,13 +1276,13 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
-    /// Sets the relative or absolute URIs associated to the logout endpoint.
+    /// Sets the relative or absolute URIs associated to the JSON Web Key Set endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetLogoutEndpointUris(
+    public OpenIddictServerBuilder SetJsonWebKeySetEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
         if (uris is null)
@@ -1290,17 +1290,17 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetLogoutEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetJsonWebKeySetEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URIs associated to the logout endpoint.
+    /// Sets the relative or absolute URIs associated to the JSON Web Key Set endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetLogoutEndpointUris(params Uri[] uris)
+    public OpenIddictServerBuilder SetJsonWebKeySetEndpointUris(params Uri[] uris)
     {
         if (uris is null)
         {
@@ -1319,8 +1319,8 @@ public sealed class OpenIddictServerBuilder
 
         return Configure(options =>
         {
-            options.LogoutEndpointUris.Clear();
-            options.LogoutEndpointUris.AddRange(uris);
+            options.JsonWebKeySetEndpointUris.Clear();
+            options.JsonWebKeySetEndpointUris.AddRange(uris);
         });
     }
 
@@ -1429,7 +1429,7 @@ public sealed class OpenIddictServerBuilder
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetUserinfoEndpointUris(
+    public OpenIddictServerBuilder SetUserInfoEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
         if (uris is null)
@@ -1437,7 +1437,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetUserinfoEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetUserInfoEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
@@ -1447,7 +1447,7 @@ public sealed class OpenIddictServerBuilder
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetUserinfoEndpointUris(params Uri[] uris)
+    public OpenIddictServerBuilder SetUserInfoEndpointUris(params Uri[] uris)
     {
         if (uris is null)
         {
@@ -1466,19 +1466,19 @@ public sealed class OpenIddictServerBuilder
 
         return Configure(options =>
         {
-            options.UserinfoEndpointUris.Clear();
-            options.UserinfoEndpointUris.AddRange(uris);
+            options.UserInfoEndpointUris.Clear();
+            options.UserInfoEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URIs associated to the verification endpoint.
+    /// Sets the relative or absolute URIs associated to the end-user verification endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first URI will be returned by the device endpoint.
+    /// Note: only the first URI will be returned by the device authorization endpoint.
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetVerificationEndpointUris(
+    public OpenIddictServerBuilder SetEndUserVerificationEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
         if (uris is null)
@@ -1486,17 +1486,17 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetVerificationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetEndUserVerificationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URIs associated to the verification endpoint.
+    /// Sets the relative or absolute URIs associated to the end-user verification endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first URI will be returned by the device endpoint.
+    /// Note: only the first URI will be returned by the device authorization endpoint.
     /// </summary>
     /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetVerificationEndpointUris(params Uri[] uris)
+    public OpenIddictServerBuilder SetEndUserVerificationEndpointUris(params Uri[] uris)
     {
         if (uris is null)
         {
@@ -1515,8 +1515,8 @@ public sealed class OpenIddictServerBuilder
 
         return Configure(options =>
         {
-            options.VerificationEndpointUris.Clear();
-            options.VerificationEndpointUris.AddRange(uris);
+            options.EndUserVerificationEndpointUris.Clear();
+            options.EndUserVerificationEndpointUris.AddRange(uris);
         });
     }
 

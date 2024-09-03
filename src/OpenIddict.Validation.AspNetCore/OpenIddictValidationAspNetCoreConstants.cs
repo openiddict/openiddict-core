@@ -14,7 +14,7 @@ public static class OpenIddictValidationAspNetCoreConstants
     public static class Cache
     {
         public const string AuthorizationRequest = "openiddict-authorization-request:";
-        public const string LogoutRequest = "openiddict-logout-request:";
+        public const string EndSessionRequest = "openiddict-logout-request:";
     }
 
     public static class Properties

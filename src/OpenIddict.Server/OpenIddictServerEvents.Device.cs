@@ -11,15 +11,15 @@ namespace OpenIddict.Server;
 public static partial class OpenIddictServerEvents
 {
     /// <summary>
-    /// Represents an event called for each request to the device endpoint to give the user code
-    /// a chance to manually extract the device request from the ambient HTTP context.
+    /// Represents an event called for each request to the device authorization endpoint to give the
+    /// user code a chance to manually extract the device request from the ambient HTTP context.
     /// </summary>
-    public sealed class ExtractDeviceRequestContext : BaseValidatingContext
+    public sealed class ExtractDeviceAuthorizationRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ExtractDeviceRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ExtractDeviceAuthorizationRequestContext"/> class.
         /// </summary>
-        public ExtractDeviceRequestContext(OpenIddictServerTransaction transaction)
+        public ExtractDeviceAuthorizationRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -35,15 +35,15 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called for each request to the device endpoint
+    /// Represents an event called for each request to the device authorization endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public sealed class ValidateDeviceRequestContext : BaseValidatingClientContext
+    public sealed class ValidateDeviceAuthorizationRequestContext : BaseValidatingClientContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ValidateDeviceRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ValidateDeviceAuthorizationRequestContext"/> class.
         /// </summary>
-        public ValidateDeviceRequestContext(OpenIddictServerTransaction transaction)
+        public ValidateDeviceAuthorizationRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -59,15 +59,15 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called for each validated device request
+    /// Represents an event called for each validated device authorization request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public sealed class HandleDeviceRequestContext : BaseValidatingTicketContext
+    public sealed class HandleDeviceAuthorizationRequestContext : BaseValidatingTicketContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="HandleDeviceRequestContext"/> class.
+        /// Creates a new instance of the <see cref="HandleDeviceAuthorizationRequestContext"/> class.
         /// </summary>
-        public HandleDeviceRequestContext(OpenIddictServerTransaction transaction)
+        public HandleDeviceAuthorizationRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -106,14 +106,14 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called before the device response is returned to the caller.
+    /// Represents an event called before the device authorization response is returned to the caller.
     /// </summary>
-    public sealed class ApplyDeviceResponseContext : BaseRequestContext
+    public sealed class ApplyDeviceAuthorizationResponseContext : BaseRequestContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ApplyDeviceResponseContext"/> class.
+        /// Creates a new instance of the <see cref="ApplyDeviceAuthorizationResponseContext"/> class.
         /// </summary>
-        public ApplyDeviceResponseContext(OpenIddictServerTransaction transaction)
+        public ApplyDeviceAuthorizationResponseContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -145,15 +145,15 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called for each request to the verification endpoint to give the user code
-    /// a chance to manually extract the verification request from the ambient HTTP context.
+    /// Represents an event called for each request to the end-user verification endpoint to give the user code
+    /// a chance to manually extract the end-user verification request from the ambient HTTP context.
     /// </summary>
-    public sealed class ExtractVerificationRequestContext : BaseValidatingContext
+    public sealed class ExtractEndUserVerificationRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ExtractVerificationRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ExtractEndUserVerificationRequestContext"/> class.
         /// </summary>
-        public ExtractVerificationRequestContext(OpenIddictServerTransaction transaction)
+        public ExtractEndUserVerificationRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -169,15 +169,15 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called for each request to the verification endpoint
+    /// Represents an event called for each request to the end-user verification endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public sealed class ValidateVerificationRequestContext : BaseValidatingClientContext
+    public sealed class ValidateEndUserVerificationRequestContext : BaseValidatingClientContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ValidateVerificationRequestContext"/> class.
+        /// Creates a new instance of the <see cref="ValidateEndUserVerificationRequestContext"/> class.
         /// </summary>
-        public ValidateVerificationRequestContext(OpenIddictServerTransaction transaction)
+        public ValidateEndUserVerificationRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -198,15 +198,15 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called for each validated verification request
+    /// Represents an event called for each validated end-user verification request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public sealed class HandleVerificationRequestContext : BaseValidatingTicketContext
+    public sealed class HandleEndUserVerificationRequestContext : BaseValidatingTicketContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="HandleVerificationRequestContext"/> class.
+        /// Creates a new instance of the <see cref="HandleEndUserVerificationRequestContext"/> class.
         /// </summary>
-        public HandleVerificationRequestContext(OpenIddictServerTransaction transaction)
+        public HandleEndUserVerificationRequestContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }
@@ -230,8 +230,8 @@ public static partial class OpenIddictServerEvents
         /// </summary>
         /// <remarks>
         /// Note: by default, this property is not used as empty responses are typically
-        /// returned for user verification requests. To return a different response, a
-        /// custom event handler must be registered to handle user verification responses.
+        /// returned for end-user verification requests. To return a different response, a
+        /// custom event handler must be registered to handle end-user verification responses.
         /// </remarks>
         public Dictionary<string, OpenIddictParameter> Parameters { get; private set; }
             = new(StringComparer.Ordinal);
@@ -255,14 +255,14 @@ public static partial class OpenIddictServerEvents
     }
 
     /// <summary>
-    /// Represents an event called before the verification response is returned to the caller.
+    /// Represents an event called before the end-user verification response is returned to the caller.
     /// </summary>
-    public sealed class ApplyVerificationResponseContext : BaseRequestContext
+    public sealed class ApplyEndUserVerificationResponseContext : BaseRequestContext
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="ApplyVerificationResponseContext"/> class.
+        /// Creates a new instance of the <see cref="ApplyEndUserVerificationResponseContext"/> class.
         /// </summary>
-        public ApplyVerificationResponseContext(OpenIddictServerTransaction transaction)
+        public ApplyEndUserVerificationResponseContext(OpenIddictServerTransaction transaction)
             : base(transaction)
         {
         }

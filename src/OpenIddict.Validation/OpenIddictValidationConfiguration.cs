@@ -143,7 +143,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             else
             {
                 if (!options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
-                    !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
+                    !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyJsonWebKeySetRequestContext)))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0135));
                 }

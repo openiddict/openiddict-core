@@ -309,8 +309,8 @@ public class AuthorizationController : Controller
         return new EmptyResult();
     }
 
-    [HttpGet, Route("~/connect/logout")]
-    public ActionResult Logout() => View(new AuthorizeViewModel
+    [HttpGet, Route("~/connect/endsession")]
+    public ActionResult EndSession() => View(new AuthorizeViewModel
     {
         // Flow the request parameters so they can be received by the Accept/Reject actions.
         Parameters = string.Equals(Request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase) ?
@@ -322,8 +322,8 @@ public class AuthorizationController : Controller
             select new KeyValuePair<string, string>(name, value)
     });
 
-    [ActionName(nameof(Logout)), HttpPost, Route("~/connect/logout"), ValidateAntiForgeryToken]
-    public ActionResult LogoutPost()
+    [ActionName(nameof(EndSession)), HttpPost, Route("~/connect/endsession"), ValidateAntiForgeryToken]
+    public ActionResult EndSessionPost()
     {
         var context = HttpContext.GetOwinContext();
         context.Authentication.SignOut(DefaultAuthenticationTypes.ApplicationCookie);

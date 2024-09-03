@@ -8,7 +8,7 @@
     {
         @Html.AntiForgeryToken()
 
-        @* Flow the request parameters so they can be received by the LogoutPost action: *@
+        @* Flow the request parameters so they can be received by the EndSessionPost action: *@
         foreach (var parameter in Model.Parameters)
         {
             <input type="hidden" name="@parameter.Key" value="@parameter.Value" />

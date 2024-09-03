@@ -174,8 +174,10 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
             // are attached to the authentication properties bag so they can be accessed from user code.
             var principal = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
                     => context.IdentityTokenPrincipal,
+
+                OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
 
                 OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
                     => context.AccessTokenPrincipal       ??
@@ -192,9 +194,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
                     => context.RefreshTokenPrincipal,
 
-                OpenIddictServerEndpointType.Userinfo => context.AccessTokenPrincipal,
-
-                OpenIddictServerEndpointType.Verification => context.UserCodePrincipal,
+                OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
 
                 _ => null
             };

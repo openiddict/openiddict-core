@@ -160,7 +160,7 @@ public static class OpenIddictConstants
     {
         public const string Essential = "essential";
         public const string IdToken = "id_token";
-        public const string Userinfo = "userinfo";
+        public const string UserInfo = "userinfo";
         public const string Value = "value";
         public const string Values = "values";
     }
@@ -310,10 +310,10 @@ public static class OpenIddictConstants
         public const string TokenEndpointAuthMethodsSupported = "token_endpoint_auth_methods_supported";
         public const string TokenEndpointAuthSigningAlgValuesSupported = "token_endpoint_auth_signing_alg_values_supported";
         public const string UiLocalesSupported = "ui_locales_supported";
-        public const string UserinfoEncryptionAlgValuesSupported = "userinfo_encryption_alg_values_supported";
-        public const string UserinfoEncryptionEncValuesSupported = "userinfo_encryption_enc_values_supported";
-        public const string UserinfoEndpoint = "userinfo_endpoint";
-        public const string UserinfoSigningAlgValuesSupported = "userinfo_signing_alg_values_supported";
+        public const string UserInfoEncryptionAlgValuesSupported = "userinfo_encryption_alg_values_supported";
+        public const string UserInfoEncryptionEncValuesSupported = "userinfo_encryption_enc_values_supported";
+        public const string UserInfoEndpoint = "userinfo_endpoint";
+        public const string UserInfoSigningAlgValuesSupported = "userinfo_signing_alg_values_supported";
     }
 
     public static class Parameters
@@ -379,9 +379,9 @@ public static class OpenIddictConstants
         public static class Endpoints
         {
             public const string Authorization = "ept:authorization";
-            public const string Device = "ept:device";
+            public const string DeviceAuthorization = "ept:device_authorization";
+            public const string EndSession = "ept:end_session";
             public const string Introspection = "ept:introspection";
-            public const string Logout = "ept:logout";
             public const string Revocation = "ept:revocation";
             public const string Token = "ept:token";
         }
@@ -552,7 +552,7 @@ public static class OpenIddictConstants
         public const string IdToken = "id_token";
         public const string RefreshToken = "refresh_token";
         public const string StateToken = "state_token";
-        public const string UserinfoToken = "userinfo_token";
+        public const string UserInfoToken = "userinfo_token";
         public const string UserCode = "user_code";
     }
 

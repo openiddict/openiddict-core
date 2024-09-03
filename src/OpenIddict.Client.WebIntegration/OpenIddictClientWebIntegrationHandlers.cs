@@ -32,11 +32,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         AdjustRedirectUriInTokenRequest.Descriptor,
         OverrideValidatedBackchannelTokens.Descriptor,
         DisableBackchannelIdentityTokenNonceValidation.Descriptor,
-        OverrideUserinfoEndpoint.Descriptor,
-        DisableUserinfoRetrieval.Descriptor,
-        DisableUserinfoValidation.Descriptor,
-        AttachAdditionalUserinfoRequestParameters.Descriptor,
-        PopulateUserinfoTokenPrincipalFromTokenResponse.Descriptor,
+        OverrideUserInfoEndpoint.Descriptor,
+        DisableUserInfoRetrieval.Descriptor,
+        DisableUserInfoValidation.Descriptor,
+        AttachAdditionalUserInfoRequestParameters.Descriptor,
+        PopulateUserInfoTokenPrincipalFromTokenResponse.Descriptor,
         MapCustomWebServicesFederationClaims.Descriptor,
 
         /*
@@ -61,7 +61,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         .. Exchange.DefaultHandlers,
         .. Protection.DefaultHandlers,
         .. Revocation.DefaultHandlers,
-        .. Userinfo.DefaultHandlers
+        .. UserInfo.DefaultHandlers
     ]);
 
     /// <summary>
@@ -797,15 +797,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for overriding the address
     /// of the userinfo endpoint for the providers that require it.
     /// </summary>
-    public sealed class OverrideUserinfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class OverrideUserInfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<OverrideUserinfoEndpoint>()
-                .SetOrder(ResolveUserinfoEndpoint.Descriptor.Order + 500)
+                .UseSingletonHandler<OverrideUserInfoEndpoint>()
+                .SetOrder(ResolveUserInfoEndpoint.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -817,7 +817,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.UserinfoEndpoint = context.Registration.ProviderType switch
+            context.UserInfoEndpoint = context.Registration.ProviderType switch
             {
                 // Dailymotion's userinfo endpoint requires sending the user identifier in the URI path.
                 ProviderTypes.Dailymotion when (string?) context.TokenResponse?["uid"] is string identifier
@@ -872,7 +872,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                              _   => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
                         },
 
-                _ => context.UserinfoEndpoint
+                _ => context.UserInfoEndpoint
             };
 
             return default;
@@ -882,15 +882,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// <summary>
     /// Contains the logic responsible for disabling the userinfo retrieval for the providers that require it.
     /// </summary>
-    public sealed class DisableUserinfoRetrieval : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class DisableUserInfoRetrieval : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<DisableUserinfoRetrieval>()
-                .SetOrder(EvaluateUserinfoRequest.Descriptor.Order + 250)
+                .UseSingletonHandler<DisableUserInfoRetrieval>()
+                .SetOrder(EvaluateUserInfoRequest.Descriptor.Order + 250)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -902,7 +902,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.SendUserinfoRequest = context.Registration.ProviderType switch
+            context.SendUserInfoRequest = context.Registration.ProviderType switch
             {
                 // Note: ADFS has severe restrictions affecting the ability to access the userinfo endpoint
                 // (e.g the "resource" parameter MUST be null or the "urn:microsoft:userinfo" value MUST be
@@ -930,7 +930,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         context.Scopes.Any(static scope => scope.StartsWith("XboxLive.", StringComparison.OrdinalIgnoreCase))
                         => false,
 
-                    _ => context.SendUserinfoRequest
+                    _ => context.SendUserInfoRequest
                 },
 
                 // Note: some providers don't allow querying the userinfo endpoint when the "openid" scope
@@ -945,10 +945,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     GrantTypes.DeviceCode or GrantTypes.RefreshToken when !context.Scopes.Contains(Scopes.OpenId)
                         => false,
 
-                    _ => context.SendUserinfoRequest
+                    _ => context.SendUserInfoRequest
                 },
 
-                _ => context.SendUserinfoRequest
+                _ => context.SendUserInfoRequest
             };
 
             return default;
@@ -958,15 +958,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// <summary>
     /// Contains the logic responsible for disabling the userinfo validation for the providers that require it.
     /// </summary>
-    public sealed class DisableUserinfoValidation : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class DisableUserInfoValidation : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<DisableUserinfoValidation>()
-                .SetOrder(DisableUserinfoRetrieval.Descriptor.Order + 250)
+                .UseSingletonHandler<DisableUserInfoValidation>()
+                .SetOrder(DisableUserInfoRetrieval.Descriptor.Order + 250)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -983,12 +983,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             //
             // To ensure OpenIddict can be used with these providers, validation is disabled when necessary.
 
-            context.DisableUserinfoValidation = context.Registration.ProviderType switch
+            context.DisableUserInfoValidation = context.Registration.ProviderType switch
             {
                 // SuperOffice doesn't offer a standard OpenID Connect userinfo endpoint.
                 ProviderTypes.SuperOffice => true,
 
-                _ => context.DisableUserinfoValidation
+                _ => context.DisableUserInfoValidation
             };
 
             return default;
@@ -999,16 +999,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for attaching additional parameters
     /// to the userinfo request for the providers that require it.
     /// </summary>
-    public sealed class AttachAdditionalUserinfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class AttachAdditionalUserInfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireUserinfoRequest>()
-                .UseSingletonHandler<AttachAdditionalUserinfoRequestParameters>()
-                .SetOrder(AttachUserinfoRequestParameters.Descriptor.Order + 500)
+                .AddFilter<RequireUserInfoRequest>()
+                .UseSingletonHandler<AttachAdditionalUserInfoRequestParameters>()
+                .SetOrder(AttachUserInfoRequestParameters.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -1020,7 +1020,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
+            Debug.Assert(context.UserInfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
             // Dailymotion limits the number of fields returned by the userinfo endpoint
             // but allows returning additional information using special parameters that
@@ -1029,14 +1029,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetDailymotionSettings();
 
-                context.UserinfoRequest["fields"] = string.Join(",", settings.UserFields);
+                context.UserInfoRequest["fields"] = string.Join(",", settings.UserFields);
             }
 
             // Disqus requires sending the client identifier (called "public
             // API key" in the documentation) as part of the userinfo request.
             else if (context.Registration.ProviderType is ProviderTypes.Disqus)
             {
-                context.UserinfoRequest["api_key"] = context.Registration.ClientId;
+                context.UserInfoRequest["api_key"] = context.Registration.ClientId;
             }
 
             // Facebook limits the number of fields returned by the userinfo endpoint
@@ -1046,7 +1046,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetFacebookSettings();
 
-                context.UserinfoRequest["fields"] = string.Join(",", settings.Fields);
+                context.UserInfoRequest["fields"] = string.Join(",", settings.Fields);
             }
 
             // Meetup's userinfo endpoint is a GraphQL implementation that requires
@@ -1055,7 +1055,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetMeetupSettings();
 
-                context.UserinfoRequest["query"] = $"query {{ self {{ {string.Join(" ", settings.UserFields)} }} }}";
+                context.UserInfoRequest["query"] = $"query {{ self {{ {string.Join(" ", settings.UserFields)} }} }}";
             }
 
             // Patreon limits the number of fields returned by the userinfo endpoint
@@ -1065,7 +1065,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetPatreonSettings();
 
-                context.UserinfoRequest["fields[user]"] = string.Join(",", settings.UserFields);
+                context.UserInfoRequest["fields[user]"] = string.Join(",", settings.UserFields);
             }
 
             // StackOverflow requires sending an application key and a site parameter
@@ -1074,8 +1074,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetStackExchangeSettings();
 
-                context.UserinfoRequest["key"] = settings.ApplicationKey;
-                context.UserinfoRequest["site"] = settings.Site;
+                context.UserInfoRequest["key"] = settings.ApplicationKey;
+                context.UserInfoRequest["site"] = settings.Site;
             }
 
             // SubscribeStar's userinfo endpoint is a GraphQL implementation that requires
@@ -1084,20 +1084,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetSubscribeStarSettings();
 
-                context.UserinfoRequest["query"] = $"{{ user {{ {string.Join(", ", settings.UserFields)} }} }}";
+                context.UserInfoRequest["query"] = $"{{ user {{ {string.Join(", ", settings.UserFields)} }} }}";
             }
 
             // Todoist requires sending "sync_token" and "resource_types" parameters.
             else if (context.Registration.ProviderType is ProviderTypes.Todoist)
             {
-                context.UserinfoRequest["sync_token"] = "*";
-                context.UserinfoRequest["resource_types"] = "[\"user\"]";
+                context.UserInfoRequest["sync_token"] = "*";
+                context.UserInfoRequest["resource_types"] = "[\"user\"]";
             }
 
             // Trakt allows retrieving additional user details via the "extended" parameter.
             else if (context.Registration.ProviderType is ProviderTypes.Trakt)
             {
-                context.UserinfoRequest["extended"] = "full";
+                context.UserInfoRequest["extended"] = "full";
             }
 
             // Twitter limits the number of fields returned by the userinfo endpoint
@@ -1107,15 +1107,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetTwitterSettings();
 
-                context.UserinfoRequest["expansions"] = string.Join(",", settings.Expansions);
-                context.UserinfoRequest["tweet.fields"] = string.Join(",", settings.TweetFields);
-                context.UserinfoRequest["user.fields"] = string.Join(",", settings.UserFields);
+                context.UserInfoRequest["expansions"] = string.Join(",", settings.Expansions);
+                context.UserInfoRequest["tweet.fields"] = string.Join(",", settings.TweetFields);
+                context.UserInfoRequest["user.fields"] = string.Join(",", settings.UserFields);
             }
 
             // Weibo requires sending the user identifier as part of the userinfo request.
             else if (context.Registration.ProviderType is ProviderTypes.Weibo)
             {
-                context.UserinfoRequest["uid"] = context.TokenResponse?["uid"];
+                context.UserInfoRequest["uid"] = context.TokenResponse?["uid"];
             }
 
             return default;
@@ -1126,7 +1126,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for creating a userinfo token principal from the custom
     /// parameters returned in the token response for the providers that require it.
     /// </summary>
-    public sealed class PopulateUserinfoTokenPrincipalFromTokenResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class PopulateUserInfoTokenPrincipalFromTokenResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1134,8 +1134,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenRequest>()
-                .UseSingletonHandler<PopulateUserinfoTokenPrincipalFromTokenResponse>()
-                .SetOrder(ValidateUserinfoToken.Descriptor.Order + 500)
+                .UseSingletonHandler<PopulateUserInfoTokenPrincipalFromTokenResponse>()
+                .SetOrder(ValidateUserInfoToken.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -1151,7 +1151,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
 
             // Don't overwrite the userinfo token principal if one was already set.
-            if (context.UserinfoTokenPrincipal is not null)
+            if (context.UserInfoTokenPrincipal is not null)
             {
                 return default;
             }
@@ -1216,7 +1216,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
             }
 
-            context.UserinfoTokenPrincipal = new ClaimsPrincipal(identity);
+            context.UserInfoTokenPrincipal = new ClaimsPrincipal(identity);
 
             return default;
         }
@@ -1266,30 +1266,30 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.MergedPrincipal.SetClaim(ClaimTypes.Email, issuer: issuer, value: context.Registration.ProviderType switch
             {
                 // Basecamp returns the email address as a custom "email_address" node:
-                ProviderTypes.Basecamp => (string?) context.UserinfoResponse?["email_address"],
+                ProviderTypes.Basecamp => (string?) context.UserInfoResponse?["email_address"],
 
                 // Bitly returns one or more email addresses as a custom "emails" node:
-                ProviderTypes.Bitly => context.UserinfoResponse?["emails"]
+                ProviderTypes.Bitly => context.UserInfoResponse?["emails"]
                     ?.GetUnnamedParameters()
                     ?.Where(parameter => (bool?) parameter["is_primary"] is true)
                     ?.Select(parameter => (string?) parameter["email"])
                     ?.FirstOrDefault(),
 
                 // HubSpot returns the email address as a custom "user" node:
-                ProviderTypes.HubSpot => (string?) context.UserinfoResponse?["user"],
+                ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
 
                 // Mailchimp returns the email address as a custom "login/login_email" node:
-                ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["login"]?["login_email"],
+                ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["login"]?["login_email"],
 
                 // Notion returns the email address as a custom "bot/owner/user/person/email" node
                 // but requires a special capability to access this node, that may not be present:
-                ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["person"]?["email"],
+                ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["person"]?["email"],
 
                 // Patreon returns the email address as a custom "attributes/email" node:
-                ProviderTypes.Patreon => (string?) context.UserinfoResponse?["attributes"]?["email"],
+                ProviderTypes.Patreon => (string?) context.UserInfoResponse?["attributes"]?["email"],
 
                 // ServiceChannel and Zoho return the email address as a custom "Email" node:
-                ProviderTypes.ServiceChannel or ProviderTypes.Zoho => (string?) context.UserinfoResponse?["Email"],
+                ProviderTypes.ServiceChannel or ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Email"],
 
                 // Shopify returns the email address as a custom "associated_user/email" node in token responses:
                 ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["email"],
@@ -1304,42 +1304,42 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Discord      or ProviderTypes.Disqus      or ProviderTypes.Kook       or
                 ProviderTypes.Lichess      or ProviderTypes.Mastodon    or ProviderTypes.Mixcloud   or
                 ProviderTypes.Trakt        or ProviderTypes.WordPress
-                    => (string?) context.UserinfoResponse?["username"],
+                    => (string?) context.UserInfoResponse?["username"],
 
                 // Basecamp and Harvest don't return a username so one is created using the "first_name" and "last_name" nodes:
                 ProviderTypes.Basecamp or ProviderTypes.Harvest
-                    when context.UserinfoResponse?.HasParameter("first_name") is true &&
-                         context.UserinfoResponse?.HasParameter("last_name")  is true
-                    => $"{(string?) context.UserinfoResponse?["first_name"]} {(string?) context.UserinfoResponse?["last_name"]}",
+                    when context.UserInfoResponse?.HasParameter("first_name") is true &&
+                         context.UserInfoResponse?.HasParameter("last_name")  is true
+                    => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
 
                 // FitBit returns the username as a custom "displayName" node:
-                ProviderTypes.Fitbit => (string?) context.UserinfoResponse?["displayName"],
+                ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["displayName"],
 
                 // Huawei returns the username as a custom "display_name" in the backchannel identity token:
                 ProviderTypes.Huawei => context.BackchannelIdentityTokenPrincipal?.GetClaim("display_name"),
 
                 // HubSpot returns the username as a custom "user" node:
-                ProviderTypes.HubSpot => (string?) context.UserinfoResponse?["user"],
+                ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
 
                 // Mailchimp returns the username as a custom "accountname" node:
-                ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["accountname"],
+                ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["accountname"],
 
                 // Mailchimp returns the username as a custom "sub" node:
-                ProviderTypes.MusicBrainz => (string?) context.UserinfoResponse?["sub"],
+                ProviderTypes.MusicBrainz => (string?) context.UserInfoResponse?["sub"],
 
                 // Nextcloud returns the username as a custom "displayname" or "display-name" node:
-                ProviderTypes.Nextcloud => (string?) context.UserinfoResponse?["displayname"] ??
-                                           (string?) context.UserinfoResponse?["display-name"],
+                ProviderTypes.Nextcloud => (string?) context.UserInfoResponse?["displayname"] ??
+                                           (string?) context.UserInfoResponse?["display-name"],
 
                 // Notion returns the username as a custom "bot/owner/user/name" node but
                 // requires a special capability to access this node, that may not be present:
-                ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["name"],
+                ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["name"],
 
                 // Patreon doesn't return a username and requires using the complete user name as the username:
-                ProviderTypes.Patreon => (string?) context.UserinfoResponse?["attributes"]?["full_name"],
+                ProviderTypes.Patreon => (string?) context.UserInfoResponse?["attributes"]?["full_name"],
 
                 // ServiceChannel returns the username as a custom "UserName" node:
-                ProviderTypes.ServiceChannel => (string?) context.UserinfoResponse?["UserName"],
+                ProviderTypes.ServiceChannel => (string?) context.UserInfoResponse?["UserName"],
 
                 // Shopify doesn't return a username so one is created using the "first_name" and "last_name" nodes:
                 ProviderTypes.Shopify
@@ -1349,31 +1349,31 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Smartsheet doesn't return a username so one is created using the "firstName" and "lastName" nodes:
                 ProviderTypes.Smartsheet
-                    when context.UserinfoResponse?.HasParameter("firstName") is true &&
-                         context.UserinfoResponse?.HasParameter("lastName")  is true
-                    => $"{(string?) context.UserinfoResponse?["firstName"]} {(string?) context.UserinfoResponse?["lastName"]}",
+                    when context.UserInfoResponse?.HasParameter("firstName") is true &&
+                         context.UserInfoResponse?.HasParameter("lastName")  is true
+                    => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
 
                 // These providers return the username as a custom "display_name" node:
                 ProviderTypes.Spotify or ProviderTypes.StackExchange or ProviderTypes.Zoom
-                    => (string?) context.UserinfoResponse?["display_name"],
+                    => (string?) context.UserInfoResponse?["display_name"],
 
                 // Strava returns the username as a custom "athlete/username" node in token responses:
                 ProviderTypes.Strava => (string?) context.TokenResponse?["athlete"]?["username"],
 
                 // Streamlabs returns the username as a custom "streamlabs/display_name" node:
-                ProviderTypes.Streamlabs => (string?) context.UserinfoResponse?["streamlabs"]?["display_name"],
+                ProviderTypes.Streamlabs => (string?) context.UserInfoResponse?["streamlabs"]?["display_name"],
 
                 // Todoist returns the username as a custom "full_name" node:
-                ProviderTypes.Todoist => (string?) context.UserinfoResponse?["full_name"],
+                ProviderTypes.Todoist => (string?) context.UserInfoResponse?["full_name"],
 
                 // Trovo returns the username as a custom "userName" node:
-                ProviderTypes.Trovo => (string?) context.UserinfoResponse?["userName"],
+                ProviderTypes.Trovo => (string?) context.UserInfoResponse?["userName"],
 
                 // Typeform returns the username as a custom "alias" node:
-                ProviderTypes.Typeform => (string?) context.UserinfoResponse?["alias"],
+                ProviderTypes.Typeform => (string?) context.UserInfoResponse?["alias"],
 
                 // Zoho returns the username as a custom "Display_Name" node:
-                ProviderTypes.Zoho => (string?) context.UserinfoResponse?["Display_Name"],
+                ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Display_Name"],
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
             });
@@ -1383,14 +1383,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // These providers return the user identifier as a custom "user_id" node:
                 ProviderTypes.Amazon        or ProviderTypes.HubSpot or
                 ProviderTypes.StackExchange or ProviderTypes.Typeform
-                    => (string?) context.UserinfoResponse?["user_id"],
+                    => (string?) context.UserInfoResponse?["user_id"],
 
                 // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
                 ProviderTypes.ArcGisOnline or ProviderTypes.Trakt
-                    => (string?) context.UserinfoResponse?["username"],
+                    => (string?) context.UserInfoResponse?["username"],
 
                 // Atlassian returns the user identifier as a custom "account_id" node:
-                ProviderTypes.Atlassian => (string?) context.UserinfoResponse?["account_id"],
+                ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
                 ProviderTypes.Airtable    or ProviderTypes.Basecamp      or ProviderTypes.Box        or
@@ -1402,38 +1402,38 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Pipedrive   or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
                 ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or
                 ProviderTypes.Twitter     or ProviderTypes.Weibo         or ProviderTypes.Zoom
-                    => (string?) context.UserinfoResponse?["id"],
+                    => (string?) context.UserInfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
-                ProviderTypes.Bitbucket => (string?) context.UserinfoResponse?["uuid"],
+                ProviderTypes.Bitbucket => (string?) context.UserInfoResponse?["uuid"],
 
                 // Bitly returns the user identifier as a custom "login" node:
-                ProviderTypes.Bitly => (string?) context.UserinfoResponse?["login"],
+                ProviderTypes.Bitly => (string?) context.UserInfoResponse?["login"],
 
                 // Calendly returns the user identifier (formatted as a URI) as a custom "uri" node:
-                ProviderTypes.Calendly => (string?) context.UserinfoResponse?["uri"],
+                ProviderTypes.Calendly => (string?) context.UserInfoResponse?["uri"],
 
                 // DeviantArt returns the user identifier as a custom "userid" node:
-                ProviderTypes.DeviantArt => (string?) context.UserinfoResponse?["userid"],
+                ProviderTypes.DeviantArt => (string?) context.UserInfoResponse?["userid"],
 
                 // Fitbit returns the user identifier as a custom "encodedId" node:
-                ProviderTypes.Fitbit => (string?) context.UserinfoResponse?["encodedId"],
+                ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["encodedId"],
 
                 // Mailchimp returns the user identifier as a custom "login/login_id" node:
-                ProviderTypes.Mailchimp => (string?) context.UserinfoResponse?["login"]?["login_id"],
+                ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["login"]?["login_id"],
 
                 // Mixcloud returns the user identifier as a custom "key" node:
-                ProviderTypes.Mixcloud => (string?) context.UserinfoResponse?["key"],
+                ProviderTypes.Mixcloud => (string?) context.UserInfoResponse?["key"],
 
                 // MusicBrainz returns the user identifier as a custom "metabrainz_user_id" node:
-                ProviderTypes.MusicBrainz => (string?) context.UserinfoResponse?["metabrainz_user_id"],
+                ProviderTypes.MusicBrainz => (string?) context.UserInfoResponse?["metabrainz_user_id"],
 
                 // Notion returns the user identifier as a custom "bot/owner/user/id" node but
                 // requires a special capability to access this node, that may not be present:
-                ProviderTypes.Notion => (string?) context.UserinfoResponse?["bot"]?["owner"]?["user"]?["id"],
+                ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["id"],
 
                 // ServiceChannel returns the user identifier as a custom "UserId" node:
-                ProviderTypes.ServiceChannel => (string?) context.UserinfoResponse?["UserId"],
+                ProviderTypes.ServiceChannel => (string?) context.UserInfoResponse?["UserId"],
 
                 // Shopify returns the user identifier as a custom "associated_user/id" node in token responses:
                 ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["id"],
@@ -1445,23 +1445,23 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.StripeConnect => (string?) context.TokenResponse?["stripe_user_id"],
 
                 // Streamlabs returns the user identifier as a custom "streamlabs/id" node:
-                ProviderTypes.Streamlabs => (string?) context.UserinfoResponse?["streamlabs"]?["id"],
+                ProviderTypes.Streamlabs => (string?) context.UserInfoResponse?["streamlabs"]?["id"],
 
                 // Trovo returns the user identifier as a custom "userId" node:
-                ProviderTypes.Trovo => (string?) context.UserinfoResponse?["userId"],
+                ProviderTypes.Trovo => (string?) context.UserInfoResponse?["userId"],
 
                 // Tumblr doesn't return a user identifier and requires using the username as the identifier:
-                ProviderTypes.Tumblr => (string?) context.UserinfoResponse?["name"],
+                ProviderTypes.Tumblr => (string?) context.UserInfoResponse?["name"],
 
                 // Vimeo returns the user identifier as a custom "uri" node, prefixed with "/users/":
-                ProviderTypes.Vimeo => (string?) context.UserinfoResponse?["uri"] is string uri &&
+                ProviderTypes.Vimeo => (string?) context.UserInfoResponse?["uri"] is string uri &&
                     uri.StartsWith("/users/", StringComparison.Ordinal) ? uri["/users/".Length..] : null,
 
                 // WordPress returns the user identifier as a custom "ID" node:
-                ProviderTypes.WordPress => (string?) context.UserinfoResponse?["ID"],
+                ProviderTypes.WordPress => (string?) context.UserInfoResponse?["ID"],
 
                 // WordPress returns the user identifier as a custom "ZUID" node:
-                ProviderTypes.Zoho => (string?) context.UserinfoResponse?["ZUID"],
+                ProviderTypes.Zoho => (string?) context.UserInfoResponse?["ZUID"],
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
             });

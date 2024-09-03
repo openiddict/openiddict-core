@@ -219,39 +219,39 @@ To apply authorization responses, create a class implementing 'IOpenIddictServer
   </data>
   <data name="ID0031" xml:space="preserve">
     <value>The device request was not correctly extracted.
-To extract device requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractDeviceRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+To extract device requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractDeviceAuthorizationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0032" xml:space="preserve">
     <value>The client application details cannot be found in the database.</value>
   </data>
   <data name="ID0033" xml:space="preserve">
-    <value>The device response was not correctly applied.
-To apply device responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyDeviceResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The device authorization response was not correctly applied.
+To apply device authorization responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyDeviceAuthorizationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0034" xml:space="preserve">
-    <value>The verification request was not correctly extracted.
-To extract verification requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractVerificationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The end-user verification request was not correctly extracted.
+To extract end-user verification requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractEndUserVerificationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0035" xml:space="preserve">
-    <value>The verification request was not handled.
-To handle verification requests in a controller, create a custom action with the same route as the verification endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableVerificationEndpointPassthrough()'.
-Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleVerificationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The end-user verification request was not handled.
+To handle end-user verification requests in a controller, create a custom action with the same route as the end-user verification endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableVerificationEndpointPassthrough()'.
+Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleEndUserVerificationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0036" xml:space="preserve">
-    <value>The verification response was not correctly applied.
-To apply verification responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyVerificationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The end-user verification response was not correctly applied.
+To apply end-user verification responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyEndUserVerificationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0037" xml:space="preserve">
     <value>The configuration request was not correctly extracted.
 To extract configuration requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractConfigurationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0038" xml:space="preserve">
-    <value>The cryptography request was not correctly extracted.
-To extract configuration requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractCryptographyRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The JSON Web Key Set request was not correctly extracted.
+To extract configuration requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractJsonWebKeySetRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0039" xml:space="preserve">
-    <value>The cryptography response was not correctly applied.
-To apply cryptography responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyCryptographyResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The JSON Web Key Set response was not correctly applied.
+To apply JSON Web Key Set responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyJsonWebKeySetResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0040" xml:space="preserve">
     <value>The token request was not correctly extracted.
@@ -292,25 +292,25 @@ To extract revocation requests, create a class implementing 'IOpenIddictServerHa
 To apply revocation responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyRevocationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0050" xml:space="preserve">
-    <value>The logout request was not correctly extracted.
-To extract logout requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractLogoutRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The end session request was not correctly extracted.
+To extract end session requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractEndSessionRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0051" xml:space="preserve">
-    <value>The logout request was not handled.
-To handle logout requests in a controller, create a custom controller action with the same route as the logout endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableLogoutEndpointPassthrough()'.
-Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleLogoutRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The end session request was not handled.
+To handle end session requests in a controller, create a custom controller action with the same route as the end session endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableLogoutEndpointPassthrough()'.
+Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleEndSessionRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0052" xml:space="preserve">
-    <value>The logout response was not correctly applied.
-To apply logout responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyLogoutResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The end session response was not correctly applied.
+To apply end session responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyEndSessionResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0053" xml:space="preserve">
     <value>The userinfo request was not correctly extracted.
-To extract userinfo requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractUserinfoRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+To extract userinfo requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractUserInfoRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0054" xml:space="preserve">
     <value>The userinfo response was not correctly applied.
-To apply userinfo responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyUserinfoResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+To apply userinfo responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyUserInfoResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0055" xml:space="preserve">
     <value>The asymmetric encryption key doesn't contain the required private key.</value>
@@ -381,13 +381,13 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
     <value>The authorization endpoint must be enabled to use the authorization code and implicit flows.</value>
   </data>
   <data name="ID0078" xml:space="preserve">
-    <value>The device endpoint must be enabled to use the device flow.</value>
+    <value>The device authorization endpoint must be enabled to use the device authorization flow.</value>
   </data>
   <data name="ID0079" xml:space="preserve">
     <value>The token endpoint must be enabled to use the authorization code, client credentials, device, password and refresh token flows.</value>
   </data>
   <data name="ID0080" xml:space="preserve">
-    <value>The verification endpoint must be enabled to use the device flow.</value>
+    <value>The end-user verification endpoint must be enabled to use the device authorization flow.</value>
   </data>
   <data name="ID0081" xml:space="preserve">
     <value>Endpoint URIs cannot start with '{0}'.</value>
@@ -400,7 +400,7 @@ To enable DI support, call 'services.AddQuartz(options =&gt; options.UseMicrosof
     <value>Reference tokens cannot be used when disabling token storage.</value>
   </data>
   <data name="ID0084" xml:space="preserve">
-    <value>The device grant must be allowed when enabling the device endpoint.</value>
+    <value>The device grant must be allowed when enabling the device authorization endpoint.</value>
   </data>
   <data name="ID0085" xml:space="preserve">
     <value>At least one encryption key must be registered in the OpenIddict server options.
@@ -422,13 +422,13 @@ To use key rollover, register both the new certificate and the old one in the cr
     <value>No custom authorization request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateAuthorizationRequestContext&gt;' must be implemented to validate authorization requests (e.g to ensure the client_id and redirect_uri are valid).</value>
   </data>
   <data name="ID0090" xml:space="preserve">
-    <value>No custom device request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateDeviceRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate device requests (e.g to ensure the client_id and client_secret are valid).</value>
+    <value>No custom device request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateDeviceAuthorizationRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate device requests (e.g to ensure the client_id and client_secret are valid).</value>
   </data>
   <data name="ID0091" xml:space="preserve">
     <value>No custom introspection request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateIntrospectionRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate introspection requests (e.g to ensure the client_id and client_secret are valid).</value>
   </data>
   <data name="ID0092" xml:space="preserve">
-    <value>No custom logout request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateLogoutRequestContext&gt;' must be implemented to validate logout requests (e.g to ensure the post_logout_redirect_uri is valid).</value>
+    <value>No custom end session request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateEndSessionRequestContext&gt;' must be implemented to validate end session requests (e.g to ensure the post_logout_redirect_uri is valid).</value>
   </data>
   <data name="ID0093" xml:space="preserve">
     <value>No custom revocation request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateRevocationRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate revocation requests (e.g to ensure the client_id and client_secret are valid).</value>
@@ -437,7 +437,7 @@ To use key rollover, register both the new certificate and the old one in the cr
     <value>No custom token request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateTokenRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate token requests (e.g to ensure the client_id and client_secret are valid).</value>
   </data>
   <data name="ID0095" xml:space="preserve">
-    <value>No custom verification request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateVerificationRequestContext&gt;' must be implemented to validate verification requests (e.g to ensure the user_code is valid).</value>
+    <value>No custom end-user verification request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateEndUserVerificationRequestContext&gt;' must be implemented to validate verification requests (e.g to ensure the user_code is valid).</value>
   </data>
   <data name="ID0096" xml:space="preserve">
     <value>No custom token validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateTokenContext&gt;' must be implemented to handle device and user codes (e.g by retrieving them from a database).</value>
@@ -512,7 +512,7 @@ To register the default in-memory distributed cache implementation, reference th
     <value>The authorization request payload is malformed.</value>
   </data>
   <data name="ID0118" xml:space="preserve">
-    <value>The logout request payload is malformed.</value>
+    <value>The end session request payload is malformed.</value>
   </data>
   <data name="ID0119" xml:space="preserve">
     <value>The OpenIddict OWIN server handler cannot be used as an active authentication handler.
@@ -608,7 +608,7 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>The server configuration couldn't be retrieved.</value>
   </data>
   <data name="ID0146" xml:space="preserve">
-    <value>The JWKS URI couldn't be resolved from the provider metadata.</value>
+    <value>The JSON Web Key Set URI couldn't be resolved from the provider metadata.</value>
   </data>
   <data name="ID0147" xml:space="preserve">
     <value>The server JSON Web Key set couldn't be retrieved.</value>
@@ -638,25 +638,25 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   Error URI: {2}</value>
   </data>
   <data name="ID0152" xml:space="preserve">
-    <value>An error occurred while preparing the cryptography request.
+    <value>An error occurred while preparing the JSON Web Key Set request.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
   </data>
   <data name="ID0153" xml:space="preserve">
-    <value>An error occurred while sending the cryptography request.
+    <value>An error occurred while sending the JSON Web Key Set request.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
   </data>
   <data name="ID0154" xml:space="preserve">
-    <value>An error occurred while extracting the cryptography response.
+    <value>An error occurred while extracting the JSON Web Key Set response.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
   </data>
   <data name="ID0155" xml:space="preserve">
-    <value>An error occurred while handling the cryptography response.
+    <value>An error occurred while handling the JSON Web Key Set response.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
@@ -1777,7 +1777,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The specified user code is no longer valid.</value>
   </data>
   <data name="ID2027" xml:space="preserve">
-    <value>The client application is not allowed to use the device code flow.</value>
+    <value>The client application is not allowed to use the device authorization flow.</value>
   </data>
   <data name="ID2028" xml:space="preserve">
     <value>The '{0}' parameter is not supported.</value>
@@ -1864,7 +1864,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The specified client credentials are invalid.</value>
   </data>
   <data name="ID2056" xml:space="preserve">
-    <value>This client application is not allowed to use the device endpoint.</value>
+    <value>This client application is not allowed to use the device authorization endpoint.</value>
   </data>
   <data name="ID2057" xml:space="preserve">
     <value>The '{0}' or '{1}' parameter must be specified when using the client credentials grant.</value>
@@ -1993,19 +1993,19 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The issuer returned in the server configuration doesn't match the value set in the validation options.</value>
   </data>
   <data name="ID2099" xml:space="preserve">
-    <value>No JWKS endpoint could be found in the server configuration.</value>
+    <value>No JSON Web Key Set endpoint could be found in the server configuration.</value>
   </data>
   <data name="ID2100" xml:space="preserve">
     <value>A server configuration containing an invalid '{0}' URI was returned.</value>
   </data>
   <data name="ID2102" xml:space="preserve">
-    <value>The JWKS document didn't contain a valid '{0}' node with at least one key.</value>
+    <value>The JSON Web Key Set document didn't contain a valid '{0}' node with at least one key.</value>
   </data>
   <data name="ID2103" xml:space="preserve">
-    <value>A JWKS response containing an unsupported key was returned.</value>
+    <value>A JSON Web Key Set response containing an unsupported key was returned.</value>
   </data>
   <data name="ID2104" xml:space="preserve">
-    <value>A JWKS response containing an invalid key was returned.</value>
+    <value>A JSON Web Key Set response containing an invalid key was returned.</value>
   </data>
   <data name="ID2105" xml:space="preserve">
     <value>The mandatory '{0}' parameter couldn't be found in the introspection response.</value>
@@ -2113,7 +2113,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The specified state token has already been redeemed.</value>
   </data>
   <data name="ID2140" xml:space="preserve">
-    <value>This client application is not allowed to use the logout endpoint.</value>
+    <value>This client application is not allowed to use the end session endpoint.</value>
   </data>
   <data name="ID2141" xml:space="preserve">
     <value>The client application is not allowed to use the specified identity token hint.</value>
@@ -2128,7 +2128,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The configuration request was rejected by the remote server.</value>
   </data>
   <data name="ID2145" xml:space="preserve">
-    <value>The cryptography request was rejected by the remote server.</value>
+    <value>The JSON Web Key Set request was rejected by the remote server.</value>
   </data>
   <data name="ID2146" xml:space="preserve">
     <value>The introspection request was rejected by the remote server.</value>
@@ -2418,7 +2418,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The device request was rejected because invalid scopes were specified: {Scopes}.</value>
   </data>
   <data name="ID6062" xml:space="preserve">
-    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device endpoint.</value>
+    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device authorization endpoint.</value>
   </data>
   <data name="ID6063" xml:space="preserve">
     <value>The device request was rejected because the application '{ClientId}' was not allowed to use the scope {Scope}.</value>
@@ -2436,19 +2436,19 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The configuration request was successfully validated.</value>
   </data>
   <data name="ID6068" xml:space="preserve">
-    <value>The cryptography request was successfully extracted: {Request}.</value>
+    <value>The JSON Web Key Set request was successfully extracted: {Request}.</value>
   </data>
   <data name="ID6069" xml:space="preserve">
-    <value>The cryptography request was successfully validated.</value>
+    <value>The JSON Web Key Set request was successfully validated.</value>
   </data>
   <data name="ID6070" xml:space="preserve">
     <value>A JSON Web Key was excluded from the key set because it didn't contain the mandatory '{Parameter}' parameter.</value>
   </data>
   <data name="ID6071" xml:space="preserve">
-    <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA and ECDSA asymmetric security keys can be exposed via the JWKS endpoint.</value>
+    <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA and ECDSA asymmetric security keys can be exposed via the JSON Web Key Set endpoint.</value>
   </data>
   <data name="ID6072" xml:space="preserve">
-    <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA asymmetric security keys can be exposed via the JWKS endpoint.</value>
+    <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA asymmetric security keys can be exposed via the JSON Web Key Set endpoint.</value>
   </data>
   <data name="ID6073" xml:space="preserve">
     <value>A signing key of type '{Type}' was ignored because its RSA public parameters couldn't be extracted.</value>
@@ -2547,7 +2547,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The revocation request was rejected because the received token was of an unsupported type.</value>
   </data>
   <data name="ID6118" xml:space="preserve">
-    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device code flow.</value>
+    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device authorization flow.</value>
   </data>
   <data name="ID6119" xml:space="preserve">
     <value>The revocation request was rejected because the access token was issued to a different client or for another resource server.</value>
@@ -2565,19 +2565,19 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The token '{Identifier}' was not revoked because it couldn't be found.</value>
   </data>
   <data name="ID6124" xml:space="preserve">
-    <value>The logout request was successfully extracted: {Request}.</value>
+    <value>The end session request was successfully extracted: {Request}.</value>
   </data>
   <data name="ID6125" xml:space="preserve">
-    <value>The logout request was successfully validated.</value>
+    <value>The end session request was successfully validated.</value>
   </data>
   <data name="ID6126" xml:space="preserve">
-    <value>The logout request was rejected because the '{Parameter}' parameter wasn't a valid absolute URI: {PostLogoutRedirectUri}.</value>
+    <value>The end session request was rejected because the '{Parameter}' parameter wasn't a valid absolute URI: {PostLogoutRedirectUri}.</value>
   </data>
   <data name="ID6127" xml:space="preserve">
-    <value>The logout request was rejected because the '{Parameter}' contained a URI fragment: {PostLogoutRedirectUri}.</value>
+    <value>The end session request was rejected because the '{Parameter}' contained a URI fragment: {PostLogoutRedirectUri}.</value>
   </data>
   <data name="ID6128" xml:space="preserve">
-    <value>The logout request was rejected because the specified post_logout_redirect_uri was invalid: {PostLogoutRedirectUri}.</value>
+    <value>The end session request was rejected because the specified post_logout_redirect_uri was invalid: {PostLogoutRedirectUri}.</value>
   </data>
   <data name="ID6129" xml:space="preserve">
     <value>The userinfo request was successfully extracted: {Request}.</value>
@@ -2643,10 +2643,10 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The authorization response was successfully returned to '{RedirectUri}' using the fragment response mode: {Response}.</value>
   </data>
   <data name="ID6150" xml:space="preserve">
-    <value>The logout request was rejected because an unknown or invalid '{Parameter}' was specified.</value>
+    <value>The end session request was rejected because an unknown or invalid '{Parameter}' was specified.</value>
   </data>
   <data name="ID6151" xml:space="preserve">
-    <value>The logout response was successfully returned to '{PostLogoutRedirectUri}': {Response}.</value>
+    <value>The end session response was successfully returned to '{PostLogoutRedirectUri}': {Response}.</value>
   </data>
   <data name="ID6152" xml:space="preserve">
     <value>The ASP.NET Core Data Protection token '{Token}' was successfully validated and the following claims could be extracted: {Claims}.</value>
@@ -2755,10 +2755,10 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The configuration response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID6188" xml:space="preserve">
-    <value>The cryptography request was successfully sent to {Uri}: {Request}.</value>
+    <value>The JSON Web Key Set request was successfully sent to {Uri}: {Request}.</value>
   </data>
   <data name="ID6189" xml:space="preserve">
-    <value>The cryptography response returned by {Uri} was successfully extracted: {Response}.</value>
+    <value>The JSON Web Key Set response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID6190" xml:space="preserve">
     <value>The introspection request was successfully sent to {Uri}: {Request}.</value>
@@ -2782,7 +2782,7 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The authorization request was rejected because the identity token used as a hint was issued to a different client.</value>
   </data>
   <data name="ID6198" xml:space="preserve">
-    <value>The logout request was rejected because the identity token used as a hint was issued to a different client.</value>
+    <value>The end session request was rejected because the identity token used as a hint was issued to a different client.</value>
   </data>
   <data name="ID6199" xml:space="preserve">
     <value>The post-logout redirection request was successfully extracted: {Request}.</value>
@@ -2797,7 +2797,7 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The configuration request was rejected by the remote authorization server: {Response}.</value>
   </data>
   <data name="ID6204" xml:space="preserve">
-    <value>The cryptography request was rejected by the remote authorization server: {Response}.</value>
+    <value>The JSON Web Key Set request was rejected by the remote authorization server: {Response}.</value>
   </data>
   <data name="ID6205" xml:space="preserve">
     <value>The introspection request was rejected by the remote authorization server: {Response}.</value>

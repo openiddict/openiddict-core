@@ -556,14 +556,14 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void AddDeviceCodeFlow_DeviceFlowIsAdded()
+    public void AddDeviceAuthorizationFlow_DeviceFlowIsAdded()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.AllowDeviceCodeFlow();
+        builder.AllowDeviceAuthorizationFlow();
 
         var options = GetOptions(services);
 
@@ -933,171 +933,171 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetCryptographyEndpointUris_ThrowsExceptionWhenUrisIsNull()
+    public void SetJsonWebKeySetEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(uris: (null as Uri[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetJsonWebKeySetEndpointUris(uris: (null as Uri[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetCryptographyEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
+    public void SetJsonWebKeySetEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(uris: (null as string[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetJsonWebKeySetEndpointUris(uris: (null as string[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
     [InlineData(@"C:\")]
-    public void SetCryptographyEndpointUris_ThrowsExceptionForMalformedUri(string uri)
+    public void SetJsonWebKeySetEndpointUris_ThrowsExceptionForMalformedUri(string uri)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetCryptographyEndpointUris(new Uri(uri)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetJsonWebKeySetEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
     [Theory]
     [InlineData("~/path")]
-    public void SetCryptographyEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+    public void SetJsonWebKeySetEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetCryptographyEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetJsonWebKeySetEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
     [Fact]
-    public void SetCryptographyEndpointUris_ClearsUris()
+    public void SetJsonWebKeySetEndpointUris_ClearsUris()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetCryptographyEndpointUris(Array.Empty<Uri>());
+        builder.SetJsonWebKeySetEndpointUris(Array.Empty<Uri>());
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Empty(options.CryptographyEndpointUris);
+        Assert.Empty(options.JsonWebKeySetEndpointUris);
     }
 
     [Fact]
-    public void SetCryptographyEndpointUris_AddsUri()
+    public void SetJsonWebKeySetEndpointUris_AddsUri()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetCryptographyEndpointUris("http://localhost/endpoint-path");
+        builder.SetJsonWebKeySetEndpointUris("http://localhost/endpoint-path");
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.CryptographyEndpointUris);
+        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.JsonWebKeySetEndpointUris);
     }
 
     [Fact]
-    public void SetDeviceEndpointUris_ThrowsExceptionWhenUrisIsNull()
+    public void SetDeviceAuthorizationEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(uris: (null as Uri[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceAuthorizationEndpointUris(uris: (null as Uri[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetDeviceEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
+    public void SetDeviceAuthorizationEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(uris: (null as string[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceAuthorizationEndpointUris(uris: (null as string[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
     [InlineData(@"C:\")]
-    public void SetDeviceEndpointUris_ThrowsExceptionForMalformedUri(string uri)
+    public void SetDeviceAuthorizationEndpointUris_ThrowsExceptionForMalformedUri(string uri)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceEndpointUris(new Uri(uri)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceAuthorizationEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
     [Theory]
     [InlineData("~/path")]
-    public void SetDeviceEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+    public void SetDeviceAuthorizationEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceAuthorizationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
     [Fact]
-    public void SetDeviceEndpointUris_ClearsUris()
+    public void SetDeviceAuthorizationEndpointUris_ClearsUris()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetDeviceEndpointUris(Array.Empty<Uri>());
+        builder.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Empty(options.DeviceEndpointUris);
+        Assert.Empty(options.DeviceAuthorizationEndpointUris);
     }
 
     [Fact]
-    public void SetDeviceEndpointUris_AddsUri()
+    public void SetDeviceAuthorizationEndpointUris_AddsUri()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetDeviceEndpointUris("http://localhost/endpoint-path");
+        builder.SetDeviceAuthorizationEndpointUris("http://localhost/endpoint-path");
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.DeviceEndpointUris);
+        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.DeviceAuthorizationEndpointUris);
     }
 
     [Fact]
@@ -1192,7 +1192,7 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(uris: (null as Uri[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetEndSessionEndpointUris(uris: (null as Uri[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
@@ -1204,7 +1204,7 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(uris: (null as string[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetEndSessionEndpointUris(uris: (null as string[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
@@ -1217,7 +1217,7 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetLogoutEndpointUris(new Uri(uri)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetEndSessionEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
@@ -1231,7 +1231,7 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetLogoutEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetEndSessionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
@@ -1244,12 +1244,12 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetLogoutEndpointUris(Array.Empty<Uri>());
+        builder.SetEndSessionEndpointUris(Array.Empty<Uri>());
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Empty(options.LogoutEndpointUris);
+        Assert.Empty(options.EndSessionEndpointUris);
     }
 
     [Fact]
@@ -1260,12 +1260,12 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetLogoutEndpointUris("http://localhost/endpoint-path");
+        builder.SetEndSessionEndpointUris("http://localhost/endpoint-path");
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.LogoutEndpointUris);
+        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.EndSessionEndpointUris);
     }
 
     [Fact]
@@ -1437,171 +1437,171 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetUserinfoEndpointUris_ThrowsExceptionWhenUrisIsNull()
+    public void SetUserInfoEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(uris: (null as Uri[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserInfoEndpointUris(uris: (null as Uri[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetUserinfoEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
+    public void SetUserInfoEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(uris: (null as string[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserInfoEndpointUris(uris: (null as string[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
     [InlineData(@"C:\")]
-    public void SetUserinfoEndpointUris_ThrowsExceptionForMalformedUri(string uri)
+    public void SetUserInfoEndpointUris_ThrowsExceptionForMalformedUri(string uri)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetUserinfoEndpointUris(new Uri(uri)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetUserInfoEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
     [Theory]
     [InlineData("~/path")]
-    public void SetUserinfoEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+    public void SetUserInfoEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetUserinfoEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetUserInfoEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
     [Fact]
-    public void SetUserinfoEndpointUris_ClearsUris()
+    public void SetUserInfoEndpointUris_ClearsUris()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetUserinfoEndpointUris(Array.Empty<Uri>());
+        builder.SetUserInfoEndpointUris(Array.Empty<Uri>());
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Empty(options.UserinfoEndpointUris);
+        Assert.Empty(options.UserInfoEndpointUris);
     }
 
     [Fact]
-    public void SetUserinfoEndpointUris_AddsUri()
+    public void SetUserInfoEndpointUris_AddsUri()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetUserinfoEndpointUris("http://localhost/endpoint-path");
+        builder.SetUserInfoEndpointUris("http://localhost/endpoint-path");
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.UserinfoEndpointUris);
+        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.UserInfoEndpointUris);
     }
 
     [Fact]
-    public void SetVerificationEndpointUris_ThrowsExceptionWhenUrisIsNull()
+    public void SetEndUserVerificationEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(uris: (null as Uri[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetEndUserVerificationEndpointUris(uris: (null as Uri[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetVerificationEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
+    public void SetEndUserVerificationEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(uris: (null as string[])!));
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetEndUserVerificationEndpointUris(uris: (null as string[])!));
         Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
     [InlineData(@"C:\")]
-    public void SetVerificationEndpointUris_ThrowsExceptionForMalformedUri(string uri)
+    public void SetEndUserVerificationEndpointUris_ThrowsExceptionForMalformedUri(string uri)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetVerificationEndpointUris(new Uri(uri)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetEndUserVerificationEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
     [Theory]
     [InlineData("~/path")]
-    public void SetVerificationEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+    public void SetEndUserVerificationEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetVerificationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetEndUserVerificationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
     [Fact]
-    public void SetVerificationEndpointUris_ClearsUris()
+    public void SetEndUserVerificationEndpointUris_ClearsUris()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetVerificationEndpointUris(Array.Empty<Uri>());
+        builder.SetEndUserVerificationEndpointUris(Array.Empty<Uri>());
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Empty(options.VerificationEndpointUris);
+        Assert.Empty(options.EndUserVerificationEndpointUris);
     }
 
     [Fact]
-    public void SetVerificationEndpointUris_AddsUri()
+    public void SetEndUserVerificationEndpointUris_AddsUri()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.SetVerificationEndpointUris("http://localhost/endpoint-path");
+        builder.SetEndUserVerificationEndpointUris("http://localhost/endpoint-path");
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.VerificationEndpointUris);
+        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.EndUserVerificationEndpointUris);
     }
 
     [Fact]
@@ -2127,8 +2127,7 @@ public class OpenIddictServerBuilderTests
         return new ServiceCollection().AddOptions();
     }
 
-    private static OpenIddictServerBuilder CreateBuilder(IServiceCollection services)
-        => new OpenIddictServerBuilder(services);
+    private static OpenIddictServerBuilder CreateBuilder(IServiceCollection services) => new(services);
 
     private static OpenIddictServerOptions GetOptions(IServiceCollection services)
     {

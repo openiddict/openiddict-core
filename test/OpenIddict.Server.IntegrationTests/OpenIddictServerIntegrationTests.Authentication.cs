@@ -834,7 +834,7 @@ public abstract partial class OpenIddictServerIntegrationTests
             var scope = new OpenIddictScope();
 
             options.RegisterScopes("scope_registered_in_options");
-            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableTokenStorage();
@@ -1262,7 +1262,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         await using var server = await CreateServerAsync(options =>
         {
-            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableAuthorizationStorage();
@@ -1559,7 +1559,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             options.Services.AddSingleton(manager);
 
-            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableAuthorizationStorage();
@@ -1815,7 +1815,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         await using var server = await CreateServerAsync(options =>
         {
-            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableAuthorizationStorage();
@@ -1878,7 +1878,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         await using var server = await CreateServerAsync(options =>
         {
-            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableAuthorizationStorage();
@@ -1941,7 +1941,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         await using var server = await CreateServerAsync(options =>
         {
-            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableAuthorizationStorage();
@@ -2122,7 +2122,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         await using var server = await CreateServerAsync(options =>
         {
-            options.SetDeviceEndpointUris(Array.Empty<Uri>());
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableAuthorizationStorage();

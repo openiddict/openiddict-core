@@ -16,15 +16,15 @@ public static partial class OpenIddictClientHandlers
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Logout request top-level processing:
+             * EndSession request top-level processing:
              */
-            PrepareLogoutRequest.Descriptor,
-            ApplyLogoutRequest.Descriptor,
+            PrepareEndSessionRequest.Descriptor,
+            ApplyEndSessionRequest.Descriptor,
 
             /*
-             * Logout request processing:
+             * EndSession request processing:
              */
-            AttachLogoutEndpoint.Descriptor,
+            AttachEndSessionEndpoint.Descriptor,
 
             /*
              * Post-logout redirection request top-level processing:
@@ -44,11 +44,11 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for preparing authorization requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class PrepareLogoutRequest : IOpenIddictClientHandler<ProcessSignOutContext>
+        public sealed class PrepareEndSessionRequest : IOpenIddictClientHandler<ProcessSignOutContext>
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public PrepareLogoutRequest(IOpenIddictClientDispatcher dispatcher)
+            public PrepareEndSessionRequest(IOpenIddictClientDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -56,7 +56,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
-                    .UseScopedHandler<PrepareLogoutRequest>()
+                    .UseScopedHandler<PrepareEndSessionRequest>()
                     .SetOrder(int.MaxValue - 100_000)
                     .Build();
 
@@ -68,7 +68,7 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new PrepareLogoutRequestContext(context.Transaction);
+                var notification = new PrepareEndSessionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -88,11 +88,11 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for applying authorization requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ApplyLogoutRequest : IOpenIddictClientHandler<ProcessSignOutContext>
+        public sealed class ApplyEndSessionRequest : IOpenIddictClientHandler<ProcessSignOutContext>
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public ApplyLogoutRequest(IOpenIddictClientDispatcher dispatcher)
+            public ApplyEndSessionRequest(IOpenIddictClientDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -100,8 +100,8 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
-                    .UseScopedHandler<ApplyLogoutRequest>()
-                    .SetOrder(PrepareLogoutRequest.Descriptor.Order + 1_000)
+                    .UseScopedHandler<ApplyEndSessionRequest>()
+                    .SetOrder(PrepareEndSessionRequest.Descriptor.Order + 1_000)
                     .Build();
 
             /// <inheritdoc/>
@@ -112,7 +112,7 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ApplyLogoutRequestContext(context.Transaction)
+                var notification = new ApplyEndSessionRequestContext(context.Transaction)
                 {
                     // Note: the endpoint URI is automatically set by a specialized handler if it's not set here.
                     EndSessionEndpoint = context.EndSessionEndpoint?.AbsoluteUri!,
@@ -147,19 +147,19 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the URI of the authorization request to the request.
         /// </summary>
-        public sealed class AttachLogoutEndpoint : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public sealed class AttachEndSessionEndpoint : IOpenIddictClientHandler<ApplyEndSessionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
-                    .UseSingletonHandler<AttachLogoutEndpoint>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyEndSessionRequestContext>()
+                    .UseSingletonHandler<AttachEndSessionEndpoint>()
                     .SetOrder(int.MinValue + 100_000)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutRequestContext context)
+            public ValueTask HandleAsync(ApplyEndSessionRequestContext context)
             {
                 if (context is null)
                 {

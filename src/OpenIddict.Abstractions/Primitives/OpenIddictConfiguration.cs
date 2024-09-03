@@ -72,7 +72,7 @@ public sealed class OpenIddictConfiguration
     public JsonWebKeySet? JsonWebKeySet { get; set; }
 
     /// <summary>
-    /// Gets or sets the URI of the JWKS endpoint.
+    /// Gets or sets the URI of the JSON Web Key Set endpoint.
     /// </summary>
     public Uri? JwksUri { get; set; }
 
@@ -124,5 +124,5 @@ public sealed class OpenIddictConfiguration
     /// <summary>
     /// Gets or sets the URI of the userinfo endpoint.
     /// </summary>
-    public Uri? UserinfoEndpoint { get; set; }
+    public Uri? UserInfoEndpoint { get; set; }
 }

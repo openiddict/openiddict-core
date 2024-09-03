@@ -28,7 +28,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         .. Exchange.DefaultHandlers,
         .. Introspection.DefaultHandlers,
         .. Revocation.DefaultHandlers,
-        .. Userinfo.DefaultHandlers
+        .. UserInfo.DefaultHandlers
     ]);
 
     /// <summary>

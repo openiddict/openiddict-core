@@ -251,7 +251,7 @@
                           </xs:annotation>
                         </xs:attribute>
 
-                        <xs:attribute name="UserinfoEndpoint" type="xs:string" use="optional">
+                        <xs:attribute name="UserInfoEndpoint" type="xs:string" use="optional">
                           <xs:annotation>
                             <xs:documentation>The userinfo endpoint offered by the environment.</xs:documentation>
                           </xs:annotation>

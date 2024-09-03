@@ -66,8 +66,28 @@ public sealed class OpenIddictServerOwinBuilder
         => Configure(options => options.EnableAuthorizationEndpointPassthrough = true);
 
     /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect end session endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    public OpenIddictServerOwinBuilder EnableEndSessionEndpointPassthrough()
+        => Configure(options => options.EnableEndSessionEndpointPassthrough = true);
+
+    /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect end-user verification endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    public OpenIddictServerOwinBuilder EnableEndUserVerificationEndpointPassthrough()
+        => Configure(options => options.EnableEndUserVerificationEndpointPassthrough = true);
+
+    /// <summary>
     /// Enables error pass-through support, so that the rest of the request processing pipeline is
-    /// automatically invoked when returning an error from the interactive authorization and logout endpoints.
+    /// automatically invoked when returning an error from the interactive authorization and end session endpoints.
     /// When this option is enabled, special logic must be added to these actions to handle errors, that can be
     /// retrieved using <see cref="OpenIddictServerOwinHelpers.GetOpenIddictServerResponse(IOwinContext)"/>
     /// </summary>
@@ -75,16 +95,6 @@ public sealed class OpenIddictServerOwinBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerOwinBuilder EnableErrorPassthrough()
         => Configure(options => options.EnableErrorPassthrough = true);
-
-    /// <summary>
-    /// Enables the pass-through mode for the OpenID Connect logout endpoint.
-    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
-    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
-    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
-    /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    public OpenIddictServerOwinBuilder EnableLogoutEndpointPassthrough()
-        => Configure(options => options.EnableLogoutEndpointPassthrough = true);
 
     /// <summary>
     /// Enables the pass-through mode for the OpenID Connect token endpoint.
@@ -103,18 +113,8 @@ public sealed class OpenIddictServerOwinBuilder
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    public OpenIddictServerOwinBuilder EnableUserinfoEndpointPassthrough()
-        => Configure(options => options.EnableUserinfoEndpointPassthrough = true);
-
-    /// <summary>
-    /// Enables the pass-through mode for the OpenID Connect user verification endpoint.
-    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
-    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
-    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
-    /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    public OpenIddictServerOwinBuilder EnableVerificationEndpointPassthrough()
-        => Configure(options => options.EnableVerificationEndpointPassthrough = true);
+    public OpenIddictServerOwinBuilder EnableUserInfoEndpointPassthrough()
+        => Configure(options => options.EnableUserInfoEndpointPassthrough = true);
 
     /// <summary>
     /// Enables authorization request caching, so that authorization requests
@@ -128,12 +128,12 @@ public sealed class OpenIddictServerOwinBuilder
         => Configure(options => options.EnableAuthorizationRequestCaching = true);
 
     /// <summary>
-    /// Enables logout request caching, so that logout requests
+    /// Enables end session request caching, so that end session requests
     /// are automatically stored in the distributed cache.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    public OpenIddictServerOwinBuilder EnableLogoutRequestCaching()
-        => Configure(options => options.EnableLogoutRequestCaching = true);
+    public OpenIddictServerOwinBuilder EnableEndSessionRequestCaching()
+        => Configure(options => options.EnableEndSessionRequestCaching = true);
 
     /// <summary>
     /// Suppresses indentation for the JSON responses returned by the OWIN host.
@@ -174,19 +174,19 @@ public sealed class OpenIddictServerOwinBuilder
     }
 
     /// <summary>
-    /// Sets the caching policy used by the logout endpoint.
+    /// Sets the caching policy used by the end session endpoint.
     /// Note: the specified policy is only used when caching is explicitly enabled.
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    public OpenIddictServerOwinBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy)
+    public OpenIddictServerOwinBuilder SetEndSessionRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)
         {
             throw new ArgumentNullException(nameof(policy));
         }
 
-        return Configure(options => options.LogoutRequestCachingPolicy = policy);
+        return Configure(options => options.EndSessionRequestCachingPolicy = policy);
     }
 
     /// <inheritdoc/>

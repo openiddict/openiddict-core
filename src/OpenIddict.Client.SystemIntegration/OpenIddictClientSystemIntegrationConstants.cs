@@ -28,6 +28,6 @@ public static class OpenIddictClientSystemIntegrationConstants
         public const string FrontchannelIdentityToken = "frontchannel_id_token";
         public const string RefreshToken = "refresh_token";
         public const string StateToken = "state_token";
-        public const string UserinfoToken = "userinfo_token";
+        public const string UserInfoToken = "userinfo_token";
     }
 }

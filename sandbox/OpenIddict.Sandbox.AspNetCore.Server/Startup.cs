@@ -100,28 +100,26 @@ public class Startup
             // Register the OpenIddict server components.
             .AddServer(options =>
             {
-                // Enable the authorization, device, introspection, logout,
-                // token, revocation, userinfo and verification endpoints.
+                // Enable the endpoints that will be used by the client applications.
                 options.SetAuthorizationEndpointUris("connect/authorize")
-                       .SetDeviceEndpointUris("connect/device")
+                       .SetDeviceAuthorizationEndpointUris("connect/device")
+                       .SetEndSessionEndpointUris("connect/endsession")
+                       .SetEndUserVerificationEndpointUris("connect/verify")
                        .SetIntrospectionEndpointUris("connect/introspect")
-                       .SetLogoutEndpointUris("connect/logout")
                        .SetRevocationEndpointUris("connect/revoke")
                        .SetTokenEndpointUris("connect/token")
-                       .SetUserinfoEndpointUris("connect/userinfo")
-                       .SetVerificationEndpointUris("connect/verify");
+                       .SetUserInfoEndpointUris("connect/userinfo");
 
-                // Note: this sample enables all the supported flows but
-                // you can restrict the list of enabled flows if necessary.
+                // Enable the flows that will be used by the client applications.
                 options.AllowAuthorizationCodeFlow()
-                       .AllowDeviceCodeFlow()
+                       .AllowDeviceAuthorizationFlow()
                        .AllowHybridFlow()
                        .AllowImplicitFlow()
                        .AllowNoneFlow()
                        .AllowPasswordFlow()
                        .AllowRefreshTokenFlow();
 
-                // Mark the "email", "profile", "roles" and "demo_api" scopes as supported scopes.
+                // Register the public scopes that will be exposed by the configuration endpoint.
                 options.RegisterScopes(Scopes.Email, Scopes.Profile, Scopes.Roles, "demo_api");
 
                 // Register the signing and encryption credentials.
@@ -135,10 +133,10 @@ public class Startup
                 options.UseAspNetCore()
                        .EnableStatusCodePagesIntegration()
                        .EnableAuthorizationEndpointPassthrough()
-                       .EnableLogoutEndpointPassthrough()
+                       .EnableEndSessionEndpointPassthrough()
+                       .EnableEndUserVerificationEndpointPassthrough()
                        .EnableTokenEndpointPassthrough()
-                       .EnableUserinfoEndpointPassthrough()
-                       .EnableVerificationEndpointPassthrough();
+                       .EnableUserInfoEndpointPassthrough();
 
                 // Note: if you don't want to specify a client_id when sending
                 // a token or revocation request, uncomment the following line:

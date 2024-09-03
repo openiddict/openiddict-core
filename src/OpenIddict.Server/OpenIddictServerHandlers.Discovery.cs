@@ -47,11 +47,11 @@ public static partial class OpenIddictServerHandlers
             /*
              * Cryptography request top-level processing:
              */
-            ExtractCryptographyRequest.Descriptor,
-            ValidateCryptographyRequest.Descriptor,
-            HandleCryptographyRequest.Descriptor,
-            ApplyCryptographyResponse<ProcessErrorContext>.Descriptor,
-            ApplyCryptographyResponse<ProcessRequestContext>.Descriptor,
+            ExtractJsonWebKeySetRequest.Descriptor,
+            ValidateJsonWebKeySetRequest.Descriptor,
+            HandleJsonWebKeySetRequest.Descriptor,
+            ApplyJsonWebKeySetResponse<ProcessErrorContext>.Descriptor,
+            ApplyJsonWebKeySetResponse<ProcessRequestContext>.Descriptor,
 
             /*
              * Cryptography request handling:
@@ -239,8 +239,8 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.IntrospectionEndpoint] = notification.IntrospectionEndpoint?.AbsoluteUri,
                     [Metadata.EndSessionEndpoint] = notification.LogoutEndpoint?.AbsoluteUri,
                     [Metadata.RevocationEndpoint] = notification.RevocationEndpoint?.AbsoluteUri,
-                    [Metadata.UserinfoEndpoint] = notification.UserinfoEndpoint?.AbsoluteUri,
-                    [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceEndpoint?.AbsoluteUri,
+                    [Metadata.UserInfoEndpoint] = notification.UserInfoEndpoint?.AbsoluteUri,
+                    [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceAuthorizationEndpoint?.AbsoluteUri,
                     [Metadata.JwksUri] = notification.CryptographyEndpoint?.AbsoluteUri,
                     [Metadata.GrantTypesSupported] = notification.GrantTypes.ToArray(),
                     [Metadata.ResponseTypesSupported] = notification.ResponseTypes.ToArray(),
@@ -253,7 +253,7 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.TokenEndpointAuthMethodsSupported] = notification.TokenEndpointAuthenticationMethods.ToArray(),
                     [Metadata.IntrospectionEndpointAuthMethodsSupported] = notification.IntrospectionEndpointAuthenticationMethods.ToArray(),
                     [Metadata.RevocationEndpointAuthMethodsSupported] = notification.RevocationEndpointAuthenticationMethods.ToArray(),
-                    [Metadata.DeviceAuthorizationEndpointAuthMethodsSupported] = notification.DeviceEndpointAuthenticationMethods.ToArray()
+                    [Metadata.DeviceAuthorizationEndpointAuthMethodsSupported] = notification.DeviceAuthorizationEndpointAuthenticationMethods.ToArray()
                 };
 
                 foreach (var metadata in notification.Metadata)
@@ -372,16 +372,16 @@ public static partial class OpenIddictServerHandlers
                     context.BaseUri, context.Options.AuthorizationEndpointUris.FirstOrDefault());
 
                 context.CryptographyEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
-                    context.BaseUri, context.Options.CryptographyEndpointUris.FirstOrDefault());
+                    context.BaseUri, context.Options.JsonWebKeySetEndpointUris.FirstOrDefault());
 
-                context.DeviceEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
-                    context.BaseUri, context.Options.DeviceEndpointUris.FirstOrDefault());
+                context.DeviceAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.DeviceAuthorizationEndpointUris.FirstOrDefault());
 
                 context.IntrospectionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.IntrospectionEndpointUris.FirstOrDefault());
 
                 context.LogoutEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
-                    context.BaseUri, context.Options.LogoutEndpointUris.FirstOrDefault());
+                    context.BaseUri, context.Options.EndSessionEndpointUris.FirstOrDefault());
 
                 context.RevocationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.RevocationEndpointUris.FirstOrDefault());
@@ -389,8 +389,8 @@ public static partial class OpenIddictServerHandlers
                 context.TokenEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.TokenEndpointUris.FirstOrDefault());
 
-                context.UserinfoEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
-                    context.BaseUri, context.Options.UserinfoEndpointUris.FirstOrDefault());
+                context.UserInfoEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.UserInfoEndpointUris.FirstOrDefault());
 
                 return default;
             }
@@ -509,9 +509,9 @@ public static partial class OpenIddictServerHandlers
 
                 // Note: "device_authorization_endpoint_auth_methods_supported" is not a standard parameter
                 // but is supported by OpenIddict 4.3.0 and higher for consistency with the other endpoints.
-                if (context.DeviceEndpoint is not null)
+                if (context.DeviceAuthorizationEndpoint is not null)
                 {
-                    context.DeviceEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
+                    context.DeviceAuthorizationEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
                 }
 
                 if (context.IntrospectionEndpoint is not null)
@@ -755,13 +755,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting cryptography requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for extracting JSON Web Key Set requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ExtractCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractJsonWebKeySetRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ExtractCryptographyRequest(IOpenIddictServerDispatcher dispatcher)
+            public ExtractJsonWebKeySetRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -769,8 +769,8 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireCryptographyRequest>()
-                    .UseScopedHandler<ExtractCryptographyRequest>()
+                    .AddFilter<RequireJsonWebKeySetRequest>()
+                    .UseScopedHandler<ExtractJsonWebKeySetRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -783,7 +783,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ExtractCryptographyRequestContext(context.Transaction);
+                var notification = new ExtractJsonWebKeySetRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -817,13 +817,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for validating cryptography requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for validating JSON Web Key Set requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ValidateCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateJsonWebKeySetRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateCryptographyRequest(IOpenIddictServerDispatcher dispatcher)
+            public ValidateJsonWebKeySetRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -831,9 +831,9 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireCryptographyRequest>()
-                    .UseScopedHandler<ValidateCryptographyRequest>()
-                    .SetOrder(ExtractCryptographyRequest.Descriptor.Order + 1_000)
+                    .AddFilter<RequireJsonWebKeySetRequest>()
+                    .UseScopedHandler<ValidateJsonWebKeySetRequest>()
+                    .SetOrder(ExtractJsonWebKeySetRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -845,7 +845,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ValidateCryptographyRequestContext(context.Transaction);
+                var notification = new ValidateJsonWebKeySetRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -874,13 +874,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for handling cryptography requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for handling JSON Web Key Set requests and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class HandleCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleJsonWebKeySetRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public HandleCryptographyRequest(IOpenIddictServerDispatcher dispatcher)
+            public HandleJsonWebKeySetRequest(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -888,9 +888,9 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireCryptographyRequest>()
-                    .UseScopedHandler<HandleCryptographyRequest>()
-                    .SetOrder(ValidateCryptographyRequest.Descriptor.Order + 1_000)
+                    .AddFilter<RequireJsonWebKeySetRequest>()
+                    .UseScopedHandler<HandleJsonWebKeySetRequest>()
+                    .SetOrder(ValidateJsonWebKeySetRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -902,7 +902,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new HandleCryptographyRequestContext(context.Transaction);
+                var notification = new HandleJsonWebKeySetRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -1002,13 +1002,13 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for processing cryptography responses and invoking the corresponding event handlers.
+        /// Contains the logic responsible for processing JSON Web Key Set responses and invoking the corresponding event handlers.
         /// </summary>
-        public sealed class ApplyCryptographyResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyJsonWebKeySetResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ApplyCryptographyResponse(IOpenIddictServerDispatcher dispatcher)
+            public ApplyJsonWebKeySetResponse(IOpenIddictServerDispatcher dispatcher)
                 => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
@@ -1016,8 +1016,8 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
-                    .AddFilter<RequireCryptographyRequest>()
-                    .UseScopedHandler<ApplyCryptographyResponse<TContext>>()
+                    .AddFilter<RequireJsonWebKeySetRequest>()
+                    .UseScopedHandler<ApplyJsonWebKeySetResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -1030,7 +1030,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var notification = new ApplyCryptographyResponseContext(context.Transaction);
+                var notification = new ApplyJsonWebKeySetResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
@@ -1050,22 +1050,22 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for attaching the signing keys to the JWKS document.
+        /// Contains the logic responsible for attaching the signing keys to the JSON Web Key Set document.
         /// </summary>
-        public sealed class AttachSigningKeys : IOpenIddictServerHandler<HandleCryptographyRequestContext>
+        public sealed class AttachSigningKeys : IOpenIddictServerHandler<HandleJsonWebKeySetRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleCryptographyRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetRequestContext>()
                     .UseSingletonHandler<AttachSigningKeys>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyRequestContext context)
+            public ValueTask HandleAsync(HandleJsonWebKeySetRequestContext context)
             {
                 if (context is null)
                 {

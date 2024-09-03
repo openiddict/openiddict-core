@@ -235,9 +235,9 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                 properties.Dictionary[Tokens.StateToken] = context.StateToken;
             }
 
-            if (!string.IsNullOrEmpty(context.UserinfoToken))
+            if (!string.IsNullOrEmpty(context.UserInfoToken))
             {
-                properties.Dictionary[Tokens.UserinfoToken] = context.UserinfoToken;
+                properties.Dictionary[Tokens.UserInfoToken] = context.UserInfoToken;
             }
 
             return new AuthenticationTicket(context.MergedPrincipal?.Identity as ClaimsIdentity, properties);

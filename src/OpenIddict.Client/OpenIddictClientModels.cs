@@ -124,7 +124,7 @@ public static class OpenIddictClientModels
         /// Gets or sets the principal extracted from the userinfo token or response, if available.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
+        public required ClaimsPrincipal? UserInfoTokenPrincipal { get; init; }
     }
 
     /// <summary>
@@ -243,9 +243,9 @@ public static class OpenIddictClientModels
     public sealed record class InteractiveSignOutRequest
     {
         /// <summary>
-        /// Gets or sets the parameters that will be added to the logout request.
+        /// Gets or sets the parameters that will be added to the end session request.
         /// </summary>
-        public Dictionary<string, OpenIddictParameter>? AdditionalLogoutRequestParameters { get; init; }
+        public Dictionary<string, OpenIddictParameter>? AdditionalEndSessionRequestParameters { get; init; }
 
         /// <summary>
         /// Gets or sets the cancellation token that will be
@@ -418,7 +418,7 @@ public static class OpenIddictClientModels
         /// <remarks>
         /// Note: this property is generally not set, unless when dealing with non-standard providers.
         /// </remarks>
-        public required string? UserinfoToken { get; init; }
+        public required string? UserInfoToken { get; init; }
 
         /// <summary>
         /// Gets or sets the principal extracted from the userinfo token or response, if available.
@@ -427,7 +427,7 @@ public static class OpenIddictClientModels
         /// Note: this property is generally not set, unless when dealing with non-standard providers.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
+        public required ClaimsPrincipal? UserInfoTokenPrincipal { get; init; }
     }
 
     /// <summary>
@@ -449,7 +449,7 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets a boolean indicating whether userinfo should be disabled.
         /// </summary>
-        public bool DisableUserinfo { get; set; }
+        public bool DisableUserInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the custom grant type that will be used for the authentication request.
@@ -540,13 +540,13 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets the userinfo token, if available.
         /// </summary>
-        public required string? UserinfoToken { get; init; }
+        public required string? UserInfoToken { get; init; }
 
         /// <summary>
         /// Gets or sets the principal extracted from the userinfo token or response, if available.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
+        public required ClaimsPrincipal? UserInfoTokenPrincipal { get; init; }
     }
 
     /// <summary>
@@ -573,7 +573,7 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets a boolean indicating whether userinfo should be disabled.
         /// </summary>
-        public bool DisableUserinfo { get; set; }
+        public bool DisableUserInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum duration during which token requests will be sent
@@ -673,13 +673,13 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets the userinfo token, if available.
         /// </summary>
-        public required string? UserinfoToken { get; init; }
+        public required string? UserInfoToken { get; init; }
 
         /// <summary>
         /// Gets or sets the principal extracted from the userinfo token or response, if available.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
+        public required ClaimsPrincipal? UserInfoTokenPrincipal { get; init; }
     }
 
     /// <summary>
@@ -878,7 +878,7 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets a boolean indicating whether userinfo should be disabled.
         /// </summary>
-        public bool DisableUserinfo { get; set; }
+        public bool DisableUserInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the password that will be sent to the authorization server.
@@ -974,13 +974,13 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets the userinfo token, if available.
         /// </summary>
-        public required string? UserinfoToken { get; init; }
+        public required string? UserInfoToken { get; init; }
 
         /// <summary>
         /// Gets or sets the principal extracted from the userinfo token or response, if available.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
+        public required ClaimsPrincipal? UserInfoTokenPrincipal { get; init; }
     }
 
     /// <summary>
@@ -1003,7 +1003,7 @@ public static class OpenIddictClientModels
         /// Gets or sets a boolean indicating whether userinfo should be disabled, which may be required
         /// when sending a refresh token that was acquired using a user-less flow (e.g client credentials).
         /// </summary>
-        public bool DisableUserinfo { get; set; }
+        public bool DisableUserInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
@@ -1094,13 +1094,13 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets the userinfo token, if available.
         /// </summary>
-        public required string? UserinfoToken { get; init; }
+        public required string? UserInfoToken { get; init; }
 
         /// <summary>
         /// Gets or sets the principal extracted from the userinfo token or response, if available.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public required ClaimsPrincipal? UserinfoTokenPrincipal { get; init; }
+        public required ClaimsPrincipal? UserInfoTokenPrincipal { get; init; }
     }
 
     /// <summary>

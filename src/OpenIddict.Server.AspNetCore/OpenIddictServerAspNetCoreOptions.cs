@@ -29,8 +29,24 @@ public sealed class OpenIddictServerAspNetCoreOptions : AuthenticationSchemeOpti
     public bool EnableAuthorizationEndpointPassthrough { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the end session endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    public bool EnableEndSessionEndpointPassthrough { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the end-user verification endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    public bool EnableEndUserVerificationEndpointPassthrough { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether OpenIddict should allow the rest of the request processing pipeline
-    /// to be invoked when returning an error from the interactive authorization and logout endpoints.
+    /// to be invoked when returning an error from the interactive authorization and end session endpoints.
     /// When this option is enabled, special logic must be added to these actions to handle errors, that can be
     /// retrieved using <see cref="OpenIddictServerAspNetCoreHelpers.GetOpenIddictServerResponse(HttpContext)"/>.
     /// </summary>
@@ -38,14 +54,6 @@ public sealed class OpenIddictServerAspNetCoreOptions : AuthenticationSchemeOpti
     /// Important: the error pass-through mode cannot be used when the status code pages integration is enabled.
     /// </remarks>
     public bool EnableErrorPassthrough { get; set; }
-
-    /// <summary>
-    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the logout endpoint.
-    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
-    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
-    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
-    /// </summary>
-    public bool EnableLogoutEndpointPassthrough { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the token endpoint.
@@ -61,15 +69,7 @@ public sealed class OpenIddictServerAspNetCoreOptions : AuthenticationSchemeOpti
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    public bool EnableUserinfoEndpointPassthrough { get; set; }
-
-    /// <summary>
-    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the user verification endpoint.
-    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
-    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
-    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
-    /// </summary>
-    public bool EnableVerificationEndpointPassthrough { get; set; }
+    public bool EnableUserInfoEndpointPassthrough { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether requests received by the authorization endpoint
@@ -81,10 +81,10 @@ public sealed class OpenIddictServerAspNetCoreOptions : AuthenticationSchemeOpti
     public bool EnableAuthorizationRequestCaching { get; set; }
 
     /// <summary>
-    /// Gets or sets a boolean indicating whether requests received by the logout endpoint should be cached.
+    /// Gets or sets a boolean indicating whether requests received by the end session endpoint should be cached.
     /// When enabled, authorization requests are automatically stored in the distributed cache.
     /// </summary>
-    public bool EnableLogoutRequestCaching { get; set; }
+    public bool EnableEndSessionRequestCaching { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether integration with the status code pages
@@ -113,9 +113,9 @@ public sealed class OpenIddictServerAspNetCoreOptions : AuthenticationSchemeOpti
     };
 
     /// <summary>
-    /// Gets or sets the caching policy used by the logout endpoint.
+    /// Gets or sets the caching policy used by the end session endpoint.
     /// </summary>
-    public DistributedCacheEntryOptions LogoutRequestCachingPolicy { get; set; } = new()
+    public DistributedCacheEntryOptions EndSessionRequestCachingPolicy { get; set; } = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
         SlidingExpiration = TimeSpan.FromMinutes(30)

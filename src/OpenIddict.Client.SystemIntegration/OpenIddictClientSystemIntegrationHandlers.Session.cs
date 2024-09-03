@@ -45,7 +45,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Logout request processing:
+             * End session request processing:
              */
             StartASWebAuthenticationSession.Descriptor,
             LaunchCustomTabsIntent.Descriptor,
@@ -70,10 +70,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         ]);
 
         /// <summary>
-        /// Contains the logic responsible for initiating logout requests using an AS web authentication session.
+        /// Contains the logic responsible for initiating end session requests using an AS web authentication session.
         /// Note: this handler is not used when the user session is not interactive.
         /// </summary>
-        public class StartASWebAuthenticationSession : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public class StartASWebAuthenticationSession : IOpenIddictClientHandler<ApplyEndSessionRequestContext>
         {
             private readonly OpenIddictClientSystemIntegrationService _service;
 
@@ -84,7 +84,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyEndSessionRequestContext>()
                     .AddFilter<RequireInteractiveSession>()
                     .AddFilter<RequireASWebAuthenticationSession>()
                     .UseSingletonHandler<StartASWebAuthenticationSession>()
@@ -97,7 +97,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             [SupportedOSPlatform("maccatalyst13.1")]
             [SupportedOSPlatform("macos10.15")]
 #pragma warning disable CS1998
-            public async ValueTask HandleAsync(ApplyLogoutRequestContext context)
+            public async ValueTask HandleAsync(ApplyEndSessionRequestContext context)
 #pragma warning restore CS1998
             {
                 if (context is null)
@@ -122,7 +122,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 var source = new TaskCompletionSource<OpenIddictClientSystemIntegrationPlatformCallback>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
 
-                // OpenIddict represents the complete interactive logout dance as a two-phase process:
+                // OpenIddict represents the complete interactive end session dance as a two-phase process:
                 //   - The sign-out, during which the user is redirected to the authorization server, either
                 //     by launching the system browser or, as in this case, using a web-view-like approach.
                 //
@@ -313,16 +313,16 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for initiating logout requests using a custom tabs intent.
+        /// Contains the logic responsible for initiating end session requests using a custom tabs intent.
         /// Note: this handler is not used when the user session is not interactive.
         /// </summary>
-        public class LaunchCustomTabsIntent : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public class LaunchCustomTabsIntent : IOpenIddictClientHandler<ApplyEndSessionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyEndSessionRequestContext>()
                     .AddFilter<RequireInteractiveSession>()
                     .AddFilter<RequireCustomTabsIntent>()
                     .UseSingletonHandler<LaunchCustomTabsIntent>()
@@ -333,7 +333,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /// <inheritdoc/>
             [SupportedOSPlatform("android21.0")]
 #pragma warning disable CS1998
-            public async ValueTask HandleAsync(ApplyLogoutRequestContext context)
+            public async ValueTask HandleAsync(ApplyEndSessionRequestContext context)
 #pragma warning restore CS1998
             {
                 if (context is null)
@@ -381,10 +381,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for initiating logout requests using the web authentication broker.
+        /// Contains the logic responsible for initiating end session requests using the web authentication broker.
         /// Note: this handler is not used when the user session is not interactive.
         /// </summary>
-        public class InvokeWebAuthenticationBroker : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public class InvokeWebAuthenticationBroker : IOpenIddictClientHandler<ApplyEndSessionRequestContext>
         {
             private readonly OpenIddictClientSystemIntegrationService _service;
 
@@ -395,7 +395,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyEndSessionRequestContext>()
                     .AddFilter<RequireInteractiveSession>()
                     .AddFilter<RequireWebAuthenticationBroker>()
                     .UseSingletonHandler<InvokeWebAuthenticationBroker>()
@@ -406,7 +406,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /// <inheritdoc/>
             [SupportedOSPlatform("windows10.0.17763")]
 #pragma warning disable CS1998
-            public async ValueTask HandleAsync(ApplyLogoutRequestContext context)
+            public async ValueTask HandleAsync(ApplyEndSessionRequestContext context)
 #pragma warning restore CS1998
             {
                 if (context is null)
@@ -435,7 +435,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
                 }
 
-                // OpenIddict represents the complete interactive logout dance as a two-phase process:
+                // OpenIddict represents the complete interactive end session dance as a two-phase process:
                 //   - The sign-out, during which the user is redirected to the authorization server, either
                 //     by launching the system browser or, as in this case, using a web-view-like approach.
                 //
@@ -546,16 +546,16 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for initiating logout requests using the system browser.
+        /// Contains the logic responsible for initiating end session requests using the system browser.
         /// Note: this handler is not used when the user session is not interactive.
         /// </summary>
-        public class LaunchSystemBrowser : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public class LaunchSystemBrowser : IOpenIddictClientHandler<ApplyEndSessionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyLogoutRequestContext>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ApplyEndSessionRequestContext>()
                     .AddFilter<RequireInteractiveSession>()
                     .AddFilter<RequireSystemBrowser>()
                     .UseSingletonHandler<LaunchSystemBrowser>()
@@ -564,7 +564,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ApplyLogoutRequestContext context)
+            public async ValueTask HandleAsync(ApplyEndSessionRequestContext context)
             {
                 if (context is null)
                 {

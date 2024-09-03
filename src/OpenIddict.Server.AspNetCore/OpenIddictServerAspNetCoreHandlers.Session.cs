@@ -29,34 +29,34 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             /*
              * Logout request extraction:
              */
-            ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor,
+            ExtractGetOrPostRequest<ExtractEndSessionRequestContext>.Descriptor,
             RestoreCachedRequestParameters.Descriptor,
             CacheRequestParameters.Descriptor,
 
             /*
              * Logout request handling:
              */
-            EnablePassthroughMode<HandleLogoutRequestContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
+            EnablePassthroughMode<HandleEndSessionRequestContext, RequireEndSessionEndpointPassthroughEnabled>.Descriptor,
 
             /*
              * Logout response processing:
              */
             RemoveCachedRequest.Descriptor,
-            AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
-            AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
+            AttachHttpResponseCode<ApplyEndSessionResponseContext>.Descriptor,
+            AttachCacheControlHeader<ApplyEndSessionResponseContext>.Descriptor,
             ProcessHostRedirectionResponse.Descriptor,
-            ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
-            ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,
-            ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
+            ProcessPassthroughErrorResponse<ApplyEndSessionResponseContext, RequireEndSessionEndpointPassthroughEnabled>.Descriptor,
+            ProcessStatusCodePagesErrorResponse<ApplyEndSessionResponseContext>.Descriptor,
+            ProcessLocalErrorResponse<ApplyEndSessionResponseContext>.Descriptor,
             ProcessQueryResponse.Descriptor,
-            ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor
+            ProcessEmptyResponse<ApplyEndSessionResponseContext>.Descriptor
         ]);
 
         /// <summary>
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public sealed class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
+        public sealed class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractEndSessionRequestContext>
         {
             private readonly IDistributedCache _cache;
 
@@ -69,16 +69,16 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractEndSessionRequestContext>()
                     .AddFilter<RequireHttpRequest>()
-                    .AddFilter<RequireLogoutRequestCachingEnabled>()
+                    .AddFilter<RequireEndSessionRequestCachingEnabled>()
                     .UseSingletonHandler<RestoreCachedRequestParameters>()
-                    .SetOrder(ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractGetOrPostRequest<ExtractEndSessionRequestContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractLogoutRequestContext context)
+            public async ValueTask HandleAsync(ExtractEndSessionRequestContext context)
             {
                 if (context is null)
                 {
@@ -87,8 +87,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
-                // If a request_id parameter can be found in the logout request,
-                // restore the complete logout request from the distributed cache.
+                // If a request_id parameter can be found in the end session request,
+                // restore the complete end session request from the distributed cache.
 
                 if (string.IsNullOrEmpty(context.Request.RequestId))
                 {
@@ -97,7 +97,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached payloads.
-                var token = await _cache.GetStringAsync(Cache.LogoutRequest + context.Request.RequestId);
+                var token = await _cache.GetStringAsync(Cache.EndSessionRequest + context.Request.RequestId);
                 if (token is null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
@@ -113,7 +113,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 var parameters = context.Options.TokenValidationParameters.Clone();
                 parameters.ValidIssuer ??= (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri;
                 parameters.ValidAudience ??= parameters.ValidIssuer;
-                parameters.ValidTypes = [JsonWebTokenTypes.Private.LogoutRequest];
+                parameters.ValidTypes = [JsonWebTokenTypes.Private.EndSessionRequest];
 
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenAsync(token, parameters);
                 if (!result.IsValid)
@@ -147,10 +147,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for caching logout requests, if applicable.
+        /// Contains the logic responsible for caching end session requests, if applicable.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public sealed class CacheRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
+        public sealed class CacheRequestParameters : IOpenIddictServerHandler<ExtractEndSessionRequestContext>
         {
             private readonly IDistributedCache _cache;
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
@@ -169,16 +169,16 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractEndSessionRequestContext>()
                     .AddFilter<RequireHttpRequest>()
-                    .AddFilter<RequireLogoutRequestCachingEnabled>()
+                    .AddFilter<RequireEndSessionRequestCachingEnabled>()
                     .UseSingletonHandler<CacheRequestParameters>()
                     .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractLogoutRequestContext context)
+            public async ValueTask HandleAsync(ExtractEndSessionRequestContext context)
             {
                 if (context is null)
                 {
@@ -198,7 +198,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
                 // Don't cache the request if the request doesn't include any parameter.
-                // If a request_id parameter can be found in the logout request,
+                // If a request_id parameter can be found in the end session request,
                 // ignore the following logic to prevent an infinite redirect loop.
                 if (context.Request.Count is 0 || !string.IsNullOrEmpty(context.Request.RequestId))
                 {
@@ -228,7 +228,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                              }
                              select new Claim(parameter.Key, element.ToString()!, type);
 
-                // Store the serialized logout request parameters in the distributed cache.
+                // Store the serialized end session request parameters in the distributed cache.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
                 {
                     Audience = (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri,
@@ -236,15 +236,15 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     Issuer = (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.First(),
                     Subject = new ClaimsIdentity(claims, TokenValidationParameters.DefaultAuthenticationType),
-                    TokenType = JsonWebTokenTypes.Private.LogoutRequest
+                    TokenType = JsonWebTokenTypes.Private.EndSessionRequest
                 });
 
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached payloads.
-                await _cache.SetStringAsync(Cache.LogoutRequest + context.Request.RequestId,
-                    token, _options.CurrentValue.LogoutRequestCachingPolicy);
+                await _cache.SetStringAsync(Cache.EndSessionRequest + context.Request.RequestId,
+                    token, _options.CurrentValue.EndSessionRequestCachingPolicy);
 
-                // Create a new GET logout request containing only the request_id parameter.
+                // Create a new GET end session request containing only the request_id parameter.
                 var location = QueryHelpers.AddQueryString(
                     uri: new UriBuilder(context.RequestUri) { Query = null }.Uri.AbsoluteUri,
                     name: Parameters.RequestId,
@@ -258,10 +258,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for removing cached logout requests from the distributed cache.
+        /// Contains the logic responsible for removing cached end session requests from the distributed cache.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public sealed class RemoveCachedRequest : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class RemoveCachedRequest : IOpenIddictServerHandler<ApplyEndSessionResponseContext>
         {
             private readonly IDistributedCache _cache;
 
@@ -274,16 +274,16 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyEndSessionResponseContext>()
                     .AddFilter<RequireHttpRequest>()
-                    .AddFilter<RequireLogoutRequestCachingEnabled>()
+                    .AddFilter<RequireEndSessionRequestCachingEnabled>()
                     .UseSingletonHandler<RemoveCachedRequest>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            public ValueTask HandleAsync(ApplyEndSessionResponseContext context)
             {
                 if (context is null)
                 {
@@ -295,27 +295,27 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     return default;
                 }
 
-                // Note: the ApplyLogoutResponse event is called for both successful
-                // and errored logout responses but discrimination is not necessary here,
-                // as the logout request must be removed from the distributed cache in both cases.
+                // Note: the ApplyEndSessionResponse event is called for both successful
+                // and errored end session responses but discrimination is not necessary here,
+                // as the end session request must be removed from the distributed cache in both cases.
 
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached payloads.
-                return new(_cache.RemoveAsync(Cache.LogoutRequest + context.Request.RequestId));
+                return new(_cache.RemoveAsync(Cache.EndSessionRequest + context.Request.RequestId));
             }
         }
 
         /// <summary>
-        /// Contains the logic responsible for processing logout responses.
+        /// Contains the logic responsible for processing end session responses.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public sealed class ProcessQueryResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class ProcessQueryResponse : IOpenIddictServerHandler<ApplyEndSessionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyEndSessionResponseContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessQueryResponse>()
                     .SetOrder(250_000)
@@ -323,7 +323,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            public ValueTask HandleAsync(ApplyEndSessionResponseContext context)
             {
                 if (context is null)
                 {
@@ -376,24 +376,24 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for processing logout responses that should trigger a host redirection.
+        /// Contains the logic responsible for processing end session responses that should trigger a host redirection.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public sealed class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyEndSessionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyEndSessionResponseContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessHostRedirectionResponse>()
-                    .SetOrder(ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor.Order + 250)
+                    .SetOrder(ProcessPassthroughErrorResponse<ApplyEndSessionResponseContext, RequireEndSessionEndpointPassthroughEnabled>.Descriptor.Order + 250)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            public ValueTask HandleAsync(ApplyEndSessionResponseContext context)
             {
                 if (context is null)
                 {

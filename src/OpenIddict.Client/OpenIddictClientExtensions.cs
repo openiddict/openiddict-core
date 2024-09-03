@@ -67,10 +67,10 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireTokenPayloadPersisted>();
         builder.Services.TryAddSingleton<RequireTokenRequest>();
         builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
-        builder.Services.TryAddSingleton<RequireUserinfoRequest>();
-        builder.Services.TryAddSingleton<RequireUserinfoTokenExtracted>();
-        builder.Services.TryAddSingleton<RequireUserinfoTokenPrincipal>();
-        builder.Services.TryAddSingleton<RequireUserinfoValidationEnabled>();
+        builder.Services.TryAddSingleton<RequireUserInfoRequest>();
+        builder.Services.TryAddSingleton<RequireUserInfoTokenExtracted>();
+        builder.Services.TryAddSingleton<RequireUserInfoTokenPrincipal>();
+        builder.Services.TryAddSingleton<RequireUserInfoValidationEnabled>();
         builder.Services.TryAddSingleton<RequireWebServicesFederationClaimMappingEnabled>();
 
         // Register the built-in client event handlers used by the OpenIddict client components.
