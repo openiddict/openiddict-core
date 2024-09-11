@@ -24,7 +24,7 @@ public static partial class OpenIddictClientHandlers
             HandleConfigurationErrorResponse.Descriptor,
             ValidateIssuer.Descriptor,
             ExtractAuthorizationEndpoint.Descriptor,
-            ExtractCryptographyEndpoint.Descriptor,
+            ExtractJsonWebKeySetEndpoint.Descriptor,
             ExtractDeviceAuthorizationEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
             ExtractLogoutEndpoint.Descriptor,
@@ -295,14 +295,14 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the JSON Web Key Set endpoint URI from the discovery document.
         /// </summary>
-        public sealed class ExtractCryptographyEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractJsonWebKeySetEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<ExtractCryptographyEndpoint>()
+                    .UseSingletonHandler<ExtractJsonWebKeySetEndpoint>()
                     .SetOrder(ExtractAuthorizationEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -355,7 +355,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractDeviceAuthorizationEndpoint>()
-                    .SetOrder(ExtractCryptographyEndpoint.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractJsonWebKeySetEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
