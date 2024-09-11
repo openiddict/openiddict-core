@@ -241,7 +241,7 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.RevocationEndpoint] = notification.RevocationEndpoint?.AbsoluteUri,
                     [Metadata.UserInfoEndpoint] = notification.UserInfoEndpoint?.AbsoluteUri,
                     [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceAuthorizationEndpoint?.AbsoluteUri,
-                    [Metadata.JwksUri] = notification.CryptographyEndpoint?.AbsoluteUri,
+                    [Metadata.JwksUri] = notification.JsonWebKeySetEndpoint?.AbsoluteUri,
                     [Metadata.GrantTypesSupported] = notification.GrantTypes.ToArray(),
                     [Metadata.ResponseTypesSupported] = notification.ResponseTypes.ToArray(),
                     [Metadata.ResponseModesSupported] = notification.ResponseModes.ToArray(),
@@ -371,7 +371,7 @@ public static partial class OpenIddictServerHandlers
                 context.AuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.AuthorizationEndpointUris.FirstOrDefault());
 
-                context.CryptographyEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                context.JsonWebKeySetEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.JsonWebKeySetEndpointUris.FirstOrDefault());
 
                 context.DeviceAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(

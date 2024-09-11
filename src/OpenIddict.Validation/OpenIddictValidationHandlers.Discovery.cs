@@ -23,7 +23,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateWellKnownConfigurationParameters.Descriptor,
             HandleConfigurationErrorResponse.Descriptor,
             ValidateIssuer.Descriptor,
-            ExtractCryptographyEndpoint.Descriptor,
+            ExtractJsonWebKeySetEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
             ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor,
 
@@ -213,14 +213,14 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the JSON Web Key Set endpoint URI from the discovery document.
         /// </summary>
-        public sealed class ExtractCryptographyEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractJsonWebKeySetEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<ExtractCryptographyEndpoint>()
+                    .UseSingletonHandler<ExtractJsonWebKeySetEndpoint>()
                     .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
@@ -273,7 +273,7 @@ public static partial class OpenIddictValidationHandlers
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractIntrospectionEndpoint>()
-                    .SetOrder(ExtractCryptographyEndpoint.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractJsonWebKeySetEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 

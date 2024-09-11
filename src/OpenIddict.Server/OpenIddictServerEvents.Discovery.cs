@@ -99,7 +99,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the JSON Web Key Set endpoint URI.
         /// </summary>
-        public Uri? CryptographyEndpoint { get; set; }
+        public Uri? JsonWebKeySetEndpoint { get; set; }
 
         /// <summary>
         /// Gets or sets the device authorization endpoint URI.
