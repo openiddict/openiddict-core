@@ -45,7 +45,7 @@ public static partial class OpenIddictServerHandlers
             AttachAdditionalMetadata.Descriptor,
 
             /*
-             * Cryptography request top-level processing:
+             * JSON Web Key Set request top-level processing:
              */
             ExtractJsonWebKeySetRequest.Descriptor,
             ValidateJsonWebKeySetRequest.Descriptor,
@@ -54,7 +54,7 @@ public static partial class OpenIddictServerHandlers
             ApplyJsonWebKeySetResponse<ProcessRequestContext>.Descriptor,
 
             /*
-             * Cryptography request handling:
+             * JSON Web Key Set request handling:
              */
             AttachSigningKeys.Descriptor
         ]);
@@ -237,7 +237,7 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.AuthorizationEndpoint] = notification.AuthorizationEndpoint?.AbsoluteUri,
                     [Metadata.TokenEndpoint] = notification.TokenEndpoint?.AbsoluteUri,
                     [Metadata.IntrospectionEndpoint] = notification.IntrospectionEndpoint?.AbsoluteUri,
-                    [Metadata.EndSessionEndpoint] = notification.LogoutEndpoint?.AbsoluteUri,
+                    [Metadata.EndSessionEndpoint] = notification.EndSessionEndpoint?.AbsoluteUri,
                     [Metadata.RevocationEndpoint] = notification.RevocationEndpoint?.AbsoluteUri,
                     [Metadata.UserInfoEndpoint] = notification.UserInfoEndpoint?.AbsoluteUri,
                     [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceAuthorizationEndpoint?.AbsoluteUri,
@@ -380,7 +380,7 @@ public static partial class OpenIddictServerHandlers
                 context.IntrospectionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.IntrospectionEndpointUris.FirstOrDefault());
 
-                context.LogoutEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                context.EndSessionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.EndSessionEndpointUris.FirstOrDefault());
 
                 context.RevocationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(

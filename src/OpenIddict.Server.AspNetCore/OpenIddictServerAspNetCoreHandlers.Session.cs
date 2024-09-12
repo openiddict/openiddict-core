@@ -27,19 +27,19 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     {
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Logout request extraction:
+             * End-session request extraction:
              */
             ExtractGetOrPostRequest<ExtractEndSessionRequestContext>.Descriptor,
             RestoreCachedRequestParameters.Descriptor,
             CacheRequestParameters.Descriptor,
 
             /*
-             * Logout request handling:
+             * End-session request handling:
              */
             EnablePassthroughMode<HandleEndSessionRequestContext, RequireEndSessionEndpointPassthroughEnabled>.Descriptor,
 
             /*
-             * Logout response processing:
+             * End-session response processing:
              */
             RemoveCachedRequest.Descriptor,
             AttachHttpResponseCode<ApplyEndSessionResponseContext>.Descriptor,

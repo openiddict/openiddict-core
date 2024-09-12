@@ -107,14 +107,14 @@ public static partial class OpenIddictServerEvents
         public Uri? DeviceAuthorizationEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the end session endpoint URI.
+        /// </summary>
+        public Uri? EndSessionEndpoint { get; set; }
+
+        /// <summary>
         /// Gets or sets the introspection endpoint URI.
         /// </summary>
         public Uri? IntrospectionEndpoint { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end session endpoint URI.
-        /// </summary>
-        public Uri? LogoutEndpoint { get; set; }
 
         /// <summary>
         /// Gets or sets the revocation endpoint URI.

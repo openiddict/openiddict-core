@@ -1101,6 +1101,90 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void SetEndSessionEndpointUris_ThrowsExceptionWhenUrisIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetEndSessionEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetEndSessionEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetEndSessionEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(@"C:\")]
+    public void SetEndSessionEndpointUris_ThrowsExceptionForMalformedUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetEndSessionEndpointUris(new Uri(uri)));
+        Assert.Equal("uris", exception.ParamName);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+    }
+
+    [Theory]
+    [InlineData("~/path")]
+    public void SetEndSessionEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetEndSessionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        Assert.Equal("uris", exception.ParamName);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+    }
+
+    [Fact]
+    public void SetEndSessionEndpointUris_ClearsUris()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetEndSessionEndpointUris(Array.Empty<Uri>());
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Empty(options.EndSessionEndpointUris);
+    }
+
+    [Fact]
+    public void SetEndSessionEndpointUris_AddsUri()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetEndSessionEndpointUris("http://localhost/endpoint-path");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.EndSessionEndpointUris);
+    }
+
+    [Fact]
     public void SetIntrospectionEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
@@ -1182,90 +1266,6 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.Contains(new Uri("http://localhost/endpoint-path"), options.IntrospectionEndpointUris);
-    }
-
-    [Fact]
-    public void SetLogoutEndpointUris_ThrowsExceptionWhenUrisIsNull()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetEndSessionEndpointUris(uris: (null as Uri[])!));
-        Assert.Equal("uris", exception.ParamName);
-    }
-
-    [Fact]
-    public void SetLogoutEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetEndSessionEndpointUris(uris: (null as string[])!));
-        Assert.Equal("uris", exception.ParamName);
-    }
-
-    [Theory]
-    [InlineData(@"C:\")]
-    public void SetLogoutEndpointUris_ThrowsExceptionForMalformedUri(string uri)
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetEndSessionEndpointUris(new Uri(uri)));
-        Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
-    }
-
-    [Theory]
-    [InlineData("~/path")]
-    public void SetLogoutEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetEndSessionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
-    }
-
-    [Fact]
-    public void SetLogoutEndpointUris_ClearsUris()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act
-        builder.SetEndSessionEndpointUris(Array.Empty<Uri>());
-
-        var options = GetOptions(services);
-
-        // Assert
-        Assert.Empty(options.EndSessionEndpointUris);
-    }
-
-    [Fact]
-    public void SetLogoutEndpointUris_AddsUri()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act
-        builder.SetEndSessionEndpointUris("http://localhost/endpoint-path");
-
-        var options = GetOptions(services);
-
-        // Assert
-        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.EndSessionEndpointUris);
     }
 
     [Fact]

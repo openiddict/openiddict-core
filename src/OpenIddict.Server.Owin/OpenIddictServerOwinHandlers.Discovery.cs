@@ -28,12 +28,12 @@ public static partial class OpenIddictServerOwinHandlers
             ProcessJsonResponse<ApplyConfigurationResponseContext>.Descriptor,
 
             /*
-             * Cryptography request extraction:
+             * JSON Web Key Set request extraction:
              */
             ExtractGetRequest<ExtractJsonWebKeySetRequestContext>.Descriptor,
 
             /*
-             * Cryptography response processing:
+             * JSON Web Key Set response processing:
              */
             AttachHttpResponseCode<ApplyJsonWebKeySetResponseContext>.Descriptor,
             AttachOwinResponseChallenge<ApplyJsonWebKeySetResponseContext>.Descriptor,

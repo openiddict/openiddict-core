@@ -27,7 +27,7 @@ public static partial class OpenIddictClientHandlers
             ExtractJsonWebKeySetEndpoint.Descriptor,
             ExtractDeviceAuthorizationEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
-            ExtractLogoutEndpoint.Descriptor,
+            ExtractEndSessionEndpoint.Descriptor,
             ExtractRevocationEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
             ExtractUserInfoEndpoint.Descriptor,
@@ -43,10 +43,10 @@ public static partial class OpenIddictClientHandlers
             ExtractTokenEndpointClientAuthenticationMethods.Descriptor,
 
             /*
-             * Cryptography response handling:
+             * JSON Web Key Set response handling:
              */
-            ValidateWellKnownCryptographyParameters.Descriptor,
-            HandleCryptographyErrorResponse.Descriptor,
+            ValidateWellKnownJsonWebKeySetParameters.Descriptor,
+            HandleJsonWebKeySetErrorResponse.Descriptor,
             ExtractSigningKeys.Descriptor
         ]);
 
@@ -433,14 +433,14 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the end session endpoint URI from the discovery document.
         /// </summary>
-        public sealed class ExtractLogoutEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractEndSessionEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<ExtractLogoutEndpoint>()
+                    .UseSingletonHandler<ExtractEndSessionEndpoint>()
                     .SetOrder(ExtractIntrospectionEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -484,7 +484,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractRevocationEndpoint>()
-                    .SetOrder(ExtractLogoutEndpoint.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractEndSessionEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -1021,14 +1021,14 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the JSON Web Key Set response.
         /// </summary>
-        public sealed class ValidateWellKnownCryptographyParameters : IOpenIddictClientHandler<HandleJsonWebKeySetResponseContext>
+        public sealed class ValidateWellKnownJsonWebKeySetParameters : IOpenIddictClientHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
-                    .UseSingletonHandler<ValidateWellKnownCryptographyParameters>()
+                    .UseSingletonHandler<ValidateWellKnownJsonWebKeySetParameters>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -1095,15 +1095,15 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the JSON Web Key Set response.
         /// </summary>
-        public sealed class HandleCryptographyErrorResponse : IOpenIddictClientHandler<HandleJsonWebKeySetResponseContext>
+        public sealed class HandleJsonWebKeySetErrorResponse : IOpenIddictClientHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
-                    .UseSingletonHandler<HandleCryptographyErrorResponse>()
-                    .SetOrder(ValidateWellKnownCryptographyParameters.Descriptor.Order + 1_000)
+                    .UseSingletonHandler<HandleJsonWebKeySetErrorResponse>()
+                    .SetOrder(ValidateWellKnownJsonWebKeySetParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -1146,7 +1146,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
                     .UseSingletonHandler<ExtractSigningKeys>()
-                    .SetOrder(HandleCryptographyErrorResponse.Descriptor.Order + 1_000)
+                    .SetOrder(HandleJsonWebKeySetErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
