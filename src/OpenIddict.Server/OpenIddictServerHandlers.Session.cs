@@ -21,7 +21,7 @@ public static partial class OpenIddictServerHandlers
     {
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * Logout request top-level processing:
+             * End-session request top-level processing:
              */
             ExtractEndSessionRequest.Descriptor,
             ValidateEndSessionRequest.Descriptor,
@@ -31,7 +31,7 @@ public static partial class OpenIddictServerHandlers
             ApplyEndSessionResponse<ProcessSignOutContext>.Descriptor,
 
             /*
-             * Logout request validation:
+             * End-session request validation:
              */
             ValidatePostLogoutRedirectUriParameter.Descriptor,
             ValidateAuthentication.Descriptor,
@@ -40,12 +40,12 @@ public static partial class OpenIddictServerHandlers
             ValidateAuthorizedParty.Descriptor,
 
             /*
-             * Logout request handling:
+             * End-session request handling:
              */
             AttachPrincipal.Descriptor,
 
             /*
-             * Logout response processing:
+             * End-session response processing:
              */
             AttachPostLogoutRedirectUri.Descriptor,
             AttachResponseState.Descriptor

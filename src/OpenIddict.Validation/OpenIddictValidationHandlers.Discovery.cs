@@ -28,10 +28,10 @@ public static partial class OpenIddictValidationHandlers
             ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor,
 
             /*
-             * Cryptography response handling:
+             * JSON Web Key Set response handling:
              */
-            ValidateWellKnownCryptographyParameters.Descriptor,
-            HandleCryptographyErrorResponse.Descriptor,
+            ValidateWellKnownJsonWebKeySetParameters.Descriptor,
+            HandleJsonWebKeySetErrorResponse.Descriptor,
             ExtractSigningKeys.Descriptor
         ]);
 
@@ -351,14 +351,14 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the JSON Web Key Set response.
         /// </summary>
-        public sealed class ValidateWellKnownCryptographyParameters : IOpenIddictValidationHandler<HandleJsonWebKeySetResponseContext>
+        public sealed class ValidateWellKnownJsonWebKeySetParameters : IOpenIddictValidationHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
-                    .UseSingletonHandler<ValidateWellKnownCryptographyParameters>()
+                    .UseSingletonHandler<ValidateWellKnownJsonWebKeySetParameters>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
@@ -425,15 +425,15 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the JSON Web Key Set response.
         /// </summary>
-        public sealed class HandleCryptographyErrorResponse : IOpenIddictValidationHandler<HandleJsonWebKeySetResponseContext>
+        public sealed class HandleJsonWebKeySetErrorResponse : IOpenIddictValidationHandler<HandleJsonWebKeySetResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
-                    .UseSingletonHandler<HandleCryptographyErrorResponse>()
-                    .SetOrder(ValidateWellKnownCryptographyParameters.Descriptor.Order + 1_000)
+                    .UseSingletonHandler<HandleJsonWebKeySetErrorResponse>()
+                    .SetOrder(ValidateWellKnownJsonWebKeySetParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -476,7 +476,7 @@ public static partial class OpenIddictValidationHandlers
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleJsonWebKeySetResponseContext>()
                     .UseSingletonHandler<ExtractSigningKeys>()
-                    .SetOrder(HandleCryptographyErrorResponse.Descriptor.Order + 1_000)
+                    .SetOrder(HandleJsonWebKeySetErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 

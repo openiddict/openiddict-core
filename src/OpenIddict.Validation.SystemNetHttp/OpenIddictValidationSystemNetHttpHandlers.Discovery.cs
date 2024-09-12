@@ -36,7 +36,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             DisposeHttpResponse<ExtractConfigurationResponseContext>.Descriptor,
 
             /*
-             * Cryptography request processing:
+             * JSON Web Key Set request processing:
              */
             CreateHttpClient<PrepareJsonWebKeySetRequestContext>.Descriptor,
             PrepareGetHttpRequest<PrepareJsonWebKeySetRequestContext>.Descriptor,
