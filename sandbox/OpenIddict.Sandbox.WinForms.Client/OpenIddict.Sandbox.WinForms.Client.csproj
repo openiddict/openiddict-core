@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net48</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(SupportsWindowsTargeting)' == 'true' ">$(TargetFrameworks);net8.0-windows7.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(SupportsWindowsTargeting)' == 'true' ">$(TargetFrameworks);net9.0-windows7.0</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>

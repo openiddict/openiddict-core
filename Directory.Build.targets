@@ -151,6 +151,11 @@
   </PropertyGroup>
 
   <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_LOADER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
                  '$(TargetPlatformIdentifier)'  == 'Android'     And '$(TargetPlatformVersion)' != '' And
                   $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '21.0'))) ">

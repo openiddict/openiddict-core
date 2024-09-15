@@ -1695,6 +1695,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0453" xml:space="preserve">
     <value>The specified intent doesn't contain a valid data URI.</value>
   </data>
+  <data name="ID0454" xml:space="preserve">
+    <value>The format of the specified certificate is not supported.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
