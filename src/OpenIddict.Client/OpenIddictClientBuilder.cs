@@ -251,7 +251,12 @@ public sealed class OpenIddictClientBuilder
                         flags |= X509KeyStorageFlags.Exportable;
                     }
 
-                    certificates.Insert(0, certificate = new X509Certificate2(data, string.Empty, flags));
+#if SUPPORTS_CERTIFICATE_LOADER
+                    certificate = X509CertificateLoader.LoadPkcs12(data, string.Empty, flags);
+#else
+                    certificate = new X509Certificate2(data, string.Empty, flags);
+#endif
+                    certificates.Insert(0, certificate);
                 }
 
                 finally
@@ -415,10 +420,7 @@ public sealed class OpenIddictClientBuilder
     /// </summary>
     /// <param name="stream">The stream containing the certificate.</param>
     /// <param name="password">The password used to open the certificate.</param>
-    /// <param name="flags">
-    /// An enumeration of flags indicating how and where
-    /// to store the private key of the certificate.
-    /// </param>
+    /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AddEncryptionCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
     {
@@ -430,7 +432,17 @@ public sealed class OpenIddictClientBuilder
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
-        return AddEncryptionCertificate(new X509Certificate2(buffer.ToArray(), password, flags));
+#if SUPPORTS_CERTIFICATE_LOADER
+        var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
+        {
+            X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
+
+            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
+        };
+#else
+        var certificate = new X509Certificate2(buffer.ToArray(), password, flags);
+#endif
+        return AddEncryptionCertificate(certificate);
     }
 
     /// <summary>
@@ -626,7 +638,12 @@ public sealed class OpenIddictClientBuilder
                         flags |= X509KeyStorageFlags.Exportable;
                     }
 
-                    certificates.Insert(0, certificate = new X509Certificate2(data, string.Empty, flags));
+#if SUPPORTS_CERTIFICATE_LOADER
+                    certificate = X509CertificateLoader.LoadPkcs12(data, string.Empty, flags);
+#else
+                    certificate = new X509Certificate2(data, string.Empty, flags);
+#endif
+                    certificates.Insert(0, certificate);
                 }
 
                 finally
@@ -818,10 +835,7 @@ public sealed class OpenIddictClientBuilder
     /// </summary>
     /// <param name="stream">The stream containing the certificate.</param>
     /// <param name="password">The password used to open the certificate.</param>
-    /// <param name="flags">
-    /// An enumeration of flags indicating how and where
-    /// to store the private key of the certificate.
-    /// </param>
+    /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AddSigningCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
     {
@@ -833,7 +847,17 @@ public sealed class OpenIddictClientBuilder
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
-        return AddSigningCertificate(new X509Certificate2(buffer.ToArray(), password, flags));
+#if SUPPORTS_CERTIFICATE_LOADER
+        var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
+        {
+            X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
+
+            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
+        };
+#else
+        var certificate = new X509Certificate2(buffer.ToArray(), password, flags);
+#endif
+        return AddSigningCertificate(certificate);
     }
 
     /// <summary>

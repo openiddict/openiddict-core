@@ -277,13 +277,12 @@ public abstract partial class OpenIddictValidationIntegrationTests
                     {
                         new X509SecurityKey(GetSigningCertificate(
                             assembly: typeof(OpenIddictValidationIntegrationTests).Assembly,
-                            resource: "OpenIddict.Validation.IntegrationTests.Certificate.cer",
-                            password: null))
+                            resource: "OpenIddict.Validation.IntegrationTests.Certificate.cer"))
                     }
                 });
             });
 
-        static X509Certificate2 GetSigningCertificate(Assembly assembly, string resource, string? password)
+        static X509Certificate2 GetSigningCertificate(Assembly assembly, string resource)
         {
             using var stream = assembly.GetManifestResourceStream(resource) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
@@ -291,7 +290,11 @@ public abstract partial class OpenIddictValidationIntegrationTests
             using var buffer = new MemoryStream();
             stream.CopyTo(buffer);
 
-            return new X509Certificate2(buffer.ToArray(), password, X509KeyStorageFlags.MachineKeySet);
+#if SUPPORTS_CERTIFICATE_LOADER
+            return X509CertificateLoader.LoadCertificate(buffer.ToArray());
+#else
+            return new X509Certificate2(buffer.ToArray());
+#endif
         }
     }
 

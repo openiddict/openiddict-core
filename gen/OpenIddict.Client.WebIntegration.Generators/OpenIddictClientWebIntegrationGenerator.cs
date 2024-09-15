@@ -611,10 +611,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""stream"">The stream containing the certificate.</param>
         /// <param name=""password"">The password used to open the certificate.</param>
-        /// <param name=""flags"">
-        /// An enumeration of flags indicating how and where
-        /// to store the private key of the certificate.
-        /// </param>
+        /// <param name=""flags"">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         {{~ if setting.obsolete ~}}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
@@ -629,7 +626,17 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             using var buffer = new MemoryStream();
             stream.CopyTo(buffer);
 
-            return Set{{ setting.property_name }}(new X509Certificate2(buffer.ToArray(), password, flags));
+#if SUPPORTS_CERTIFICATE_LOADER
+            var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
+            {
+                X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
+            };
+#else
+            var certificate = new X509Certificate2(buffer.ToArray(), password, flags);
+#endif
+            return Set{{ setting.property_name }}(certificate);
         }
 
         /// <summary>
