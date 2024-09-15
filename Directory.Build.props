@@ -99,7 +99,7 @@
                                                     Exists('$(MSBuildProgramFiles32)\Windows Kits\10\References\10.0.17763.0'))) ">true</SupportsUniversalWindowsPlatformTargeting>
 
     <NetFrameworkTargetFrameworks Condition=" '$(NetFrameworkTargetFrameworks)' == '' ">
-      net461;
+      net462;
       net472;
       net48
     </NetFrameworkTargetFrameworks>
