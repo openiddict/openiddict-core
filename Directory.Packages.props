@@ -12,14 +12,15 @@
 
   <!--
             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-            █████ ▀██ ██ ▄▄▄█▄▄ ▄▄████ ▄▄▄██ ▄▄▀█ ▄▄▀██ ▄▀▄ ██ ▄▄▄██ ███ ██ ▄▄▄ ██ ▄▄▀██ █▀▄████ ▄ █████▀▄▄▀████▀ ███
-            █▀▀██ █ █ ██ ▄▄▄███ ██████ ▄▄███ ▀▀▄█ ▀▀ ██ █ █ ██ ▄▄▄██ █ █ ██ ███ ██ ▀▀▄██ ▄▀████ ▀▀ ▀█▀▀█ ▀▀██▀▀██ ███
-            █▄▄██ ██▄ ██ ▀▀▀███ ██████ █████ ██ █ ██ ██ ███ ██ ▀▀▀██▄▀▄▀▄██ ▀▀▀ ██ ██ ██ ██ ██████ ██▄▄█▄▀▀▄█▄▄█▀ ▀██
+            █████ ▀██ ██ ▄▄▄█▄▄ ▄▄████ ▄▄▄██ ▄▄▀█ ▄▄▀██ ▄▀▄ ██ ▄▄▄██ ███ ██ ▄▄▄ ██ ▄▄▀██ █▀▄████ ▄ █████▀▄▄▀████ ▄ ██
+            █▀▀██ █ █ ██ ▄▄▄███ ██████ ▄▄███ ▀▀▄█ ▀▀ ██ █ █ ██ ▄▄▄██ █ █ ██ ███ ██ ▀▀▄██ ▄▀████ ▀▀ ▀█▀▀█ ▀▀██▀▀██▀▄██
+            █▄▄██ ██▄ ██ ▀▀▀███ ██████ █████ ██ █ ██ ██ ███ ██ ▀▀▀██▄▀▄▀▄██ ▀▀▀ ██ ██ ██ ██ ██████ ██▄▄█▄▀▀▄█▄▄█ ▀▀██
             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
   -->
 
-  <ItemGroup Label="Package versions for .NET Framework 4.6.1"
-    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '4.6.1')) ">
+  <ItemGroup Label="Package versions for .NET Framework 4.6.2"
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '4.6.2')) ">
     <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.3.1"           />
     <PackageVersion Include="EntityFramework"                                                 Version="6.4.4"           />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication"                             Version="2.1.2"           />
