@@ -81,15 +81,4 @@ public class OpenIddictApplicationDescriptor
     /// Gets the settings associated with the application.
     /// </summary>
     public Dictionary<string, string> Settings { get; } = new(StringComparer.Ordinal);
-
-    /// <summary>
-    /// Gets or sets the client type associated with the application.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete($"This property was replaced by {nameof(ClientType)} and will be removed in a future version.", true)]
-    public string? Type
-    {
-        get => ClientType;
-        set => ClientType = value;
-    }
 }

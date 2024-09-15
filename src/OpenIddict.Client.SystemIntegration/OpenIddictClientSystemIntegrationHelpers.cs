@@ -68,19 +68,6 @@ public static class OpenIddictClientSystemIntegrationHelpers
     public static HttpListenerContext? GetHttpListenerContext(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<HttpListenerContext>(typeof(HttpListenerContext).FullName!);
 
-#if SUPPORTS_WINDOWS_RUNTIME
-    /// <summary>
-    /// Gets the <see cref="WebAuthenticationResult"/> associated with the current context.
-    /// </summary>
-    /// <param name="transaction">The transaction instance.</param>
-    /// <returns>The <see cref="HttpListenerContext"/> instance or <see langword="null"/> if it couldn't be found.</returns>
-    [Obsolete("This extension is obsolete and will be removed in a future version."), SupportedOSPlatform("windows10.0.17763")]
-    public static WebAuthenticationResult? GetWebAuthenticationResult(this OpenIddictClientTransaction transaction)
-        => transaction.GetPlatformCallback() is OpenIddictClientSystemIntegrationPlatformCallback callback &&
-            callback.Properties.TryGetValue(typeof(WebAuthenticationResult).FullName!, out object? property) &&
-            property is WebAuthenticationResult result ? result : null;
-#endif
-
     /// <summary>
     /// Determines whether the current Windows version
     /// is greater than or equals to the specified version.

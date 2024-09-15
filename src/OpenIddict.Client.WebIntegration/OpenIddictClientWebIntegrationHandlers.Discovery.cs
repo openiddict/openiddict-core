@@ -260,50 +260,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for amending the client authentication methods
-        /// supported by the device authorization endpoint for the providers that require it.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.", error: true)]
-        public sealed class AmendDeviceAuthorizationEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<AmendDeviceAuthorizationEndpointClientAuthenticationMethods>()
-                    .SetOrder(ExtractTokenEndpointClientAuthenticationMethods.Descriptor.Order + 500)
-                    .SetType(OpenIddictClientHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for amending the client authentication
-        /// methods supported by the token endpoint for the providers that require it.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.", error: true)]
-        public sealed class AmendTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<AmendTokenEndpointClientAuthenticationMethods>()
-                    .SetOrder(AmendDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor.Order + 500)
-                    .SetType(OpenIddictClientHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
-
-        /// <summary>
         /// Contains the logic responsible for amending the supported client
         /// authentication methods for the providers that require it.
         /// </summary>

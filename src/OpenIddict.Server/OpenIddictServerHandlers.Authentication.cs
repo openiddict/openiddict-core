@@ -1068,9 +1068,6 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictApplicationManager? _applicationManager;
 
-            [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
-            public ValidateResponseType() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
             public ValidateResponseType(IOpenIddictApplicationManager? applicationManager = null)
                 => _applicationManager = applicationManager;
 

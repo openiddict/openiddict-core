@@ -238,29 +238,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the request URI from the web authentication result.
-    /// Note: this handler is not used when the OpenID Connect request is not a web authentication result.
-    /// </summary>
-    [Obsolete("This event handler is obsolete and will be removed in a future version.")]
-    public sealed class ResolveRequestUriFromWebAuthenticationResult : IOpenIddictClientHandler<ProcessRequestContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                .AddFilter<RequireWebAuthenticationResult>()
-                .UseSingletonHandler<ResolveRequestUriFromWebAuthenticationResult>()
-                .SetOrder(ResolveRequestUriFromPlatformCallback.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessRequestContext context)
-            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-    }
-
-    /// <summary>
     /// Contains the logic responsible for inferring the endpoint type from the request URI, ignoring
     /// the port when comparing the request URI with the endpoint URIs configured in the options.
     /// Note: this handler is not used when the OpenID Connect request is not handled by the embedded web server.
@@ -618,30 +595,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             return default;
         }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for extracting OpenID Connect
-    /// requests from the response data of a web authentication result.
-    /// Note: this handler is not used when the OpenID Connect request is not a web authentication result.
-    /// </summary>
-    [Obsolete("This event handler is obsolete and will be removed in a future version.")]
-    public sealed class ExtractWebAuthenticationResultData<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireWebAuthenticationResult>()
-                .UseSingletonHandler<ExtractWebAuthenticationResultData<TContext>>()
-                .SetOrder(ExtractPlatformCallbackParameters<TContext>.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
-            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
     }
 
     /// <summary>
@@ -2424,44 +2377,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequirePlatformCallback>()
                 .UseSingletonHandler<ProcessPlatformCallbackResponse<TContext>>()
-                .SetOrder(int.MaxValue)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // For both protocol activations (initial or redirected) and web-view-like results,
-            // no proper response can be generated and eventually displayed to the user. In this
-            // case, simply stop processing the response and mark the request as fully handled.
-            //
-            // Note: this logic applies to both successful and errored responses.
-
-            context.HandleRequest();
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for marking OpenID Connect
-    /// responses returned via web authentication results as processed.
-    /// </summary>
-    [Obsolete("This handler is obsolete and will be removed in a future version.")]
-    public sealed class ProcessWebAuthenticationResultResponse<TContext> : IOpenIddictClientHandler<TContext>
-        where TContext : BaseRequestContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireWebAuthenticationResult>()
-                .UseSingletonHandler<ProcessWebAuthenticationResultResponse<TContext>>()
                 .SetOrder(int.MaxValue)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();

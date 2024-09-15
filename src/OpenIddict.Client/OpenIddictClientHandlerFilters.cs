@@ -629,24 +629,10 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the WS-Federation claim mapping feature was disabled.
     /// </summary>
-    public sealed class RequireWebServicesFederationClaimMappingEnabled :
-        IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>,
-        IOpenIddictClientHandlerFilter<BaseContext>
+    public sealed class RequireWebServicesFederationClaimMappingEnabled : IOpenIddictClientHandlerFilter<BaseContext>
     {
         /// <inheritdoc/>
-        [Obsolete("This method is obsolete and will be removed in a future version.")]
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(!context.Options.DisableWebServicesFederationClaimMapping);
-        }
-
-        /// <inheritdoc/>
-        ValueTask<bool> IOpenIddictClientHandlerFilter<BaseContext>.IsActiveAsync(BaseContext context)
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
             {

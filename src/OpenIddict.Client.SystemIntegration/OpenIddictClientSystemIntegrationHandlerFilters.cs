@@ -262,33 +262,4 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
             return new(false);
         }
     }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if no
-    /// web authentication operation was triggered during the transaction.
-    /// </summary>
-    [Obsolete("This filter is obsolete and will be removed in a future version.")]
-    public sealed class RequireWebAuthenticationResult : IOpenIddictClientHandlerFilter<BaseContext>
-    {
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-#if SUPPORTS_WINDOWS_RUNTIME
-            if (IsWebAuthenticationBrokerSupported())
-            {
-                return new(ContainsWebAuthenticationResult(context.Transaction));
-            }
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            static bool ContainsWebAuthenticationResult(OpenIddictClientTransaction transaction)
-                => transaction.GetWebAuthenticationResult() is not null;
-#endif
-            return new(false);
-        }
-    }
 }

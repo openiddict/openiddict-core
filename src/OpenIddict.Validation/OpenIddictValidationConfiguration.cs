@@ -23,14 +23,6 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
     /// </summary>
-    /// <param name="service">The validation service.</param>
-    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
-    public OpenIddictValidationConfiguration(OpenIddictValidationService service)
-        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
-    /// </summary>
     /// <param name="provider">The service provider.</param>
     /// <param name="service">The validation service.</param>
     public OpenIddictValidationConfiguration(IServiceProvider provider, OpenIddictValidationService service)
