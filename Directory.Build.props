@@ -9,6 +9,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591;NETSDK1206;NU5118;NU5128;xUnit2002</NoWarn>
     <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <NuGetAuditMode>direct</NuGetAuditMode>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DebugSymbols>true</DebugSymbols>
