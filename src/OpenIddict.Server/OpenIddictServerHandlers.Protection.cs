@@ -1557,31 +1557,5 @@ public static partial class OpenIddictServerHandlers
                 }
             }
         }
-
-        /// <summary>
-        /// Contains the logic responsible for beautifying user-typed tokens.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.", error: true)]
-        public sealed class BeautifyToken : IOpenIddictServerHandler<GenerateTokenContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
-                    // Technically, this handler doesn't require that the degraded mode be disabled
-                    // but the default CreateReferenceEntry handler that creates the user code
-                    // reference identifiers only works when the degraded mode is disabled.
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseSingletonHandler<BeautifyToken>()
-                    .SetOrder(AttachTokenPayload.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(GenerateTokenContext context)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
     }
 }

@@ -30,14 +30,6 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
     /// </summary>
-    /// <param name="service">The OpenIddict client service.</param>
-    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
-    public OpenIddictClientConfiguration(OpenIddictClientService service)
-        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
-    /// </summary>
     /// <param name="provider">The service provider.</param>
     /// <param name="service">The OpenIddict client service.</param>
     public OpenIddictClientConfiguration(IServiceProvider provider, OpenIddictClientService service)

@@ -21,12 +21,6 @@ public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOpti
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictQuartzConfiguration"/> class.
     /// </summary>
-    [Obsolete("This constructor is no longer supported and will be removed in a future version.", error: true)]
-    public OpenIddictQuartzConfiguration() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictQuartzConfiguration"/> class.
-    /// </summary>
     /// <param name="provider">The service provider.</param>
     public OpenIddictQuartzConfiguration(IServiceProvider provider)
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
