@@ -137,9 +137,29 @@ public sealed class OpenIddictClientOptions
     public bool DisableWebServicesFederationClaimMapping { get; set; }
 
     /// <summary>
+    /// Gets the OAuth 2.0 client authentication methods enabled for this application.
+    /// </summary>
+    public HashSet<string> ClientAuthenticationMethods { get; } = new(StringComparer.Ordinal)
+    {
+        // Note: client_secret_basic is deliberately not added here as it requires
+        // a dedicated event handler (typically provided by the HTTP integration)
+        // to attach the client credentials to the standard Authorization header.
+        //
+        // The System.Net.Http integration supports the client_secret_basic,
+        // self_signed_tls_client_auth and tls_client_auth authentication
+        // methods and automatically add them to this list at runtime.
+        OpenIddictConstants.ClientAuthenticationMethods.ClientSecretPost,
+        OpenIddictConstants.ClientAuthenticationMethods.PrivateKeyJwt
+    };
+
+    /// <summary>
     /// Gets the OAuth 2.0 code challenge methods enabled for this application.
     /// </summary>
-    public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal);
+    public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.CodeChallengeMethods.Plain,
+        OpenIddictConstants.CodeChallengeMethods.Sha256
+    };
 
     /// <summary>
     /// Gets the OAuth 2.0/OpenID Connect flows enabled for this application.
@@ -150,7 +170,18 @@ public sealed class OpenIddictClientOptions
     /// Gets the OAuth 2.0/OpenID Connect response modes enabled for this application.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
+    public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal)
+    {
+        // Note: fragment is deliberately not added here as it typically doesn't work
+        // with server-based applications without offering an HTML/JS page extracting
+        // the parameters from the URI fragment and flowing them differently.
+        //
+        // The system integration package supports the fragment response mode in
+        // specific cases (e.g when using the UWP Web Authentication Broker API)
+        // and automatically adds fragment to this list when it is enabled.
+        OpenIddictConstants.ResponseModes.FormPost,
+        OpenIddictConstants.ResponseModes.Query
+    };
 
     /// <summary>
     /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.

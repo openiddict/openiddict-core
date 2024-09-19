@@ -158,6 +158,17 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the URI of the external endpoint to communicate with.
         /// </summary>
         public Uri? RemoteUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client authentication method used
+        /// when communicating with the external endpoint, if applicable.
+        /// </summary>
+        public string? ClientAuthenticationMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the token binding method used when communicating with the external endpoint, if applicable.
+        /// </summary>
+        public HashSet<string> TokenBindingMethods { get; } = new(StringComparer.Ordinal);
     }
 
     /// <summary>
@@ -371,9 +382,21 @@ public static partial class OpenIddictClientEvents
         public Uri? TokenEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the client authentication method used
+        /// when communicating with the token endpoint, if applicable.
+        /// </summary>
+        public string? TokenEndpointClientAuthenticationMethod { get; set; }
+
+        /// <summary>
         /// Gets or sets the URI of the userinfo endpoint, if applicable.
         /// </summary>
         public Uri? UserInfoEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the token binding methods used when
+        /// communicating with the userinfo endpoint, if applicable.
+        /// </summary>
+        public HashSet<string> UserInfoEndpointTokenBindingMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a token request should be sent.
@@ -1024,6 +1047,12 @@ public static partial class OpenIddictClientEvents
         public Uri? DeviceAuthorizationEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the client authentication method used when
+        /// communicating with the device authorization endpoint, if applicable.
+        /// </summary>
+        public string? DeviceAuthorizationEndpointClientAuthenticationMethod { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a state token
         /// should be generated (and optionally included in the request).
         /// </summary>
@@ -1259,6 +1288,12 @@ public static partial class OpenIddictClientEvents
         public Uri? IntrospectionEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the client authentication method used when
+        /// communicating with the introspection endpoint, if applicable.
+        /// </summary>
+        public string? IntrospectionEndpointClientAuthenticationMethod { get; set; }
+
+        /// <summary>
         /// Gets or sets the client identifier that will be used for the introspection demand.
         /// </summary>
         public string? ClientId { get; set; }
@@ -1384,6 +1419,12 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the URI of the revocation endpoint, if applicable.
         /// </summary>
         public Uri? RevocationEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client authentication method used when
+        /// communicating with the revocation endpoint, if applicable.
+        /// </summary>
+        public string? RevocationEndpointClientAuthenticationMethod { get; set; }
 
         /// <summary>
         /// Gets or sets the client identifier that will be used for the revocation demand.

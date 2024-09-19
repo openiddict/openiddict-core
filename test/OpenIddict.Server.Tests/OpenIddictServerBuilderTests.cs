@@ -496,13 +496,7 @@ public class OpenIddictServerBuilderTests
         var options = GetOptions(services);
 
         // Assert
-        Assert.Contains(CodeChallengeMethods.Sha256, options.CodeChallengeMethods);
-
         Assert.Contains(GrantTypes.AuthorizationCode, options.GrantTypes);
-
-        Assert.Contains(ResponseModes.FormPost, options.ResponseModes);
-        Assert.Contains(ResponseModes.Fragment, options.ResponseModes);
-        Assert.Contains(ResponseModes.Query, options.ResponseModes);
 
         Assert.Contains(ResponseTypes.Code, options.ResponseTypes);
     }
@@ -584,13 +578,8 @@ public class OpenIddictServerBuilderTests
         var options = GetOptions(services);
 
         // Assert
-        Assert.Contains(CodeChallengeMethods.Sha256, options.CodeChallengeMethods);
-
         Assert.Contains(GrantTypes.AuthorizationCode, options.GrantTypes);
         Assert.Contains(GrantTypes.Implicit, options.GrantTypes);
-
-        Assert.Contains(ResponseModes.FormPost, options.ResponseModes);
-        Assert.Contains(ResponseModes.Fragment, options.ResponseModes);
 
         Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken, options.ResponseTypes);
         Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token, options.ResponseTypes);
@@ -611,9 +600,6 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.Contains(GrantTypes.Implicit, options.GrantTypes);
-
-        Assert.Contains(ResponseModes.FormPost, options.ResponseModes);
-        Assert.Contains(ResponseModes.Fragment, options.ResponseModes);
 
         Assert.Contains(ResponseTypes.IdToken, options.ResponseTypes);
         Assert.Contains(ResponseTypes.IdToken + ' ' + ResponseTypes.Token, options.ResponseTypes);

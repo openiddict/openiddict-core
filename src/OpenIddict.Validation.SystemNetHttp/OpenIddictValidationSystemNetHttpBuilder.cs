@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mail;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using OpenIddict.Validation.SystemNetHttp;
 using Polly;
 
@@ -225,6 +226,54 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
         return SetProductInformation(new ProductInfoHeaderValue(
             productName: assembly.GetName().Name!,
             productVersion: assembly.GetName().Version!.ToString()));
+    }
+
+    /// <summary>
+    /// Sets the delegate called by OpenIddict when trying to resolve the self-signed
+    /// TLS client authentication certificate that will be used for OAuth 2.0
+    /// mTLS-based client authentication (self_signed_tls_client_auth), if applicable.
+    /// </summary>
+    /// <param name="selector">The selector delegate.</param>
+    /// <remarks>
+    /// If no value is explicitly set, OpenIddict automatically tries to resolve the
+    /// X.509 certificate from the signing credentials attached to the validation options
+    /// (in this case, the X.509 certificate MUST include the digital signature and
+    /// client authentication key usages to be automatically selected by OpenIddict).
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictValidationSystemNetHttpBuilder SetSelfSignedTlsClientAuthenticationCertificateSelector(
+        Func<X509Certificate2?> selector)
+    {
+        if (selector is null)
+        {
+            throw new ArgumentNullException(nameof(selector));
+        }
+
+        return Configure(options => options.SelfSignedTlsClientAuthenticationCertificateSelector = selector);
+    }
+
+    /// <summary>
+    /// Sets the delegate called by OpenIddict when trying to resolve the
+    /// TLS client authentication certificate that will be used for OAuth 2.0
+    /// mTLS-based client authentication (tls_client_auth), if applicable.
+    /// </summary>
+    /// <param name="selector">The selector delegate.</param>
+    /// <remarks>
+    /// If no value is explicitly set, OpenIddict automatically tries to resolve the
+    /// X.509 certificate from the signing credentials attached to the validation options
+    /// (in this case, the X.509 certificate MUST include the digital signature and
+    /// client authentication key usages to be automatically selected by OpenIddict).
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictValidationSystemNetHttpBuilder SetTlsClientAuthenticationCertificateSelector(
+        Func<X509Certificate2?> selector)
+    {
+        if (selector is null)
+        {
+            throw new ArgumentNullException(nameof(selector));
+        }
+
+        return Configure(options => options.TlsClientAuthenticationCertificateSelector = selector);
     }
 
     /// <inheritdoc/>

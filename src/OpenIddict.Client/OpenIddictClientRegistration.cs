@@ -64,6 +64,16 @@ public sealed class OpenIddictClientRegistration
     public List<SigningCredentials> SigningCredentials { get; } = [];
 
     /// <summary>
+    /// Gets the client authentication methods allowed by the client instance.
+    /// If no value is explicitly set, all the methods enabled in the client options can be used.
+    /// </summary>
+    /// <remarks>
+    /// The final client authentication method used in backchannel requests is chosen by OpenIddict based
+    /// on the client options, the server configuration and the values registered in this property.
+    /// </remarks>
+    public HashSet<string> ClientAuthenticationMethods { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets the code challenge methods allowed by the client instance.
     /// If no value is explicitly set, all the methods enabled in the client options can be used.
     /// </summary>

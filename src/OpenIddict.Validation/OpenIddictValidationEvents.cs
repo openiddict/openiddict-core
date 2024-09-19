@@ -148,6 +148,12 @@ public static partial class OpenIddictValidationEvents
         /// Gets or sets the URI of the external endpoint to communicate with.
         /// </summary>
         public Uri? RemoteUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client authentication method used
+        /// when communicating with the external endpoint, if applicable.
+        /// </summary>
+        public string? ClientAuthenticationMethod { get; set; }
     }
 
     /// <summary>
@@ -292,6 +298,12 @@ public static partial class OpenIddictValidationEvents
         /// Gets or sets the URI of the introspection endpoint, if applicable.
         /// </summary>
         public Uri? IntrospectionEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client authentication method used when
+        /// communicating with the introspection endpoint, if applicable.
+        /// </summary>
+        public string? IntrospectionEndpointClientAuthenticationMethod { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an introspection request should be sent.

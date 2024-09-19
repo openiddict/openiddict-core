@@ -338,6 +338,24 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ClientAuthenticationMethods.ClientSecretPost);
                 }
 
+                // Pro Santé Connect lists private_key_jwt as a supported client authentication method but
+                // only supports client_secret_basic/client_secret_post and tls_client_auth and plans to
+                // remove secret-based authentication support in late 2024 to force clients to use mTLS.
+                else if (context.Registration.ProviderType is ProviderTypes.ProSantéConnect)
+                {
+                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Remove(
+                        ClientAuthenticationMethods.PrivateKeyJwt);
+
+                    context.Configuration.IntrospectionEndpointAuthMethodsSupported.Remove(
+                        ClientAuthenticationMethods.PrivateKeyJwt);
+
+                    context.Configuration.RevocationEndpointAuthMethodsSupported.Remove(
+                        ClientAuthenticationMethods.PrivateKeyJwt);
+
+                    context.Configuration.TokenEndpointAuthMethodsSupported.Remove(
+                        ClientAuthenticationMethods.PrivateKeyJwt);
+                }
+
                 return default;
             }
         }

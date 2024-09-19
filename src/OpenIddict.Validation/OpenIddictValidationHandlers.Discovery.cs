@@ -25,6 +25,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateIssuer.Descriptor,
             ExtractJsonWebKeySetEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
+            ExtractMtlsIntrospectionEndpoint.Descriptor,
             ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor,
 
             /*
@@ -306,6 +307,48 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for extracting the mTLS-enabled
+        /// introspection endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractMtlsIntrospectionEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractMtlsIntrospectionEndpoint>()
+                    .SetOrder(ExtractIntrospectionEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var aliases = context.Response[Metadata.MtlsEndpointAliases]?.GetNamedParameters();
+                if (aliases is not { Count: > 0 })
+                {
+                    return default;
+                }
+
+                // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
+                // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
+                var endpoint = (string?) aliases[Metadata.IntrospectionEndpoint];
+                if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
+                {
+                    context.Configuration.MtlsIntrospectionEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the authentication methods
         /// supported by the introspection endpoint from the discovery document.
         /// </summary>
@@ -317,7 +360,7 @@ public static partial class OpenIddictValidationHandlers
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractIntrospectionEndpointClientAuthenticationMethods>()
-                    .SetOrder(ExtractIntrospectionEndpoint.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractMtlsIntrospectionEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 

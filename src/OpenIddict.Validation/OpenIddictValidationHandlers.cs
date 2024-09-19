@@ -25,8 +25,9 @@ public static partial class OpenIddictValidationHandlers
         EvaluateValidatedTokens.Descriptor,
         ValidateRequiredTokens.Descriptor,
         ResolveServerConfiguration.Descriptor,
-        ResolveIntrospectionEndpoint.Descriptor,
         EvaluateIntrospectionRequest.Descriptor,
+        AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor,
+        ResolveIntrospectionEndpoint.Descriptor,
         AttachIntrospectionRequestParameters.Descriptor,
         EvaluateGeneratedClientAssertion.Descriptor,
         PrepareClientAssertionPrincipal.Descriptor,
@@ -189,42 +190,6 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the URI of the introspection endpoint.
-    /// </summary>
-    public sealed class ResolveIntrospectionEndpoint : IOpenIddictValidationHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<ResolveIntrospectionEndpoint>()
-                .SetOrder(ResolveServerConfiguration.Descriptor.Order + 1_000)
-                .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // If the URI of the introspection endpoint wasn't explicitly set
-            // at this stage, try to extract it from the server configuration.
-            context.IntrospectionEndpoint ??= context.Configuration.IntrospectionEndpoint switch
-            {
-                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
-
-                _ => null
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for determining whether an introspection request should be sent.
     /// </summary>
     public sealed class EvaluateIntrospectionRequest : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -235,7 +200,7 @@ public static partial class OpenIddictValidationHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateIntrospectionRequest>()
-                .SetOrder(ResolveIntrospectionEndpoint.Descriptor.Order + 1_000)
+                .SetOrder(ResolveServerConfiguration.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -254,6 +219,110 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for negotiating the best introspection endpoint client
+    /// authentication method supported by both the client and the authorization server.
+    /// </summary>
+    public sealed class AttachIntrospectionEndpointClientAuthenticationMethod : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireIntrospectionRequest>()
+                .UseSingletonHandler<AttachIntrospectionEndpointClientAuthenticationMethod>()
+                .SetOrder(EvaluateIntrospectionRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit client authentication method was attached, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.IntrospectionEndpointClientAuthenticationMethod))
+            {
+                return default;
+            }
+
+            context.IntrospectionEndpointClientAuthenticationMethod = (
+                // Note: if client authentication methods are explicitly listed in the validation options, only use
+                // the client authentication methods that are both listed and enabled in the global client options.
+                // Otherwise, always default to the client authentication methods that have been enabled globally.
+                Client: context.Options.ClientAuthenticationMethods,
+                Server: context.Configuration.IntrospectionEndpointAuthMethodsSupported) switch
+            {
+                // If at least one signing key was attached to the validation options and both
+                // the client and the server explicitly support private_key_jwt, always prefer it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when context.Options.SigningCredentials.Count is not 0 &&
+                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt)
+                    => ClientAuthenticationMethods.PrivateKeyJwt,
+
+                // If a client secret was attached to the validation options and both the client and
+                // the server explicitly support client_secret_post, prefer it to basic authentication.
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Options.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
+                    => ClientAuthenticationMethods.ClientSecretPost,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the introspection endpoint.
+    /// </summary>
+    public sealed class ResolveIntrospectionEndpoint : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireIntrospectionRequest>()
+                .UseSingletonHandler<ResolveIntrospectionEndpoint>()
+                .SetOrder(AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the URI of the introspection endpoint endpoint wasn't explicitly
+            // set at this stage, try to extract it from the server configuration.
+            context.IntrospectionEndpoint ??= context.IntrospectionEndpointClientAuthenticationMethod switch
+            {
+                // When TLS client certificate authentication was negotiated,
+                // always favor the mTLS-specific endpoint if available.
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth or ClientAuthenticationMethods.TlsClientAuth
+                    when context.Configuration.MtlsIntrospectionEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                // Otherwise, use the non-mTLS-specific endpoint.
+                _ when context.Configuration.IntrospectionEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the parameters to the introspection request, if applicable.
     /// </summary>
     public sealed class AttachIntrospectionRequestParameters : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -265,7 +334,7 @@ public static partial class OpenIddictValidationHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireIntrospectionRequest>()
                 .UseSingletonHandler<AttachIntrospectionRequestParameters>()
-                .SetOrder(EvaluateIntrospectionRequest.Descriptor.Order + 1_000)
+                .SetOrder(ResolveIntrospectionEndpoint.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -313,13 +382,11 @@ public static partial class OpenIddictValidationHandlers
             }
 
             (context.GenerateClientAssertion,
-             context.IncludeClientAssertion) = context.Options.SigningCredentials.Count switch
+             context.IncludeClientAssertion) = context.IntrospectionEndpointClientAuthenticationMethod switch
             {
-                // If a introspection request is going to be sent and if at least one signing key
-                // was attached to the validation options, generate and include a client assertion
-                // token if the configuration indicates the server supports private_key_jwt.
-                > 0 when context.Configuration.IntrospectionEndpointAuthMethodsSupported.Contains(
-                    ClientAuthenticationMethods.PrivateKeyJwt) => (true, true),
+                // If the private_key_jwt client authentication method could be negotiated,
+                // generate a client assertion that will be used to authenticate the client.
+                ClientAuthenticationMethods.PrivateKeyJwt => (true, true),
 
                 _ => (false, false)
             };
@@ -490,7 +557,7 @@ public static partial class OpenIddictValidationHandlers
 
             Debug.Assert(context.IntrospectionRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            // Always attach the client_id to the request, even if an assertion is sent.
+            // Always attach the client_id to the request, even if an assertion is sent or mTLS is used.
             context.IntrospectionRequest.ClientId = context.Options.ClientId;
 
             // Note: client authentication methods are mutually exclusive so the client_assertion
@@ -502,9 +569,9 @@ public static partial class OpenIddictValidationHandlers
                 context.IntrospectionRequest.ClientAssertionType = context.ClientAssertionType;
             }
 
-            // Note: the client_secret may be null at this point (e.g for a public
-            // client or if a custom authentication method is used by the application).
-            else
+            else if (context.IntrospectionEndpointClientAuthenticationMethod is
+                ClientAuthenticationMethods.ClientSecretBasic or
+                ClientAuthenticationMethods.ClientSecretPost)
             {
                 context.IntrospectionRequest.ClientSecret = context.Options.ClientSecret;
             }
@@ -555,8 +622,8 @@ public static partial class OpenIddictValidationHandlers
             {
                 (context.IntrospectionResponse, context.AccessTokenPrincipal) =
                     await _service.SendIntrospectionRequestAsync(
-                        context.Configuration, context.IntrospectionRequest,
-                        context.IntrospectionEndpoint, context.CancellationToken);
+                        context.Configuration, context.IntrospectionRequest, context.IntrospectionEndpoint,
+                        context.IntrospectionEndpointClientAuthenticationMethod, context.CancellationToken);
             }
 
             catch (ProtocolException exception)

@@ -1698,6 +1698,12 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0454" xml:space="preserve">
     <value>The format of the specified certificate is not supported.</value>
   </data>
+  <data name="ID0455" xml:space="preserve">
+    <value>Registration identifiers cannot contain U+001E or U+001F characters.</value>
+  </data>
+  <data name="ID0456" xml:space="preserve">
+    <value>The specified client authentication method/token binding methods combination is not valid.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

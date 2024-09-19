@@ -125,6 +125,23 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         public OpenIddictClientRegistration Registration { get; }
 
         /// <summary>
+        /// Adds one or more client authentication methods to the list of client authentication methods that can be negotiated for this provider.
+        /// </summary>
+        /// <param name=""methods"">The client authentication methods.</param>
+        /// <remarks>Note: explicitly configuring the allowed client authentication methods is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddClientAuthenticationMethods(params string[] methods)
+        {
+            if (methods is null)
+            {
+                throw new ArgumentNullException(nameof(methods));
+            }
+
+            return Set(registration => registration.ClientAuthenticationMethods.UnionWith(methods));
+        }
+
+        /// <summary>
         /// Adds one or more code challenge methods to the list of code challenge methods that can be negotiated for this provider.
         /// </summary>
         /// <param name=""methods"">The code challenge methods.</param>
@@ -791,17 +808,23 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                             ClrType = (string) setting.Attribute("Type") switch
                             {
                                 "Boolean" => "bool",
-                                "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
-                                    is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+                                "EncryptionKey" => (string?) setting.Element("EncryptionAlgorithm")?.Attribute("Value") switch
+                                {
+                                    "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
-                                "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                    is "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
+                                    _ => "SecurityKey"
+                                },
 
-                                "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                    is "PS256" or "PS384" or "PS512" or
-                                       "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+                                "SigningCertificate" => "X509Certificate2",
 
-                                "Certificate" => "X509Certificate2",
+                                "SigningKey" => (string?) setting.Element("SigningAlgorithm")?.Attribute("Value") switch
+                                {
+                                    "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
+                                    "PS256" or "PS384" or "PS512" or "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+
+                                    _ => "SecurityKey"
+                                },
+
                                 "String" => "string",
                                 "StringHashSet" => "HashSet<string>",
                                 "Uri" => "Uri",
@@ -1121,13 +1144,111 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
             {{~ for setting in provider.settings ~}}
             {{~ if setting.type == 'EncryptionKey' ~}}
-            registration.EncryptionCredentials.Add(new EncryptingCredentials(settings.{{ setting.property_name }}, ""{{ setting.encryption_algorithm }}"", SecurityAlgorithms.Aes256CbcHmacSha512));
+            if (settings.{{ setting.property_name }} is not null)
+            {
+                registration.EncryptionCredentials.Add(new EncryptingCredentials(settings.{{ setting.property_name }}, ""{{ setting.encryption_algorithm }}"", SecurityAlgorithms.Aes256CbcHmacSha512));
+            }
             {{~ end ~}}
             {{~ end ~}}
 
             {{~ for setting in provider.settings ~}}
+            {{~ if setting.type == 'SigningCertificate' ~}}
+            if (settings.{{ setting.property_name }} is not null)
+            {
+                var key = new X509SecurityKey(settings.{{ setting.property_name }});
+                if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
+                }
+
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+                }
+
+#if SUPPORTS_ECDSA
+                // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256));
+                }
+
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha384));
+                }
+
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
+                }
+#else
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
+                         key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
+                         key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                {
+                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
+                }
+#endif
+                else
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
+                }
+            }
+            {{~ end ~}}
             {{~ if setting.type == 'SigningKey' ~}}
-            registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, ""{{ setting.signing_algorithm }}""));
+            if (settings.{{ setting.property_name }} is not null)
+            {
+                // If the signing key is an asymmetric security key, ensure it has a private key.
+                if (settings.{{ setting.property_name }} is AsymmetricSecurityKey asymmetricSecurityKey &&
+                    asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
+                }
+
+                {{~ if setting.signing_algorithm ~}}
+                registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, ""{{ setting.signing_algorithm }}""));
+                {{~ else ~}}
+                if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.RsaSha256));
+                }
+
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.HmacSha256));
+                }
+
+#if SUPPORTS_ECDSA
+                // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha256));
+                }
+
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha384));
+                }
+
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha512));
+                }
+#else
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
+                         settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
+                         settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                {
+                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
+                }
+#endif
+                else
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
+                }
+                {{~ end ~}}
+            }
             {{~ end ~}}
             {{~ end ~}}
         }
@@ -1379,17 +1500,23 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                             ClrType = (string) setting.Attribute("Type") switch
                             {
                                 "Boolean" => "bool",
-                                "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
-                                    is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+                                "EncryptionKey" => (string?) setting.Element("EncryptionAlgorithm")?.Attribute("Value") switch
+                                {
+                                    "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
-                                "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                    is "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
+                                    _ => "SecurityKey"
+                                },
 
-                                "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
-                                    is "PS256" or "PS384" or "PS512" or
-                                       "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+                                "SigningCertificate" => "X509Certificate2",
 
-                                "Certificate" => "X509Certificate2",
+                                "SigningKey" => (string?) setting.Element("SigningAlgorithm")?.Attribute("Value") switch
+                                {
+                                    "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
+                                    "PS256" or "PS384" or "PS512" or "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+
+                                    _ => "SecurityKey"
+                                },
+
                                 "String" => "string",
                                 "StringHashSet" => "HashSet<string>",
                                 "Uri" => "Uri",

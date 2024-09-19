@@ -63,8 +63,9 @@ public static partial class OpenIddictClientHandlers
         ValidateFrontchannelAccessToken.Descriptor,
         ValidateAuthorizationCode.Descriptor,
 
-        ResolveTokenEndpoint.Descriptor,
         EvaluateTokenRequest.Descriptor,
+        AttachTokenEndpointClientAuthenticationMethod.Descriptor,
+        ResolveTokenEndpoint.Descriptor,
         AttachTokenRequestParameters.Descriptor,
         EvaluateGeneratedClientAssertion.Descriptor,
         PrepareClientAssertionPrincipal.Descriptor,
@@ -86,8 +87,9 @@ public static partial class OpenIddictClientHandlers
         ValidateBackchannelAccessToken.Descriptor,
         ValidateRefreshToken.Descriptor,
 
-        ResolveUserInfoEndpoint.Descriptor,
         EvaluateUserInfoRequest.Descriptor,
+        AttachUserInfoEndpointTokenBindingMethods.Descriptor,
+        ResolveUserInfoEndpoint.Descriptor,
         AttachUserInfoRequestParameters.Descriptor,
         SendUserInfoRequest.Descriptor,
         EvaluateValidatedUserInfoToken.Descriptor,
@@ -118,8 +120,9 @@ public static partial class OpenIddictClientHandlers
         GenerateLoginStateToken.Descriptor,
         AttachChallengeParameters.Descriptor,
         AttachCustomChallengeParameters.Descriptor,
-        ResolveDeviceAuthorizationEndpoint.Descriptor,
         EvaluateDeviceAuthorizationRequest.Descriptor,
+        AttachDeviceAuthorizationEndpointClientAuthenticationMethod.Descriptor,
+        ResolveDeviceAuthorizationEndpoint.Descriptor,
         AttachDeviceAuthorizationRequestParameters.Descriptor,
         EvaluateGeneratedChallengeClientAssertion.Descriptor,
         PrepareChallengeClientAssertionPrincipal.Descriptor,
@@ -137,8 +140,9 @@ public static partial class OpenIddictClientHandlers
         ValidateIntrospectionDemand.Descriptor,
         ResolveClientRegistrationFromIntrospectionContext.Descriptor,
         AttachClientIdToIntrospectionContext.Descriptor,
-        ResolveIntrospectionEndpoint.Descriptor,
         EvaluateIntrospectionRequest.Descriptor,
+        AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor,
+        ResolveIntrospectionEndpoint.Descriptor,
         AttachIntrospectionRequestParameters.Descriptor,
         EvaluateGeneratedIntrospectionClientAssertion.Descriptor,
         PrepareIntrospectionClientAssertionPrincipal.Descriptor,
@@ -153,8 +157,9 @@ public static partial class OpenIddictClientHandlers
         ValidateRevocationDemand.Descriptor,
         ResolveClientRegistrationFromRevocationContext.Descriptor,
         AttachClientIdToRevocationContext.Descriptor,
-        ResolveRevocationEndpoint.Descriptor,
         EvaluateRevocationRequest.Descriptor,
+        AttachRevocationEndpointClientAuthenticationMethod.Descriptor,
+        ResolveRevocationEndpoint.Descriptor,
         AttachRevocationRequestParameters.Descriptor,
         EvaluateGeneratedRevocationClientAssertion.Descriptor,
         PrepareRevocationClientAssertionPrincipal.Descriptor,
@@ -2232,42 +2237,6 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the URI of the token endpoint.
-    /// </summary>
-    public sealed class ResolveTokenEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<ResolveTokenEndpoint>()
-                .SetOrder(ValidateAuthorizationCode.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // If the URI of the token endpoint wasn't explicitly set at
-            // this stage, try to extract it from the server configuration.
-            context.TokenEndpoint ??= context.Configuration.TokenEndpoint switch
-            {
-                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
-
-                _ => null
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for determining whether a token request should be sent.
     /// </summary>
     public sealed class EvaluateTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -2278,7 +2247,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateTokenRequest>()
-                .SetOrder(ResolveTokenEndpoint.Descriptor.Order + 1_000)
+                .SetOrder(ValidateAuthorizationCode.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -2320,6 +2289,115 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for negotiating the best token endpoint client
+    /// authentication method supported by both the client and the authorization server.
+    /// </summary>
+    public sealed class AttachTokenEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<AttachTokenEndpointClientAuthenticationMethod>()
+                .SetOrder(EvaluateTokenRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit client authentication method was attached, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.TokenEndpointClientAuthenticationMethod))
+            {
+                return default;
+            }
+
+            context.TokenEndpointClientAuthenticationMethod = (
+                // Note: if client authentication methods are explicitly listed in the client registration, only use
+                // the client authentication methods that are both listed and enabled in the global client options.
+                // Otherwise, always default to the client authentication methods that have been enabled globally.
+                Client: context.Registration.ClientAuthenticationMethods.Count switch
+                {
+                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
+                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
+                },
+
+                Server: context.Configuration.TokenEndpointAuthMethodsSupported) switch
+            {
+                // If at least one signing key was attached to the client registration and both
+                // the client and the server explicitly support private_key_jwt, always prefer it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when context.Registration.SigningCredentials.Count is not 0 &&
+                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt)
+                    => ClientAuthenticationMethods.PrivateKeyJwt,
+
+                // If a client secret was attached to the client registration and both the client and
+                // the server explicitly support client_secret_post, prefer it to basic authentication.
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
+                    => ClientAuthenticationMethods.ClientSecretPost,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the token endpoint.
+    /// </summary>
+    public sealed class ResolveTokenEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<ResolveTokenEndpoint>()
+                .SetOrder(AttachTokenEndpointClientAuthenticationMethod.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the URI of the token endpoint wasn't explicitly set at
+            // this stage, try to extract it from the server configuration.
+            context.TokenEndpoint ??= context.TokenEndpointClientAuthenticationMethod switch
+            {
+                // When TLS client certificate authentication was negotiated,
+                // always favor the mTLS-specific endpoint if available.
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth or ClientAuthenticationMethods.TlsClientAuth
+                    when context.Configuration.MtlsTokenEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                // Otherwise, use the non-mTLS-specific endpoint.
+                _ when context.Configuration.TokenEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the parameters to the token request, if applicable.
     /// </summary>
     public sealed class AttachTokenRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -2331,7 +2409,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenRequest>()
                 .UseSingletonHandler<AttachTokenRequestParameters>()
-                .SetOrder(EvaluateTokenRequest.Descriptor.Order + 1_000)
+                .SetOrder(ResolveTokenEndpoint.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -2438,13 +2516,11 @@ public static partial class OpenIddictClientHandlers
             }
 
             (context.GenerateClientAssertion,
-             context.IncludeClientAssertion) = context.Registration.SigningCredentials.Count switch
+             context.IncludeClientAssertion) = context.TokenEndpointClientAuthenticationMethod switch
             {
-                // If a token request is going to be sent and if at least one signing key was
-                // attached to the client registration, generate and include a client assertion
-                // token if the configuration indicates the server supports private_key_jwt.
-                > 0 when context.Configuration.TokenEndpointAuthMethodsSupported.Contains(
-                    ClientAuthenticationMethods.PrivateKeyJwt) => (true, true),
+                // If the private_key_jwt client authentication method could be negotiated,
+                // generate a client assertion that will be used to authenticate the client.
+                ClientAuthenticationMethods.PrivateKeyJwt => (true, true),
 
                 _ => (false, false)
             };
@@ -2629,7 +2705,7 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            // Always attach the client_id to the request, even if an assertion is sent.
+            // Always attach the client_id to the request, even if an assertion is sent or mTLS is used.
             context.TokenRequest.ClientId = context.Registration.ClientId;
 
             // Note: client authentication methods are mutually exclusive so the client_assertion
@@ -2641,9 +2717,9 @@ public static partial class OpenIddictClientHandlers
                 context.TokenRequest.ClientAssertionType = context.ClientAssertionType;
             }
 
-            // Note: the client_secret may be null at this point (e.g for a public
-            // client or if a custom authentication method is used by the application).
-            else
+            else if (context.TokenEndpointClientAuthenticationMethod is
+                ClientAuthenticationMethods.ClientSecretBasic or
+                ClientAuthenticationMethods.ClientSecretPost)
             {
                 context.TokenRequest.ClientSecret = context.Registration.ClientSecret;
             }
@@ -2693,7 +2769,8 @@ public static partial class OpenIddictClientHandlers
             {
                 context.TokenResponse = await _service.SendTokenRequestAsync(
                     context.Registration, context.Configuration,
-                    context.TokenRequest, context.TokenEndpoint, context.CancellationToken);
+                    context.TokenRequest, context.TokenEndpoint,
+                    context.TokenEndpointClientAuthenticationMethod, context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -3567,42 +3644,6 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the URI of the userinfo endpoint.
-    /// </summary>
-    public sealed class ResolveUserInfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<ResolveUserInfoEndpoint>()
-                .SetOrder(ValidateRefreshToken.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // If the URI of the userinfo endpoint wasn't explicitly set at
-            // this stage, try to extract it from the server configuration.
-            context.UserInfoEndpoint ??= context.Configuration.UserInfoEndpoint switch
-            {
-                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
-
-                _ => null
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for determining whether a userinfo request should be sent.
     /// </summary>
     public sealed class EvaluateUserInfoRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -3613,7 +3654,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateUserInfoRequest>()
-                .SetOrder(ResolveUserInfoEndpoint.Descriptor.Order + 1_000)
+                .SetOrder(ValidateRefreshToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -3638,7 +3679,7 @@ public static partial class OpenIddictClientHandlers
                 // is available, unless userinfo retrieval was explicitly disabled by the user.
                 GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or GrantTypes.Implicit or
                 GrantTypes.Password          or GrantTypes.RefreshToken
-                    when !context.DisableUserInfoRetrieval && context.UserInfoEndpoint is not null &&
+                    when context.Configuration.UserInfoEndpoint is not null && !context.DisableUserInfoRetrieval &&
                     (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
                      !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
 
@@ -3646,7 +3687,7 @@ public static partial class OpenIddictClientHandlers
                 not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
                                   GrantTypes.DeviceCode        or GrantTypes.Implicit          or
                                   GrantTypes.Password          or GrantTypes.RefreshToken)
-                    when !context.DisableUserInfoRetrieval && context.UserInfoEndpoint is not null &&
+                    when context.Configuration.UserInfoEndpoint is not null && !context.DisableUserInfoRetrieval &&
                     (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
                      !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
 
@@ -3688,6 +3729,87 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for negotiating the best userinfo endpoint client
+    /// authentication method supported by both the client and the authorization server.
+    /// </summary>
+    public sealed class AttachUserInfoEndpointTokenBindingMethods : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserInfoRequest>()
+                .UseSingletonHandler<AttachUserInfoEndpointTokenBindingMethods>()
+                .SetOrder(EvaluateUserInfoRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // By default, assume that sending the access token is enough and doesn't require using
+            // an additional token binding method. To support advanced scenarios like mTLS-protected
+            // HTTPS userinfo endpoints, a specialized event handler is used by the System.Net.Http
+            // integration package to send a client certificate (self-signed or not) if necessary.
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the userinfo endpoint.
+    /// </summary>
+    public sealed class ResolveUserInfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserInfoRequest>()
+                .UseSingletonHandler<ResolveUserInfoEndpoint>()
+                .SetOrder(AttachUserInfoEndpointTokenBindingMethods.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the URI of the userinfo endpoint wasn't explicitly set at
+            // this stage, try to extract it from the server configuration.
+            context.UserInfoEndpoint ??= context.UserInfoEndpointTokenBindingMethods switch
+            {
+                // When TLS client certificate authentication was negotiated,
+                // always favor the mTLS-specific endpoint if available.
+                { } methods when (
+                    methods.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) ||
+                    methods.Contains(ClientAuthenticationMethods.TlsClientAuth)) &&
+                    context.Configuration.MtlsUserInfoEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                // Otherwise, use the non-mTLS-specific endpoint.
+                _ when context.Configuration.UserInfoEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the parameters to the userinfo request, if applicable.
     /// </summary>
     public sealed class AttachUserInfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -3699,7 +3821,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireUserInfoRequest>()
                 .UseSingletonHandler<AttachUserInfoRequestParameters>()
-                .SetOrder(EvaluateUserInfoRequest.Descriptor.Order + 1_000)
+                .SetOrder(ResolveUserInfoEndpoint.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -3768,7 +3890,8 @@ public static partial class OpenIddictClientHandlers
                 (context.UserInfoResponse, (context.UserInfoTokenPrincipal, context.UserInfoToken)) =
                     await _service.SendUserInfoRequestAsync(
                         context.Registration, context.Configuration,
-                        context.UserInfoRequest, context.UserInfoEndpoint, context.CancellationToken);
+                        context.UserInfoRequest, context.UserInfoEndpoint,
+                        context.UserInfoEndpointTokenBindingMethods, context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -4043,8 +4166,8 @@ public static partial class OpenIddictClientHandlers
             // returned in the frontchannel identity token, if one was returned. For more information,
             // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
             if (context.FrontchannelIdentityTokenPrincipal is not null && !string.Equals(
-                context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
-                context.UserInfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
+                    context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
+                    context.UserInfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -4058,8 +4181,8 @@ public static partial class OpenIddictClientHandlers
             // returned in the frontchannel identity token, if one was returned. For more information,
             // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
             if (context.BackchannelIdentityTokenPrincipal is not null && !string.Equals(
-                context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
-                context.UserInfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
+                    context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
+                    context.UserInfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -5437,42 +5560,6 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the URI of the device authorization endpoint.
-    /// </summary>
-    public sealed class ResolveDeviceAuthorizationEndpoint : IOpenIddictClientHandler<ProcessChallengeContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .UseSingletonHandler<ResolveDeviceAuthorizationEndpoint>()
-                .SetOrder(AttachCustomChallengeParameters.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // If the URI of the device authorization endpoint wasn't explicitly set
-            // at this stage, try to extract it from the server configuration.
-            context.DeviceAuthorizationEndpoint ??= context.Configuration.DeviceAuthorizationEndpoint switch
-            {
-                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
-
-                _ => null
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for determining whether a device authorization request should be sent.
     /// </summary>
     public sealed class EvaluateDeviceAuthorizationRequest : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -5483,7 +5570,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .UseSingletonHandler<EvaluateDeviceAuthorizationRequest>()
-                .SetOrder(ResolveDeviceAuthorizationEndpoint.Descriptor.Order + 1_000)
+                .SetOrder(AttachCustomChallengeParameters.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -5502,6 +5589,115 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for negotiating the best device authorization endpoint
+    /// client authentication method supported by both the client and the authorization server.
+    /// </summary>
+    public sealed class AttachDeviceAuthorizationEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireDeviceAuthorizationRequest>()
+                .UseSingletonHandler<AttachDeviceAuthorizationEndpointClientAuthenticationMethod>()
+                .SetOrder(EvaluateDeviceAuthorizationRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit client authentication method was attached, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.DeviceAuthorizationEndpointClientAuthenticationMethod))
+            {
+                return default;
+            }
+
+            context.DeviceAuthorizationEndpointClientAuthenticationMethod = (
+                // Note: if client authentication methods are explicitly listed in the client registration, only use
+                // the client authentication methods that are both listed and enabled in the global client options.
+                // Otherwise, always default to the client authentication methods that have been enabled globally.
+                Client: context.Registration.ClientAuthenticationMethods.Count switch
+                {
+                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
+                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
+                },
+
+                Server: context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported) switch
+            {
+                // If at least one signing key was attached to the client registration and both
+                // the client and the server explicitly support private_key_jwt, always prefer it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when context.Registration.SigningCredentials.Count is not 0 &&
+                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt)
+                    => ClientAuthenticationMethods.PrivateKeyJwt,
+
+                // If a client secret was attached to the client registration and both the client and
+                // the server explicitly support client_secret_post, prefer it to basic authentication.
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
+                    => ClientAuthenticationMethods.ClientSecretPost,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the device authorization endpoint.
+    /// </summary>
+    public sealed class ResolveDeviceAuthorizationEndpoint : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireDeviceAuthorizationRequest>()
+                .UseSingletonHandler<ResolveDeviceAuthorizationEndpoint>()
+                .SetOrder(AttachDeviceAuthorizationEndpointClientAuthenticationMethod.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the URI of the device authorization endpoint endpoint wasn't explicitly
+            // set at this stage, try to extract it from the server configuration.
+            context.DeviceAuthorizationEndpoint ??= context.DeviceAuthorizationEndpointClientAuthenticationMethod switch
+            {
+                // When TLS client certificate authentication was negotiated,
+                // always favor the mTLS-specific endpoint if available.
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth or ClientAuthenticationMethods.TlsClientAuth
+                    when context.Configuration.MtlsDeviceAuthorizationEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                // Otherwise, use the non-mTLS-specific endpoint.
+                _ when context.Configuration.DeviceAuthorizationEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the parameters to the device authorization request, if applicable.
     /// </summary>
     public sealed class AttachDeviceAuthorizationRequestParameters : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -5513,7 +5709,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireDeviceAuthorizationRequest>()
                 .UseSingletonHandler<AttachDeviceAuthorizationRequestParameters>()
-                .SetOrder(EvaluateDeviceAuthorizationRequest.Descriptor.Order + 1_000)
+                .SetOrder(ResolveDeviceAuthorizationEndpoint.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -5565,13 +5761,11 @@ public static partial class OpenIddictClientHandlers
             }
 
             (context.GenerateClientAssertion,
-             context.IncludeClientAssertion) = context.Registration.SigningCredentials.Count switch
+             context.IncludeClientAssertion) = context.DeviceAuthorizationEndpointClientAuthenticationMethod switch
             {
-                // If a device authorization request is going to be sent and if at least one signing key
-                // was attached to the client registration, generate and include a client assertion
-                // token if the configuration indicates the server supports private_key_jwt.
-                > 0 when context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Contains(
-                    ClientAuthenticationMethods.PrivateKeyJwt) => (true, true),
+                // If the private_key_jwt client authentication method could be negotiated,
+                // generate a client assertion that will be used to authenticate the client.
+                ClientAuthenticationMethods.PrivateKeyJwt => (true, true),
 
                 _ => (false, false)
             };
@@ -5741,7 +5935,7 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.DeviceAuthorizationRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            // Always attach the client_id to the request, even if an assertion is sent.
+            // Always attach the client_id to the request, even if an assertion is sent or mTLS is used.
             context.DeviceAuthorizationRequest.ClientId = context.ClientId;
 
             // Note: client authentication methods are mutually exclusive so the client_assertion
@@ -5753,9 +5947,9 @@ public static partial class OpenIddictClientHandlers
                 context.DeviceAuthorizationRequest.ClientAssertionType = context.ClientAssertionType;
             }
 
-            // Note: the client_secret may be null at this point (e.g for a public
-            // client or if a custom authentication method is used by the application).
-            else
+            else if (context.DeviceAuthorizationEndpointClientAuthenticationMethod is
+                ClientAuthenticationMethods.ClientSecretBasic or
+                ClientAuthenticationMethods.ClientSecretPost)
             {
                 context.DeviceAuthorizationRequest.ClientSecret = context.Registration.ClientSecret;
             }
@@ -5806,7 +6000,7 @@ public static partial class OpenIddictClientHandlers
                 context.DeviceAuthorizationResponse = await _service.SendDeviceAuthorizationRequestAsync(
                     context.Registration, context.Configuration,
                     context.DeviceAuthorizationRequest, context.DeviceAuthorizationEndpoint,
-                    context.CancellationToken);
+                    context.DeviceAuthorizationEndpointClientAuthenticationMethod, context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -6115,42 +6309,6 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the URI of the introspection endpoint.
-    /// </summary>
-    public sealed class ResolveIntrospectionEndpoint : IOpenIddictClientHandler<ProcessIntrospectionContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessIntrospectionContext>()
-                .UseSingletonHandler<ResolveIntrospectionEndpoint>()
-                .SetOrder(AttachClientIdToIntrospectionContext.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessIntrospectionContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // If the URI of the introspection endpoint wasn't explicitly set
-            // at this stage, try to extract it from the server configuration.
-            context.IntrospectionEndpoint ??= context.Configuration.IntrospectionEndpoint switch
-            {
-                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
-
-                _ => null
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for determining whether an introspection request should be sent.
     /// </summary>
     public sealed class EvaluateIntrospectionRequest : IOpenIddictClientHandler<ProcessIntrospectionContext>
@@ -6161,7 +6319,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessIntrospectionContext>()
                 .UseSingletonHandler<EvaluateIntrospectionRequest>()
-                .SetOrder(ResolveIntrospectionEndpoint.Descriptor.Order + 1_000)
+                .SetOrder(AttachClientIdToIntrospectionContext.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -6180,6 +6338,115 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for negotiating the best introspection endpoint client
+    /// authentication method supported by both the client and the authorization server.
+    /// </summary>
+    public sealed class AttachIntrospectionEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessIntrospectionContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessIntrospectionContext>()
+                .AddFilter<RequireIntrospectionRequest>()
+                .UseSingletonHandler<AttachIntrospectionEndpointClientAuthenticationMethod>()
+                .SetOrder(EvaluateIntrospectionRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessIntrospectionContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit client authentication method was attached, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.IntrospectionEndpointClientAuthenticationMethod))
+            {
+                return default;
+            }
+
+            context.IntrospectionEndpointClientAuthenticationMethod = (
+                // Note: if client authentication methods are explicitly listed in the client registration, only use
+                // the client authentication methods that are both listed and enabled in the global client options.
+                // Otherwise, always default to the client authentication methods that have been enabled globally.
+                Client: context.Registration.ClientAuthenticationMethods.Count switch
+                {
+                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
+                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
+                },
+
+                Server: context.Configuration.IntrospectionEndpointAuthMethodsSupported) switch
+            {
+                // If at least one signing key was attached to the client registration and both
+                // the client and the server explicitly support private_key_jwt, always prefer it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when context.Registration.SigningCredentials.Count is not 0 &&
+                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt)
+                    => ClientAuthenticationMethods.PrivateKeyJwt,
+
+                // If a client secret was attached to the client registration and both the client and
+                // the server explicitly support client_secret_post, prefer it to basic authentication.
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
+                    => ClientAuthenticationMethods.ClientSecretPost,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the introspection endpoint.
+    /// </summary>
+    public sealed class ResolveIntrospectionEndpoint : IOpenIddictClientHandler<ProcessIntrospectionContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessIntrospectionContext>()
+                .AddFilter<RequireIntrospectionRequest>()
+                .UseSingletonHandler<ResolveIntrospectionEndpoint>()
+                .SetOrder(AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessIntrospectionContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the URI of the introspection endpoint endpoint wasn't explicitly
+            // set at this stage, try to extract it from the server configuration.
+            context.IntrospectionEndpoint ??= context.IntrospectionEndpointClientAuthenticationMethod switch
+            {
+                // When TLS client certificate authentication was negotiated,
+                // always favor the mTLS-specific endpoint if available.
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth or ClientAuthenticationMethods.TlsClientAuth
+                    when context.Configuration.MtlsIntrospectionEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                // Otherwise, use the non-mTLS-specific endpoint.
+                _ when context.Configuration.IntrospectionEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the parameters to the introspection request, if applicable.
     /// </summary>
     public sealed class AttachIntrospectionRequestParameters : IOpenIddictClientHandler<ProcessIntrospectionContext>
@@ -6191,7 +6458,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessIntrospectionContext>()
                 .AddFilter<RequireIntrospectionRequest>()
                 .UseSingletonHandler<AttachIntrospectionRequestParameters>()
-                .SetOrder(EvaluateIntrospectionRequest.Descriptor.Order + 1_000)
+                .SetOrder(ResolveIntrospectionEndpoint.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -6237,13 +6504,11 @@ public static partial class OpenIddictClientHandlers
             }
 
             (context.GenerateClientAssertion,
-             context.IncludeClientAssertion) = context.Registration.SigningCredentials.Count switch
+             context.IncludeClientAssertion) = context.IntrospectionEndpointClientAuthenticationMethod switch
             {
-                // If an introspection request is going to be sent and if at least one signing key
-                // was attached to the client registration, generate and include a client assertion
-                // token if the configuration indicates the server supports private_key_jwt.
-                > 0 when context.Configuration.IntrospectionEndpointAuthMethodsSupported.Contains(
-                    ClientAuthenticationMethods.PrivateKeyJwt) => (true, true),
+                // If the private_key_jwt client authentication method could be negotiated,
+                // generate a client assertion that will be used to authenticate the client.
+                ClientAuthenticationMethods.PrivateKeyJwt => (true, true),
 
                 _ => (false, false)
             };
@@ -6413,7 +6678,7 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.IntrospectionRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            // Always attach the client_id to the request, even if an assertion is sent.
+            // Always attach the client_id to the request, even if an assertion is sent or mTLS is used.
             context.IntrospectionRequest.ClientId = context.ClientId;
 
             // Note: client authentication methods are mutually exclusive so the client_assertion
@@ -6425,9 +6690,9 @@ public static partial class OpenIddictClientHandlers
                 context.IntrospectionRequest.ClientAssertionType = context.ClientAssertionType;
             }
 
-            // Note: the client_secret may be null at this point (e.g for a public
-            // client or if a custom authentication method is used by the application).
-            else
+            else if (context.IntrospectionEndpointClientAuthenticationMethod is
+                ClientAuthenticationMethods.ClientSecretBasic or
+                ClientAuthenticationMethods.ClientSecretPost)
             {
                 context.IntrospectionRequest.ClientSecret = context.Registration.ClientSecret;
             }
@@ -6478,7 +6743,8 @@ public static partial class OpenIddictClientHandlers
             {
                 (context.IntrospectionResponse, context.Principal) = await _service.SendIntrospectionRequestAsync(
                     context.Registration, context.Configuration,
-                    context.IntrospectionRequest, context.IntrospectionEndpoint, context.CancellationToken);
+                    context.IntrospectionRequest, context.IntrospectionEndpoint,
+                    context.IntrospectionEndpointClientAuthenticationMethod, context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -6711,42 +6977,6 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the URI of the revocation endpoint.
-    /// </summary>
-    public sealed class ResolveRevocationEndpoint : IOpenIddictClientHandler<ProcessRevocationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
-                .UseSingletonHandler<ResolveRevocationEndpoint>()
-                .SetOrder(AttachClientIdToRevocationContext.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessRevocationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // If the URI of the revocation endpoint wasn't explicitly set
-            // at this stage, try to extract it from the server configuration.
-            context.RevocationEndpoint ??= context.Configuration.RevocationEndpoint switch
-            {
-                { IsAbsoluteUri: true } uri when !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
-
-                _ => null
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for determining whether an revocation request should be sent.
     /// </summary>
     public sealed class EvaluateRevocationRequest : IOpenIddictClientHandler<ProcessRevocationContext>
@@ -6757,7 +6987,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
                 .UseSingletonHandler<EvaluateRevocationRequest>()
-                .SetOrder(ResolveRevocationEndpoint.Descriptor.Order + 1_000)
+                .SetOrder(AttachClientIdToRevocationContext.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -6776,6 +7006,115 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for negotiating the best revocation endpoint client
+    /// authentication method supported by both the client and the authorization server.
+    /// </summary>
+    public sealed class AttachRevocationEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationRequest>()
+                .UseSingletonHandler<AttachRevocationEndpointClientAuthenticationMethod>()
+                .SetOrder(EvaluateRevocationRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit client authentication method was attached, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.RevocationEndpointClientAuthenticationMethod))
+            {
+                return default;
+            }
+
+            context.RevocationEndpointClientAuthenticationMethod = (
+                // Note: if client authentication methods are explicitly listed in the client registration, only use
+                // the client authentication methods that are both listed and enabled in the global client options.
+                // Otherwise, always default to the client authentication methods that have been enabled globally.
+                Client: context.Registration.ClientAuthenticationMethods.Count switch
+                {
+                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
+                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
+                },
+
+                Server: context.Configuration.RevocationEndpointAuthMethodsSupported) switch
+            {
+                // If at least one signing key was attached to the client registration and both
+                // the client and the server explicitly support private_key_jwt, always prefer it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when context.Registration.SigningCredentials.Count is not 0 &&
+                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt)
+                    => ClientAuthenticationMethods.PrivateKeyJwt,
+
+                // If a client secret was attached to the client registration and both the client and
+                // the server explicitly support client_secret_post, prefer it to basic authentication.
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
+                    => ClientAuthenticationMethods.ClientSecretPost,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the revocation endpoint.
+    /// </summary>
+    public sealed class ResolveRevocationEndpoint : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationRequest>()
+                .UseSingletonHandler<ResolveRevocationEndpoint>()
+                .SetOrder(AttachRevocationEndpointClientAuthenticationMethod.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the URI of the revocation endpoint endpoint wasn't explicitly
+            // set at this stage, try to extract it from the server configuration.
+            context.RevocationEndpoint ??= context.RevocationEndpointClientAuthenticationMethod switch
+            {
+                // When TLS client certificate authentication was negotiated,
+                // always favor the mTLS-specific endpoint if available.
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth or ClientAuthenticationMethods.TlsClientAuth
+                    when context.Configuration.MtlsRevocationEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                // Otherwise, use the non-mTLS-specific endpoint.
+                _ when context.Configuration.RevocationEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the parameters to the revocation request, if applicable.
     /// </summary>
     public sealed class AttachRevocationRequestParameters : IOpenIddictClientHandler<ProcessRevocationContext>
@@ -6787,7 +7126,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
                 .AddFilter<RequireRevocationRequest>()
                 .UseSingletonHandler<AttachRevocationRequestParameters>()
-                .SetOrder(EvaluateRevocationRequest.Descriptor.Order + 1_000)
+                .SetOrder(ResolveRevocationEndpoint.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -6833,13 +7172,11 @@ public static partial class OpenIddictClientHandlers
             }
 
             (context.GenerateClientAssertion,
-             context.IncludeClientAssertion) = context.Registration.SigningCredentials.Count switch
+             context.IncludeClientAssertion) = context.RevocationEndpointClientAuthenticationMethod switch
             {
-                // If an revocation request is going to be sent and if at least one signing key
-                // was attached to the client registration, generate and include a client assertion
-                // token if the configuration indicates the server supports private_key_jwt.
-                > 0 when context.Configuration.RevocationEndpointAuthMethodsSupported.Contains(
-                    ClientAuthenticationMethods.PrivateKeyJwt) => (true, true),
+                // If the private_key_jwt client authentication method could be negotiated,
+                // generate a client assertion that will be used to authenticate the client.
+                ClientAuthenticationMethods.PrivateKeyJwt => (true, true),
 
                 _ => (false, false)
             };
@@ -7009,7 +7346,7 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.RevocationRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            // Always attach the client_id to the request, even if an assertion is sent.
+            // Always attach the client_id to the request, even if an assertion is sent or mTLS is used.
             context.RevocationRequest.ClientId = context.ClientId;
 
             // Note: client authentication methods are mutually exclusive so the client_assertion
@@ -7021,9 +7358,9 @@ public static partial class OpenIddictClientHandlers
                 context.RevocationRequest.ClientAssertionType = context.ClientAssertionType;
             }
 
-            // Note: the client_secret may be null at this point (e.g for a public
-            // client or if a custom authentication method is used by the application).
-            else
+            else if (context.RevocationEndpointClientAuthenticationMethod is
+                ClientAuthenticationMethods.ClientSecretBasic or
+                ClientAuthenticationMethods.ClientSecretPost)
             {
                 context.RevocationRequest.ClientSecret = context.Registration.ClientSecret;
             }
@@ -7073,7 +7410,8 @@ public static partial class OpenIddictClientHandlers
             {
                 context.RevocationResponse = await _service.SendRevocationRequestAsync(
                     context.Registration, context.Configuration,
-                    context.RevocationRequest, context.RevocationEndpoint, context.CancellationToken);
+                    context.RevocationRequest, context.RevocationEndpoint,
+                    context.RevocationEndpointClientAuthenticationMethod, context.CancellationToken);
             }
 
             catch (ProtocolException exception)

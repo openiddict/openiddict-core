@@ -34,8 +34,8 @@ public static partial class OpenIddictServerHandlers
             AttachIssuer.Descriptor,
             AttachEndpoints.Descriptor,
             AttachGrantTypes.Descriptor,
-            AttachResponseModes.Descriptor,
             AttachResponseTypes.Descriptor,
+            AttachResponseModes.Descriptor,
             AttachClientAuthenticationMethods.Descriptor,
             AttachCodeChallengeMethods.Descriptor,
             AttachScopes.Descriptor,
@@ -426,35 +426,6 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for attaching the supported response modes to the provider discovery document.
-        /// </summary>
-        public sealed class AttachResponseModes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
-                    .UseSingletonHandler<AttachResponseModes>()
-                    .SetOrder(AttachGrantTypes.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                context.ResponseModes.UnionWith(context.Options.ResponseModes);
-
-                return default;
-            }
-        }
-
-        /// <summary>
         /// Contains the logic responsible for attaching the supported response types to the provider discovery document.
         /// </summary>
         public sealed class AttachResponseTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
@@ -465,7 +436,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                     .UseSingletonHandler<AttachResponseTypes>()
-                    .SetOrder(AttachResponseModes.Descriptor.Order + 1_000)
+                    .SetOrder(AttachGrantTypes.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -484,6 +455,54 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for attaching the supported response modes to the provider discovery document.
+        /// </summary>
+        public sealed class AttachResponseModes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
+                    .UseSingletonHandler<AttachResponseModes>()
+                    .SetOrder(AttachResponseTypes.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Only include the response modes if at least one response type is returned.
+                if (context.ResponseTypes.Count is 0)
+                {
+                    return default;
+                }
+
+                // Note: returning an access or identity token using the query response mode is explicitly disallowed.
+                //
+                // To ensure the query response mode is not returned unless at least one response type that doesn't
+                // include id_token or token is included in the server configuration, a manual check is done here.
+                if (context.Options.ResponseModes.Contains(ResponseModes.Query) &&
+                    context.ResponseTypes
+                        .Select(static types => types.Split(Separators.Space, StringSplitOptions.None).ToHashSet(StringComparer.Ordinal))
+                        .Any(static types => !types.Contains(ResponseTypes.IdToken) && !types.Contains(ResponseTypes.Token)))
+                {
+                    context.ResponseModes.Add(ResponseModes.Query);
+                }
+
+                context.ResponseModes.UnionWith(context.Options.ResponseModes.Where(
+                    static mode => mode is not ResponseModes.Query));
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for attaching the supported client
         /// authentication methods to the provider discovery document.
         /// </summary>
@@ -495,7 +514,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                     .UseSingletonHandler<AttachClientAuthenticationMethods>()
-                    .SetOrder(AttachResponseTypes.Descriptor.Order + 1_000)
+                    .SetOrder(AttachResponseModes.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -557,7 +576,11 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                context.CodeChallengeMethods.UnionWith(context.Options.CodeChallengeMethods);
+                // Only include the code challenge methods if the authorization code grant type is enabled.
+                if (context.GrantTypes.Contains(GrantTypes.AuthorizationCode))
+                {
+                    context.CodeChallengeMethods.UnionWith(context.Options.CodeChallengeMethods);
+                }
 
                 return default;
             }
@@ -739,11 +762,12 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: the optional claims/request/request_uri parameters are not yet supported
-                // by OpenIddict, so "false" is returned to encourage clients not to use them.
+                // Note: these optional features are not yet supported by OpenIddict,
+                // so "false" is returned to encourage clients not to use them.
                 context.Metadata[Metadata.ClaimsParameterSupported] = false;
                 context.Metadata[Metadata.RequestParameterSupported] = false;
                 context.Metadata[Metadata.RequestUriParameterSupported] = false;
+                context.Metadata[Metadata.TlsClientCertificateBoundAccessTokens] = false;
 
                 // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its identity as
                 // part of authorization responses to help clients mitigate mix-up attacks. For more information,

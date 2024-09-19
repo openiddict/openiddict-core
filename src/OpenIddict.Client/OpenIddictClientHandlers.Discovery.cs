@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -28,6 +29,11 @@ public static partial class OpenIddictClientHandlers
             ExtractDeviceAuthorizationEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
             ExtractEndSessionEndpoint.Descriptor,
+            ExtractMtlsDeviceAuthorizationEndpoint.Descriptor,
+            ExtractMtlsIntrospectionEndpoint.Descriptor,
+            ExtractMtlsRevocationEndpoint.Descriptor,
+            ExtractMtlsTokenEndpoint.Descriptor,
+            ExtractMtlsUserInfoEndpoint.Descriptor,
             ExtractRevocationEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
             ExtractUserInfoEndpoint.Descriptor,
@@ -37,6 +43,7 @@ public static partial class OpenIddictClientHandlers
             ExtractCodeChallengeMethods.Descriptor,
             ExtractScopes.Descriptor,
             ExtractIssuerParameterRequirement.Descriptor,
+            ExtractTlsClientCertificateAccessTokenBindingRequirement.Descriptor,
             ExtractDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor,
             ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor,
             ExtractRevocationEndpointClientAuthenticationMethods.Descriptor,
@@ -474,6 +481,213 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for extracting the mTLS-enabled
+        /// device authorization endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractMtlsDeviceAuthorizationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractMtlsDeviceAuthorizationEndpoint>()
+                    .SetOrder(ExtractEndSessionEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var aliases = context.Response[Metadata.MtlsEndpointAliases]?.GetNamedParameters();
+                if (aliases is not { Count: > 0 })
+                {
+                    return default;
+                }
+
+                // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
+                // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
+                var endpoint = (string?) aliases[Metadata.DeviceAuthorizationEndpoint];
+                if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
+                {
+                    context.Configuration.MtlsDeviceAuthorizationEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the mTLS-enabled
+        /// introspection endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractMtlsIntrospectionEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractMtlsIntrospectionEndpoint>()
+                    .SetOrder(ExtractMtlsDeviceAuthorizationEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var aliases = context.Response[Metadata.MtlsEndpointAliases]?.GetNamedParameters();
+                if (aliases is not { Count: > 0 })
+                {
+                    return default;
+                }
+
+                // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
+                // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
+                var endpoint = (string?) aliases[Metadata.IntrospectionEndpoint];
+                if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
+                {
+                    context.Configuration.MtlsIntrospectionEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the mTLS-enabled revocation endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractMtlsRevocationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractMtlsRevocationEndpoint>()
+                    .SetOrder(ExtractMtlsIntrospectionEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var aliases = context.Response[Metadata.MtlsEndpointAliases]?.GetNamedParameters();
+                if (aliases is not { Count: > 0 })
+                {
+                    return default;
+                }
+
+                // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
+                // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
+                var endpoint = (string?) aliases[Metadata.RevocationEndpoint];
+                if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
+                {
+                    context.Configuration.MtlsRevocationEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the mTLS-enabled token endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractMtlsTokenEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractMtlsTokenEndpoint>()
+                    .SetOrder(ExtractMtlsRevocationEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var aliases = context.Response[Metadata.MtlsEndpointAliases]?.GetNamedParameters();
+                if (aliases is not { Count: > 0 })
+                {
+                    return default;
+                }
+
+                // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
+                // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
+                var endpoint = (string?) aliases[Metadata.TokenEndpoint];
+                if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
+                {
+                    context.Configuration.MtlsTokenEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the mTLS-enabled userinfo endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractMtlsUserInfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractMtlsUserInfoEndpoint>()
+                    .SetOrder(ExtractMtlsTokenEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var aliases = context.Response[Metadata.MtlsEndpointAliases]?.GetNamedParameters();
+                if (aliases is not { Count: > 0 })
+                {
+                    return default;
+                }
+
+                // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
+                // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
+                var endpoint = (string?) aliases[Metadata.UserInfoEndpoint];
+                if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
+                {
+                    context.Configuration.MtlsUserInfoEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the revocation endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractRevocationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -844,6 +1058,37 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for extracting the flag indicating whether client
+        /// certificate-bound access tokens are supported from the discovery document.
+        /// </summary>
+        public sealed class ExtractTlsClientCertificateAccessTokenBindingRequirement : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractTlsClientCertificateAccessTokenBindingRequirement>()
+                    .SetOrder(ExtractIssuerParameterRequirement.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                context.Configuration.TlsClientCertificateBoundAccessTokens = (bool?)
+                    context.Response[Metadata.TlsClientCertificateBoundAccessTokens];
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the authentication methods
         /// supported by the device authorization endpoint from the discovery document.
         /// </summary>
@@ -855,7 +1100,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractDeviceAuthorizationEndpointClientAuthenticationMethods>()
-                    .SetOrder(ExtractIssuerParameterRequirement.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractTlsClientCertificateAccessTokenBindingRequirement.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

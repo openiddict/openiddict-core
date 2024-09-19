@@ -5,10 +5,7 @@
  */
 
 using System.ComponentModel;
-using System.Net.Http;
 using Microsoft.Extensions.Options;
-using OpenIddict.Client.SystemNetHttp;
-using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
 
@@ -17,7 +14,6 @@ namespace OpenIddict.Client.WebIntegration;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>,
-                                                                          IConfigureOptions<OpenIddictClientSystemNetHttpOptions>,
                                                                           IPostConfigureOptions<OpenIddictClientOptions>
 {
     /// <inheritdoc/>
@@ -30,36 +26,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
 
         // Register the built-in event handlers used by the OpenIddict client Web components.
         options.Handlers.AddRange(OpenIddictClientWebIntegrationHandlers.DefaultHandlers);
-    }
-
-    /// <inheritdoc/>
-    public void Configure(OpenIddictClientSystemNetHttpOptions options)
-    {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        options.HttpClientHandlerActions.Add(static (registration, handler) =>
-        {
-            var certificate = registration.ProviderType switch
-            {
-                // Note: while not enforced yet, Pro Santé Connect's specification requires sending a TLS
-                // client certificate when communicating with its backchannel OpenID Connect endpoints.
-                //
-                // For more information, see EXI PSC 24 in the annex part of
-                // https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045551195.
-                ProviderTypes.ProSantéConnect => registration.GetProSantéConnectSettings().ClientCertificate,
-
-                _ => null
-            };
-
-            if (certificate is not null)
-            {
-                handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                handler.ClientCertificates.Add(certificate);
-            }
-        });
     }
 
     /// <inheritdoc/>

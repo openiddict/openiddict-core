@@ -960,14 +960,7 @@ public sealed class OpenIddictClientBuilder
     public OpenIddictClientBuilder AllowAuthorizationCodeFlow()
         => Configure(options =>
         {
-            options.CodeChallengeMethods.Add(CodeChallengeMethods.Plain);
-            options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
-
             options.GrantTypes.Add(GrantTypes.AuthorizationCode);
-
-            options.ResponseModes.Add(ResponseModes.FormPost);
-            options.ResponseModes.Add(ResponseModes.Fragment);
-            options.ResponseModes.Add(ResponseModes.Query);
 
             options.ResponseTypes.Add(ResponseTypes.Code);
         });
@@ -1013,14 +1006,8 @@ public sealed class OpenIddictClientBuilder
     public OpenIddictClientBuilder AllowHybridFlow()
         => Configure(options =>
         {
-            options.CodeChallengeMethods.Add(CodeChallengeMethods.Plain);
-            options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
-
             options.GrantTypes.Add(GrantTypes.AuthorizationCode);
             options.GrantTypes.Add(GrantTypes.Implicit);
-
-            options.ResponseModes.Add(ResponseModes.FormPost);
-            options.ResponseModes.Add(ResponseModes.Fragment);
 
             options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
             options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
@@ -1038,9 +1025,6 @@ public sealed class OpenIddictClientBuilder
         => Configure(options =>
         {
             options.GrantTypes.Add(GrantTypes.Implicit);
-
-            options.ResponseModes.Add(ResponseModes.FormPost);
-            options.ResponseModes.Add(ResponseModes.Fragment);
 
             // Note: response_type=token is not considered secure enough as it allows malicious
             // actors to inject access tokens that were initially issued to a different client.
@@ -1061,14 +1045,7 @@ public sealed class OpenIddictClientBuilder
     /// </summary>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AllowNoneFlow()
-        => Configure(options =>
-        {
-            options.ResponseModes.Add(ResponseModes.FormPost);
-            options.ResponseModes.Add(ResponseModes.Fragment);
-            options.ResponseModes.Add(ResponseModes.Query);
-
-            options.ResponseTypes.Add(ResponseTypes.None);
-        });
+        => Configure(options => options.ResponseTypes.Add(ResponseTypes.None));
 
     /// <summary>
     /// Enables password flow support. For more information about this specific

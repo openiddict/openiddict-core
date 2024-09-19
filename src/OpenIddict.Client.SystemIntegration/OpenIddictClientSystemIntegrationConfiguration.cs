@@ -50,6 +50,9 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
 
         // Register the built-in event handlers used by the OpenIddict client system integration components.
         options.Handlers.AddRange(OpenIddictClientSystemIntegrationHandlers.DefaultHandlers);
+
+        // Enable response_mode=fragment support by default.
+        options.ResponseModes.Add(ResponseModes.Fragment);
     }
 
     /// <inheritdoc/>

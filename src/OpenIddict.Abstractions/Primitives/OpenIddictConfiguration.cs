@@ -77,6 +77,31 @@ public sealed class OpenIddictConfiguration
     public Uri? JwksUri { get; set; }
 
     /// <summary>
+    /// Gets or sets the URI of the mTLS-enabled device authorization endpoint.
+    /// </summary>
+    public Uri? MtlsDeviceAuthorizationEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI of the mTLS-enabled introspection endpoint.
+    /// </summary>
+    public Uri? MtlsIntrospectionEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI of the mTLS-enabled revocation endpoint.
+    /// </summary>
+    public Uri? MtlsRevocationEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI of the mTLS-enabled token endpoint.
+    /// </summary>
+    public Uri? MtlsTokenEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI of the mTLS-enabled userinfo endpoint.
+    /// </summary>
+    public Uri? MtlsUserInfoEndpoint { get; set; }
+
+    /// <summary>
     /// Gets the additional properties.
     /// </summary>
     public Dictionary<string, object?> Properties { get; } = new(StringComparer.Ordinal);
@@ -110,6 +135,12 @@ public sealed class OpenIddictConfiguration
     /// Gets the signing keys extracted from the JSON Web Key set.
     /// </summary>
     public List<SecurityKey> SigningKeys { get; } = [];
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether access tokens issued by the
+    /// authorization server are bound to the client certificate when using mTLS.
+    /// </summary>
+    public bool? TlsClientCertificateBoundAccessTokens { get; set; }
 
     /// <summary>
     /// Gets or sets the URI of the token endpoint.

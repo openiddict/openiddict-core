@@ -25,6 +25,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         ValidateRedirectionRequestSignature.Descriptor,
         HandleNonStandardFrontchannelErrorResponse.Descriptor,
         ValidateNonStandardParameters.Descriptor,
+        OverrideTokenEndpointClientAuthenticationMethod.Descriptor,
         OverrideTokenEndpoint.Descriptor,
         AttachNonStandardClientAssertionClaims.Descriptor,
         AttachAdditionalTokenRequestParameters.Descriptor,
@@ -32,9 +33,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         AdjustRedirectUriInTokenRequest.Descriptor,
         OverrideValidatedBackchannelTokens.Descriptor,
         DisableBackchannelIdentityTokenNonceValidation.Descriptor,
+        OverrideUserInfoRetrieval.Descriptor,
+        OverrideUserInfoValidation.Descriptor,
         OverrideUserInfoEndpoint.Descriptor,
-        DisableUserInfoRetrieval.Descriptor,
-        DisableUserInfoValidation.Descriptor,
         AttachAdditionalUserInfoRequestParameters.Descriptor,
         PopulateUserInfoTokenPrincipalFromTokenResponse.Descriptor,
         MapCustomWebServicesFederationClaims.Descriptor,
@@ -52,6 +53,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /*
          * Revocation processing:
          */
+        OverrideRevocationEndpointClientAuthenticationMethod.Descriptor,
         AttachNonStandardRevocationClientAssertionClaims.Descriptor,
         AttachRevocationRequestNonStandardClientCredentials.Descriptor,
 
@@ -419,6 +421,50 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // so it can be resolved later to determine the user region.
                 context.Properties[Zoho.Properties.Location] = location;
             }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for overriding the negotiated token
+    /// endpoint client authentication method for the providers that require it.
+    /// </summary>
+    public sealed class OverrideTokenEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<OverrideTokenEndpointClientAuthenticationMethod>()
+                .SetOrder(AttachTokenEndpointClientAuthenticationMethod.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.TokenEndpointClientAuthenticationMethod = context.Registration.ProviderType switch
+            {
+                // Note: Bitly only supports using "client_secret_post" for the authorization code
+                // grant but not for the resource owner password credentials grant, that requires
+                // using the "client_secret_basic" method instead.
+                ProviderTypes.Bitly when context.GrantType is GrantTypes.Password
+                    => ClientAuthenticationMethods.ClientSecretBasic,
+
+                // Note: Reddit requires using basic authentication to flow the client_id for all types
+                // of client applications, even when there's no client_secret assigned or attached.
+                ProviderTypes.Reddit => ClientAuthenticationMethods.ClientSecretBasic,
+
+                _ => context.TokenEndpointClientAuthenticationMethod
+            };
 
             return default;
         }
@@ -794,6 +840,137 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for overriding the userinfo retrieval for the providers that require it.
+    /// </summary>
+    public sealed class OverrideUserInfoRetrieval : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<OverrideUserInfoRetrieval>()
+                .SetOrder(EvaluateUserInfoRequest.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.SendUserInfoRequest = context.Registration.ProviderType switch
+            {
+                // Note: ADFS has severe restrictions affecting the ability to access the userinfo endpoint
+                // (e.g the "resource" parameter MUST be null or the "urn:microsoft:userinfo" value MUST be
+                // used, which prevents specifying any other resource as only one value is allowed by ADFS).
+                //
+                // Since the userinfo endpoint returns very limited information anyway,
+                // userinfo retrieval is always disabled for the ADFS provider.
+                ProviderTypes.ActiveDirectoryFederationServices => false,
+
+                // Note: these providers don't have a static userinfo endpoint attached to their configuration
+                // so OpenIddict doesn't, by default, send a userinfo request. Since a dynamic endpoint is later
+                // computed and attached to the context, the default value MUST be overridden to send a request.
+                ProviderTypes.Dailymotion or ProviderTypes.HubSpot or
+                ProviderTypes.SuperOffice or ProviderTypes.Zoho
+                    when context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or
+                                              GrantTypes.Implicit          or GrantTypes.Password   or
+                                              GrantTypes.RefreshToken      or
+                           // Apply the same logic for custom grant types.
+                           (not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                              GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                              GrantTypes.Password          or GrantTypes.RefreshToken)) &&
+                        !context.DisableUserInfoRetrieval && (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
+                                                              !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
+
+                // Note: the frontchannel or backchannel access tokens returned by Microsoft Entra ID
+                // when a Xbox scope is requested cannot be used with the userinfo endpoint as they use
+                // a legacy format that is not supported by the Microsoft Entra ID userinfo implementation.
+                //
+                // To work around this limitation, userinfo retrieval is disabled when a Xbox scope is requested.
+                ProviderTypes.Microsoft => context.GrantType switch
+                {
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                        context.StateTokenPrincipal is ClaimsPrincipal principal &&
+                        principal.HasClaim(static claim =>
+                            claim.Type is Claims.Private.Scope &&
+                            claim.Value.StartsWith("XboxLive.", StringComparison.OrdinalIgnoreCase))
+                        => false,
+
+                    GrantTypes.DeviceCode or GrantTypes.RefreshToken when
+                        context.Scopes.Any(static scope => scope.StartsWith("XboxLive.", StringComparison.OrdinalIgnoreCase))
+                        => false,
+
+                    _ => context.SendUserInfoRequest
+                },
+
+                // Note: some providers don't allow querying the userinfo endpoint when the "openid" scope
+                // is not requested or granted. To work around that, userinfo is disabled when the "openid"
+                // scope wasn't requested during the initial authorization request or during the token request.
+                ProviderTypes.Okta => context.GrantType switch
+                {
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                        context.StateTokenPrincipal is ClaimsPrincipal principal && !principal.HasScope(Scopes.OpenId)
+                        => false,
+
+                    GrantTypes.DeviceCode or GrantTypes.RefreshToken when !context.Scopes.Contains(Scopes.OpenId)
+                        => false,
+
+                    _ => context.SendUserInfoRequest
+                },
+
+                _ => context.SendUserInfoRequest
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for overriding the userinfo validation for the providers that require it.
+    /// </summary>
+    public sealed class OverrideUserInfoValidation : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<OverrideUserInfoValidation>()
+                .SetOrder(OverrideUserInfoRetrieval.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: despite implementing OpenID Connect, some providers are known to implement completely custom
+            // userinfo endpoints or semi-standard endpoints that don't fully conform to the core specification.
+            //
+            // To ensure OpenIddict can be used with these providers, validation is disabled when necessary.
+
+            context.DisableUserInfoValidation = context.Registration.ProviderType switch
+            {
+                // SuperOffice doesn't offer a standard OpenID Connect userinfo endpoint.
+                ProviderTypes.SuperOffice => true,
+
+                _ => context.DisableUserInfoValidation
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for overriding the address
     /// of the userinfo endpoint for the providers that require it.
     /// </summary>
@@ -804,6 +981,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserInfoRequest>()
                 .UseSingletonHandler<OverrideUserInfoEndpoint>()
                 .SetOrder(ResolveUserInfoEndpoint.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -873,122 +1051,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         },
 
                 _ => context.UserInfoEndpoint
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for disabling the userinfo retrieval for the providers that require it.
-    /// </summary>
-    public sealed class DisableUserInfoRetrieval : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<DisableUserInfoRetrieval>()
-                .SetOrder(EvaluateUserInfoRequest.Descriptor.Order + 250)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            context.SendUserInfoRequest = context.Registration.ProviderType switch
-            {
-                // Note: ADFS has severe restrictions affecting the ability to access the userinfo endpoint
-                // (e.g the "resource" parameter MUST be null or the "urn:microsoft:userinfo" value MUST be
-                // used, which prevents specifying any other resource as only one value is allowed by ADFS).
-                //
-                // Since the userinfo endpoint returns very limited information anyway,
-                // userinfo retrieval is always disabled for the ADFS provider.
-                ProviderTypes.ActiveDirectoryFederationServices => false,
-
-                // Note: the frontchannel or backchannel access tokens returned by Microsoft Entra ID
-                // when a Xbox scope is requested cannot be used with the userinfo endpoint as they use
-                // a legacy format that is not supported by the Microsoft Entra ID userinfo implementation.
-                //
-                // To work around this limitation, userinfo retrieval is disabled when a Xbox scope is requested.
-                ProviderTypes.Microsoft => context.GrantType switch
-                {
-                    GrantTypes.AuthorizationCode or GrantTypes.Implicit when
-                        context.StateTokenPrincipal is ClaimsPrincipal principal &&
-                        principal.HasClaim(static claim =>
-                            claim.Type is Claims.Private.Scope &&
-                            claim.Value.StartsWith("XboxLive.", StringComparison.OrdinalIgnoreCase))
-                        => false,
-
-                    GrantTypes.DeviceCode or GrantTypes.RefreshToken when
-                        context.Scopes.Any(static scope => scope.StartsWith("XboxLive.", StringComparison.OrdinalIgnoreCase))
-                        => false,
-
-                    _ => context.SendUserInfoRequest
-                },
-
-                // Note: some providers don't allow querying the userinfo endpoint when the "openid" scope
-                // is not requested or granted. To work around that, userinfo is disabled when the "openid"
-                // scope wasn't requested during the initial authorization request or during the token request.
-                ProviderTypes.Okta => context.GrantType switch
-                {
-                    GrantTypes.AuthorizationCode or GrantTypes.Implicit when
-                        context.StateTokenPrincipal is ClaimsPrincipal principal && !principal.HasScope(Scopes.OpenId)
-                        => false,
-
-                    GrantTypes.DeviceCode or GrantTypes.RefreshToken when !context.Scopes.Contains(Scopes.OpenId)
-                        => false,
-
-                    _ => context.SendUserInfoRequest
-                },
-
-                _ => context.SendUserInfoRequest
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for disabling the userinfo validation for the providers that require it.
-    /// </summary>
-    public sealed class DisableUserInfoValidation : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<DisableUserInfoValidation>()
-                .SetOrder(DisableUserInfoRetrieval.Descriptor.Order + 250)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // Note: despite implementing OpenID Connect, some providers are known to implement completely custom
-            // userinfo endpoints or semi-standard endpoints that don't fully conform to the core specification.
-            //
-            // To ensure OpenIddict can be used with these providers, validation is disabled when necessary.
-
-            context.DisableUserInfoValidation = context.Registration.ProviderType switch
-            {
-                // SuperOffice doesn't offer a standard OpenID Connect userinfo endpoint.
-                ProviderTypes.SuperOffice => true,
-
-                _ => context.DisableUserInfoValidation
             };
 
             return default;
@@ -1859,6 +1921,44 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["access_type"] = settings.AccessType;
                 context.Request.Prompt = settings.Prompt;
             }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for overriding the negotiated revocation
+    /// endpoint client authentication method for the providers that require it.
+    /// </summary>
+    public sealed class OverrideRevocationEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .AddFilter<RequireRevocationRequest>()
+                .UseSingletonHandler<OverrideRevocationEndpointClientAuthenticationMethod>()
+                .SetOrder(AttachRevocationEndpointClientAuthenticationMethod.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.RevocationEndpointClientAuthenticationMethod = context.Registration.ProviderType switch
+            {
+                // Note: Reddit requires using basic authentication to flow the client_id for all types
+                // of client applications, even when there's no client_secret assigned or attached.
+                ProviderTypes.Reddit => ClientAuthenticationMethods.ClientSecretBasic,
+
+                _ => context.RevocationEndpointClientAuthenticationMethod
+            };
 
             return default;
         }

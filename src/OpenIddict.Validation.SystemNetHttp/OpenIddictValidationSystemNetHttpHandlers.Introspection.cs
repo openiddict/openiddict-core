@@ -5,10 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 
 namespace OpenIddict.Validation.SystemNetHttp;
 
@@ -26,7 +22,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             AttachJsonAcceptHeaders<PrepareIntrospectionRequestContext>.Descriptor,
             AttachUserAgentHeader<PrepareIntrospectionRequestContext>.Descriptor,
             AttachFromHeader<PrepareIntrospectionRequestContext>.Descriptor,
-            AttachBasicAuthenticationCredentials.Descriptor,
+            AttachBasicAuthenticationCredentials<PrepareIntrospectionRequestContext>.Descriptor,
             AttachHttpParameters<PrepareIntrospectionRequestContext>.Descriptor,
             SendHttpRequest<ApplyIntrospectionRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyIntrospectionRequestContext>.Descriptor,
@@ -40,94 +36,5 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             ValidateHttpResponse<ExtractIntrospectionResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractIntrospectionResponseContext>.Descriptor
         ]);
-
-        /// <summary>
-        /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization header.
-        /// </summary>
-        public sealed class AttachBasicAuthenticationCredentials : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
-                    .AddFilter<RequireHttpUri>()
-                    .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
-                    .SetOrder(AttachHttpParameters<PrepareIntrospectionRequestContext>.Descriptor.Order - 500)
-                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
-
-                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
-                // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-
-                // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                // However, this authentication method is known to have severe compatibility/interoperability issues:
-                //
-                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
-                //     specification, basic authentication is also sometimes required by server implementations for
-                //     public clients that don't have a client secret: in this case, an empty password is used and
-                //     the client identifier is sent alone in the Authorization header (instead of being sent using
-                //     the standard "client_id" parameter present in the request body).
-                //
-                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
-                //     before being base64-encoded, many implementations are known to implement a non-standard
-                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
-                //
-                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
-                // basic authentication is only used when a client secret is present and client_secret_post is
-                // always preferred when it's explicitly listed as a supported client authentication method.
-                // If client_secret_post is not listed or if the server returned an empty methods list,
-                // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
-                //
-                // See https://tools.ietf.org/html/rfc8414#section-2
-                // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                if (request.Headers.Authorization is null &&
-                    !string.IsNullOrEmpty(context.Request.ClientId) &&
-                    !string.IsNullOrEmpty(context.Request.ClientSecret) &&
-                    UseBasicAuthentication(context.Configuration))
-                {
-                    // Important: the credentials MUST be formURL-encoded before being base64-encoded.
-                    var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(new StringBuilder()
-                        .Append(EscapeDataString(context.Request.ClientId))
-                        .Append(':')
-                        .Append(EscapeDataString(context.Request.ClientSecret))
-                        .ToString()));
-
-                    // Attach the authorization header containing the client credentials to the HTTP request.
-                    request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Basic, credentials);
-
-                    // Remove the client credentials from the request payload to ensure they are not sent twice.
-                    context.Request.ClientId = context.Request.ClientSecret = null;
-                }
-
-                return default;
-
-                static bool UseBasicAuthentication(OpenIddictConfiguration configuration)
-                    => configuration.IntrospectionEndpointAuthMethodsSupported switch
-                    {
-                        // If at least one authentication method was explicit added, only use basic authentication
-                        // if it's supported AND if client_secret_post is not supported or enabled by the server.
-                        { Count: > 0 } methods => methods.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
-                                                 !methods.Contains(ClientAuthenticationMethods.ClientSecretPost),
-
-                        // Otherwise, if no authentication method was explicit added, assume only basic is supported.
-                        { Count: _ } => true
-                    };
-
-                static string EscapeDataString(string value) => Uri.EscapeDataString(value).Replace("%20", "+");
-            }
-        }
     }
 }

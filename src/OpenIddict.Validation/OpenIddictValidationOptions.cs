@@ -132,6 +132,22 @@ public sealed class OpenIddictValidationOptions
     public HashSet<string> Audiences { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets the OAuth 2.0 client authentication methods enabled for this application.
+    /// </summary>
+    public HashSet<string> ClientAuthenticationMethods { get; } = new(StringComparer.Ordinal)
+    {
+        // Note: client_secret_basic is deliberately not added here as it requires
+        // a dedicated event handler (typically provided by the HTTP integration)
+        // to attach the client credentials to the standard Authorization header.
+        //
+        // The System.Net.Http integration supports the client_secret_basic,
+        // self_signed_tls_client_auth and tls_client_auth authentication
+        // methods and automatically add them to this list at runtime.
+        OpenIddictConstants.ClientAuthenticationMethods.ClientSecretPost,
+        OpenIddictConstants.ClientAuthenticationMethods.PrivateKeyJwt
+    };
+
+    /// <summary>
     /// Gets the token validation parameters used by the OpenIddict validation services.
     /// </summary>
     public TokenValidationParameters TokenValidationParameters { get; } = new()

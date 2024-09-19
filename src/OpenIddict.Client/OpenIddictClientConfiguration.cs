@@ -97,6 +97,13 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 registration.RegistrationId = Base64UrlEncoder.Encode(algorithm.Hash);
             }
 
+            // Ensure the registration identifier doesn't contain U+001E or U+001F separators as they are
+            // used by the System.Net.Http integration to separate properties in the HTTP client names.
+            else if (registration.RegistrationId.Any(static character => character is '\u001e' or '\u001f'))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0455));
+            }
+
             if (registration.ConfigurationManager is null)
             {
                 if (registration.Configuration is not null)

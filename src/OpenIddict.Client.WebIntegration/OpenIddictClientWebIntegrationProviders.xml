@@ -877,6 +877,12 @@
 
     <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
              Description="The URI used to access the Keycloak identity provider (including the realm, if applicable)" />
+
+    <Setting PropertyName="SigningCertificate" ParameterName="certificate" Type="SigningCertificate" Required="false"
+             Description="The X.509 signing certificate that will be used to authenticate the client when communicating with backchannel endpoints" />
+
+    <Setting PropertyName="SigningKey" ParameterName="key" Type="SigningKey" Required="false"
+             Description="The signing key that will be used to authenticate the client when communicating with backchannel endpoints" />
   </Provider>
 
   <!--
@@ -1116,7 +1122,10 @@
 
     <Environment Issuer="https://login.microsoftonline.com/{settings.Tenant}/v2.0" />
 
-    <Setting PropertyName="Tenant" ParameterName="tenant" Type="String" Required="false" DefaultValue="common"
+    <Setting PropertyName="SigningCertificate" ParameterName="certificate" Type="SigningCertificate" Required="false"
+             Description="The X.509 signing certificate that will be used to authenticate the client when communicating with backchannel endpoints" />
+
+    <Setting PropertyName="Tenant" ParameterName="tenant" Type="String" Required="true" DefaultValue="common"
              Description="The tenant used to identify the Microsoft Entra instance (by default, the common tenant is used)" />
   </Provider>
 
@@ -1389,8 +1398,8 @@
     <Setting PropertyName="AuthenticationLevel" ParameterName="level" Type="String" Required="true" DefaultValue="eidas1"
              Description="The level of authentication requested, sent as part of the 'acr_values' parameter (by default, 'eidas1')" />
 
-    <Setting PropertyName="ClientCertificate" ParameterName="certificate" Type="Certificate" Required="false"
-             Description="The TLS client certificate that will be used with the backchannel endpoints (while not enforced yet, its use is strongly recommended)" />
+    <Setting PropertyName="SigningCertificate" ParameterName="certificate" Type="SigningCertificate" Required="false"
+             Description="The X.509 signing certificate that will be used to authenticate the client when communicating with backchannel endpoints" />
   </Provider>
 
   <!--
