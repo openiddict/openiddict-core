@@ -49,6 +49,9 @@ public static class OpenIddictClientSystemNetHttpExtensions
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<HttpClientFactoryOptions>, OpenIddictClientSystemNetHttpConfiguration>());
 
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictClientSystemNetHttpOptions>, OpenIddictClientSystemNetHttpConfiguration>());
+
         return new OpenIddictClientSystemNetHttpBuilder(builder.Services);
     }
 

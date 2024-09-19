@@ -178,6 +178,8 @@ public static class OpenIddictConstants
         public const string ClientSecretPost = "client_secret_post";
         public const string None = "none";
         public const string PrivateKeyJwt = "private_key_jwt";
+        public const string SelfSignedTlsClientAuth = "self_signed_tls_client_auth";
+        public const string TlsClientAuth = "tls_client_auth";
     }
 
     public static class ClientTypes
@@ -290,6 +292,7 @@ public static class OpenIddictConstants
         public const string IntrospectionEndpointAuthSigningAlgValuesSupported = "introspection_endpoint_auth_signing_alg_values_supported";
         public const string Issuer = "issuer";
         public const string JwksUri = "jwks_uri";
+        public const string MtlsEndpointAliases = "mtls_endpoint_aliases";
         public const string OpPolicyUri = "op_policy_uri";
         public const string OpTosUri = "op_tos_uri";
         public const string RequestObjectEncryptionAlgValuesSupported = "request_object_encryption_alg_values_supported";
@@ -306,6 +309,7 @@ public static class OpenIddictConstants
         public const string ScopesSupported = "scopes_supported";
         public const string ServiceDocumentation = "service_documentation";
         public const string SubjectTypesSupported = "subject_types_supported";
+        public const string TlsClientCertificateBoundAccessTokens = "tls_client_certificate_bound_access_tokens";
         public const string TokenEndpoint = "token_endpoint";
         public const string TokenEndpointAuthMethodsSupported = "token_endpoint_auth_methods_supported";
         public const string TokenEndpointAuthSigningAlgValuesSupported = "token_endpoint_auth_signing_alg_values_supported";
@@ -529,6 +533,12 @@ public static class OpenIddictConstants
     {
         public const string Pairwise = "pairwise";
         public const string Public = "public";
+    }
+
+    public static class TokenBindingMethods
+    {
+        public const string SelfSignedTlsClientCertificate = "self_signed_tls_client_certificate";
+        public const string TlsClientCertificate = "tls_client_certificate";
     }
 
     public static class TokenFormats

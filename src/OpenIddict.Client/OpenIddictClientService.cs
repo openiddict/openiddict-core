@@ -1616,11 +1616,12 @@ public class OpenIddictClientService
     /// <param name="configuration">The server configuration.</param>
     /// <param name="request">The device authorization request.</param>
     /// <param name="uri">The uri of the remote device authorization endpoint.</param>
+    /// <param name="method">The client authentication method, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendDeviceAuthorizationRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri? uri = null, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
@@ -1674,6 +1675,7 @@ public class OpenIddictClientService
                 var context = new PrepareDeviceAuthorizationRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
+                    ClientAuthenticationMethod = method,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
@@ -1790,11 +1792,12 @@ public class OpenIddictClientService
     /// <param name="configuration">The server configuration.</param>
     /// <param name="request">The token request.</param>
     /// <param name="uri">The uri of the remote token endpoint.</param>
+    /// <param name="method">The client authentication method, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the introspection response.</returns>
     internal async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> SendIntrospectionRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
         if (configuration is null)
         {
@@ -1843,6 +1846,7 @@ public class OpenIddictClientService
                 var context = new PrepareIntrospectionRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
+                    ClientAuthenticationMethod = method,
                     Configuration = configuration,
                     Registration = registration,
                     RemoteUri = uri,
@@ -1961,11 +1965,12 @@ public class OpenIddictClientService
     /// <param name="configuration">The server configuration.</param>
     /// <param name="request">The token request.</param>
     /// <param name="uri">The uri of the remote token endpoint.</param>
+    /// <param name="method">The client authentication method, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response extracted from the revocation response.</returns>
     internal async ValueTask<OpenIddictResponse> SendRevocationRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
         if (configuration is null)
         {
@@ -2014,6 +2019,7 @@ public class OpenIddictClientService
                 var context = new PrepareRevocationRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
+                    ClientAuthenticationMethod = method,
                     Configuration = configuration,
                     Registration = registration,
                     RemoteUri = uri,
@@ -2130,11 +2136,12 @@ public class OpenIddictClientService
     /// <param name="configuration">The server configuration.</param>
     /// <param name="request">The token request.</param>
     /// <param name="uri">The uri of the remote token endpoint.</param>
+    /// <param name="method">The client authentication method, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
@@ -2188,6 +2195,7 @@ public class OpenIddictClientService
                 var context = new PrepareTokenRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
+                    ClientAuthenticationMethod = method,
                     Configuration = configuration,
                     Registration = registration,
                     RemoteUri = uri,
@@ -2304,11 +2312,12 @@ public class OpenIddictClientService
     /// <param name="configuration">The server configuration.</param>
     /// <param name="request">The userinfo request.</param>
     /// <param name="uri">The uri of the remote userinfo endpoint.</param>
+    /// <param name="methods">The token binding methods to use, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
     internal async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserInfoRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, HashSet<string> methods, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
@@ -2362,6 +2371,8 @@ public class OpenIddictClientService
                     Registration = registration,
                     Request = request
                 };
+
+                context.TokenBindingMethods.UnionWith(methods);
 
                 await dispatcher.DispatchAsync(context);
 

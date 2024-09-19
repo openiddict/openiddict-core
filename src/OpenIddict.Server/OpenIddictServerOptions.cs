@@ -364,7 +364,11 @@ public sealed class OpenIddictServerOptions
     /// <summary>
     /// Gets the OAuth 2.0 code challenge methods enabled for this application.
     /// </summary>
-    public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal);
+    public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.CodeChallengeMethods.Plain,
+        OpenIddictConstants.CodeChallengeMethods.Sha256
+    };
 
     /// <summary>
     /// Gets the OAuth 2.0/OpenID Connect flows enabled for this application.
@@ -389,7 +393,12 @@ public sealed class OpenIddictServerOptions
     /// Gets the OAuth 2.0/OpenID Connect response modes enabled for this application.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
+    public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.ResponseModes.FormPost,
+        OpenIddictConstants.ResponseModes.Fragment,
+        OpenIddictConstants.ResponseModes.Query
+    };
 
     /// <summary>
     /// Gets the OpenID Connect subject types enabled for this application.

@@ -931,14 +931,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder AllowAuthorizationCodeFlow()
         => Configure(options =>
         {
-            options.CodeChallengeMethods.Add(CodeChallengeMethods.Plain);
-            options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
-
             options.GrantTypes.Add(GrantTypes.AuthorizationCode);
-
-            options.ResponseModes.Add(ResponseModes.FormPost);
-            options.ResponseModes.Add(ResponseModes.Fragment);
-            options.ResponseModes.Add(ResponseModes.Query);
 
             options.ResponseTypes.Add(ResponseTypes.Code);
         });
@@ -984,14 +977,8 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder AllowHybridFlow()
         => Configure(options =>
         {
-            options.CodeChallengeMethods.Add(CodeChallengeMethods.Plain);
-            options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
-
             options.GrantTypes.Add(GrantTypes.AuthorizationCode);
             options.GrantTypes.Add(GrantTypes.Implicit);
-
-            options.ResponseModes.Add(ResponseModes.FormPost);
-            options.ResponseModes.Add(ResponseModes.Fragment);
 
             options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
             options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
@@ -1010,9 +997,6 @@ public sealed class OpenIddictServerBuilder
         {
             options.GrantTypes.Add(GrantTypes.Implicit);
 
-            options.ResponseModes.Add(ResponseModes.FormPost);
-            options.ResponseModes.Add(ResponseModes.Fragment);
-
             options.ResponseTypes.Add(ResponseTypes.IdToken);
             options.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
             options.ResponseTypes.Add(ResponseTypes.Token);
@@ -1024,14 +1008,7 @@ public sealed class OpenIddictServerBuilder
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AllowNoneFlow()
-        => Configure(options =>
-        {
-            options.ResponseModes.Add(ResponseModes.FormPost);
-            options.ResponseModes.Add(ResponseModes.Fragment);
-            options.ResponseModes.Add(ResponseModes.Query);
-
-            options.ResponseTypes.Add(ResponseTypes.None);
-        });
+        => Configure(options => options.ResponseTypes.Add(ResponseTypes.None));
 
     /// <summary>
     /// Enables password flow support. For more information about this specific

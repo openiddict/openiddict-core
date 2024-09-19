@@ -381,11 +381,12 @@ public class OpenIddictValidationService
     /// <param name="configuration">The server configuration.</param>
     /// <param name="request">The token request.</param>
     /// <param name="uri">The uri of the remote token endpoint.</param>
+    /// <param name="method">The client authentication method, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the introspection response.</returns>
     internal async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> SendIntrospectionRequestAsync(
         OpenIddictConfiguration configuration, OpenIddictRequest request,
-        Uri? uri = null, CancellationToken cancellationToken = default)
+        Uri uri, string? method, CancellationToken cancellationToken = default)
     {
         if (configuration is null)
         {
@@ -434,6 +435,7 @@ public class OpenIddictValidationService
                 var context = new PrepareIntrospectionRequestContext(transaction)
                 {
                     CancellationToken = cancellationToken,
+                    ClientAuthenticationMethod = method,
                     RemoteUri = uri,
                     Configuration = configuration,
                     Request = request
