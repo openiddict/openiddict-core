@@ -148,7 +148,11 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(credentials));
         }
 
-        return Configure(options => options.EncryptionCredentials.Add(credentials));
+        return Configure(options => options.EncryptionCredentials =
+            [
+                ..options.EncryptionCredentials,
+                credentials
+            ]);
     }
 
     /// <summary>
@@ -279,11 +283,16 @@ public sealed class OpenIddictServerBuilder
 #endif
             }
 
-            options.EncryptionCredentials.AddRange(
+            var devCredentials =
                 from certificate in certificates
                 let key = new X509SecurityKey(certificate)
                 select new EncryptingCredentials(key, SecurityAlgorithms.RsaOAEP,
-                    SecurityAlgorithms.Aes256CbcHmacSha512));
+                    SecurityAlgorithms.Aes256CbcHmacSha512);
+
+            options.EncryptionCredentials = [
+                ..options.EncryptionCredentials,
+                ..devCredentials,
+            ];
         });
 
         return this;
@@ -467,7 +476,7 @@ public sealed class OpenIddictServerBuilder
         }
 
         return AddEncryptionCertificate(
-            GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
+            GetCertificate(StoreLocation.CurrentUser, thumbprint) ??
             GetCertificate(StoreLocation.LocalMachine, thumbprint) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
 
@@ -517,7 +526,11 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(credentials));
         }
 
-        return Configure(options => options.SigningCredentials.Add(credentials));
+        return Configure(options => options.SigningCredentials =
+            [
+                ..options.SigningCredentials,
+                credentials
+            ]);
     }
 
     /// <summary>
@@ -667,10 +680,15 @@ public sealed class OpenIddictServerBuilder
 #endif
             }
 
-            options.SigningCredentials.AddRange(
+            var devCredentials =
                 from certificate in certificates
                 let key = new X509SecurityKey(certificate)
-                select new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
+                select new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
+
+            options.SigningCredentials = [
+                ..options.SigningCredentials,
+                ..devCredentials,
+            ];
         });
 
         return this;
@@ -883,7 +901,7 @@ public sealed class OpenIddictServerBuilder
         }
 
         return AddSigningCertificate(
-            GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
+            GetCertificate(StoreLocation.CurrentUser, thumbprint) ??
             GetCertificate(StoreLocation.LocalMachine, thumbprint) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
 

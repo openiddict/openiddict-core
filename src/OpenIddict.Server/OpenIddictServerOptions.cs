@@ -25,6 +25,7 @@ public sealed class OpenIddictServerOptions
     /// Gets the list of encryption credentials used by the OpenIddict server services.
     /// Multiple credentials can be added to support key rollover, but if X.509 keys
     /// are used, at least one of them must have a valid creation/expiration date.
+    /// The list is read-only and should be replaced rather than modified.
     /// Note: the encryption credentials are not used to protect/unprotect tokens issued
     /// by ASP.NET Core Data Protection, that uses its own key ring, configured separately.
     /// </summary>
@@ -37,12 +38,13 @@ public sealed class OpenIddictServerOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>
     /// </remarks>
-    public List<EncryptingCredentials> EncryptionCredentials { get; } = [];
+    public IReadOnlyList<EncryptingCredentials> EncryptionCredentials { get; set; } = [];
 
     /// <summary>
     /// Gets the list of signing credentials used by the OpenIddict server services.
     /// Multiple credentials can be added to support key rollover, but if X.509 keys
     /// are used, at least one of them must have a valid creation/expiration date.
+    /// The list is read-only and should be replaced rather than modified.
     /// Note: the signing credentials are not used to protect/unprotect tokens issued
     /// by ASP.NET Core Data Protection, that uses its own key ring, configured separately.
     /// </summary>
@@ -55,7 +57,7 @@ public sealed class OpenIddictServerOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>
     /// </remarks>
-    public List<SigningCredentials> SigningCredentials { get; } = [];
+    public IReadOnlyList<SigningCredentials> SigningCredentials { get; set; } = [];
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the authorization endpoint.
@@ -172,6 +174,14 @@ public sealed class OpenIddictServerOptions
         ValidateAudience = false,
         ValidateLifetime = false
     };
+
+    public TokenValidationParameters CreateTokenValidationParameters()
+    {
+        var parameters = TokenValidationParameters.Clone();
+        parameters.IssuerSigningKeys = SigningCredentials.Select(credentials => credentials.Key).ToList();
+        parameters.TokenDecryptionKeys = EncryptionCredentials.Select(credentials => credentials.Key).ToList();
+        return parameters;
+    }
 
     /// <summary>
     /// Gets or sets the period of time authorization codes remain valid after being issued. The default value is 5 minutes.

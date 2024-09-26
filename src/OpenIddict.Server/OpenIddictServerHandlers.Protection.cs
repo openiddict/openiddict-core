@@ -150,7 +150,7 @@ public static partial class OpenIddictServerHandlers
 
                 TokenValidationParameters GetServerTokenValidationParameters()
                 {
-                    var parameters = context.Options.TokenValidationParameters.Clone();
+                    var parameters = context.Options.CreateTokenValidationParameters();
 
                     parameters.ValidIssuers ??= (context.Options.Issuer ?? context.BaseUri) switch
                     {

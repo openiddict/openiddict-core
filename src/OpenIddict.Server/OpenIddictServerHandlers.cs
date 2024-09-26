@@ -4033,7 +4033,7 @@ public static partial class OpenIddictServerHandlers
                 return default;
             }
 
-            var credentials = context.Options.SigningCredentials.Find(
+            var credentials = context.Options.SigningCredentials.FirstOrDefault(
                 credentials => credentials.Key is AsymmetricSecurityKey) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
 

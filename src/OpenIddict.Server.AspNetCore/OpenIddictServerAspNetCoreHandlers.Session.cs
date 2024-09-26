@@ -110,7 +110,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     return;
                 }
 
-                var parameters = context.Options.TokenValidationParameters.Clone();
+                var parameters = context.Options.CreateTokenValidationParameters();
                 parameters.ValidIssuer ??= (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri;
                 parameters.ValidAudience ??= parameters.ValidIssuer;
                 parameters.ValidTypes = [JsonWebTokenTypes.Private.EndSessionRequest];

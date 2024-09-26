@@ -192,7 +192,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0085));
         }
 
-        if (!options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
+        if (!options.SigningCredentials.Any(static credentials => credentials.Key is AsymmetricSecurityKey))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0086));
         }
@@ -206,14 +206,14 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             .LocalDateTime;
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+        if (options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
         }
 
         // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.SigningCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+        if (options.SigningCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0088));
@@ -390,8 +390,9 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         options.Handlers.Sort(static (left, right) => left.Order.CompareTo(right.Order));
 
         // Sort the encryption and signing credentials.
-        options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
-        options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
+        var keyComparer = Comparer<SecurityKey>.Create((left, right) => Compare(left, right, now));
+        options.EncryptionCredentials = options.EncryptionCredentials.OrderBy(x => x.Key, keyComparer).ToList();
+        options.SigningCredentials = options.SigningCredentials.OrderBy(x => x.Key, keyComparer).ToList();
 
         // Generate a key identifier for the encryption/signing keys that don't already have one.
         foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key)
@@ -400,16 +401,6 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         {
             key.KeyId = GetKeyIdentifier(key);
         }
-
-        // Attach the signing credentials to the token validation parameters.
-        options.TokenValidationParameters.IssuerSigningKeys =
-            from credentials in options.SigningCredentials
-            select credentials.Key;
-
-        // Attach the encryption credentials to the token validation parameters.
-        options.TokenValidationParameters.TokenDecryptionKeys =
-            from credentials in options.EncryptionCredentials
-            select credentials.Key;
 
         static int Compare(SecurityKey left, SecurityKey right, DateTime now) => (left, right) switch
         {
