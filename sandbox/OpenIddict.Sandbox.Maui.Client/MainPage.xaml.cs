@@ -29,9 +29,11 @@ public partial class MainPage : ContentPage
 
     private async void OnLocalLogoutButtonClicked(object sender, EventArgs e)
         => await LogOutAsync("Local");
-
     private async void OnTwitterLoginButtonClicked(object sender, EventArgs e)
-        => await LogInAsync(Providers.Twitter);
+        => await LogInAsync("Local", new()
+        {
+            [Parameters.IdentityProvider] = Providers.Twitter
+        });
 
     private async Task LogInAsync(string provider, Dictionary<string, OpenIddictParameter>? parameters = null)
     {

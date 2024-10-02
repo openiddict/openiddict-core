@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-ios</TargetFramework>
+    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+
+
+	<!-- Fix for exception "Model building is not supported when publishing with NativeAOT. Use a compiled model" thrown by `context.Database.EnsureCreated(); 
+			see: https://github.com/dotnet/maui/issues/23653 -->
+	<PropertyGroup>
+		<MtouchInterpreter>all</MtouchInterpreter>
+		<UseInterpreter>True</UseInterpreter>
+	</PropertyGroup>
+	
+	
+  <ItemGroup>
+    <PackageReference Include="Avalonia.iOS" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Sandbox.Avalonia.Client\OpenIddict.Sandbox.Avalonia.Client.csproj" />
+  </ItemGroup>
+</Project>

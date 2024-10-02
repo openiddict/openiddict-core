@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Sandbox.AspNetCore.Server.Services;
 using Quartz;
+using System.Security.Cryptography;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server;
@@ -100,16 +102,32 @@ public class Startup
             // Register the OpenIddict server components.
             .AddServer(options =>
             {
-                // Enable the authorization, device, introspection, logout,
-                // token, revocation, userinfo and verification endpoints.
-                options.SetAuthorizationEndpointUris("connect/authorize")
-                       .SetDeviceEndpointUris("connect/device")
-                       .SetIntrospectionEndpointUris("connect/introspect")
-                       .SetLogoutEndpointUris("connect/logout")
-                       .SetRevocationEndpointUris("connect/revoke")
-                       .SetTokenEndpointUris("connect/token")
-                       .SetUserinfoEndpointUris("connect/userinfo")
-                       .SetVerificationEndpointUris("connect/verify");
+                // Swap Issuer URL
+                // swap the following lines if you need a fqdn issuer for your mobile app
+                // Uri uri = new Uri("https://vsr1d2md-44349.euw.devtunnels.ms/");
+                Uri uri = null;
+                
+                if(uri != null)
+                    options.SetIssuer(uri);
+                
+                // ensures, that, in case an issuer uri is set and is absolute, it is used for all endpoints (for dev tunnels)
+                // but the relative endpoint must be kept (for local auth via browser)
+                string[] GenerateUris(Uri uri, string relative) => uri switch  {
+                    null => [relative],
+                    Uri {IsAbsoluteUri: false} => [relative],
+                    Uri {IsAbsoluteUri: true} => [new Uri(uri, relative).ToString(), relative]
+                };
+
+                // Enable the authorization, device, introspection,
+                // logout, token, userinfo and verification endpoints.
+                options = options.SetAuthorizationEndpointUris(GenerateUris(uri, "connect/authorize"))
+                       .SetDeviceEndpointUris(GenerateUris(uri, "connect/device"))
+                       .SetIntrospectionEndpointUris(GenerateUris(uri, "connect/introspect"))
+                       .SetLogoutEndpointUris(GenerateUris(uri, "connect/logout"))
+                       .SetTokenEndpointUris(GenerateUris(uri, "connect/token"))
+                       .SetUserinfoEndpointUris(GenerateUris(uri, "connect/userinfo"))
+                       .SetVerificationEndpointUris(GenerateUris(uri, "connect/verify"))
+                       .SetCryptographyEndpointUris(GenerateUris(uri, ".well-known/jwks"));
 
                 // Note: this sample enables all the supported flows but
                 // you can restrict the list of enabled flows if necessary.
@@ -127,6 +145,9 @@ public class Startup
                 // Register the signing and encryption credentials.
                 options.AddDevelopmentEncryptionCertificate()
                        .AddDevelopmentSigningCertificate();
+
+                // Register hard-coded certificates for mobile app support
+                //options.AddCertificatesForMobileApps();
 
                 // Force client applications to use Proof Key for Code Exchange (PKCE).
                 options.RequireProofKeyForCodeExchange();
@@ -242,4 +263,35 @@ public class Startup
         app.UseMvcWithDefaultRoute();
 #endif
     }
+}
+
+internal static class ServiceCollectionExtensions
+{
+    
+    /// <summary>
+    ///     Note: Do not use the following keys in production!
+    ///     there just added so we can authenticate from Android (Maui/Avalonia), iOS (Maui/Avalonia) and Macos, since on these platforms the following does not work
+    ///     
+    ///       options.AddDevelopmentEncryptionCertificate()
+    ///         .AddDevelopmentSigningCertificate();
+    ///     
+    ///     this is because
+    ///     1. Adding an X509 certificate to the system store is not supported (throws on iOS and Android)
+    ///     2. and even if so, it would be a different machine - therefore different store - and client and server would not use the same certificate!
+    /// </summary>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    internal static OpenIddictServerBuilder AddCertificatesForMobileApps(this OpenIddictServerBuilder options)
+    {
+        
+        var privateKeyXml = "<RSAKeyValue><Modulus>uSQBwbidg8/lAw3N3xeWmc9uYQPMHH5fODGmER6uXRzzJaL8upFWXanwts7ILNFOFAWogxQuWaTqu4dUFDVuXhJsdxpT4YZy0+k8QEMyBi6VIenQtKhYgiCgx9RK6cAuXRN1X6iQ2F+3MaenUGxztEOSQ1iJarV7E5od0o0doDl0TcW/wVqnwpAc5j8K/06kICuy1Pb1glHZsF8vzCgTPwdBTAYLGbzJWWxpLNiEFDuvJR6lopSSxKpurvzYXgpZHMZuOUlmQM/XGXjCYctHldAmr+gp8/xtufx3w2/V3gApLS6kWdkA9xazLOt7Xqb2QBGNGbunVzhtGg2rBYdBXQ==</Modulus><Exponent>AQAB</Exponent><P>wiiY1qCfHaiO+FoVpB3OocUYtqI9WvXUV2tk/JIOVuBth5oRg01GMN1cMA085YcwlV1d2RQVqGXdhAKHUwyi73luFQ/yt5ehemPUQPau03Pv8GkySLSGsbwuK+FKpDQ9kdupG1eW6dBt91um4Q1Gtu+GAJ2LkucYRHA2yx6osIs=</P><Q>9BwZ5gtnMw70n/h8NvULco5RxxpfoQ++2D7iQ6rc7i27/k53E0is2L03PP/LR8bV/14z+ixMW6rH7G2d475NIzFTrR4HjZdf+i05Fq7N/xvNCLrUvAd0CWqxYrume0t9zfw62JQtp5IYQ3g9K7DxUwfY9qVwYlZByLkgrUz26rc=</Q><DP>m2n5pVte4lOpVXxudDbzzqPA+3f0WtoKBYvOgym6VqpAolmeCRcSx0x5XXFLPIMxTW42D+w2xdv8K44GmmC0D7KIfk2MwI6cUCaWoQWUvWfBORRLjs0KQDzcTH2CzNuQKS/GNj+vaitPyr9PXjfNUeN6xQVW0tkuoKGeCorZBq8=</DP><DQ>HOd26ZZQEeuja42wp5E8WcQgSsMEr719i31mrTx+DHW93M7NqqrgTImbEM348/bHQAWXgffc0r3WDlisaVsPJyugDM+RdWKHKshQCi+IlLxl+rKknd8EDlljx50QiWjW7J0BGsPw4/aYiOSj2ZiJ+prjRdExDXPJNks1Y0/JrOE=</DQ><InverseQ>g+JNJBZbKFIY5jWZxCeX7TW25KpR498x+0yGJlzCwy23JbBGDupt2tsBnhXr8KuTxSfMOGWtazQeipI//XyLCvV7BohkL6PhzMKKHwAoM/0xNaqA0d5t9Q32OqEn6I+deu4SF4OwMXkQ96xGp0zLlsWnw3HdG2rVtx5KYARMmGA=</InverseQ><D>YA+CqdT0RXQUyyTacKp4hY3PI58oxI/9L9by52cX6VAgCKMsplDKkwad0vwveLGQ5WqaKIjME88xy+NHiMTAYycECDgs1ZNA+RrHHEDBL9vznQkINPQ0GDB9u7E2vVnttHVoLR31KY9gKe9nLJ9Y2WtF9JN3mVpYZa9NUfXOLVc+zs6ChwqfryfrkgQGHZXNFtwYhG4KuOLkrQy2S4etJEWn+NMbJVYEmy1Sg99BZs4eyi0666B30ofUsx6GwyCa9IXgDm4cJnUDQu0ZEGNU7LX+p9lFym13DkWt4z9TuE3QeOSr7jHEQz1CdE8a4zsqdf3TKP2Fl05+URL35kr/MQ==</D></RSAKeyValue>";
+        var rsa = RSA.Create(2048);
+        rsa.FromXmlString(privateKeyXml);
+
+        options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String("DRjd/GnduI3Efzen9V9BvbNUfc/VKgXltV7Kbk9sMkY=")));
+        options.AddSigningKey(new RsaSecurityKey(rsa));
+
+        return options;
+    }
+
 }

@@ -67,7 +67,7 @@ public static class MauiProgram
                 // Add a client registration matching the client application definition in the server project.
                 options.AddRegistration(new OpenIddictClientRegistration
                 {
-                    Issuer = new Uri("https://localhost:44395/", UriKind.Absolute),
+                    Issuer = new Uri("https://localhost:44349/", UriKind.Absolute),
                     ProviderName = "Local",
 
                     ClientId = "maui",
@@ -93,7 +93,7 @@ public static class MauiProgram
                        .AddTwitter(options =>
                        {
                            options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
-                                   // Note: Twitter doesn't support the recommended ":/" syntax and requires using "://".
+                                  // Note: Twitter doesn't support the recommended ":/" syntax and requires using "://".
                                   .SetRedirectUri("com.openiddict.sandbox.maui.client://callback/login/twitter");
                        });
             });

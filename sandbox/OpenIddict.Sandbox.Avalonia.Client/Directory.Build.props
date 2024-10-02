@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <AvaloniaVersion>11.1.3</AvaloniaVersion>
+    <_SuppressSdkImports>True</_SuppressSdkImports>
+  </PropertyGroup>
+</Project>
