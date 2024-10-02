@@ -72,9 +72,9 @@ public sealed class OpenIddictConfiguration
     public JsonWebKeySet? JsonWebKeySet { get; set; }
 
     /// <summary>
-    /// Gets or sets the URI of the JSON Web Key Set endpoint.
+    /// Gets or sets the URI of the JSON Web Key Set.
     /// </summary>
-    public Uri? JwksUri { get; set; }
+    public Uri? JsonWebKeySetUri { get; set; }
 
     /// <summary>
     /// Gets or sets the URI of the mTLS-enabled device authorization endpoint.
