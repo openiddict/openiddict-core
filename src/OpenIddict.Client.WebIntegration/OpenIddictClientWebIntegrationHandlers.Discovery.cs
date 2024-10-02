@@ -426,7 +426,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Configuration.AuthorizationEndpoint =
                         new Uri("https://www.sandbox.paypal.com/signin/authorize", UriKind.Absolute);
-                    context.Configuration.JwksUri =
+                    context.Configuration.JsonWebKeySetUri =
                         new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/certs", UriKind.Absolute);
                     context.Configuration.RevocationEndpoint =
                         new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/revoke", UriKind.Absolute);

@@ -257,7 +257,7 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                context.Configuration.JwksUri = uri;
+                context.Configuration.JsonWebKeySetUri = uri;
 
                 return default;
             }

@@ -345,7 +345,7 @@ public static partial class OpenIddictClientHandlers
                     return default;
                 }
 
-                context.Configuration.JwksUri = uri;
+                context.Configuration.JsonWebKeySetUri = uri;
 
                 return default;
             }
