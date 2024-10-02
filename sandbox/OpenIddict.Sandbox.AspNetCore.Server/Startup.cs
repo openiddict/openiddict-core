@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Sandbox.AspNetCore.Server.Services;
 using Quartz;
+using System.Security.Cryptography;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server;
@@ -100,6 +102,9 @@ public class Startup
             // Register the OpenIddict server components.
             .AddServer(options =>
             {
+                // Set Issuer URL
+                //options.SetIssuer(new Uri("https://vsr1d2md-44395.euw.devtunnels.ms/"));
+                
                 // Enable the authorization, device, introspection, logout,
                 // token, revocation, userinfo and verification endpoints.
                 options.SetAuthorizationEndpointUris("connect/authorize")

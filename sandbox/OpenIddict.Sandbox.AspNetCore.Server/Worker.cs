@@ -143,6 +143,47 @@ public class Worker : IHostedService
                     }
                 });
             }
+            
+            if (await manager.FindByClientIdAsync("avalonia") is null)
+            {
+                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ApplicationType = ApplicationTypes.Native,
+                    ClientId = "avalonia",
+                    ClientType = ClientTypes.Public,
+                    ConsentType = ConsentTypes.Systematic,
+                    DisplayName = "Avalonia client application",
+                    DisplayNames =
+                    {
+                        [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente avalonia"
+                    },
+                    PostLogoutRedirectUris =
+                    {
+                        new Uri("com.openiddict.sandbox.avalonia.client:/callback/logout/local")
+                    },
+                    RedirectUris =
+                    {
+                        new Uri("com.openiddict.sandbox.avalonia.client:/callback/login/local")
+                    },
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Logout,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.ResponseTypes.Code,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+                        Permissions.Scopes.Roles,
+                        Permissions.Prefixes.Scope + "demo_api"
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    }
+                });
+            }
 
             if (await manager.FindByClientIdAsync("mvc") is null)
             {
