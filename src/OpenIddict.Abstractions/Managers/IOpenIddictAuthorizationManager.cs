@@ -395,6 +395,22 @@ public interface IOpenIddictAuthorizationManager
     ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Revokes all the authorizations associated with the specified application identifier.
+    /// </summary>
+    /// <param name="identifier">The application identifier associated with the authorizations.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of authorizations associated with the specified application that were marked as revoked.</returns>
+    ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Revokes all the authorizations associated with the specified subject.
+    /// </summary>
+    /// <param name="subject">The subject associated with the authorizations.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of authorizations associated with the specified subject that were marked as revoked.</returns>
+    ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Tries to revoke an authorization.
     /// </summary>
     /// <param name="authorization">The authorization to revoke.</param>

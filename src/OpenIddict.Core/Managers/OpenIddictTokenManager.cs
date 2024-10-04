@@ -1056,6 +1056,22 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         => Store.PruneAsync(threshold, cancellationToken);
 
     /// <summary>
+    /// Revokes all the tokens associated with the specified application identifier.
+    /// </summary>
+    /// <param name="identifier">The application identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified application that were marked as revoked.</returns>
+    public virtual ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        return Store.RevokeByApplicationIdAsync(identifier, cancellationToken);
+    }
+
+    /// <summary>
     /// Revokes all the tokens associated with the specified authorization identifier.
     /// </summary>
     /// <param name="identifier">The authorization identifier associated with the tokens.</param>
@@ -1069,6 +1085,22 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         }
 
         return Store.RevokeByAuthorizationIdAsync(identifier, cancellationToken);
+    }
+
+    /// <summary>
+    /// Revokes all the tokens associated with the specified subject.
+    /// </summary>
+    /// <param name="subject">The subject associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified subject that were marked as revoked.</returns>
+    public virtual ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(subject));
+        }
+
+        return Store.RevokeBySubjectAsync(subject, cancellationToken);
     }
 
     /// <summary>
@@ -1502,8 +1534,16 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         => PruneAsync(threshold, cancellationToken);
 
     /// <inheritdoc/>
+    ValueTask<long> IOpenIddictTokenManager.RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
+        => RevokeByApplicationIdAsync(identifier, cancellationToken);
+
+    /// <inheritdoc/>
     ValueTask<long> IOpenIddictTokenManager.RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
         => RevokeByAuthorizationIdAsync(identifier, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<long> IOpenIddictTokenManager.RevokeBySubjectAsync(string subject, CancellationToken cancellationToken)
+        => RevokeBySubjectAsync(subject, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<bool> IOpenIddictTokenManager.TryRedeemAsync(object token, CancellationToken cancellationToken)

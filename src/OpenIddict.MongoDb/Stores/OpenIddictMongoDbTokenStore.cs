@@ -587,6 +587,24 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
     }
 
     /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+        return (await collection.UpdateManyAsync(
+            filter           : token => token.ApplicationId == ObjectId.Parse(identifier),
+            update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
+            options          : null,
+            cancellationToken: cancellationToken)).MatchedCount;
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
@@ -599,6 +617,24 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
 
         return (await collection.UpdateManyAsync(
             filter           : token => token.AuthorizationId == ObjectId.Parse(identifier),
+            update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
+            options          : null,
+            cancellationToken: cancellationToken)).MatchedCount;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(subject));
+        }
+
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+        return (await collection.UpdateManyAsync(
+            filter           : token => token.Subject == subject,
             update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
             options          : null,
             cancellationToken: cancellationToken)).MatchedCount;
