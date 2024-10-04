@@ -327,12 +327,28 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Revokes all the tokens associated with the specified application identifier.
+    /// </summary>
+    /// <param name="identifier">The application identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified application that were marked as revoked.</returns>
+    ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Revokes all the tokens associated with the specified authorization identifier.
     /// </summary>
     /// <param name="identifier">The authorization identifier associated with the tokens.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The number of tokens associated with the specified authorization that were marked as revoked.</returns>
     ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Revokes all the tokens associated with the specified subject.
+    /// </summary>
+    /// <param name="subject">The subject associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified subject that were marked as revoked.</returns>
+    ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the application identifier associated with a token.

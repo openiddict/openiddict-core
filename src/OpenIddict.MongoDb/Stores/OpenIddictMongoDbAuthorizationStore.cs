@@ -550,6 +550,42 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
     }
 
     /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+        return (await collection.UpdateManyAsync(
+            filter           : authorization => authorization.ApplicationId == ObjectId.Parse(identifier),
+            update           : Builders<TAuthorization>.Update.Set(authorization => authorization.Status, Statuses.Revoked),
+            options          : null,
+            cancellationToken: cancellationToken)).MatchedCount;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(subject));
+        }
+
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+        return (await collection.UpdateManyAsync(
+            filter           : authorization => authorization.Subject == subject,
+            update           : Builders<TAuthorization>.Update.Set(authorization => authorization.Status, Statuses.Revoked),
+            options          : null,
+            cancellationToken: cancellationToken)).MatchedCount;
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask SetApplicationIdAsync(TAuthorization authorization,
         string? identifier, CancellationToken cancellationToken)
     {

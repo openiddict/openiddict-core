@@ -800,6 +800,124 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
     }
 
     /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        var key = ConvertIdentifierFromString(identifier);
+
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+        if (!Options.CurrentValue.DisableBulkOperations)
+        {
+            return await (
+                from authorization in Authorizations
+                where authorization.Application!.Id!.Equals(key)
+                select authorization).ExecuteUpdateAsync(entity => entity.SetProperty(
+                    authorization => authorization.Status, Statuses.Revoked), cancellationToken);
+
+            // Note: calling DbContext.SaveChangesAsync() is not necessary
+            // with bulk update operations as they are executed immediately.
+        }
+#endif
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        foreach (var authorization in await (from authorization in Authorizations
+                                             where authorization.Application!.Id!.Equals(key)
+                                             select authorization).ToListAsync(cancellationToken))
+        {
+            authorization.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(authorization).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(subject));
+        }
+
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+        if (!Options.CurrentValue.DisableBulkOperations)
+        {
+            return await (
+                from authorization in Authorizations
+                where authorization.Subject == subject
+                select authorization).ExecuteUpdateAsync(entity => entity.SetProperty(
+                    authorization => authorization.Status, Statuses.Revoked), cancellationToken);
+
+            // Note: calling DbContext.SaveChangesAsync() is not necessary
+            // with bulk update operations as they are executed immediately.
+        }
+#endif
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        foreach (var authorization in await (from authorization in Authorizations
+                                             where authorization.Subject == subject
+                                             select authorization).ToListAsync(cancellationToken))
+        {
+            authorization.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(authorization).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask SetApplicationIdAsync(TAuthorization authorization,
         string? identifier, CancellationToken cancellationToken)
     {
