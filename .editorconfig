@@ -97,6 +97,7 @@ csharp_using_directive_placement = outside_namespace
 dotnet_code_quality_unused_parameters = all
 dotnet_diagnostic.CA1510.severity = none
 dotnet_diagnostic.CA2254.severity = none
+dotnet_diagnostic.IDE0002.severity = none
 dotnet_diagnostic.IDE0305.severity = none
 dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
 dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i

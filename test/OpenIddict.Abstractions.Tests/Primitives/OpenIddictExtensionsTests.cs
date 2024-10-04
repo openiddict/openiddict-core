@@ -225,7 +225,7 @@ public class OpenIddictExtensionsTests
         // Act and assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
         {
-            request.HasPrompt(Prompts.Consent);
+            request.HasPrompt(PromptValues.Consent);
         });
 
         Assert.Equal("request", exception.ParamName);
@@ -277,7 +277,7 @@ public class OpenIddictExtensionsTests
         };
 
         // Act and assert
-        Assert.Equal(result, request.HasPrompt(Prompts.Consent));
+        Assert.Equal(result, request.HasPrompt(PromptValues.Consent));
     }
 
     [Fact]

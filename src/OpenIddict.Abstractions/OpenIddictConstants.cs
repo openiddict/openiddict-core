@@ -295,6 +295,7 @@ public static class OpenIddictConstants
         public const string MtlsEndpointAliases = "mtls_endpoint_aliases";
         public const string OpPolicyUri = "op_policy_uri";
         public const string OpTosUri = "op_tos_uri";
+        public const string PromptValuesSupported = "prompt_values_supported";
         public const string RequestObjectEncryptionAlgValuesSupported = "request_object_encryption_alg_values_supported";
         public const string RequestObjectEncryptionEncValuesSupported = "request_object_encryption_enc_values_supported";
         public const string RequestObjectSigningAlgValuesSupported = "request_object_signing_alg_values_supported";
@@ -430,9 +431,10 @@ public static class OpenIddictConstants
         }
     }
 
-    public static class Prompts
+    public static class PromptValues
     {
         public const string Consent = "consent";
+        public const string Create = "create";
         public const string Login = "login";
         public const string None = "none";
         public const string SelectAccount = "select_account";

@@ -41,6 +41,7 @@ public static partial class OpenIddictServerHandlers
             AttachScopes.Descriptor,
             AttachClaims.Descriptor,
             AttachSubjectTypes.Descriptor,
+            AttachPromptValues.Descriptor,
             AttachSigningAlgorithms.Descriptor,
             AttachAdditionalMetadata.Descriptor,
 
@@ -250,6 +251,7 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.IdTokenSigningAlgValuesSupported] = notification.IdTokenSigningAlgorithms.ToArray(),
                     [Metadata.CodeChallengeMethodsSupported] = notification.CodeChallengeMethods.ToArray(),
                     [Metadata.SubjectTypesSupported] = notification.SubjectTypes.ToArray(),
+                    [Metadata.PromptValuesSupported] = notification.PromptValues.ToArray(),
                     [Metadata.TokenEndpointAuthMethodsSupported] = notification.TokenEndpointAuthenticationMethods.ToArray(),
                     [Metadata.IntrospectionEndpointAuthMethodsSupported] = notification.IntrospectionEndpointAuthenticationMethods.ToArray(),
                     [Metadata.RevocationEndpointAuthMethodsSupported] = notification.RevocationEndpointAuthenticationMethods.ToArray(),
@@ -674,6 +676,35 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for attaching the supported prompt values to the provider discovery document.
+        /// </summary>
+        public sealed class AttachPromptValues : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
+                    .UseSingletonHandler<AttachPromptValues>()
+                    .SetOrder(AttachSubjectTypes.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                context.PromptValues.UnionWith(context.Options.PromptValues);
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for attaching the supported signing algorithms to the provider discovery document.
         /// </summary>
         public sealed class AttachSigningAlgorithms : IOpenIddictServerHandler<HandleConfigurationRequestContext>
@@ -684,7 +715,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                     .UseSingletonHandler<AttachSigningAlgorithms>()
-                    .SetOrder(AttachSubjectTypes.Descriptor.Order + 1_000)
+                    .SetOrder(AttachPromptValues.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

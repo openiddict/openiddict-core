@@ -167,6 +167,11 @@ public static partial class OpenIddictServerEvents
         public HashSet<string> IntrospectionEndpointAuthenticationMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets the list of prompt values supported by the authorization server.
+        /// </summary>
+        public HashSet<string> PromptValues { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the list of response modes
         /// supported by the authorization server.
         /// </summary>

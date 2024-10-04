@@ -1634,10 +1634,31 @@ public sealed class OpenIddictServerBuilder
 
         if (Array.Exists(claims, string.IsNullOrEmpty))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0073), nameof(claims));
+            throw new ArgumentException(SR.FormatID0457(nameof(claims)), nameof(claims));
         }
 
         return Configure(options => options.Claims.UnionWith(claims));
+    }
+
+    /// <summary>
+    /// Registers the specified prompt values as supported scopes so
+    /// they can be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="values">The supported prompt values.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RegisterPromptValues(params string[] values)
+    {
+        if (values is null)
+        {
+            throw new ArgumentNullException(nameof(values));
+        }
+
+        if (Array.Exists(values, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(values)), nameof(values));
+        }
+
+        return Configure(options => options.PromptValues.UnionWith(values));
     }
 
     /// <summary>
@@ -1655,7 +1676,7 @@ public sealed class OpenIddictServerBuilder
 
         if (Array.Exists(scopes, string.IsNullOrEmpty))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
+            throw new ArgumentException(SR.FormatID0457(nameof(scopes)), nameof(scopes));
         }
 
         return Configure(options => options.Scopes.UnionWith(scopes));
