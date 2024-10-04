@@ -376,6 +376,19 @@ public sealed class OpenIddictServerOptions
     public HashSet<string> GrantTypes { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets the OpenID Connect prompt values enabled for this application.
+    /// </summary>
+    public HashSet<string> PromptValues { get; } = new(StringComparer.Ordinal)
+    {
+        // By default, only include the mandatory values defined in the core OpenID Connect specification.
+        // See https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
+        OpenIddictConstants.PromptValues.Consent,
+        OpenIddictConstants.PromptValues.Login,
+        OpenIddictConstants.PromptValues.None,
+        OpenIddictConstants.PromptValues.SelectAccount
+    };
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether PKCE must be used by client applications
     /// when requesting an authorization code (e.g when using the code or hybrid flows).
     /// If this property is set to <see langword="true"/>, authorization requests that

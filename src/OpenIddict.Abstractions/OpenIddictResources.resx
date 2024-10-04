@@ -365,12 +365,6 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
   <data name="ID0072" xml:space="preserve">
     <value>Endpoint URIs must be valid URIs.</value>
   </data>
-  <data name="ID0073" xml:space="preserve">
-    <value>Claims cannot be null or empty.</value>
-  </data>
-  <data name="ID0074" xml:space="preserve">
-    <value>Scopes cannot be null or empty.</value>
-  </data>
   <data name="ID0075" xml:space="preserve">
     <value>The security token handler cannot be null.</value>
   </data>
@@ -1704,6 +1698,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0456" xml:space="preserve">
     <value>The specified client authentication method/token binding methods combination is not valid.</value>
   </data>
+  <data name="ID0457" xml:space="preserve">
+    <value>The '{0}' parameter cannot contain null or empty values.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2379,7 +2376,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The authorization request was rejected because the '{Scope}' scope was missing.</value>
   </data>
   <data name="ID6040" xml:space="preserve">
-    <value>The authorization request was rejected because an invalid prompt parameter was specified.</value>
+    <value>The authorization request was rejected because an invalid prompt combination was specified.</value>
   </data>
   <data name="ID6041" xml:space="preserve">
     <value>The authorization request was rejected because the specified code challenge method was not supported.</value>
@@ -2891,6 +2888,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6232" xml:space="preserve">
     <value>An error was returned by ASWebAuthenticationSession while trying to start a sign-out operation.</value>
+  </data>
+  <data name="ID6233" xml:space="preserve">
+    <value>The authorization request was rejected because an unsupported prompt parameter was specified.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

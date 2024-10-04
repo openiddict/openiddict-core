@@ -875,10 +875,33 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                if (string.IsNullOrEmpty(context.Request.Prompt))
+                {
+                    return default;
+                }
+
+                // Reject requests specifying an unsupported prompt value.
+                // See https://openid.net/specs/openid-connect-prompt-create-1_0.html#section-4.1 for more information.
+                foreach (var value in context.Request.GetPrompts().ToHashSet(StringComparer.Ordinal))
+                {
+                    if (!context.Options.PromptValues.Contains(value))
+                    {
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6233));
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2032(Parameters.Prompt),
+                            uri: SR.FormatID8000(SR.ID2032));
+
+                        return default;
+                    }
+                }
+
                 // Reject requests specifying prompt=none with consent/login or select_account.
-                if (context.Request.HasPrompt(Prompts.None) && (context.Request.HasPrompt(Prompts.Consent) ||
-                                                                context.Request.HasPrompt(Prompts.Login) ||
-                                                                context.Request.HasPrompt(Prompts.SelectAccount)))
+                // See https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
+                if (context.Request.HasPrompt(PromptValues.None) && (context.Request.HasPrompt(PromptValues.Consent) ||
+                                                                     context.Request.HasPrompt(PromptValues.Login) ||
+                                                                     context.Request.HasPrompt(PromptValues.SelectAccount)))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6040));
 

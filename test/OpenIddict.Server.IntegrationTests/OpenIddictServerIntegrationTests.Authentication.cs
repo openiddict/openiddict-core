@@ -383,14 +383,17 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(SR.ID2034), response.ErrorUri);
     }
 
-    [Theory]
-    [InlineData("none consent")]
-    [InlineData("none login")]
-    [InlineData("none select_account")]
-    public async Task ValidateAuthorizationRequest_InvalidPromptCausesAnError(string prompt)
+    [Fact]
+    public async Task ValidateAuthorizationRequest_UnsupportedPromptCausesAnError()
     {
         // Arrange
-        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.Configure(options => options.PromptValues.Remove(PromptValues.SelectAccount));
+        });
+
         await using var client = await server.CreateClientAsync();
 
         // Act
@@ -398,7 +401,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             ClientId = "Fabrikam",
             Nonce = "n-0S6_WzA2Mj",
-            Prompt = prompt,
+            Prompt = PromptValues.SelectAccount,
             RedirectUri = "http://www.fabrikam.com/path",
             ResponseType = "code id_token token",
             Scope = Scopes.OpenId
@@ -406,8 +409,8 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal(Errors.InvalidRequest, response.Error);
-        Assert.Equal(SR.FormatID2052(Parameters.Prompt), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
+        Assert.Equal(SR.FormatID2032(Parameters.Prompt), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
     }
 
     [Theory]

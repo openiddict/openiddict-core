@@ -811,6 +811,30 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("custom", Assert.Single(types));
     }
 
+    [Fact]
+    public async Task HandleConfigurationRequest_SupportedPromptValuesAreCorrectlyReturned()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.PromptValues.Remove(PromptValues.Consent));
+            options.Configure(options => options.PromptValues.Remove(PromptValues.Login));
+            options.Configure(options => options.PromptValues.Remove(PromptValues.None));
+            options.Configure(options => options.PromptValues.Remove(PromptValues.SelectAccount));
+            options.Configure(options => options.PromptValues.Add("custom"));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+        var types = (string[]?) response[Metadata.PromptValuesSupported];
+
+        // Assert
+        Assert.NotNull(types);
+        Assert.Equal("custom", Assert.Single(types));
+    }
+
     [Theory]
     [InlineData(Algorithms.RsaSha256)]
     [InlineData(Algorithms.RsaSha384)]
