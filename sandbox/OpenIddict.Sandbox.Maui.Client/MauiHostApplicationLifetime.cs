@@ -1,5 +1,4 @@
-﻿#if IOS || MACCATALYST || WINDOWS
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 
 namespace OpenIddict.Sandbox.Maui.Client;
 
@@ -19,4 +18,3 @@ public class MauiHostApplicationLifetime : IHostApplicationLifetime
         Environment.Exit(0);
     }
 }
-#endif

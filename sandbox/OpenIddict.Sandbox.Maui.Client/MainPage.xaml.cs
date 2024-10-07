@@ -1,4 +1,4 @@
-﻿#if IOS || MACCATALYST || WINDOWS
+﻿using System.Globalization;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -6,7 +6,6 @@ using static OpenIddict.Abstractions.OpenIddictExceptions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Sandbox.Maui.Client;
-
 public partial class MainPage : ContentPage
 {
     private readonly OpenIddictClientService _service;
@@ -33,6 +32,14 @@ public partial class MainPage : ContentPage
     private async void OnTwitterLoginButtonClicked(object sender, EventArgs e)
         => await LogInAsync(Providers.Twitter);
 
+    
+    private void OnCancelButtonClicked(object sender, EventArgs e)
+    {
+        _source?.Cancel();
+    }
+
+    private CancellationTokenSource? _source = null;
+
     private async Task LogInAsync(string provider, Dictionary<string, OpenIddictParameter>? parameters = null)
     {
         // Disable the buttons to prevent concurrent operations.
@@ -40,10 +47,12 @@ public partial class MainPage : ContentPage
         LocalLoginWithGitHub.IsEnabled = false;
         LocalLogout.IsEnabled = false;
         TwitterLogin.IsEnabled = false;
+        LoginForm.Opacity = 0.2d;
+        ProgressView.IsVisible = true;
 
         try
         {
-            using var source = new CancellationTokenSource(delay: TimeSpan.FromSeconds(90));
+            _source = new CancellationTokenSource();
 
             try
             {
@@ -51,14 +60,14 @@ public partial class MainPage : ContentPage
                 var result = await _service.ChallengeInteractivelyAsync(new()
                 {
                     AdditionalAuthorizationRequestParameters = parameters,
-                    CancellationToken = source.Token,
+                    CancellationToken = _source.Token,
                     ProviderName = provider
                 });
 
                 // Wait for the user to complete the authorization process.
                 var principal = (await _service.AuthenticateInteractivelyAsync(new()
                 {
-                    CancellationToken = source.Token,
+                    CancellationToken = _source.Token,
                     Nonce = result.Nonce
                 })).Principal;
 
@@ -88,6 +97,9 @@ public partial class MainPage : ContentPage
             LocalLoginWithGitHub.IsEnabled = true;
             LocalLogout.IsEnabled = true;
             TwitterLogin.IsEnabled = true;
+            LoginForm.Opacity = 1d;
+            ProgressView.IsVisible = false;
+            _source?.Dispose();
         }
     }
 
@@ -147,4 +159,3 @@ public partial class MainPage : ContentPage
         }
     }
 }
-#endif

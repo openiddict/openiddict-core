@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks Condition=" '$(SupportsWindowsTargeting)' == 'true' ">net9.0-windows10.0.19041</TargetFrameworks>
     <TargetFrameworks Condition=" '$(SupportsIOSTargeting)' == 'true' ">$(TargetFrameworks);net9.0-ios17.5</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(SupportsAndroidTargeting)' == 'true' ">$(TargetFrameworks);net9.0-android35</TargetFrameworks>
     <TargetFrameworks Condition=" '$(SupportsMacCatalystTargeting)' == 'true' ">$(TargetFrameworks);net9.0-maccatalyst17.5</TargetFrameworks>
     <UseMaui Condition=" '$(TargetFrameworks)' != '' ">true</UseMaui>
     <TargetFrameworks Condition=" '$(TargetFrameworks)' == '' ">net9.0</TargetFrameworks>
