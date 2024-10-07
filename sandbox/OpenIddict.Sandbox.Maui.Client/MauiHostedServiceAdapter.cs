@@ -1,5 +1,4 @@
-﻿#if IOS || MACCATALYST || WINDOWS
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 
 namespace OpenIddict.Sandbox.Maui.Client;
 
@@ -13,4 +12,3 @@ public class MauiHostedServiceAdapter : IMauiInitializeService
     public void Initialize(IServiceProvider services)
         => Task.Run(() => _service.StartAsync(CancellationToken.None)).GetAwaiter().GetResult();
 }
-#endif

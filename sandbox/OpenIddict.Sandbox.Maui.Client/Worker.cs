@@ -1,5 +1,4 @@
-﻿#if IOS || MACCATALYST || WINDOWS
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace OpenIddict.Sandbox.Maui.Client;
 
@@ -11,4 +10,3 @@ public class Worker : IMauiInitializeScopedService
         context.Database.EnsureCreated();
     }
 }
-#endif
