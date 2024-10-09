@@ -93,7 +93,7 @@ public static class MauiProgram
                        .AddTwitter(options =>
                        {
                            options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
-                                   // Note: Twitter doesn't support the recommended ":/" syntax and requires using "://".
+                                  // Note: Twitter doesn't support the recommended ":/" syntax and requires using "://".
                                   .SetRedirectUri("com.openiddict.sandbox.maui.client://callback/login/twitter");
                        });
             });

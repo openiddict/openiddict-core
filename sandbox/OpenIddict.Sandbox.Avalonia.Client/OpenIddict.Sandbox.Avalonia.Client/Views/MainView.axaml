@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:OpenIddict.Sandbox.Avalonia.Client.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OpenIddict.Sandbox.Avalonia.Client.Views.MainView"
+             x:DataType="vm:MainViewModel">
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainViewModel />
+    </Design.DataContext>
+    <UserControl.Resources>
+        <vm:BoolToOpacityConverter x:Key="boolToOpacityConverter"/>
+    </UserControl.Resources>
+
+    <ScrollViewer>
+        <Grid>
+            <StackPanel Spacing="25" VerticalAlignment="Center" Opacity="{Binding IsEnabled, Converter={StaticResource boolToOpacityConverter}}">
+
+                <TextBlock
+                    Text="Hello, World!"
+                    FontSize="32"
+                    HorizontalAlignment="Center" />
+
+                <TextBlock
+                    x:Name="Message"
+                    Text="Welcome to Avalonia!"
+                    FontSize="18"
+                    HorizontalAlignment="Center" />
+
+                <Button
+                    x:Name="LocalLogin"
+                    Content="Log in using the local server"
+                    HorizontalAlignment="Center"
+                    Command="{Binding LoginCommand}" />
+
+                <Button
+                    x:Name="LocalLoginWithGitHub"
+                    Content="Log in using the local server (preferred service: GitHub)"
+                    HorizontalAlignment="Center"
+                    Command="{Binding LoginWithGithubCommand}"/>
+
+                <Button
+                    x:Name="LocalLogout"
+                    Content="Log out from the local server"
+                    HorizontalAlignment="Center"
+                    Command="{Binding LogoutCommand}" />
+
+            </StackPanel>
+            <StackPanel Spacing="25" VerticalAlignment="Center"
+                        IsVisible="{Binding !IsEnabled}">
+                <ProgressBar IsIndeterminate="true"
+                             HorizontalAlignment="Center"  />
+                <Button Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        HorizontalAlignment="Center"  />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+
+</UserControl>
