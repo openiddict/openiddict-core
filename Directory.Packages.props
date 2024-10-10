@@ -242,8 +242,8 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.3"  />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.3"  />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14" />
-    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0" />
-    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0" />
+    <PackageVersion Include="MongoDB.Bson"                                                    Version="[2.20.0, 3.0.0)" />
+    <PackageVersion Include="MongoDB.Driver"                                                  Version="[2.20.0, 3.0.0)" />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"  />
 
     <!--
@@ -289,8 +289,8 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.0.2"   />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.0.2"   />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="8.0.8"   />
-    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"  />
-    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"  />
+    <PackageVersion Include="MongoDB.Bson"                                                    Version="[2.20.0, 3.0.0)" />
+    <PackageVersion Include="MongoDB.Driver"                                                  Version="[2.20.0, 3.0.0)" />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"   />
     <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.4" />
 
@@ -337,8 +337,8 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.0.2"                   />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.0.2"                   />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="9.0.0-rc.1.24452.1"      />
-    <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"                  />
-    <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"                  />
+    <PackageVersion Include="MongoDB.Bson"                                                    Version="[2.20.0, 3.0.0)"         />
+    <PackageVersion Include="MongoDB.Driver"                                                  Version="[2.20.0, 3.0.0)"         />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"                   />
     <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.4"                 />
 
