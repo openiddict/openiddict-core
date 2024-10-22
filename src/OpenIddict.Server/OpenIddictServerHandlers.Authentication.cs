@@ -882,7 +882,7 @@ public static partial class OpenIddictServerHandlers
 
                 // Reject requests specifying an unsupported prompt value.
                 // See https://openid.net/specs/openid-connect-prompt-create-1_0.html#section-4.1 for more information.
-                foreach (var value in context.Request.GetPrompts().ToHashSet(StringComparer.Ordinal))
+                foreach (var value in context.Request.GetPromptValues().ToHashSet(StringComparer.Ordinal))
                 {
                     if (!context.Options.PromptValues.Contains(value))
                     {
@@ -899,9 +899,9 @@ public static partial class OpenIddictServerHandlers
 
                 // Reject requests specifying prompt=none with consent/login or select_account.
                 // See https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
-                if (context.Request.HasPrompt(PromptValues.None) && (context.Request.HasPrompt(PromptValues.Consent) ||
-                                                                     context.Request.HasPrompt(PromptValues.Login) ||
-                                                                     context.Request.HasPrompt(PromptValues.SelectAccount)))
+                if (context.Request.HasPromptValue(PromptValues.None) && (context.Request.HasPromptValue(PromptValues.Consent) ||
+                                                                          context.Request.HasPromptValue(PromptValues.Login) ||
+                                                                          context.Request.HasPromptValue(PromptValues.SelectAccount)))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6040));
 
