@@ -64,7 +64,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
-        return await ((IMongoQueryable<TApplication>) query(collection.AsQueryable())).LongCountAsync(cancellationToken);
+        return await query(collection.AsQueryable()).LongCountAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -209,7 +209,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
-        return await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).FirstOrDefaultAsync(cancellationToken);
+        return await query(collection.AsQueryable(), state).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -441,7 +441,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
-        var query = (IMongoQueryable<TApplication>) collection.AsQueryable().OrderBy(application => application.Id);
+        var query = (IQueryable<TApplication>) collection.AsQueryable().OrderBy(application => application.Id);
 
         if (offset.HasValue)
         {

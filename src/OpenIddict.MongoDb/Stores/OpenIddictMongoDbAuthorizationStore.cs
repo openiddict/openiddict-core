@@ -62,7 +62,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-        return await ((IMongoQueryable<TAuthorization>) query(collection.AsQueryable())).LongCountAsync(cancellationToken);
+        return await query(collection.AsQueryable()).LongCountAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -351,7 +351,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-        return await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).FirstOrDefaultAsync(cancellationToken);
+        return await query(collection.AsQueryable(), state).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -476,7 +476,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-        var query = (IMongoQueryable<TAuthorization>) collection.AsQueryable().OrderBy(authorization => authorization.Id);
+        var query = (IQueryable<TAuthorization>) collection.AsQueryable().OrderBy(authorization => authorization.Id);
 
         if (offset.HasValue)
         {

@@ -2,13 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>
-      $(NetFrameworkTargetFrameworks);
+      net472;
+      net48;
       $(NetCoreTargetFrameworks);
-      $(NetStandardTargetFrameworks)
+      netstandard2.1
     </TargetFrameworks>
     <DisablePolySharp>true</DisablePolySharp>
-    <SignAssembly>false</SignAssembly>
-    <PublicSign>false</PublicSign>
     <IncludeInternalExtensions>false</IncludeInternalExtensions>
   </PropertyGroup>
 
