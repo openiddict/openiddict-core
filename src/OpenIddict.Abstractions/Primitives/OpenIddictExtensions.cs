@@ -39,7 +39,7 @@ public static class OpenIddictExtensions
     /// Extracts the prompt values from an <see cref="OpenIddictRequest"/>.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    public static ImmutableArray<string> GetPrompts(this OpenIddictRequest request)
+    public static ImmutableArray<string> GetPromptValues(this OpenIddictRequest request)
     {
         if (request is null)
         {
@@ -102,7 +102,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <param name="prompt">The component to look for in the parameter.</param>
-    public static bool HasPrompt(this OpenIddictRequest request, string prompt)
+    public static bool HasPromptValue(this OpenIddictRequest request, string prompt)
     {
         if (request is null)
         {

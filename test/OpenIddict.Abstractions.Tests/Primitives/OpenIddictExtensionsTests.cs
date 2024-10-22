@@ -49,13 +49,13 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
-    public void GetPrompts_ThrowsAnExceptionForNullRequest()
+    public void GetPromptValues_ThrowsAnExceptionForNullRequest()
     {
         // Arrange
         var request = (OpenIddictRequest) null!;
 
         // Act
-        var exception = Assert.Throws<ArgumentNullException>(() => request.GetPrompts());
+        var exception = Assert.Throws<ArgumentNullException>(() => request.GetPromptValues());
 
         // Assert
         Assert.Equal("request", exception.ParamName);
@@ -72,7 +72,7 @@ public class OpenIddictExtensionsTests
     [InlineData(" login consent", new[] { "login", "consent" })]
     [InlineData("login login consent", new[] { "login", "consent" })]
     [InlineData("login LOGIN consent", new[] { "login", "LOGIN", "consent" })]
-    public void GetPrompts_ReturnsExpectedPrompts(string value, string[] values)
+    public void GetPromptValues_ReturnsExpectedPrompts(string value, string[] values)
     {
         // Arrange
         var request = new OpenIddictRequest
@@ -81,7 +81,7 @@ public class OpenIddictExtensionsTests
         };
 
         // Act and assert
-        Assert.Equal(values, request.GetPrompts());
+        Assert.Equal(values, request.GetPromptValues());
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
-    public void HasPrompt_ThrowsAnExceptionForNullRequest()
+    public void HasPromptValue_ThrowsAnExceptionForNullRequest()
     {
         // Arrange
         var request = (OpenIddictRequest) null!;
@@ -225,7 +225,7 @@ public class OpenIddictExtensionsTests
         // Act and assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
         {
-            request.HasPrompt(PromptValues.Consent);
+            request.HasPromptValue(PromptValues.Consent);
         });
 
         Assert.Equal("request", exception.ParamName);
@@ -234,13 +234,13 @@ public class OpenIddictExtensionsTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void HasPrompt_ThrowsAnExceptionForNullOrEmptyPrompt(string prompt)
+    public void HasPromptValue_ThrowsAnExceptionForNullOrEmptyPrompt(string prompt)
     {
         // Arrange
         var request = new OpenIddictRequest();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => request.HasPrompt(prompt));
+        var exception = Assert.Throws<ArgumentException>(() => request.HasPromptValue(prompt));
 
         Assert.Equal("prompt", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0178), exception.Message);
@@ -268,7 +268,7 @@ public class OpenIddictExtensionsTests
     [InlineData("LOGIN    CONSENT   SELECT_ACCOUNT ", false)]
     [InlineData("LOGIN", false)]
     [InlineData("LOGIN SELECT_ACCOUNT", false)]
-    public void HasPrompt_ReturnsExpectedResult(string prompt, bool result)
+    public void HasPromptValue_ReturnsExpectedResult(string prompt, bool result)
     {
         // Arrange
         var request = new OpenIddictRequest
@@ -277,7 +277,7 @@ public class OpenIddictExtensionsTests
         };
 
         // Act and assert
-        Assert.Equal(result, request.HasPrompt(PromptValues.Consent));
+        Assert.Equal(result, request.HasPromptValue(PromptValues.Consent));
     }
 
     [Fact]
