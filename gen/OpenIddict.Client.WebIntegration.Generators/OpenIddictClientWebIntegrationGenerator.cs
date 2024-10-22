@@ -52,6 +52,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -222,6 +223,22 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             }
 
             return Set(registration => registration.Scopes.UnionWith(scopes));
+        }
+
+        /// <summary>
+        /// Sets the issuer that will be attached to the <see cref=""Claim""/>
+        /// instances created by the OpenIddict client stack for this provider.
+        /// </summary>
+        /// <param name=""issuer"">The claims issuer.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} SetClaimsIssuer(string issuer)
+        {
+            if (string.IsNullOrEmpty(issuer))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(issuer));
+            }
+
+            return Set(registration => registration.ClaimsIssuer = issuer);
         }
 
         /// <summary>

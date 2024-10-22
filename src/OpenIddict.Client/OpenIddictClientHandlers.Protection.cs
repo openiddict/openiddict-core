@@ -399,15 +399,42 @@ public static partial class OpenIddictClientHandlers
                     token = token.InnerToken;
                 }
 
-                // Clone the identity and remove OpenIddict-specific claims from tokens that are not fully trusted.
-                var identity = result.ClaimsIdentity.Clone(claim => claim switch
-                {
-                    // Exclude claims starting with "oi_", unless the token is a state token.
-                    { Type: string type } when type.StartsWith(Claims.Prefixes.Private) &&
-                        result.TokenType is not JsonWebTokenTypes.Private.StateToken => false,
+                ClaimsIdentity identity;
 
-                    _ => true // Allow any other claim.
-                });
+                // If the token is not a state token and a different claims issuer value was set,
+                // override the issuer attached to all the claims returned by IdentityModel.
+                if (result.TokenType is not JsonWebTokenTypes.Private.StateToken &&
+                    (context.Registration.ClaimsIssuer ?? context.Registration.ProviderName) is { Length: > 0 } issuer &&
+                    !string.Equals(issuer, context.Registration.Issuer?.AbsoluteUri, StringComparison.Ordinal))
+                {
+                    identity = new ClaimsIdentity(
+                        result.ClaimsIdentity.AuthenticationType,
+                        result.ClaimsIdentity.NameClaimType,
+                        result.ClaimsIdentity.RoleClaimType);
+
+                    foreach (var claim in result.ClaimsIdentity.Claims)
+                    {
+                        // Exclude claims starting with "oi_" from tokens that are not fully trusted.
+                        if (claim.Type.StartsWith(Claims.Prefixes.Private))
+                        {
+                            continue;
+                        }
+
+                        identity.AddClaim(new Claim(claim.Type, claim.Value, claim.ValueType, issuer, issuer, identity));
+                    }
+                }
+
+                else
+                {
+                    identity = result.ClaimsIdentity.Clone(claim => claim switch
+                    {
+                        // Exclude claims starting with "oi_", unless the token is a state token.
+                        { Type: string type } when type.StartsWith(Claims.Prefixes.Private) &&
+                            result.TokenType is not JsonWebTokenTypes.Private.StateToken => false,
+
+                        _ => true // Allow any other claim.
+                    });
+                }
 
                 if (context.ValidTokenTypes.Contains(TokenTypeHints.StateToken))
                 {

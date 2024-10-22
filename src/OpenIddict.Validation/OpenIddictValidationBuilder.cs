@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
@@ -663,6 +664,22 @@ public sealed class OpenIddictValidationBuilder
         }
 
         return Configure(options => options.Configuration = configuration);
+    }
+
+    /// <summary>
+    /// Sets the issuer that will be attached to the <see cref="Claim"/>
+    /// instances created by the OpenIddict validation stack.
+    /// </summary>
+    /// <param name="issuer">The claims issuer.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder SetClaimsIssuer(string issuer)
+    {
+        if (string.IsNullOrEmpty(issuer))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(issuer));
+        }
+
+        return Configure(options => options.ClaimsIssuer = issuer);
     }
 
     /// <summary>

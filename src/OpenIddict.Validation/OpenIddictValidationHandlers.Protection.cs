@@ -334,9 +334,32 @@ public static partial class OpenIddictValidationHandlers
                     return;
                 }
 
+                ClaimsIdentity identity;
+
+                // If a different claims issuer value was set, override the
+                // issuer attached to all the claims returned by IdentityModel.
+                if (context.Options.ClaimsIssuer is { Length: > 0 } issuer &&
+                    !string.Equals(issuer, (context.Configuration.Issuer ?? context.BaseUri)?.AbsoluteUri, StringComparison.Ordinal))
+                {
+                    identity = new ClaimsIdentity(
+                        result.ClaimsIdentity.AuthenticationType,
+                        result.ClaimsIdentity.NameClaimType,
+                        result.ClaimsIdentity.RoleClaimType);
+
+                    foreach (var claim in result.ClaimsIdentity.Claims)
+                    {
+                        identity.AddClaim(new Claim(claim.Type, claim.Value, claim.ValueType, issuer, issuer, identity));
+                    }
+                }
+
+                else
+                {
+                    identity = result.ClaimsIdentity;
+                }
+
                 // Attach the principal extracted from the token to the parent event context and store
                 // the token type (resolved from "typ" or "token_usage") as a special private claim.
-                context.Principal = new ClaimsPrincipal(result.ClaimsIdentity).SetTokenType(result.TokenType switch
+                context.Principal = new ClaimsPrincipal(identity).SetTokenType(result.TokenType switch
                 {
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 

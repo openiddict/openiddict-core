@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
 
@@ -112,6 +113,16 @@ public sealed class OpenIddictClientRegistration
     /// the client options, the server configuration and the values registered in this property.
     /// </remarks>
     public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets or sets the issuer that will be attached to the <see cref="Claim"/>
+    /// instances created by the OpenIddict client stack for this registration.
+    /// </summary>
+    /// <remarks>
+    /// Note: if this property is not explicitly set, the provider name (if set)
+    /// or the issuer URI are automatically used as a fallback value.
+    /// </remarks>
+    public string? ClaimsIssuer { get; set; }
 
     /// <summary>
     /// Gets or sets the URI of the authorization server.
