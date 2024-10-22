@@ -1255,6 +1255,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Registration.TokenValidationParameters.NameClaimType,
                 context.Registration.TokenValidationParameters.RoleClaimType);
 
+            // Resolve the issuer that will be attached to the claims created by this handler.
+            var issuer = context.Registration.ClaimsIssuer ??
+                         context.Registration.ProviderName ??
+                         context.Registration.Issuer.AbsoluteUri;
+
             foreach (var parameter in parameters)
             {
                 // Note: in the typical case, the response parameters should be deserialized from a
@@ -1269,11 +1274,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // Top-level claims represented as arrays are split and mapped to multiple CLR claims
                     // to match the logic implemented by IdentityModel for JWT token deserialization.
                     case { ValueKind: JsonValueKind.Array } value:
-                        identity.AddClaims(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
+                        identity.AddClaims(parameter.Key, value, issuer);
                         break;
 
                     case { ValueKind: _ } value:
-                        identity.AddClaim(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
+                        identity.AddClaim(parameter.Key, value, issuer);
                         break;
                 }
             }
@@ -1323,7 +1328,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // Note: a similar event handler exists in OpenIddict.Client to map these claims from
             // the standard OpenID Connect claim types (see MapStandardWebServicesFederationClaims).
 
-            var issuer = context.Registration.Issuer.AbsoluteUri;
+            var issuer = context.Registration.ClaimsIssuer ??
+                         context.Registration.ProviderName ??
+                         context.Registration.Issuer.AbsoluteUri;
 
             context.MergedPrincipal.SetClaim(ClaimTypes.Email, issuer: issuer, value: context.Registration.ProviderType switch
             {

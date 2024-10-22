@@ -397,7 +397,8 @@ public static partial class OpenIddictValidationHandlers
                     context.Options.TokenValidationParameters.RoleClaimType);
 
                 // Resolve the issuer that will be attached to the claims created by this handler.
-                var issuer = context.Configuration.Issuer?.AbsoluteUri ??
+                var issuer = context.Options.ClaimsIssuer ??
+                             context.Configuration.Issuer?.AbsoluteUri ??
                              context.BaseUri?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
 
                 foreach (var parameter in context.Response.GetParameters())

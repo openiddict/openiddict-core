@@ -4333,7 +4333,9 @@ public static partial class OpenIddictClientHandlers
             // Note: a similar event handler exists in OpenIddict.Client.WebIntegration to map these claims
             // from non-standard/provider-specific claim types (see MapCustomWebServicesFederationClaims).
 
-            var issuer = context.Registration.Issuer.AbsoluteUri;
+            var issuer = context.Registration.ClaimsIssuer ??
+                         context.Registration.ProviderName ??
+                         context.Registration.Issuer.AbsoluteUri;
 
             context.MergedPrincipal
                 .SetClaim(ClaimTypes.Email,          context.MergedPrincipal.GetClaim(Claims.Email),             issuer)
@@ -6799,7 +6801,9 @@ public static partial class OpenIddictClientHandlers
             // WS-Federation equivalent, this handler is responsible for mapping the standard OAuth 2.0 introspection nodes
             // defined by https://datatracker.ietf.org/doc/html/rfc7662#section-2.2 to their WS-Federation equivalent.
 
-            var issuer = context.Registration.Issuer.AbsoluteUri;
+            var issuer = context.Registration.ClaimsIssuer ??
+                         context.Registration.ProviderName ??
+                         context.Registration.Issuer.AbsoluteUri;
 
             context.Principal
                 .SetClaim(ClaimTypes.Name,           context.Principal.GetClaim(Claims.Username), issuer)

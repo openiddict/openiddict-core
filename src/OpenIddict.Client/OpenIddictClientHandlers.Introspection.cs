@@ -406,6 +406,11 @@ public static partial class OpenIddictClientHandlers
                         nameType: ClaimTypes.Name,
                         roleType: ClaimTypes.Role);
 
+                // Resolve the issuer that will be attached to the claims created by this handler.
+                var issuer = context.Registration.ClaimsIssuer ??
+                             context.Registration.ProviderName ??
+                             context.Registration.Issuer.AbsoluteUri;
+
                 foreach (var parameter in context.Response.GetParameters())
                 {
                     // Always exclude null keys as they can't be represented as valid claims.
@@ -439,11 +444,11 @@ public static partial class OpenIddictClientHandlers
                         // Top-level claims represented as arrays are split and mapped to multiple CLR claims
                         // to match the logic implemented by IdentityModel for JWT token deserialization.
                         case { ValueKind: JsonValueKind.Array } value:
-                            identity.AddClaims(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
+                            identity.AddClaims(parameter.Key, value, issuer);
                             break;
 
                         case { ValueKind: _ } value:
-                            identity.AddClaim(parameter.Key, value, context.Registration.Issuer.AbsoluteUri);
+                            identity.AddClaim(parameter.Key, value, issuer);
                             break;
                     }
                 }

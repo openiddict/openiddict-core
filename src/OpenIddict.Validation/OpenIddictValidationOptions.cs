@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
@@ -101,6 +102,16 @@ public sealed class OpenIddictValidationOptions
     /// is required when the OpenIddict server emits reference tokens.
     /// </summary>
     public bool EnableTokenEntryValidation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the issuer that will be attached to the <see cref="Claim"/>
+    /// instances created by the OpenIddict validation stack.
+    /// </summary>
+    /// <remarks>
+    /// Note: if this property is not explicitly set, the
+    /// issuer URI is automatically used as a fallback value.
+    /// </remarks>
+    public string? ClaimsIssuer { get; set; }
 
     /// <summary>
     /// Gets or sets the absolute URI of the OAuth 2.0/OpenID Connect server.
