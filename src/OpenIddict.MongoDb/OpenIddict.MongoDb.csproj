@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>
-      $(NetFrameworkTargetFrameworks);
+      net472;
+      net48;
       $(NetCoreTargetFrameworks);
-      $(NetStandardTargetFrameworks)
+      netstandard2.1
     </TargetFrameworks>
-    <SignAssembly>false</SignAssembly>
-    <PublicSign>false</PublicSign>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" NoWarn="NU1901;NU1902;NU1903;NU1904" />
+    <PackageReference Include="MongoDB.Driver" />
   </ItemGroup>
 
   <ItemGroup>
