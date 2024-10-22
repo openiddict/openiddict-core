@@ -21,7 +21,7 @@
 
   <ItemGroup Label="Package versions for .NET Framework 4.6.2"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '4.6.2')) ">
-    <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.3.1"           />
+    <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.4.0"           />
     <PackageVersion Include="EntityFramework"                                                 Version="6.4.4"           />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication"                             Version="2.1.2"           />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection"                             Version="2.1.1"           />
@@ -46,7 +46,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6"          />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"           />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"           />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"          />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"           />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"           />
 
@@ -78,7 +78,7 @@
 
   <ItemGroup Label="Package versions for .NET Framework 4.7.2"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '4.7.2')) ">
-    <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.3.1"           />
+    <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.4.0"           />
     <PackageVersion Include="EntityFramework"                                                 Version="6.4.4"           />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication"                             Version="2.1.2"           />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection"                             Version="2.1.1"           />
@@ -103,7 +103,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6"          />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"           />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"           />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"          />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"           />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"           />
 
@@ -135,7 +135,7 @@
 
   <ItemGroup Label="Package versions for .NET Framework 4.8"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '4.8')) ">
-    <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.3.1"           />
+    <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.4.0"           />
     <PackageVersion Include="EntityFramework"                                                 Version="6.4.4"           />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication"                             Version="2.1.2"           />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection"                             Version="2.1.1"           />
@@ -160,7 +160,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6"          />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6"          />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"           />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"           />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"          />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"           />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"           />
 
@@ -206,7 +206,7 @@
     <PackageVersion Include="Microsoft.Owin.Security.OAuth"                                   Version="4.2.2"           />
     <PackageVersion Include="Microsoft.Web.Infrastructure"                                    Version="2.0.1"           />
     <PackageVersion Include="Newtonsoft.Json"                                                 Version="13.0.3"          />
-    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.5.0"           />
+    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.13.0"          />
     <PackageVersion Include="Spectre.Console"                                                 Version="0.48.0"          />
     <PackageVersion Include="WebGrease"                                                       Version="1.6.0"           />
 
@@ -244,7 +244,7 @@
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14" />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0" />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0" />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"  />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0" />
 
     <!--
       Note: the following references are exclusively used in the test projects:
@@ -285,13 +285,13 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="8.0.2"   />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="8.0.0"   />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="8.0.10"  />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.0.2"   />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.0.2"   />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.0.2"   />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.1.2"   />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.1.2"   />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.1.2"   />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="8.0.10"  />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"  />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"  />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"   />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"  />
     <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.6" />
 
     <!--
@@ -333,13 +333,13 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="9.0.0-rc.2.24473.5"      />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="9.0.0-rc.2.24473.5"      />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="9.0.0-rc.2.24474.3"      />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.0.2"                   />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.0.2"                   />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.0.2"                   />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.1.2"                   />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.1.2"                   />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.1.2"                   />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="9.0.0-rc.2.24474.3"      />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.20.0"                  />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.20.0"                  />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"                   />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"                  />
     <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.6"                 />
 
     <!--
@@ -364,7 +364,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug"                              Version="9.0.0-rc.2.24473.5"      />
     <PackageVersion Include="Microsoft.Maui.Controls"                                         Version="9.0.0-rc.2.24503.2"      />
     <PackageVersion Include="Microsoft.Maui.Controls.Compatibility"                           Version="9.0.0-rc.2.24503.2"      />
-    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.5.0"                   />
+    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.13.0"                  />
     <PackageVersion Include="Spectre.Console"                                                 Version="0.48.0"                  />
 
     <!--
@@ -408,7 +408,7 @@
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6" />
     <PackageVersion Include="NamedPipeServerStream.NetFrameworkVersion"                       Version="1.1.7"  />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"  />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"  />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0" />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"  />
     <PackageVersion Include="System.ComponentModel.Annotations"                               Version="4.7.0"  />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"  />
@@ -418,7 +418,7 @@
     -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers"                                Version="3.3.4"  />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp"                                   Version="3.11.0" />
-    <PackageVersion Include="Scriban"                                                         Version="5.9.1"  />
+    <PackageVersion Include="Scriban"                                                         Version="5.10.0" />
     <PackageVersion Include="System.Interactive"                                              Version="4.1.1"  />
 
     <!--
@@ -457,7 +457,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6" />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6" />
     <PackageVersion Include="NamedPipeServerStream.NetFrameworkVersion"                       Version="1.1.7"  />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"  />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0" />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"  />
     <PackageVersion Include="System.ComponentModel.Annotations"                               Version="4.7.0"  />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"  />
