@@ -25,6 +25,7 @@ To use the client feature on ASP.NET Core or OWIN/Katana, reference the OpenIddi
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
   </ItemGroup>
 
   <ItemGroup>
