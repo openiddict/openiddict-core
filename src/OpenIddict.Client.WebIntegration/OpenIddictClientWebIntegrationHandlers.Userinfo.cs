@@ -413,7 +413,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),
 
                     // These providers return a nested "user" object.
-                    ProviderTypes.Fitbit or ProviderTypes.Todoist or ProviderTypes.VkId or ProviderTypes.Zendesk
+                    ProviderTypes.Fitbit or ProviderTypes.Todoist or ProviderTypes.VkId or ProviderTypes.Zendesk or ProviderTypes.Discord
                         => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
 
