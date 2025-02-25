@@ -22,7 +22,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              * Revocation request preparation:
              */
             MapNonStandardRequestParameters.Descriptor,
-            AttachNonStandardParameters.Descriptor,
             OverrideHttpMethod.Descriptor,
             AttachBearerAccessToken.Descriptor,
 
@@ -63,40 +62,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.AccessToken = context.Token;
                     context.Request.Token = null;
                     context.Request.TokenTypeHint = null;
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for attaching non-standard
-        /// parameters to the request for the providers that require it.
-        /// </summary>
-        public sealed class AttachNonStandardParameters : IOpenIddictClientHandler<PrepareRevocationRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareRevocationRequestContext>()
-                    .UseSingletonHandler<AttachNonStandardParameters>()
-                    .SetOrder(AttachHttpParameters<PrepareRevocationRequestContext>.Descriptor.Order - 250)
-                    .SetType(OpenIddictClientHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareRevocationRequestContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // Alibaba Cloud requires attaching the "client_id" parameter to revocation requests.
-                if (context.Registration.ProviderType is ProviderTypes.AlibabaCloud)
-                {
-                    context.Request.ClientId = context.Registration.ClientId;
                 }
 
                 return default;
