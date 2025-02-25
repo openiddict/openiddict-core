@@ -93,6 +93,12 @@
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="Global"
              Description="The Alibaba Cloud (Aliyun) service region ('Global' for the global Alibaba Cloud by default, or can be set to 'CN' for Aliyun)" />
+
+    <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
+             Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
+
+    <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="false"
+             Description="The value used as the 'prompt' parameter (can be set to 'admin_consent' to force the display of the authorization page)" />
   </Provider>
 
   <!--
