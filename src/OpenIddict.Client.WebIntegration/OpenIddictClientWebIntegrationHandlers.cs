@@ -1859,7 +1859,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetActiveDirectoryFederationServicesSettings();
 
-                context.Request["resource"] = settings.Resource;
+                context.Request.Resources = [settings.Resource];
             }
 
             // By default, Alibaba Cloud doesn't return a refresh token for native applications but allows sending an
@@ -1871,7 +1871,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetAlibabaCloudSettings();
 
                 context.Request["access_type"] = settings.AccessType;
-                context.Request["prompt"] = settings.Prompt;
+                context.Request.Prompt = settings.Prompt;
             }
 
             // Atlassian requires sending an "audience" parameter (by default, "api.atlassian.com").
@@ -1911,7 +1911,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetHuaweiSettings();
 
                 context.Request["access_type"] = settings.AccessType;
-                context.Request["display"] = settings.Display;
+                context.Request.Display = settings.Display;
             }
 
             // By default, MusicBrainz doesn't return a refresh token but allows sending an "access_type"
@@ -1968,7 +1968,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetWeiboSettings();
 
-                context.Request["display"] = settings.Display;
+                context.Request.Display = settings.Display;
                 context.Request["forcelogin"] = settings.ForceLogin;
                 context.Request["language"] = settings.Language;
             }
