@@ -357,21 +357,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Response.RefreshToken = null;
                 }
 
+                // Note: Alibaba Cloud and Exact Online returns a non-standard "expires_in"
+                // parameter formatted as a string instead of a numeric type.
+                if (context.Registration.ProviderType is ProviderTypes.AlibabaCloud or ProviderTypes.ExactOnline &&
+                         long.TryParse((string?) context.Response[Parameters.ExpiresIn],
+                             NumberStyles.Integer, CultureInfo.InvariantCulture, out long value))
+                {
+                    context.Response.ExpiresIn = value;
+                }
+
                 // Note: Deezer doesn't return a standard "expires_in" parameter
                 // but returns an equivalent "expires" integer parameter instead.
-                if (context.Registration.ProviderType is ProviderTypes.Deezer)
+                else if (context.Registration.ProviderType is ProviderTypes.Deezer)
                 {
                     context.Response[Parameters.ExpiresIn] = context.Response["expires"];
                     context.Response["expires"] = null;
-                }
-
-                // Note: Exact Online returns a non-standard "expires_in"
-                // parameter formatted as a string instead of a numeric type.
-                else if (context.Registration.ProviderType is ProviderTypes.ExactOnline &&
-                    long.TryParse((string?) context.Response[Parameters.ExpiresIn],
-                        NumberStyles.Integer, CultureInfo.InvariantCulture, out long value))
-                {
-                    context.Response.ExpiresIn = value;
                 }
 
                 // Note: Huawei returns a non-standard "error" parameter as a numeric value, which is not allowed
