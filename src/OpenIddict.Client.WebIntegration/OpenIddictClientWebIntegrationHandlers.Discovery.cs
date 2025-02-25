@@ -108,8 +108,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // types is amended to include the known supported types for the providers that require it.
 
                 if (context.Registration.ProviderType is
-                    ProviderTypes.Apple    or ProviderTypes.FaceIt or
-                    ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline)
+                    ProviderTypes.AlibabaCloud or ProviderTypes.Apple            or ProviderTypes.FaceIt or
+                    ProviderTypes.LinkedIn     or ProviderTypes.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
