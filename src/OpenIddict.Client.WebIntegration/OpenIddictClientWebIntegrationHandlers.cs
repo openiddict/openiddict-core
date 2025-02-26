@@ -1859,7 +1859,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetActiveDirectoryFederationServicesSettings();
 
-                context.Request[Parameters.Resource] = settings.Resource;
+                if (!string.IsNullOrEmpty(settings.Resource))
+                {
+                    context.Request.Resources = [settings.Resource];
+                }
             }
 
             // By default, Alibaba Cloud doesn't return a refresh token for native applications but allows sending an
