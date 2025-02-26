@@ -108,8 +108,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // types is amended to include the known supported types for the providers that require it.
 
                 if (context.Registration.ProviderType is
-                    ProviderTypes.AlibabaCloud or ProviderTypes.Apple            or ProviderTypes.FaceIt or
-                    ProviderTypes.LinkedIn     or ProviderTypes.QuickBooksOnline)
+                    ProviderTypes.AlibabaCloud or ProviderTypes.Apple    or
+                    ProviderTypes.FaceIt       or ProviderTypes.LinkedIn or
+                    ProviderTypes.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
@@ -250,7 +251,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // While it is a recommended node, these providers don't include "scopes_supported" in their
                 // configuration and thus are treated as OAuth 2.0-only providers by the OpenIddict client.
                 // To avoid that, the "openid" scope is manually added to indicate OpenID Connect is supported.
-                else if (context.Registration.ProviderType is ProviderTypes.EpicGames or ProviderTypes.Xero or ProviderTypes.EveOnline)
+                else if (context.Registration.ProviderType is
+                    ProviderTypes.EpicGames or ProviderTypes.EveOnline or ProviderTypes.Xero)
                 {
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
                 }

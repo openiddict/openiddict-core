@@ -1853,13 +1853,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Active Directory Federation Services allows sending a custom "resource"
+            // Active Directory Federation Services allows sending an optional custom "resource"
             // parameter to define what API resources the access token will give access to.
             if (context.Registration.ProviderType is ProviderTypes.ActiveDirectoryFederationServices)
             {
                 var settings = context.Registration.GetActiveDirectoryFederationServicesSettings();
 
-                context.Request.Resources = [settings.Resource];
+                context.Request[Parameters.Resource] = settings.Resource;
             }
 
             // By default, Alibaba Cloud doesn't return a refresh token for native applications but allows sending an
