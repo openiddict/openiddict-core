@@ -1853,13 +1853,28 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Active Directory Federation Services allows sending a custom "resource"
+            // Active Directory Federation Services allows sending an optional custom "resource"
             // parameter to define what API resources the access token will give access to.
             if (context.Registration.ProviderType is ProviderTypes.ActiveDirectoryFederationServices)
             {
                 var settings = context.Registration.GetActiveDirectoryFederationServicesSettings();
 
-                context.Request["resource"] = settings.Resource;
+                if (!string.IsNullOrEmpty(settings.Resource))
+                {
+                    context.Request.Resources = [settings.Resource];
+                }
+            }
+
+            // By default, Alibaba Cloud doesn't return a refresh token for native applications but allows sending an
+            // "access_type" parameter to retrieve one (but it is only returned during the first authorization dance).
+            // The documentation also indicates the "prompt" parameter is supported but not required,
+            // which can be set to "admin_consent" to force the display of the authorization page
+            if (context.Registration.ProviderType is ProviderTypes.AlibabaCloud)
+            {
+                var settings = context.Registration.GetAlibabaCloudSettings();
+
+                context.Request["access_type"] = settings.AccessType;
+                context.Request.Prompt = settings.Prompt;
             }
 
             // Atlassian requires sending an "audience" parameter (by default, "api.atlassian.com").
@@ -1899,7 +1914,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetHuaweiSettings();
 
                 context.Request["access_type"] = settings.AccessType;
-                context.Request["display"] = settings.Display;
+                context.Request.Display = settings.Display;
             }
 
             // By default, MusicBrainz doesn't return a refresh token but allows sending an "access_type"
@@ -1956,7 +1971,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetWeiboSettings();
 
-                context.Request["display"] = settings.Display;
+                context.Request.Display = settings.Display;
                 context.Request["forcelogin"] = settings.ForceLogin;
                 context.Request["language"] = settings.Language;
             }

@@ -75,6 +75,33 @@
   </Provider>
 
   <!--
+                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                            █ ▄▄▀██ ████▄ ▄██ ▄▄▀█ ▄▄▀██ ▄▄▀█ ▄▄▀████ ▄▄▀██ █████ ▄▄▄ ██ ██ ██ ▄▄▀██
+                            █ ▀▀ ██ █████ ███ ▄▄▀█ ▀▀ ██ ▄▄▀█ ▀▀ ████ █████ █████ ███ ██ ██ ██ ██ ██
+                            █ ██ ██ ▀▀ █▀ ▀██ ▀▀ █ ██ ██ ▀▀ █ ██ ████ ▀▀▄██ ▀▀ ██ ▀▀▀ ██▄▀▀▄██ ▀▀ ██
+                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="AlibabaCloud" DisplayName="Alibaba Cloud (Aliyun)" Id="078caf87-3c5b-46aa-a8af-31e7cb2f4b7a"
+            Documentation="https://www.alibabacloud.com/help/en/ram/user-guide/oauth-management/">
+    <!--
+      Note: Alibaba Cloud serves global users, but it is known as Aliyun in China, which has a separate issuer and domain.
+    -->
+
+    <Environment Issuer="https://oauth.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'aliyun' : 'alibabacloud')}.com/"
+                 ConfigurationEndpoint="https://oauth.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'aliyun' : 'alibabacloud')}.com/.well-known/openid-configuration" />
+
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="Global"
+             Description="The Alibaba Cloud (Aliyun) service region ('Global' for the global Alibaba Cloud by default, or can be set to 'CN' for Aliyun)" />
+
+    <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
+             Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
+
+    <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="false"
+             Description="The value used as the 'prompt' parameter (can be set to 'admin_consent' to force the display of the authorization page)" />
+  </Provider>
+
+  <!--
                                             ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                             █ ▄▄▀██ ▄▀▄ █ ▄▄▀██ ▄▄▄ ██ ▄▄▄ ██ ▀██ ██
                                             █ ▀▀ ██ █ █ █ ▀▀ ██▀▀▀▄▄██ ███ ██ █ █ ██
