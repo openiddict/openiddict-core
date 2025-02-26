@@ -404,17 +404,8 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                // For consistency with authorization requests, the client_id parameter
-                // is also required when using a request_uri parameter is present.
-                if (string.IsNullOrEmpty(context.Request.ClientId))
-                {
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2037(Parameters.RequestUri, Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2037));
-
-                    return default;
-                }
+                // Note: unlike authorization requests, the client_id parameter is not required for end
+                // session requests and may not be present in the original request before it is cached.
 
                 return default;
             }
