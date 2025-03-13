@@ -1,0 +1,109 @@
+<Solution>
+
+  <Folder Name="/eng/">
+    <File Path="eng/AfterTargetFrameworkInference.targets" />
+    <File Path="eng/Build.props" />
+    <File Path="eng/key.snk" />
+    <File Path="eng/Signing.props" />
+    <File Path="eng/Tools.props" />
+    <File Path="eng/Version.Details.xml" />
+    <File Path="eng/Versions.props" />
+    <File Path="eng/_._" />
+  </Folder>
+
+  <Folder Name="/gen/">
+    <Project Path="gen/OpenIddict.Client.WebIntegration.Generators/OpenIddict.Client.WebIntegration.Generators.csproj" />
+  </Folder>
+
+  <Folder Name="/root/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="Build.cmd" />
+    <File Path="build.sh" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE.md" />
+    <File Path="NuGet.config" />
+    <File Path="package-icon.png" />
+    <File Path="README.md" />
+    <File Path="WorkloadRollback.json" />
+  </Folder>
+
+  <Folder Name="/sandbox/">
+    <Project Path="sandbox/OpenIddict.Sandbox.AspNet.Client/OpenIddict.Sandbox.AspNet.Client.csproj" />
+    <Project Path="sandbox/OpenIddict.Sandbox.AspNet.Server/OpenIddict.Sandbox.AspNet.Server.csproj" />
+    <Project Path="sandbox/OpenIddict.Sandbox.AspNetCore.Client/OpenIddict.Sandbox.AspNetCore.Client.csproj" />
+    <Project Path="sandbox/OpenIddict.Sandbox.AspNetCore.Server/OpenIddict.Sandbox.AspNetCore.Server.csproj" />
+    <Project Path="sandbox/OpenIddict.Sandbox.Console.Client/OpenIddict.Sandbox.Console.Client.csproj" />
+    <Project Path="sandbox/OpenIddict.Sandbox.Maui.Client/OpenIddict.Sandbox.Maui.Client.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="sandbox/OpenIddict.Sandbox.WinForms.Client/OpenIddict.Sandbox.WinForms.Client.csproj" />
+    <Project Path="sandbox/OpenIddict.Sandbox.Wpf.Client/OpenIddict.Sandbox.Wpf.Client.csproj" />
+  </Folder>
+
+  <Folder Name="/shared/">
+    <Project Path="shared/OpenIddict.Extensions/OpenIddict.Extensions.csproj" />
+  </Folder>
+
+  <Folder Name="/src/">
+    <Project Path="src/OpenIddict/OpenIddict.csproj" />
+    <Project Path="src/OpenIddict.Abstractions/OpenIddict.Abstractions.csproj" />
+    <Project Path="src/OpenIddict.AspNetCore/OpenIddict.AspNetCore.csproj" />
+    <Project Path="src/OpenIddict.Client/OpenIddict.Client.csproj" />
+    <Project Path="src/OpenIddict.Client.AspNetCore/OpenIddict.Client.AspNetCore.csproj" />
+    <Project Path="src/OpenIddict.Client.DataProtection/OpenIddict.Client.DataProtection.csproj" />
+    <Project Path="src/OpenIddict.Client.Owin/OpenIddict.Client.Owin.csproj" />
+    <Project Path="src/OpenIddict.Client.SystemIntegration/OpenIddict.Client.SystemIntegration.csproj" />
+    <Project Path="src/OpenIddict.Client.SystemNetHttp/OpenIddict.Client.SystemNetHttp.csproj" />
+    <Project Path="src/OpenIddict.Client.WebIntegration/OpenIddict.Client.WebIntegration.csproj" />
+    <Project Path="src/OpenIddict.Core/OpenIddict.Core.csproj" />
+    <Project Path="src/OpenIddict.EntityFramework/OpenIddict.EntityFramework.csproj" />
+    <Project Path="src/OpenIddict.EntityFramework.Models/OpenIddict.EntityFramework.Models.csproj" />
+    <Project Path="src/OpenIddict.EntityFrameworkCore/OpenIddict.EntityFrameworkCore.csproj" />
+    <Project Path="src/OpenIddict.EntityFrameworkCore.Models/OpenIddict.EntityFrameworkCore.Models.csproj" />
+    <Project Path="src/OpenIddict.MongoDb.Models/OpenIddict.MongoDb.Models.csproj" />
+    <Project Path="src/OpenIddict.MongoDb/OpenIddict.MongoDb.csproj" />
+    <Project Path="src/OpenIddict.Owin/OpenIddict.Owin.csproj" />
+    <Project Path="src/OpenIddict.Quartz/OpenIddict.Quartz.csproj" />
+    <Project Path="src/OpenIddict.Server.AspNetCore/OpenIddict.Server.AspNetCore.csproj" />
+    <Project Path="src/OpenIddict.Server.DataProtection/OpenIddict.Server.DataProtection.csproj" />
+    <Project Path="src/OpenIddict.Server.Owin/OpenIddict.Server.Owin.csproj" />
+    <Project Path="src/OpenIddict.Server/OpenIddict.Server.csproj" />
+    <Project Path="src/OpenIddict.Validation/OpenIddict.Validation.csproj" />
+    <Project Path="src/OpenIddict.Validation.AspNetCore/OpenIddict.Validation.AspNetCore.csproj" />
+    <Project Path="src/OpenIddict.Validation.DataProtection/OpenIddict.Validation.DataProtection.csproj" />
+    <Project Path="src/OpenIddict.Validation.Owin/OpenIddict.Validation.Owin.csproj" />
+    <Project Path="src/OpenIddict.Validation.ServerIntegration/OpenIddict.Validation.ServerIntegration.csproj" />
+    <Project Path="src/OpenIddict.Validation.SystemNetHttp/OpenIddict.Validation.SystemNetHttp.csproj" />
+  </Folder>
+
+  <Folder Name="/test/">
+    <Project Path="test/OpenIddict.Abstractions.Tests/OpenIddict.Abstractions.Tests.csproj" />
+    <Project Path="test/OpenIddict.Client.AspNetCore.IntegrationTests/OpenIddict.Client.AspNetCore.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Client.IntegrationTests/OpenIddict.Client.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Client.Owin.IntegrationTests/OpenIddict.Client.Owin.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Core.Tests/OpenIddict.Core.Tests.csproj" />
+    <Project Path="test/OpenIddict.EntityFramework.Tests/OpenIddict.EntityFramework.Tests.csproj" />
+    <Project Path="test/OpenIddict.EntityFrameworkCore.Tests/OpenIddict.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="test/OpenIddict.MongoDb.Tests/OpenIddict.MongoDb.Tests.csproj" />
+    <Project Path="test/OpenIddict.Quartz.Tests/OpenIddict.Quartz.Tests.csproj" />
+    <Project Path="test/OpenIddict.Server.AspNetCore.IntegrationTests/OpenIddict.Server.AspNetCore.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Server.DataProtection.Tests/OpenIddict.Server.DataProtection.Tests.csproj" />
+    <Project Path="test/OpenIddict.Server.IntegrationTests/OpenIddict.Server.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Server.Owin.IntegrationTests/OpenIddict.Server.Owin.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Server.Tests/OpenIddict.Server.Tests.csproj" />
+    <Project Path="test/OpenIddict.Validation.AspNetCore.IntegrationTests/OpenIddict.Validation.AspNetCore.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Validation.IntegrationTests/OpenIddict.Validation.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Validation.Owin.IntegrationTests/OpenIddict.Validation.Owin.IntegrationTests.csproj" />
+  </Folder>
+
+  <Folder Name="/workflows/">
+    <File Path=".github/workflows/build.yml" />
+    <File Path=".github/workflows/push.yml" />
+  </Folder>
+
+</Solution>
