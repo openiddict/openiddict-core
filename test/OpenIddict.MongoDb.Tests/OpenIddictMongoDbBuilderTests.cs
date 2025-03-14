@@ -99,14 +99,14 @@ public class OpenIddictMongoDbBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void SetApplicationsCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string name)
+    public void SetApplicationsCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string? name)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetApplicationsCollectionName(name));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetApplicationsCollectionName(name!));
 
         Assert.Equal("name", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
@@ -132,14 +132,14 @@ public class OpenIddictMongoDbBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void SetAuthorizationsCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string name)
+    public void SetAuthorizationsCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string? name)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationsCollectionName(name));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationsCollectionName(name!));
 
         Assert.Equal("name", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
@@ -165,14 +165,14 @@ public class OpenIddictMongoDbBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void SetScopesCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string name)
+    public void SetScopesCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string? name)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetScopesCollectionName(name));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetScopesCollectionName(name!));
 
         Assert.Equal("name", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
@@ -198,14 +198,14 @@ public class OpenIddictMongoDbBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void SetTokensCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string name)
+    public void SetTokensCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string? name)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetTokensCollectionName(name));
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetTokensCollectionName(name!));
 
         Assert.Equal("name", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);

@@ -63,12 +63,12 @@ public class OpenIddictMessageTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void Constructor_IgnoresNullOrEmptyParameterNames(string name)
+    public void Constructor_IgnoresNullOrEmptyParameterNames(string? name)
     {
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
+            new KeyValuePair<string, OpenIddictParameter>(name!, "Fabrikam")
         ]);
 
         // Assert
@@ -101,7 +101,7 @@ public class OpenIddictMessageTests
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal(["Fabrikam", "Contoso"], (string[]?) message.GetParameter("parameter"));
+        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class OpenIddictMessageTests
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal(["Fabrikam", "Contoso"], (string[]?) message.GetParameter("parameter"));
+        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public class OpenIddictMessageTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void AddParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    public void AddParameter_ThrowsAnExceptionForNullOrEmptyName(string? name)
     {
         // Arrange
         var message = new OpenIddictMessage();
@@ -143,7 +143,7 @@ public class OpenIddictMessageTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() =>
         {
-            message.AddParameter(name, new OpenIddictParameter());
+            message.AddParameter(name!, new OpenIddictParameter());
         });
 
         Assert.Equal("name", exception.ParamName);
@@ -211,13 +211,13 @@ public class OpenIddictMessageTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void GetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    public void GetParameter_ThrowsAnExceptionForNullOrEmptyName(string? name)
     {
         // Arrange
         var message = new OpenIddictMessage();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => message.GetParameter(name));
+        var exception = Assert.Throws<ArgumentException>(() => message.GetParameter(name!));
 
         Assert.Equal("name", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
@@ -277,13 +277,13 @@ public class OpenIddictMessageTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void HasParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    public void HasParameter_ThrowsAnExceptionForNullOrEmptyName(string? name)
     {
         // Arrange
         var message = new OpenIddictMessage();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => message.HasParameter(name));
+        var exception = Assert.Throws<ArgumentException>(() => message.HasParameter(name!));
 
         Assert.Equal("name", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
@@ -307,13 +307,13 @@ public class OpenIddictMessageTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void RemoveParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    public void RemoveParameter_ThrowsAnExceptionForNullOrEmptyName(string? name)
     {
         // Arrange
         var message = new OpenIddictMessage();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => message.RemoveParameter(name));
+        var exception = Assert.Throws<ArgumentException>(() => message.RemoveParameter(name!));
 
         Assert.Equal("name", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
@@ -336,13 +336,13 @@ public class OpenIddictMessageTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void SetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    public void SetParameter_ThrowsAnExceptionForNullOrEmptyName(string? name)
     {
         // Arrange
         var message = new OpenIddictMessage();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => message.SetParameter(name, null));
+        var exception = Assert.Throws<ArgumentException>(() => message.SetParameter(name!, null));
 
         Assert.Equal("name", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
@@ -413,13 +413,13 @@ public class OpenIddictMessageTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void TryGetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    public void TryGetParameter_ThrowsAnExceptionForNullOrEmptyName(string? name)
     {
         // Arrange
         var message = new OpenIddictMessage();
 
         // Act
-        var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name, out var parameter));
+        var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name!, out var parameter));
 
         // Assert
         Assert.Equal("name", exception.ParamName);

@@ -47,7 +47,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ExtractTokenRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ExtractTokenRequest_AllowsRejectingRequest(string? error, string? description, string? uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -238,7 +238,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, null)]
     [InlineData("username", null)]
     [InlineData(null, "password")]
-    public async Task ValidateTokenRequest_MissingUserCredentialsCauseAnError(string username, string password)
+    public async Task ValidateTokenRequest_MissingUserCredentialsCauseAnError(string? username, string? password)
     {
         // Arrange
         await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
@@ -2140,7 +2140,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ValidateTokenRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ValidateTokenRequest_AllowsRejectingRequest(string? error, string? description, string? uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -4144,7 +4144,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task HandleTokenRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task HandleTokenRequest_AllowsRejectingRequest(string? error, string? description, string? uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -4284,7 +4284,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Null(response.ErrorUri);
         Assert.NotNull(response.AccessToken);
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]
@@ -4375,6 +4375,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
     }
 }

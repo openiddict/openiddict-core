@@ -520,14 +520,14 @@ public class OpenIddictServerBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void AllowCustomFlow_ThrowsAnExceptionForType(string type)
+    public void AllowCustomFlow_ThrowsAnExceptionForType(string? type)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.AllowCustomFlow(type));
+        var exception = Assert.Throws<ArgumentException>(() => builder.AllowCustomFlow(type!));
 
         Assert.Equal("type", exception.ParamName);
         Assert.Contains("The grant type cannot be null or empty.", exception.Message);
@@ -2016,14 +2016,14 @@ public class OpenIddictServerBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void RegisterClaims_ThrowsAnExceptionForNullOrEmptyClaim(string claim)
+    public void RegisterClaims_ThrowsAnExceptionForNullOrEmptyClaim(string? claim)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.RegisterClaims([claim]));
+        var exception = Assert.Throws<ArgumentException>(() => builder.RegisterClaims([claim!]));
 
         Assert.Equal("claims", exception.ParamName);
         Assert.Contains(SR.FormatID0457("claims"), exception.Message);
@@ -2061,14 +2061,14 @@ public class OpenIddictServerBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void RegisterPromptValues_ThrowsAnExceptionForNullOrEmptyValue(string value)
+    public void RegisterPromptValues_ThrowsAnExceptionForNullOrEmptyValue(string? value)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.RegisterPromptValues([value]));
+        var exception = Assert.Throws<ArgumentException>(() => builder.RegisterPromptValues([value!]));
 
         Assert.Equal("values", exception.ParamName);
         Assert.Contains(SR.FormatID0457("values"), exception.Message);
@@ -2106,14 +2106,14 @@ public class OpenIddictServerBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void RegisterScopes_ThrowsAnExceptionForNullOrEmptyScope(string scope)
+    public void RegisterScopes_ThrowsAnExceptionForNullOrEmptyScope(string? scope)
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.RegisterScopes([scope]));
+        var exception = Assert.Throws<ArgumentException>(() => builder.RegisterScopes([scope!]));
 
         Assert.Equal("scopes", exception.ParamName);
         Assert.Contains(SR.FormatID0457("scopes"), exception.Message);

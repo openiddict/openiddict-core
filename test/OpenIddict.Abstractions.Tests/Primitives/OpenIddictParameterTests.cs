@@ -596,13 +596,13 @@ public class OpenIddictParameterTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void GetNamedParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    public void GetNamedParameter_ThrowsAnExceptionForNullOrEmptyName(string? name)
     {
         // Arrange
         var parameter = new OpenIddictParameter();
 
         // Act
-        var exception = Assert.Throws<ArgumentException>(() => parameter.GetNamedParameter(name));
+        var exception = Assert.Throws<ArgumentException>(() => parameter.GetNamedParameter(name!));
 
         // Assert
         Assert.Equal("name", exception.ParamName);
@@ -1297,13 +1297,13 @@ public class OpenIddictParameterTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void TryGetNamedParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    public void TryGetNamedParameter_ThrowsAnExceptionForNullOrEmptyName(string? name)
     {
         // Arrange
         var parameter = new OpenIddictParameter();
 
         // Act
-        var exception = Assert.Throws<ArgumentException>(() => parameter.TryGetNamedParameter(name, out _));
+        var exception = Assert.Throws<ArgumentException>(() => parameter.TryGetNamedParameter(name!, out _));
 
         // Assert
         Assert.Equal("name", exception.ParamName);
@@ -2138,9 +2138,9 @@ public class OpenIddictParameterTests
     public void StringArrayConverter_CanCreateParameterFromPrimitiveValues()
     {
         // Arrange, act and assert
-        Assert.Equal(["Fabrikam"], (string?[]?) new OpenIddictParameter("Fabrikam"));
-        Assert.Equal(["false"], (string?[]?) new OpenIddictParameter(false));
-        Assert.Equal(["42"], (string?[]?) new OpenIddictParameter(42));
+        Assert.Equal(new[] { "Fabrikam" }, (string?[]?) new OpenIddictParameter("Fabrikam"));
+        Assert.Equal(new[] { "false" }, (string?[]?) new OpenIddictParameter(false));
+        Assert.Equal(new[] { "42" }, (string?[]?) new OpenIddictParameter(42));
     }
 
     [Fact]
@@ -2154,7 +2154,7 @@ public class OpenIddictParameterTests
     public void StringArrayConverter_ReturnsSingleElementArrayForStringValue()
     {
         // Arrange, act and assert
-        Assert.Equal(["Fabrikam"], (string?[]?) new OpenIddictParameter("Fabrikam"));
+        Assert.Equal(new[] { "Fabrikam" }, (string?[]?) new OpenIddictParameter("Fabrikam"));
     }
 
     [Fact]
@@ -2179,27 +2179,27 @@ public class OpenIddictParameterTests
     public void StringArrayConverter_CanConvertFromJsonValues()
     {
         // Arrange, act and assert
-        Assert.Equal(["Fabrikam"], (string?[]?) new OpenIddictParameter(
+        Assert.Equal(new[] { "Fabrikam" }, (string?[]?) new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"{""field"":""Fabrikam""}").GetProperty("field")));
-        Assert.Equal(["false"], (string?[]?) new OpenIddictParameter(
+        Assert.Equal(new[] { "false" }, (string?[]?) new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"{""field"":false}").GetProperty("field")));
-        Assert.Equal(["42"], (string?[]?) new OpenIddictParameter(
+        Assert.Equal(new[] { "42" }, (string?[]?) new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"{""field"":42}").GetProperty("field")));
-        Assert.Equal(["Fabrikam"], (string?[]?) new OpenIddictParameter(
+        Assert.Equal(new[] { "Fabrikam" }, (string?[]?) new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam""]")));
-        Assert.Equal(["Contoso", "Fabrikam"], (string?[]?) new OpenIddictParameter(
+        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string?[]?) new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"[""Contoso"",""Fabrikam""]")));
-        Assert.Equal(["value", "42", "true"], (string?[]?) new OpenIddictParameter(
+        Assert.Equal(new[] { "value", "42", "true" }, (string?[]?) new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"[""value"",42,true]")));
 
 #if SUPPORTS_JSON_NODES
-        Assert.Equal(["Fabrikam"], (string?[]?) new OpenIddictParameter(JsonValue.Create("Fabrikam")));
-        Assert.Equal(["false"], (string?[]?) new OpenIddictParameter(JsonValue.Create(false)));
-        Assert.Equal(["42"], (string?[]?) new OpenIddictParameter(JsonValue.Create(42)));
-        Assert.Equal(["42"], (string?[]?) new OpenIddictParameter(JsonValue.Create(42L)));
-        Assert.Equal(["Fabrikam"], (string?[]?) new OpenIddictParameter(new JsonArray("Fabrikam")));
-        Assert.Equal(["Contoso", "Fabrikam"], (string?[]?) new OpenIddictParameter(new JsonArray("Contoso", "Fabrikam")));
-        Assert.Equal(["value", "42", "true"], (string?[]?) new OpenIddictParameter(new JsonArray("value", 42, true)));
+        Assert.Equal(new[] { "Fabrikam" }, (string?[]?) new OpenIddictParameter(JsonValue.Create("Fabrikam")));
+        Assert.Equal(new[] { "false" }, (string?[]?) new OpenIddictParameter(JsonValue.Create(false)));
+        Assert.Equal(new[] { "42" }, (string?[]?) new OpenIddictParameter(JsonValue.Create(42)));
+        Assert.Equal(new[] { "42" }, (string?[]?) new OpenIddictParameter(JsonValue.Create(42L)));
+        Assert.Equal(new[] { "Fabrikam" }, (string?[]?) new OpenIddictParameter(new JsonArray("Fabrikam")));
+        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string?[]?) new OpenIddictParameter(new JsonArray("Contoso", "Fabrikam")));
+        Assert.Equal(new[] { "value", "42", "true" }, (string?[]?) new OpenIddictParameter(new JsonArray("value", 42, true)));
 #endif
     }
 }

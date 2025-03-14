@@ -316,8 +316,8 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
-        Assert.Equal(["Fabrikam", "Contoso"], (string[]?) response[Claims.Audience]);
-        Assert.Equal(["Fabrikam", "Contoso"], (string[]?) response[Claims.Private.Audience]);
+        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) response[Claims.Audience]);
+        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) response[Claims.Private.Audience]);
     }
 
     [Fact]
@@ -415,7 +415,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
-        Assert.Equal([Scopes.OpenId, Scopes.Profile], (string[]?) response[Claims.Private.Scope]);
+        Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]?) response[Claims.Private.Scope]);
     }
 
     [Fact]
@@ -464,7 +464,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
-        Assert.Equal([Scopes.OpenId, Scopes.Profile], (string[]?) response[Claims.Private.Scope]);
+        Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]?) response[Claims.Private.Scope]);
     }
 
     [Fact]

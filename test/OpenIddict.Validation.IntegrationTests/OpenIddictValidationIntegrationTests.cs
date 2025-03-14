@@ -201,7 +201,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ProcessChallenge_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ProcessChallenge_AllowsRejectingRequest(string? error, string? description, string? uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>

@@ -49,7 +49,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ExtractIntrospectionRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ExtractIntrospectionRequest_AllowsRejectingRequest(string? error, string? description, string? uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -689,7 +689,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task ValidateIntrospectionRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task ValidateIntrospectionRequest_AllowsRejectingRequest(string? error, string? description, string? uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -1048,7 +1048,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(JsonValueKind.True, ((JsonElement) response["boolean_claim"]).ValueKind);
         Assert.Equal(42, (long) response["integer_claim"]);
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_claim"]).ValueKind);
-        Assert.Equal(["Contoso", "Fabrikam"], (string[]?) response["array_claim"]);
+        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_claim"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_claim"]).ValueKind);
         Assert.Equal("value", (string?) response["object_claim"]?["parameter"]);
         Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_claim"]).ValueKind);
@@ -1616,7 +1616,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(null, "custom_description", "custom_uri")]
     [InlineData(null, null, "custom_uri")]
     [InlineData(null, null, null)]
-    public async Task HandleIntrospectionRequest_AllowsRejectingRequest(string error, string description, string uri)
+    public async Task HandleIntrospectionRequest_AllowsRejectingRequest(string? error, string? description, string? uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -1835,6 +1835,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(["custom_value_1", "custom_value_2"], (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
     }
 }
