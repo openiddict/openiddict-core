@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
@@ -16,10 +17,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Properties = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants.Properties;
-
-#if SUPPORTS_JSON_NODES
-using System.Text.Json.Nodes;
-#endif
 
 namespace OpenIddict.Validation.AspNetCore;
 
@@ -371,15 +368,13 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                     {
                         OpenIddictParameter value => value,
                         JsonElement         value => new OpenIddictParameter(value),
+                        JsonNode            value => new OpenIddictParameter(value),
                         bool                value => new OpenIddictParameter(value),
                         int                 value => new OpenIddictParameter(value),
                         long                value => new OpenIddictParameter(value),
                         string              value => new OpenIddictParameter(value),
                         string[]            value => new OpenIddictParameter(value),
 
-    #if SUPPORTS_JSON_NODES
-                        JsonNode            value => new OpenIddictParameter(value),
-    #endif
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
                     };
                 }

@@ -8,12 +8,9 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Primitives;
-
-#if SUPPORTS_JSON_NODES
-using System.Text.Json.Nodes;
-#endif
 
 namespace OpenIddict.Abstractions;
 
@@ -47,7 +44,6 @@ public class OpenIddictRequest : OpenIddictMessage
     {
     }
 
-#if SUPPORTS_JSON_NODES
     /// <summary>
     /// Initializes a new OpenIddict request.
     /// </summary>
@@ -57,7 +53,6 @@ public class OpenIddictRequest : OpenIddictMessage
         : base(parameters)
     {
     }
-#endif
 
     /// <summary>
     /// Initializes a new OpenIddict request.

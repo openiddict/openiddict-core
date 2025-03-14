@@ -62,7 +62,7 @@ public class AuthorizationController : Controller
         // If the user principal can't be extracted or the cookie is too old, redirect the user to the login page.
         var result = await context.Authentication.AuthenticateAsync(DefaultAuthenticationTypes.ApplicationCookie);
         if (result?.Identity == null || (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
-            DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
+            TimeProvider.System.GetUtcNow() - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
         {
             // For applications that want to allow the client to select the external authentication provider
             // that will be used to authenticate the user, the identity_provider parameter can be used for that.

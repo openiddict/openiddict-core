@@ -232,11 +232,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         var descriptor = new OpenIddictAuthorizationDescriptor
         {
             ApplicationId = client,
-            CreationDate =
-#if SUPPORTS_TIME_PROVIDER
-                Options.CurrentValue.TimeProvider?.GetUtcNow() ??
-#endif
-                DateTimeOffset.UtcNow,
+            CreationDate = Options.CurrentValue.TimeProvider.GetUtcNow(),
             Principal = principal,
             Status = Statuses.Valid,
             Subject = subject,

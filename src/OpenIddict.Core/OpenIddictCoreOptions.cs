@@ -60,10 +60,13 @@ public sealed class OpenIddictCoreOptions
     /// </summary>
     public int EntityCacheLimit { get; set; } = 250;
 
-#if SUPPORTS_TIME_PROVIDER
     /// <summary>
     /// Gets or sets the time provider.
     /// </summary>
-    public TimeProvider? TimeProvider { get; set; }
-#endif
+    /// <remarks>
+    /// Note: if this property is not explicitly set, the time provider is
+    /// automatically resolved from the dependency injection container.
+    /// If no service can be found, <see cref="TimeProvider.System"/> is used.
+    /// </remarks>
+    public TimeProvider TimeProvider { get; set; } = default!;
 }

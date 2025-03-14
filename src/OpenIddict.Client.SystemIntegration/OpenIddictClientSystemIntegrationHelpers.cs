@@ -251,7 +251,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
             out uint ReturnLength);
     }
 
-#if SUPPORTS_PRESENTATION_CONTEXT_PROVIDER
+#if SUPPORTS_APPKIT || SUPPORTS_UIKIT
     /// <summary>
     /// Gets a reference to the current <see cref="NativeWindow"/>.
     /// </summary>

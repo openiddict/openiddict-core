@@ -38,9 +38,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new ArgumentNullException(nameof(options));
         }
 
-#if SUPPORTS_TIME_PROVIDER
         options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
-#endif
 
         // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
         if (options.EnableDegradedMode)
@@ -205,13 +203,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0086));
         }
 
-        var now = (
-#if SUPPORTS_TIME_PROVIDER
-                options.TimeProvider?.GetUtcNow() ??
-#endif
-                DateTimeOffset.UtcNow
-            )
-            .LocalDateTime;
+        var now = options.TimeProvider.GetUtcNow().LocalDateTime;
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
         if (options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&

@@ -18,8 +18,4 @@
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-  </ItemGroup>
-
 </Project>

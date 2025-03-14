@@ -51,9 +51,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
         }
 
-#if SUPPORTS_TIME_PROVIDER
         options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
-#endif
 
         foreach (var registration in options.Registrations)
         {
@@ -230,12 +228,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
-        var now = (
-#if SUPPORTS_TIME_PROVIDER
-            options.TimeProvider?.GetUtcNow() ??
-#endif
-            DateTimeOffset.UtcNow
-        ).LocalDateTime;
+        var now = options.TimeProvider.GetUtcNow().LocalDateTime;
 
         // Sort the encryption and signing credentials.
         options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));

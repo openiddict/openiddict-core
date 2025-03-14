@@ -9,8 +9,7 @@
     <ProjectReference Include="..\..\src\OpenIddict.Abstractions\OpenIddict.Abstractions.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                         ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
+  <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 

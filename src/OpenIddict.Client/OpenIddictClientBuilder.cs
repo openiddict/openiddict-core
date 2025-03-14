@@ -217,11 +217,10 @@ public sealed class OpenIddictClientBuilder
 
         Services.AddOptions<OpenIddictClientOptions>().Configure<IServiceProvider>((options, provider) =>
         {
-#if SUPPORTS_TIME_PROVIDER
-            var now = (options.TimeProvider ?? provider.GetService<TimeProvider>())?.GetUtcNow() ?? DateTimeOffset.UtcNow;
-#else
-            var now = DateTimeOffset.UtcNow;
-#endif
+            // Important: the time provider might not be set yet when this configuration delegate is called.
+            // In that case, resolve the provider from the service provider or use the default time provider.
+            var now = (options.TimeProvider ?? provider.GetService<TimeProvider>() ?? TimeProvider.System).GetUtcNow();
+
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadWrite);
 
@@ -634,11 +633,10 @@ public sealed class OpenIddictClientBuilder
 
         Services.AddOptions<OpenIddictClientOptions>().Configure<IServiceProvider>((options, provider) =>
         {
-#if SUPPORTS_TIME_PROVIDER
-            var now = (options.TimeProvider ?? provider.GetService<TimeProvider>())?.GetUtcNow() ?? DateTimeOffset.UtcNow;
-#else
-            var now = DateTimeOffset.UtcNow;
-#endif
+            // Important: the time provider might not be set yet when this configuration delegate is called.
+            // In that case, resolve the provider from the service provider or use the default time provider.
+            var now = (options.TimeProvider ?? provider.GetService<TimeProvider>() ?? TimeProvider.System).GetUtcNow();
+
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadWrite);
 

@@ -26,8 +26,6 @@ public class OpenIddictCoreConfiguration : IPostConfigureOptions<OpenIddictCoreO
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictCoreOptions options)
     {
-#if SUPPORTS_TIME_PROVIDER
         options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
-#endif
     }
 }

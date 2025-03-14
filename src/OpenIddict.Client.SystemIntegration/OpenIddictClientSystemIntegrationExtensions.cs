@@ -117,11 +117,12 @@ public static class OpenIddictClientSystemIntegrationExtensions
         // Note: the order used here is not important, as the actual order is set in the options.
         builder.Services.TryAdd(OpenIddictClientSystemIntegrationHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
-        // Register the option initializer and the background service used by the OpenIddict client system integration services.
-        // Note: TryAddEnumerable() is used here to ensure the initializers and the background service are only registered once.
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, OpenIddictClientSystemIntegrationHttpListener>());
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, OpenIddictClientSystemIntegrationPipeListener>());
+        // Register the background services used by the OpenIddict client system integration services.
+        builder.Services.AddHostedService<OpenIddictClientSystemIntegrationHttpListener>();
+        builder.Services.AddHostedService<OpenIddictClientSystemIntegrationPipeListener>();
 
+        // Register the option initializer used by the OpenIddict client system integration services.
+        // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientSystemIntegrationConfiguration>());
 

@@ -8,40 +8,37 @@ using Scriban;
 namespace OpenIddict.Client.WebIntegration.Generators;
 
 [Generator]
-public sealed class OpenIddictClientWebIntegrationGenerator : ISourceGenerator
+public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenerator
 {
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var file = context.AdditionalFiles.Select(file => file.Path)
-            .Where(path => string.Equals(Path.GetFileName(path), "OpenIddictClientWebIntegrationProviders.xml"))
-            .SingleOrDefault();
+        var files = context.AdditionalTextsProvider.Where(static file =>
+            string.Equals(Path.GetFileName(file.Path), "OpenIddictClientWebIntegrationProviders.xml"));
 
-        if (string.IsNullOrEmpty(file))
+        context.RegisterSourceOutput(files, static (context, file) =>
         {
-            return;
-        }
+            var document = XDocument.Load(file.Path, LoadOptions.None);
 
-        var document = XDocument.Load(file, LoadOptions.None);
+            context.AddSource(
+                "OpenIddictClientWebIntegrationBuilder.generated.cs",
+                SourceText.From(GenerateBuilderMethods(document), Encoding.UTF8));
 
-        context.AddSource(
-            "OpenIddictClientWebIntegrationBuilder.generated.cs",
-            SourceText.From(GenerateBuilderMethods(document), Encoding.UTF8));
+            context.AddSource(
+                "OpenIddictClientWebIntegrationConfiguration.generated.cs",
+                SourceText.From(GenerateConfigurationClasses(document), Encoding.UTF8));
 
-        context.AddSource(
-            "OpenIddictClientWebIntegrationConfiguration.generated.cs",
-            SourceText.From(GenerateConfigurationClasses(document), Encoding.UTF8));
+            context.AddSource(
+                "OpenIddictClientWebIntegrationConstants.generated.cs",
+                SourceText.From(GenerateConstants(document), Encoding.UTF8));
 
-        context.AddSource(
-            "OpenIddictClientWebIntegrationConstants.generated.cs",
-            SourceText.From(GenerateConstants(document), Encoding.UTF8));
+            context.AddSource(
+                "OpenIddictClientWebIntegrationHelpers.generated.cs",
+                SourceText.From(GenerateHelpers(document), Encoding.UTF8));
 
-        context.AddSource(
-            "OpenIddictClientWebIntegrationHelpers.generated.cs",
-            SourceText.From(GenerateHelpers(document), Encoding.UTF8));
-
-        context.AddSource(
-            "OpenIddictClientWebIntegrationSettings.generated.cs",
-            SourceText.From(GenerateSettings(document), Encoding.UTF8));
+            context.AddSource(
+                "OpenIddictClientWebIntegrationSettings.generated.cs",
+                SourceText.From(GenerateSettings(document), Encoding.UTF8));
+        });
 
         static string GenerateBuilderMethods(XDocument document)
         {

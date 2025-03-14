@@ -9,10 +9,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-
-#if SUPPORTS_JSON_NODES
 using System.Text.Json.Nodes;
-#endif
 
 namespace OpenIddict.Abstractions;
 
@@ -40,13 +37,11 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="value">The parameter value.</param>
     public OpenIddictParameter(JsonElement value) => Value = value;
 
-#if SUPPORTS_JSON_NODES
     /// <summary>
     /// Initializes a new parameter using the specified value.
     /// </summary>
     /// <param name="value">The parameter value.</param>
     public OpenIddictParameter(JsonNode? value) => Value = value;
-#endif
 
     /// <summary>
     /// Initializes a new parameter using the specified value.
@@ -103,7 +98,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 JsonElement { ValueKind: JsonValueKind.Array or JsonValueKind.Object } element
                     => Count(element),
 
-#if SUPPORTS_JSON_NODES
                 // If the parameter is a JsonArray, return its length.
                 JsonArray value => value.Count,
 
@@ -128,7 +122,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 JsonNode value when JsonSerializer.SerializeToElement(value)
                     is JsonElement { ValueKind: JsonValueKind.Array or JsonValueKind.Object } element
                     => Count(element),
-#endif
+
                 // Otherwise, return 0.
                 _ => 0
             };
@@ -232,7 +226,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             (string left, JsonElement { ValueKind: JsonValueKind.String } right)
                 => string.Equals(left, right.GetString(), StringComparison.Ordinal),
 
-#if SUPPORTS_JSON_NODES
             // When one of the parameters is a JsonValue, try to compare their underlying values
             // if the wrapped type is a common CLR primitive type to avoid the less efficient
             // JsonElement-based comparison, that requires doing a full JSON serialization.
@@ -250,17 +243,11 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             (string left, JsonValue right) when right.TryGetValue(out string? result)
                 => string.Equals(left, result, StringComparison.Ordinal),
-#endif
+
             // Otherwise, serialize both values to JsonElement and compare them.
-#if SUPPORTS_DIRECT_JSON_ELEMENT_SERIALIZATION
             var (left, right) => DeepEquals(
                 JsonSerializer.SerializeToElement(left, left.GetType()),
                 JsonSerializer.SerializeToElement(right, right.GetType()))
-#else
-            var (left, right) => DeepEquals(
-                JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(left, left.GetType())),
-                JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(right, right.GetType())))
-#endif
         };
 
         static bool DeepEquals(JsonElement left, JsonElement right)
@@ -358,7 +345,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is a JsonElement, compute its hash code.
             JsonElement value => GetHashCodeFromJsonElement(value),
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonValue wrapping a JsonElement,
             // apply the same logic as with direct JsonElement instances.
             JsonValue value when value.TryGetValue(out JsonElement element)
@@ -379,7 +365,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // and apply the same logic as with non-wrapped JsonElement instances.
             JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
                 => GetHashCodeFromJsonElement(element),
-#endif
+
             // Otherwise, use the default hash code method.
             var value => value.GetHashCode()
         };
@@ -479,7 +465,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is a JsonElement representing an object, return the requested item.
             JsonElement { ValueKind: JsonValueKind.Object } value => GetParametersFromJsonElement(value),
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonObject, return the requested item.
             JsonObject value => GetParametersFromJsonNode(value),
 
@@ -489,7 +474,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonNode value when JsonSerializer.SerializeToElement(value)
                 is JsonElement { ValueKind: JsonValueKind.Object } element
                 => GetParametersFromJsonElement(element),
-#endif
+
             _ => ImmutableDictionary.Create<string, OpenIddictParameter>(StringComparer.Ordinal)
         };
 
@@ -505,8 +490,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             return parameters;
         }
 
-#if SUPPORTS_JSON_NODES
-
         static IReadOnlyDictionary<string, OpenIddictParameter> GetParametersFromJsonNode(JsonObject node)
         {
             var parameters = new Dictionary<string, OpenIddictParameter>(node.Count, StringComparer.Ordinal);
@@ -518,7 +501,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             return parameters;
         }
-#endif
     }
 
     /// <summary>
@@ -536,7 +518,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is a JsonElement representing an array, return its children.
             JsonElement { ValueKind: JsonValueKind.Array } value => GetParametersFromJsonElement(value),
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonArray, return its children.
             JsonArray value => GetParametersFromJsonNode(value),
 
@@ -546,7 +527,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonNode value when JsonSerializer.SerializeToElement(value)
                 is JsonElement { ValueKind: JsonValueKind.Array } element
                 => GetParametersFromJsonElement(element),
-#endif
+
             _ => ImmutableList.Create<OpenIddictParameter>()
         };
 
@@ -575,7 +556,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             return parameters;
         }
 
-#if SUPPORTS_JSON_NODES
         static IReadOnlyList<OpenIddictParameter> GetParametersFromJsonNode(JsonArray node)
         {
             var parameters = new OpenIddictParameter[node.Count];
@@ -587,7 +567,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             return parameters;
         }
-#endif
     }
 
     /// <summary>
@@ -609,7 +588,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         JsonElement value => value.ToString(),
 
-#if SUPPORTS_JSON_NODES
         JsonValue value when value.TryGetValue(out JsonElement element)
             => element.ValueKind switch
             {
@@ -638,7 +616,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
                 _ => element.ToString()
             },
-#endif
+
         _ => string.Empty
     };
 
@@ -661,7 +639,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonElement { ValueKind: JsonValueKind.Object } element =>
                 element.TryGetProperty(name, out JsonElement property) ? new(property) : null,
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonObject, return the requested item.
             JsonObject node => node.TryGetPropertyValue(name, out JsonNode? property) ? new(property) : null,
 
@@ -671,7 +648,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonNode node when JsonSerializer.SerializeToElement(node)
                 is JsonElement { ValueKind: JsonValueKind.Object } element
                 => element.TryGetProperty(name, out JsonElement property) ? new(property) : null,
-#endif
+
             _ => (OpenIddictParameter?) null
         };
 
@@ -701,7 +678,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonElement { ValueKind: JsonValueKind.Array } element =>
                 index < element.GetArrayLength() ? new(element[index]) : null,
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonArray, return the requested item.
             JsonArray node => index < node.Count ? new(node[index]) : null,
 
@@ -711,7 +687,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonNode node when JsonSerializer.SerializeToElement(node)
                 is JsonElement { ValueKind: JsonValueKind.Array } element
                 => index < element.GetArrayLength() ? new(element) : null,
-#endif
+
             _ => (OpenIddictParameter?) null
         };
 
@@ -765,11 +741,9 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 value.WriteTo(writer);
                 break;
 
-#if SUPPORTS_JSON_NODES
             case JsonNode value:
                 value.WriteTo(writer);
                 break;
-#endif
         }
     }
 
@@ -818,7 +792,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is a JsonElement, try to convert it if it's of a supported type.
             JsonElement value => ConvertFromJsonElement(value),
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonValue wrapping a JsonElement,
             // apply the same logic as with direct JsonElement instances.
             JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
@@ -835,7 +808,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // and apply the same logic as with non-wrapped JsonElement instances.
             JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
                 => ConvertFromJsonElement(element),
-#endif
+
             // If the parameter is of a different type, return null to indicate the conversion failed.
             _ => null
         };
@@ -868,10 +841,9 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is already a JsonElement, return it as-is.
             JsonElement value => value,
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is JsonNode, serialize it as a JsonElement.
             JsonNode value => JsonSerializer.SerializeToElement(value),
-#endif
+
             // When the parameter is a string starting with '{' or '[' (which would correspond
             // to a JSON object or array), try to deserialize it to get a JsonElement instance.
             string { Length: > 0 } value when value[0] is '{' or '[' =>
@@ -879,11 +851,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 DeserializeElement(JsonSerializer.Serialize(value)) ?? default,
 
             // Otherwise, serialize it to get a JsonElement instance.
-#if SUPPORTS_DIRECT_JSON_ELEMENT_SERIALIZATION
             object value => JsonSerializer.SerializeToElement(value, value.GetType())
-#else
-            object value => DeserializeElement(JsonSerializer.Serialize(value)) ?? default
-#endif
         };
 
         static JsonElement? DeserializeElement(string value)
@@ -901,7 +869,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
         }
     }
 
-#if SUPPORTS_JSON_NODES
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to a <see cref="JsonNode"/>.
     /// </summary>
@@ -989,7 +956,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <returns>The converted value.</returns>
     public static explicit operator JsonValue?(OpenIddictParameter? parameter)
         => ((JsonNode?) parameter) as JsonValue;
-#endif
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to a long integer.
@@ -1021,7 +987,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is a JsonElement, try to convert it if it's of a supported type.
             JsonElement value => ConvertFromJsonElement(value),
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonValue wrapping a JsonElement,
             // apply the same logic as with direct JsonElement instances.
             JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
@@ -1040,7 +1005,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // and apply the same logic as with non-wrapped JsonElement instances.
             JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
                 => ConvertFromJsonElement(element),
-#endif
+
             // If the parameter is of a different type, return null to indicate the conversion failed.
             _ => null
         };
@@ -1086,7 +1051,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is a JsonElement, try to convert it if it's of a supported type.
             JsonElement value => ConvertFromJsonElement(value),
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonValue wrapping a JsonElement,
             // apply the same logic as with direct JsonElement instances.
             JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
@@ -1106,7 +1070,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // and apply the same logic as with non-wrapped JsonElement instances.
             JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
                 => ConvertFromJsonElement(element),
-#endif
+
             // If the parameter is of a different type, return null to indicate the conversion failed.
             _ => null
         };
@@ -1157,7 +1121,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is a JsonElement, try to convert it if it's of a supported type.
             JsonElement value => ConvertFromJsonElement(value),
 
-#if SUPPORTS_JSON_NODES
             // When the parameter is a JsonValue wrapping a JsonElement,
             // apply the same logic as with direct JsonElement instances.
             JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
@@ -1181,7 +1144,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // and apply the same logic as with non-wrapped JsonElement instances.
             JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
                 => ConvertFromJsonElement(element),
-#endif
+
             // If the parameter is of a different type, return null to indicate the conversion failed.
             _ => null
         };
@@ -1258,14 +1221,12 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
     public static implicit operator OpenIddictParameter(JsonElement value) => new(value);
 
-#if SUPPORTS_JSON_NODES
     /// <summary>
     /// Converts a <see cref="JsonNode"/> to an <see cref="OpenIddictParameter"/> instance.
     /// </summary>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
     public static implicit operator OpenIddictParameter(JsonNode? value) => new(value);
-#endif
 
     /// <summary>
     /// Converts a long integer to an <see cref="OpenIddictParameter"/> instance.
@@ -1311,7 +1272,6 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             JsonElement value => IsEmptyJsonElement(value),
 
-#if SUPPORTS_JSON_NODES
             JsonArray  value => value.Count is 0,
             JsonObject value => value.Count is 0,
 
@@ -1323,7 +1283,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
                 => IsEmptyJsonElement(element),
-#endif
+
             _ => false
         };
 

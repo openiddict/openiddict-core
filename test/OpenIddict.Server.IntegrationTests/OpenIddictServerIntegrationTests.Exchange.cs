@@ -450,7 +450,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.AuthorizationCode)
-                        .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1))
+                        .SetExpirationDate(TimeProvider.System.GetUtcNow() - TimeSpan.FromDays(1))
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                     return default;
@@ -493,7 +493,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeHints.RefreshToken)
-                        .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1))
+                        .SetExpirationDate(TimeProvider.System.GetUtcNow() - TimeSpan.FromDays(1))
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                     return default;
@@ -545,7 +545,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(token);
 
             mock.Setup(manager => manager.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTimeOffset.UtcNow - TimeSpan.FromDays(1));
+                .ReturnsAsync(TimeProvider.System.GetUtcNow() - TimeSpan.FromDays(1));
 
             mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TokenTypeHints.DeviceCode);
@@ -2601,7 +2601,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetRedemptionDateAsync(token, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTimeOffset.UtcNow);
+                .ReturnsAsync(TimeProvider.System.GetUtcNow());
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -2678,7 +2678,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetRedemptionDateAsync(token, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTimeOffset.UtcNow - TimeSpan.FromMinutes(1));
+                .ReturnsAsync(TimeProvider.System.GetUtcNow() - TimeSpan.FromMinutes(1));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -2755,7 +2755,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetRedemptionDateAsync(token, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTimeOffset.UtcNow - TimeSpan.FromMinutes(1));
+                .ReturnsAsync(TimeProvider.System.GetUtcNow() - TimeSpan.FromMinutes(1));
 
             mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new OpenIddictToken());
@@ -2941,7 +2941,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetRedemptionDateAsync(tokens[0], It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTimeOffset.UtcNow);
+                .ReturnsAsync(TimeProvider.System.GetUtcNow());
 
             mock.Setup(manager => manager.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
                 .Returns(tokens.ToAsyncEnumerable());
@@ -3032,7 +3032,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetRedemptionDateAsync(tokens[0], It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTimeOffset.UtcNow - TimeSpan.FromMinutes(1));
+                .ReturnsAsync(TimeProvider.System.GetUtcNow() - TimeSpan.FromMinutes(1));
 
             mock.Setup(manager => manager.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
                 .Returns(tokens.ToAsyncEnumerable());
@@ -3123,7 +3123,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetRedemptionDateAsync(tokens[0], It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTimeOffset.UtcNow - TimeSpan.FromMinutes(1));
+                .ReturnsAsync(TimeProvider.System.GetUtcNow() - TimeSpan.FromMinutes(1));
 
             mock.Setup(manager => manager.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
                 .Returns(tokens.ToAsyncEnumerable());

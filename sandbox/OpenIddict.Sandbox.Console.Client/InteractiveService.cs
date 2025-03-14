@@ -6,10 +6,6 @@ using Spectre.Console;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
-#if !SUPPORTS_HOST_APPLICATION_LIFETIME
-using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
-#endif
-
 namespace OpenIddict.Sandbox.Console.Client;
 
 public class InteractiveService : BackgroundService

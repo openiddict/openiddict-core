@@ -17,10 +17,6 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationAuthenticationMode;
 
-#if !SUPPORTS_HOST_ENVIRONMENT
-using IHostEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
-#endif
-
 namespace OpenIddict.Client.SystemIntegration;
 
 /// <summary>

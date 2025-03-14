@@ -108,11 +108,8 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
 
         options.HttpMessageHandlerBuilderActions.Add(builder =>
         {
-#if SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
             var options = builder.Services.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
-#else
-            var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
-#endif
+
             // If applicable, add the handler responsible for replaying failed HTTP requests.
             //
             // Note: on .NET 8.0 and higher, the HTTP error policy is always set

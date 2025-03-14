@@ -20,10 +20,6 @@ using Xunit.Abstractions;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.OpenIddictValidationHandlers.Protection;
 
-#if SUPPORTS_JSON_NODES
-using System.Text.Json.Nodes;
-#endif
-
 namespace OpenIddict.Validation.AspNetCore.IntegrationTests;
 
 public partial class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddictValidationIntegrationTests

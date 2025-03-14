@@ -10,12 +10,9 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Primitives;
-
-#if SUPPORTS_JSON_NODES
-using System.Text.Json.Nodes;
-#endif
 
 namespace OpenIddict.Abstractions;
 
@@ -69,7 +66,6 @@ public class OpenIddictMessage
         }
     }
 
-#if SUPPORTS_JSON_NODES
     /// <summary>
     /// Initializes a new OpenIddict message.
     /// </summary>
@@ -100,7 +96,6 @@ public class OpenIddictMessage
             AddParameter(parameter.Key, parameter.Value);
         }
     }
-#endif
 
     /// <summary>
     /// Initializes a new OpenIddict message.

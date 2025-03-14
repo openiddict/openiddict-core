@@ -15,61 +15,67 @@
     <PublicSign>false</PublicSign>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SupportedOSPlatformVersion
-      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                   '$(TargetPlatformIdentifier)'  == 'Android'     And '$(TargetPlatformVersion)' != '' And
-                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '21.0'))) ">21.0</SupportedOSPlatformVersion>
-
-    <SupportedOSPlatformVersion
-      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                   '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
-                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.2'))) ">12.2</SupportedOSPlatformVersion>
-
-    <SupportedOSPlatformVersion
-      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                   '$(TargetPlatformIdentifier)'  == 'MacCatalyst' And '$(TargetPlatformVersion)' != '' And
-                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '15.0'))) ">15.0</SupportedOSPlatformVersion>
-
-    <SupportedOSPlatformVersion
-      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                   '$(TargetPlatformIdentifier)'  == 'macOS'       And '$(TargetPlatformVersion)' != '' And
-                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) ">12.0</SupportedOSPlatformVersion>
-
-    <SupportedOSPlatformVersion
-      Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                   '$(TargetPlatformIdentifier)'  == 'Windows'     And '$(TargetPlatformVersion)' != '' And
-                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '7.0'))) ">7.0</SupportedOSPlatformVersion>
-  </PropertyGroup>
-
   <!--
-    Note: .NET Framework and .NET Core <3.0/.NET Standard assemblies are not annotated
-    with nullable references annotations. To avoid errors on these target frameworks,
-    related warnings are disabled by using Nullable = "annotations" instead of "enable".
+    Note: .NET Native, .NET Framework and .NET Standard assemblies are not annotated with
+    nullable references annotations. To avoid errors on these target frameworks, related
+    warnings are disabled by setting <Nullable> to "annotations" instead of "enable".
   -->
 
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'   And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' Or
+                             '$(TargetFrameworkIdentifier)' == '.NETFramework' Or
+                             '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.5'))) ">
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Android'     ">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'iOS'         ">12.2</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'MacCatalyst' ">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'macOS'       ">12.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Windows'     ">7.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_CONSTRUCTOR_WITH_ACL</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_APPLICATION_CONFIGURATION_INITIALIZATION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_HANDLER_SELECTION_FALLBACK</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHORIZATION_MIDDLEWARE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_BCL_ASYNC_ENUMERABLE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_BULK_DBSET_OPERATIONS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_DBSET_VALUETASK_FINDASYNC</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ENDPOINT_ROUTING</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ENVIRONMENT_PROCESS_PATH</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_HEXADECIMAL_STRING_CONVERSION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_RESILIENCE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_INT32_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_PEM_ENCODED_KEY_IMPORT</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_REDIRECTION_ON_SIGN_IN</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TASK_WAIT_ASYNC</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TEXT_ELEMENT_ENUMERATOR</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TIME_PROVIDER</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_WINFORMS_TASK_DIALOG</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ZLIB_COMPRESSION</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'   And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '1.0'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '1.6'))) ">
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7.2'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
     <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'   And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')))   Or
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
                 ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7.2'))) Or
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_GENERATION</DefineConstants>
@@ -80,147 +86,53 @@
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) Or
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_BROTLI_COMPRESSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_CURRENT_USER_ONLY_PIPE_OPTION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_STREAM_MEMORY_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TIME_CONSTANT_COMPARISONS</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.2'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHORIZATION_MIDDLEWARE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ENDPOINT_ROUTING</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_HOST_APPLICATION_LIFETIME</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_HOST_ENVIRONMENT</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_INTEGER32_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_BCL_ASYNC_ENUMERABLE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_DBSET_VALUETASK_FINDASYNC</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_ENVIRONMENT_PROCESS_PATH</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_HEXADECIMAL_STRING_CONVERSION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_PEM_ENCODED_KEY_IMPORT</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_TEXT_ELEMENT_ENUMERATOR</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_WINFORMS_TASK_DIALOG</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_APPLICATION_CONFIGURATION_INITIALIZATION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_DIRECT_JSON_ELEMENT_SERIALIZATION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_JSON_NODES</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_TASK_WAIT_ASYNC</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ZLIB_COMPRESSION</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '7.0'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_HANDLER_SELECTION_FALLBACK</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_BULK_DBSET_OPERATIONS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_REDIRECTION_ON_SIGN_IN</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_RESILIENCE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_TIME_PROVIDER</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))) ">
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0')) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_LOADER</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'Android'     And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '21.0'))) ">
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(TargetPlatformIdentifier)' == 'Android' ">
     <DefineConstants>$(DefineConstants);SUPPORTS_ANDROID</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ANDROIDX_BROWSER</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) Or
-
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'MacCatalyst' And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '13.1'))) ">
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And ('$(TargetPlatformIdentifier)' == 'iOS' Or
+                                                                     '$(TargetPlatformIdentifier)' == 'MacCatalyst') ">
     <DefineConstants>$(DefineConstants);SUPPORTS_UIKIT</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'macOS'       And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.15'))) ">
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(TargetPlatformIdentifier)' == 'macOS' ">
     <DefineConstants>$(DefineConstants);SUPPORTS_APPKIT</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) Or
-
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'MacCatalyst' And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '13.1'))) Or
-
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'macOS'       And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.15'))) ">
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And ('$(TargetPlatformIdentifier)' == 'iOS'         Or
+                                                                     '$(TargetPlatformIdentifier)' == 'MacCatalyst' Or
+                                                                     '$(TargetPlatformIdentifier)' == 'macOS') ">
     <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_SERVICES</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_FOUNDATION</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '13.0'))) Or
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore' And '$(TargetPlatformIdentifier)' == 'UAP') Or
 
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'MacCatalyst' And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '13.1'))) Or
-
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'macOS'       And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.15'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_PRESENTATION_CONTEXT_PROVIDER</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore'    And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'UAP'         And '$(TargetPlatformVersion)' != '' And
-                  $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0'))) Or
-
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
-
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
-                 '$(TargetPlatformIdentifier)'  == 'Windows'     And '$(TargetPlatformVersion)' != '' And
+                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                 '$(TargetPlatformIdentifier)'  == 'Windows'     And
+                 '$(TargetPlatformVersion)'     != ''            And
                   $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '8.0'))) Or
 
                 ('$(TargetFrameworkIdentifier)' == '.NETFramework') ">
@@ -280,8 +192,6 @@
   -->
 
   <Target Name="_CalculateXbfSupport"
-          Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '5.0')) And
-                      '$(TargetPlatformIdentifier)'  == 'UAP'      And '$(TargetPlatformVersion)' != '' And
-                       $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0')) " />
+          Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' And '$(TargetPlatformIdentifier)' == 'UAP' " />
 
 </Project>

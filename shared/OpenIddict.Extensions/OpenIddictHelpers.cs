@@ -855,7 +855,7 @@ internal static class OpenIddictHelpers
                 // Pick a character in the specified charset by generating a random index.
                 builder.Append(charset[index: algorithm switch
                 {
-#if SUPPORTS_INTEGER32_RANDOM_NUMBER_GENERATOR_METHODS
+#if SUPPORTS_INT32_RANDOM_NUMBER_GENERATOR_METHODS
                     // If no custom random number generator was registered, use
                     // the static GetInt32() API on platforms that support it.
                     null => RandomNumberGenerator.GetInt32(0, charset.Length),

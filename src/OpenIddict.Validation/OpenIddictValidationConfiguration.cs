@@ -39,9 +39,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             throw new ArgumentNullException(nameof(options));
         }
 
-#if SUPPORTS_TIME_PROVIDER
         options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
-#endif
 
         if (options.JsonWebTokenHandler is null)
         {
@@ -100,13 +98,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
             }
         }
 
-        var now = (
-#if SUPPORTS_TIME_PROVIDER
-                options.TimeProvider?.GetUtcNow() ??
-#endif
-                DateTimeOffset.UtcNow
-            )
-            .LocalDateTime;
+        var now = options.TimeProvider.GetUtcNow().LocalDateTime;
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
         if (options.EncryptionCredentials.Count is not 0 &&

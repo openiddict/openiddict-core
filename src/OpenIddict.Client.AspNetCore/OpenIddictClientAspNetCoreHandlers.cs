@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -20,10 +21,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using OpenIddict.Extensions;
 using Properties = OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants.Properties;
-
-#if SUPPORTS_JSON_NODES
-using System.Text.Json.Nodes;
-#endif
 
 namespace OpenIddict.Client.AspNetCore;
 
@@ -625,15 +622,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     {
                         OpenIddictParameter value => value,
                         JsonElement         value => new OpenIddictParameter(value),
+                        JsonNode            value => new OpenIddictParameter(value),
                         bool                value => new OpenIddictParameter(value),
                         int                 value => new OpenIddictParameter(value),
                         long                value => new OpenIddictParameter(value),
                         string              value => new OpenIddictParameter(value),
                         string[]            value => new OpenIddictParameter(value),
 
-#if SUPPORTS_JSON_NODES
-                        JsonNode            value => new OpenIddictParameter(value),
-#endif
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
                     };
                 }
@@ -948,15 +943,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     {
                         OpenIddictParameter value => value,
                         JsonElement         value => new OpenIddictParameter(value),
+                        JsonNode            value => new OpenIddictParameter(value),
                         bool                value => new OpenIddictParameter(value),
                         int                 value => new OpenIddictParameter(value),
                         long                value => new OpenIddictParameter(value),
                         string              value => new OpenIddictParameter(value),
                         string[]            value => new OpenIddictParameter(value),
 
-#if SUPPORTS_JSON_NODES
-                        JsonNode            value => new OpenIddictParameter(value),
-#endif
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
                     };
                 }

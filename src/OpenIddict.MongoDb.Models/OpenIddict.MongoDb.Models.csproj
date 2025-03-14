@@ -21,8 +21,7 @@
   </ItemGroup>
 
   <ItemGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 

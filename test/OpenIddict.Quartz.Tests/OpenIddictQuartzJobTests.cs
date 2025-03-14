@@ -28,7 +28,10 @@ public class OpenIddictQuartzJobTests
         var scope = Mock.Of<IServiceScope>(scope => scope.ServiceProvider == provider);
         var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
         var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
-            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions());
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
 
         var job = new OpenIddictQuartzJob(monitor,
             Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));
@@ -51,10 +54,7 @@ public class OpenIddictQuartzJobTests
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
             provider.GetService(typeof(IOpenIddictTokenManager)) == manager.Object);
 
-        var job = CreateJob(provider, new OpenIddictQuartzOptions
-        {
-            DisableTokenPruning = true
-        });
+        var job = CreateJob(provider, options => options.DisableTokenPruning = true);
 
         // Act
         await job.Execute(Mock.Of<IJobExecutionContext>());
@@ -74,10 +74,7 @@ public class OpenIddictQuartzJobTests
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
             provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
 
-        var job = CreateJob(provider, new OpenIddictQuartzOptions
-        {
-            DisableAuthorizationPruning = true
-        });
+        var job = CreateJob(provider, options => options.DisableAuthorizationPruning = true);
 
         // Act
         await job.Execute(Mock.Of<IJobExecutionContext>());
@@ -319,10 +316,7 @@ public class OpenIddictQuartzJobTests
 
         var context = Mock.Of<IJobExecutionContext>(context => context.RefireCount == 5);
 
-        var job = CreateJob(provider, new OpenIddictQuartzOptions
-        {
-            MaximumRefireCount = 5
-        });
+        var job = CreateJob(provider, options => options.MaximumRefireCount = 5);
 
         // Act and assert
         var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
@@ -330,12 +324,18 @@ public class OpenIddictQuartzJobTests
         Assert.False(exception.RefireImmediately);
     }
 
-    private static OpenIddictQuartzJob CreateJob(IServiceProvider provider, OpenIddictQuartzOptions? options = null)
+    private static OpenIddictQuartzJob CreateJob(IServiceProvider provider, Action<OpenIddictQuartzOptions>? configuration = null)
     {
         var scope = Mock.Of<IServiceScope>(scope => scope.ServiceProvider == provider);
         var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
-        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
-            monitor => monitor.CurrentValue == (options ?? new OpenIddictQuartzOptions()));
+        var options = new OpenIddictQuartzOptions
+        {
+            TimeProvider = TimeProvider.System
+        };
+
+        configuration?.Invoke(options);
+
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(monitor => monitor.CurrentValue == options);
 
         return new OpenIddictQuartzJob(monitor,
             Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));

@@ -19,10 +19,6 @@ using Microsoft.Net.Http.Headers;
 using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationConstants;
 
-#if !SUPPORTS_HOST_APPLICATION_LIFETIME
-using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
-#endif
-
 namespace OpenIddict.Client.SystemIntegration;
 
 [EditorBrowsable(EditorBrowsableState.Never)]

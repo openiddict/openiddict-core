@@ -106,7 +106,6 @@
     </NetFrameworkTargetFrameworks>
 
     <NetCoreTargetFrameworks Condition=" '$(NetCoreTargetFrameworks)' == '' ">
-      net6.0;
       net8.0;
       net9.0
     </NetCoreTargetFrameworks>
@@ -137,8 +136,6 @@
 
     <NetCoreWindowsTargetFrameworks
       Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' And '$(SupportsWindowsTargeting)' == 'true' ">
-      net6.0-windows7.0;
-      net6.0-windows10.0.17763;
       net8.0-windows7.0;
       net8.0-windows10.0.17763;
       net9.0-windows7.0;
