@@ -156,7 +156,7 @@ public class AuthorizationController : Controller
                         .SetClaim(Claims.Email, user.Email)
                         .SetClaim(Claims.Name, user.UserName)
                         .SetClaim(Claims.PreferredUsername, user.UserName)
-                        .SetClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
+                        .SetClaims(Claims.Role, [.. await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)]);
 
                 // Note: in this sample, the granted scopes match the requested scope
                 // but you may want to allow the user to uncheck specific scopes.
@@ -280,7 +280,7 @@ public class AuthorizationController : Controller
                 .SetClaim(Claims.Email, user.Email)
                 .SetClaim(Claims.Name, user.UserName)
                 .SetClaim(Claims.PreferredUsername, user.UserName)
-                .SetClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
+                .SetClaims(Claims.Role, [.. await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)]);
 
         // Note: in this sample, the granted scopes match the requested scope
         // but you may want to allow the user to uncheck specific scopes.
@@ -400,7 +400,7 @@ public class AuthorizationController : Controller
                     .SetClaim(Claims.Email, user.Email)
                     .SetClaim(Claims.Name, user.UserName)
                     .SetClaim(Claims.PreferredUsername, user.UserName)
-                    .SetClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
+                    .SetClaims(Claims.Role, [.. await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)]);
 
             identity.SetDestinations(GetDestinations);
 

@@ -17,7 +17,8 @@ public static partial class OpenIddictClientHandlers
 {
     public static class Discovery
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Configuration response handling:
              */
@@ -59,7 +60,7 @@ public static partial class OpenIddictClientHandlers
             ValidateWellKnownJsonWebKeySetParameters.Descriptor,
             HandleJsonWebKeySetErrorResponse.Descriptor,
             ExtractSigningKeys.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the configuration response.

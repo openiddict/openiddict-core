@@ -16,7 +16,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Revocation
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Revocation request processing:
              */
@@ -40,6 +41,6 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractEmptyHttpResponse<ExtractRevocationResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractRevocationResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractRevocationResponseContext>.Descriptor
-        ]);
+        ];
     }
 }

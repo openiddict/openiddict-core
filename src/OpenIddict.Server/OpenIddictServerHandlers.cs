@@ -23,7 +23,8 @@ namespace OpenIddict.Server;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictServerHandlers
 {
-    public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+    public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+    [
         /*
          * Top-level request processing:
          */
@@ -126,7 +127,7 @@ public static partial class OpenIddictServerHandlers
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
         .. UserInfo.DefaultHandlers
-    ]);
+    ];
 
     /// <summary>
     /// Contains the logic responsible for inferring the endpoint type from the request URI.

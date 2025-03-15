@@ -12,6 +12,5 @@ namespace OpenIddict.Server.DataProtection;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictServerDataProtectionHandlers
 {
-    public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; }
-        = ImmutableArray.Create([.. Protection.DefaultHandlers]);
+    public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = [.. Protection.DefaultHandlers];
 }

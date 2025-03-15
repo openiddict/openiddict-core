@@ -16,7 +16,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Introspection request processing:
              */
@@ -39,6 +40,6 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractWwwAuthenticateHeader<ExtractIntrospectionResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractIntrospectionResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractIntrospectionResponseContext>.Descriptor
-        ]);
+        ];
     }
 }

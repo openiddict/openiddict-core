@@ -302,10 +302,10 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
 
         if (scope.Resources is not { Count: > 0 })
         {
-            return new(ImmutableArray<string>.Empty);
+            return new([]);
         }
 
-        return new(scope.Resources.ToImmutableArray());
+        return new([.. scope.Resources]);
     }
 
     /// <inheritdoc/>

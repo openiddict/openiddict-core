@@ -17,7 +17,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 {
     public static class Session
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * End-session request extraction:
              */
@@ -40,7 +41,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             ProcessStatusCodePagesErrorResponse<ApplyEndSessionResponseContext>.Descriptor,
             ProcessLocalErrorResponse<ApplyEndSessionResponseContext>.Descriptor,
             ProcessEmptyResponse<ApplyEndSessionResponseContext>.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.

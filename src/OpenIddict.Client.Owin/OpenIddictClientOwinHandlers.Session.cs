@@ -13,7 +13,8 @@ public static partial class OpenIddictClientOwinHandlers
 {
     public static class Session
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * End session request processing:
              */
@@ -36,7 +37,7 @@ public static partial class OpenIddictClientOwinHandlers
             AttachCacheControlHeader<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
             ProcessPassthroughErrorResponse<ApplyPostLogoutRedirectionResponseContext, RequirePostLogoutRedirectionEndpointPassthroughEnabled>.Descriptor,
             ProcessLocalErrorResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for processing end session requests using 302 redirects.

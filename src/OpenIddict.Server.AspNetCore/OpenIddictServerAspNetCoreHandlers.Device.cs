@@ -14,7 +14,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Device request extraction:
              */
@@ -50,7 +51,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             ProcessStatusCodePagesErrorResponse<ApplyEndUserVerificationResponseContext>.Descriptor,
             ProcessLocalErrorResponse<ApplyEndUserVerificationResponseContext>.Descriptor,
             ProcessEmptyResponse<ApplyEndUserVerificationResponseContext>.Descriptor
-        ]);
+        ];
     }
 
     /// <summary>

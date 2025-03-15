@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -510,7 +511,7 @@ public static class OpenIddictExtensions
 
         if (string.IsNullOrEmpty(destinations))
         {
-            return ImmutableArray<string>.Empty;
+            return [];
         }
 
         using var document = JsonDocument.Parse(destinations);
@@ -573,6 +574,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="claim">The <see cref="Claim"/> instance.</param>
     /// <param name="destinations">The destinations.</param>
+    [OverloadResolutionPriority(0)]
     public static Claim SetDestinations(this Claim claim, ImmutableArray<string> destinations)
     {
         if (claim is null)
@@ -619,16 +621,18 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="claim">The <see cref="Claim"/> instance.</param>
     /// <param name="destinations">The destinations.</param>
-    public static Claim SetDestinations(this Claim claim, IEnumerable<string>? destinations)
-        => claim.SetDestinations(destinations?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static Claim SetDestinations(this Claim claim, params string[]? destinations)
+        => claim.SetDestinations([.. destinations ?? []]);
 
     /// <summary>
     /// Adds specific destinations to a claim.
     /// </summary>
     /// <param name="claim">The <see cref="Claim"/> instance.</param>
     /// <param name="destinations">The destinations.</param>
-    public static Claim SetDestinations(this Claim claim, params string[]? destinations)
-        => claim.SetDestinations(destinations?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static Claim SetDestinations(this Claim claim, IEnumerable<string>? destinations)
+        => claim.SetDestinations([.. destinations ?? []]);
 
     /// <summary>
     /// Gets the destinations associated with all the claims of the given identity.
@@ -2923,6 +2927,7 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="audiences">The audiences to store.</param>
     /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsIdentity SetAudiences(this ClaimsIdentity identity, ImmutableArray<string> audiences)
         => identity.SetClaims(Claims.Private.Audience, audiences);
 
@@ -2933,6 +2938,7 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="audiences">The audiences to store.</param>
     /// <returns>The claims principal.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsPrincipal SetAudiences(this ClaimsPrincipal principal, ImmutableArray<string> audiences)
         => principal.SetClaims(Claims.Private.Audience, audiences);
 
@@ -2943,8 +2949,9 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="audiences">The audiences to store.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetAudiences(this ClaimsIdentity identity, IEnumerable<string>? audiences)
-        => identity.SetAudiences(audiences?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsIdentity SetAudiences(this ClaimsIdentity identity, params string[]? audiences)
+        => identity.SetAudiences([.. audiences ?? []]);
 
     /// <summary>
     /// Sets the audiences list in the claims principal.
@@ -2953,8 +2960,9 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="audiences">The audiences to store.</param>
     /// <returns>The claims principal.</returns>
-    public static ClaimsPrincipal SetAudiences(this ClaimsPrincipal principal, IEnumerable<string>? audiences)
-        => principal.SetAudiences(audiences?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsPrincipal SetAudiences(this ClaimsPrincipal principal, params string[]? audiences)
+        => principal.SetAudiences([.. audiences ?? []]);
 
     /// <summary>
     /// Sets the audiences list in the claims identity.
@@ -2963,8 +2971,9 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="audiences">The audiences to store.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetAudiences(this ClaimsIdentity identity, params string[]? audiences)
-        => identity.SetAudiences(audiences?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static ClaimsIdentity SetAudiences(this ClaimsIdentity identity, IEnumerable<string>? audiences)
+        => identity.SetAudiences([.. audiences ?? []]);
 
     /// <summary>
     /// Sets the audiences list in the claims principal.
@@ -2973,8 +2982,9 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="audiences">The audiences to store.</param>
     /// <returns>The claims principal.</returns>
-    public static ClaimsPrincipal SetAudiences(this ClaimsPrincipal principal, params string[]? audiences)
-        => principal.SetAudiences(audiences?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static ClaimsPrincipal SetAudiences(this ClaimsPrincipal principal, IEnumerable<string>? audiences)
+        => principal.SetAudiences([.. audiences ?? []]);
 
     /// <summary>
     /// Sets the presenters list in the claims identity.
@@ -2983,6 +2993,7 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="presenters">The presenters to store.</param>
     /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsIdentity SetPresenters(this ClaimsIdentity identity, ImmutableArray<string> presenters)
         => identity.SetClaims(Claims.Private.Presenter, presenters);
 
@@ -2993,6 +3004,7 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="presenters">The presenters to store.</param>
     /// <returns>The claims principal.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsPrincipal SetPresenters(this ClaimsPrincipal principal, ImmutableArray<string> presenters)
         => principal.SetClaims(Claims.Private.Presenter, presenters);
 
@@ -3003,8 +3015,9 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="presenters">The presenters to store.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetPresenters(this ClaimsIdentity identity, IEnumerable<string>? presenters)
-        => identity.SetPresenters(presenters?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsIdentity SetPresenters(this ClaimsIdentity identity, params string[]? presenters)
+        => identity.SetPresenters([.. presenters ?? []]);
 
     /// <summary>
     /// Sets the presenters list in the claims principal.
@@ -3013,8 +3026,9 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="presenters">The presenters to store.</param>
     /// <returns>The claims principal.</returns>
-    public static ClaimsPrincipal SetPresenters(this ClaimsPrincipal principal, IEnumerable<string>? presenters)
-        => principal.SetPresenters(presenters?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsPrincipal SetPresenters(this ClaimsPrincipal principal, params string[]? presenters)
+        => principal.SetPresenters([.. presenters ?? []]);
 
     /// <summary>
     /// Sets the presenters list in the claims identity.
@@ -3023,8 +3037,9 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="presenters">The presenters to store.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetPresenters(this ClaimsIdentity identity, params string[]? presenters)
-        => identity.SetPresenters(presenters?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static ClaimsIdentity SetPresenters(this ClaimsIdentity identity, IEnumerable<string>? presenters)
+        => identity.SetPresenters([.. presenters ?? []]);
 
     /// <summary>
     /// Sets the presenters list in the claims principal.
@@ -3033,8 +3048,9 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="presenters">The presenters to store.</param>
     /// <returns>The claims principal.</returns>
-    public static ClaimsPrincipal SetPresenters(this ClaimsPrincipal principal, params string[]? presenters)
-        => principal.SetPresenters(presenters?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static ClaimsPrincipal SetPresenters(this ClaimsPrincipal principal, IEnumerable<string>? presenters)
+        => principal.SetPresenters([.. presenters ?? []]);
 
     /// <summary>
     /// Sets the resources list in the claims identity.
@@ -3043,6 +3059,7 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="resources">The resources to store.</param>
     /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsIdentity SetResources(this ClaimsIdentity identity, ImmutableArray<string> resources)
         => identity.SetClaims(Claims.Private.Resource, resources);
 
@@ -3053,6 +3070,7 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="resources">The resources to store.</param>
     /// <returns>The claims principal.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsPrincipal SetResources(this ClaimsPrincipal principal, ImmutableArray<string> resources)
         => principal.SetClaims(Claims.Private.Resource, resources);
 
@@ -3063,8 +3081,9 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="resources">The resources to store.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetResources(this ClaimsIdentity identity, IEnumerable<string>? resources)
-        => identity.SetResources(resources?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsIdentity SetResources(this ClaimsIdentity identity, params string[]? resources)
+        => identity.SetResources([.. resources ?? []]);
 
     /// <summary>
     /// Sets the resources list in the claims principal.
@@ -3073,8 +3092,9 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="resources">The resources to store.</param>
     /// <returns>The claims principal.</returns>
-    public static ClaimsPrincipal SetResources(this ClaimsPrincipal principal, IEnumerable<string>? resources)
-        => principal.SetResources(resources?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsPrincipal SetResources(this ClaimsPrincipal principal, params string[]? resources)
+        => principal.SetResources([.. resources ?? []]);
 
     /// <summary>
     /// Sets the resources list in the claims identity.
@@ -3083,8 +3103,9 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="resources">The resources to store.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetResources(this ClaimsIdentity identity, params string[]? resources)
-        => identity.SetResources(resources?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static ClaimsIdentity SetResources(this ClaimsIdentity identity, IEnumerable<string>? resources)
+        => identity.SetResources([.. resources ?? []]);
 
     /// <summary>
     /// Sets the resources list in the claims principal.
@@ -3093,8 +3114,9 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="resources">The resources to store.</param>
     /// <returns>The claims principal.</returns>
-    public static ClaimsPrincipal SetResources(this ClaimsPrincipal principal, params string[]? resources)
-        => principal.SetResources(resources?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static ClaimsPrincipal SetResources(this ClaimsPrincipal principal, IEnumerable<string>? resources)
+        => principal.SetResources([.. resources ?? []]);
 
     /// <summary>
     /// Sets the scopes list in the claims identity.
@@ -3103,6 +3125,7 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="scopes">The scopes to store.</param>
     /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsIdentity SetScopes(this ClaimsIdentity identity, ImmutableArray<string> scopes)
         => identity.SetClaims(Claims.Private.Scope, scopes);
 
@@ -3113,6 +3136,7 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="scopes">The scopes to store.</param>
     /// <returns>The claims principal.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsPrincipal SetScopes(this ClaimsPrincipal principal, ImmutableArray<string> scopes)
         => principal.SetClaims(Claims.Private.Scope, scopes);
 
@@ -3123,8 +3147,9 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="scopes">The scopes to store.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetScopes(this ClaimsIdentity identity, IEnumerable<string>? scopes)
-        => identity.SetScopes(scopes?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsIdentity SetScopes(this ClaimsIdentity identity, params string[]? scopes)
+        => identity.SetScopes([.. scopes ?? []]);
 
     /// <summary>
     /// Sets the scopes list in the claims principal.
@@ -3133,8 +3158,9 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="scopes">The scopes to store.</param>
     /// <returns>The claims principal.</returns>
-    public static ClaimsPrincipal SetScopes(this ClaimsPrincipal principal, IEnumerable<string>? scopes)
-        => principal.SetScopes(scopes?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsPrincipal SetScopes(this ClaimsPrincipal principal, params string[]? scopes)
+        => principal.SetScopes([.. scopes ?? []]);
 
     /// <summary>
     /// Sets the scopes list in the claims identity.
@@ -3143,8 +3169,9 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="scopes">The scopes to store.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetScopes(this ClaimsIdentity identity, params string[]? scopes)
-        => identity.SetScopes(scopes?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static ClaimsIdentity SetScopes(this ClaimsIdentity identity, IEnumerable<string>? scopes)
+        => identity.SetScopes([.. scopes ?? []]);
 
     /// <summary>
     /// Sets the scopes list in the claims principal.
@@ -3153,8 +3180,9 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="scopes">The scopes to store.</param>
     /// <returns>The claims principal.</returns>
-    public static ClaimsPrincipal SetScopes(this ClaimsPrincipal principal, params string[]? scopes)
-        => principal.SetScopes(scopes?.ToImmutableArray() ?? ImmutableArray<string>.Empty);
+    [OverloadResolutionPriority(-2)]
+    public static ClaimsPrincipal SetScopes(this ClaimsPrincipal principal, IEnumerable<string>? scopes)
+        => principal.SetScopes([.. scopes ?? []]);
 
     /// <summary>
     /// Sets the access token lifetime associated with the claims identity.
@@ -3342,7 +3370,7 @@ public static class OpenIddictExtensions
 
         if (string.IsNullOrEmpty(source))
         {
-            return ImmutableArray<string>.Empty;
+            return [];
         }
 
         var builder = ImmutableArray.CreateBuilder<string>();

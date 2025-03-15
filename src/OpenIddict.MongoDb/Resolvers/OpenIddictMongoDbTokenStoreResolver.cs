@@ -15,7 +15,7 @@ namespace OpenIddict.MongoDb;
 /// </summary>
 public sealed class OpenIddictMongoDbTokenStoreResolver : IOpenIddictTokenStoreResolver
 {
-    private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
+    private readonly ConcurrentDictionary<Type, Type> _cache = new();
     private readonly IServiceProvider _provider;
 
     public OpenIddictMongoDbTokenStoreResolver(IServiceProvider provider)

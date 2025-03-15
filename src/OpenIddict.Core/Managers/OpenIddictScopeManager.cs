@@ -783,7 +783,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         await Store.SetDisplayNamesAsync(scope, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
         await Store.SetNameAsync(scope, descriptor.Name, cancellationToken);
         await Store.SetPropertiesAsync(scope, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
-        await Store.SetResourcesAsync(scope, descriptor.Resources.ToImmutableArray(), cancellationToken);
+        await Store.SetResourcesAsync(scope, [.. descriptor.Resources], cancellationToken);
     }
 
     /// <summary>

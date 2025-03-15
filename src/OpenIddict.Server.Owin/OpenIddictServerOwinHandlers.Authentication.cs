@@ -19,7 +19,8 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Authentication
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Authorization request extraction:
              */
@@ -60,7 +61,7 @@ public static partial class OpenIddictServerOwinHandlers
             AttachCacheControlHeader<ApplyPushedAuthorizationResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyPushedAuthorizationResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyPushedAuthorizationResponseContext>.Descriptor,
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.

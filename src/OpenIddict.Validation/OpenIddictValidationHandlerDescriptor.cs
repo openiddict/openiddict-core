@@ -31,7 +31,7 @@ public sealed class OpenIddictValidationHandlerDescriptor
     /// Gets the list of filters responsible for excluding the handler
     /// from the activated handlers if it doesn't meet the criteria.
     /// </summary>
-    public ImmutableArray<Type> FilterTypes { get; private set; } = ImmutableArray<Type>.Empty;
+    public ImmutableArray<Type> FilterTypes { get; private set; } = [];
 
     /// <summary>
     /// Gets the order assigned to the handler.
@@ -53,8 +53,7 @@ public sealed class OpenIddictValidationHandlerDescriptor
     /// </summary>
     /// <typeparam name="TContext">The event context type.</typeparam>
     /// <returns>A new descriptor builder.</returns>
-    public static Builder<TContext> CreateBuilder<TContext>() where TContext : BaseContext
-        => new Builder<TContext>();
+    public static Builder<TContext> CreateBuilder<TContext>() where TContext : BaseContext => new();
 
     /// <summary>
     /// Contains methods allowing to build a descriptor instance.
@@ -269,10 +268,10 @@ public sealed class OpenIddictValidationHandlerDescriptor
         /// Build a new descriptor instance, based on the parameters that were previously set.
         /// </summary>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public OpenIddictValidationHandlerDescriptor Build() => new OpenIddictValidationHandlerDescriptor
+        public OpenIddictValidationHandlerDescriptor Build() => new()
         {
             ContextType = typeof(TContext),
-            FilterTypes = _filters.ToImmutableArray(),
+            FilterTypes = [.. _filters],
             Order = _order,
             ServiceDescriptor = _descriptor ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0105)),
             Type = _type

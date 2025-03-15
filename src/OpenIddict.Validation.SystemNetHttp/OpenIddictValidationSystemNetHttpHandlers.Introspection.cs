@@ -12,7 +12,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Introspection request processing:
              */
@@ -35,6 +36,6 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             ExtractWwwAuthenticateHeader<ExtractIntrospectionResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractIntrospectionResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractIntrospectionResponseContext>.Descriptor
-        ]);
+        ];
     }
 }

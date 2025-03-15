@@ -2816,7 +2816,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleTokenRequest_RevokesTokensWhenAuthorizationCodeIsAlreadyRedeemed()
     {
         // Arrange
-        var tokens = ImmutableArray.Create(new OpenIddictToken(), new OpenIddictToken(), new OpenIddictToken());
+        ImmutableArray<OpenIddictToken> tokens = [new(), new(), new()];
 
         var manager = CreateTokenManager(mock =>
         {
@@ -2915,7 +2915,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleTokenRequest_RevokesTokensWhenRefreshTokenIsAlreadyRedeemedAndLeewayIsNull()
     {
         // Arrange
-        var tokens = ImmutableArray.Create(new OpenIddictToken(), new OpenIddictToken(), new OpenIddictToken());
+        ImmutableArray<OpenIddictToken> tokens = [new(), new(), new()];
 
         var manager = CreateTokenManager(mock =>
         {
@@ -3006,7 +3006,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleTokenRequest_RevokesTokensWhenRefreshTokenIsAlreadyRedeemedAndCannotBeReused()
     {
         // Arrange
-        var tokens = ImmutableArray.Create(new OpenIddictToken(), new OpenIddictToken(), new OpenIddictToken());
+        ImmutableArray<OpenIddictToken> tokens = [new(), new(), new()];
 
         var manager = CreateTokenManager(mock =>
         {
@@ -3097,7 +3097,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleTokenRequest_DoesNotRevokeTokensWhenRefreshTokenIsAlreadyRedeemedAndCanBeReused()
     {
         // Arrange
-        var tokens = ImmutableArray.Create(new OpenIddictToken(), new OpenIddictToken(), new OpenIddictToken());
+        ImmutableArray<OpenIddictToken> tokens = [new(), new(), new()];
 
         var manager = CreateTokenManager(mock =>
         {
@@ -4284,7 +4284,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Null(response.ErrorUri);
         Assert.NotNull(response.AccessToken);
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]
@@ -4375,6 +4375,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
     }
 }

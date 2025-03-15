@@ -25,7 +25,8 @@ namespace OpenIddict.Client.SystemNetHttp;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientSystemNetHttpHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+    [
         /*
          * Authentication processing:
          */
@@ -54,7 +55,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         .. Introspection.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. UserInfo.DefaultHandlers
-    ]);
+    ];
 
     /// <summary>
     /// Contains the logic responsible for negotiating the best token endpoint client

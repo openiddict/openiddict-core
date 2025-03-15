@@ -1128,7 +1128,7 @@ internal static class OpenIddictHelpers
 
         private readonly TextReader _reader;
         private readonly char[] _buffer;
-        private readonly StringBuilder _builder = new StringBuilder();
+        private readonly StringBuilder _builder = new();
         private int _bufferOffset;
         private int _bufferCount;
         private string? _currentKey;

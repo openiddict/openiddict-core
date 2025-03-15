@@ -423,7 +423,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
 
         if (string.IsNullOrEmpty(scope.Resources))
         {
-            return new(ImmutableArray<string>.Empty);
+            return new([]);
         }
 
         // Note: parsing the stringified resources is an expensive operation.

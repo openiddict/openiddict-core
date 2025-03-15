@@ -69,5 +69,5 @@ public class OpenIddictMongoDbScope
     /// Gets or sets the resources associated with the current scope.
     /// </summary>
     [BsonElement("resources"), BsonIgnoreIfNull]
-    public virtual IReadOnlyList<string>? Resources { get; set; } = ImmutableList.Create<string>();
+    public virtual IReadOnlyList<string>? Resources { get; set; } = [];
 }

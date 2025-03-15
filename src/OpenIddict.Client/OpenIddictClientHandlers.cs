@@ -23,7 +23,8 @@ namespace OpenIddict.Client;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictClientHandlers
 {
-    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+    public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+    [
         /*
          * Top-level request processing:
          */
@@ -217,7 +218,7 @@ public static partial class OpenIddictClientHandlers
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
         .. UserInfo.DefaultHandlers
-    ]);
+    ];
 
     /// <summary>
     /// Contains the logic responsible for inferring the endpoint type from the request URI.
@@ -5385,7 +5386,7 @@ public static partial class OpenIddictClientHandlers
             principal.SetClaim(Claims.Private.Nonce, context.Nonce);
 
             // Store the requested scopes in the state token.
-            principal.SetClaims(Claims.Private.Scope, context.Scopes.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scope, [.. context.Scopes]);
 
             context.StateTokenPrincipal = principal;
 

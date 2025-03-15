@@ -21,7 +21,8 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Token validation:
              */
@@ -44,7 +45,7 @@ public static partial class OpenIddictServerHandlers
             CreateTokenEntry.Descriptor,
             GenerateIdentityModelToken.Descriptor,
             AttachTokenPayload.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
@@ -338,7 +339,7 @@ public static partial class OpenIddictServerHandlers
                 {
                     0 => true, // If no specific token type is expected, accept all token types at this stage.
                     1 => await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ElementAt(0)),
-                    _ => await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ToImmutableArray())
+                    _ => await _tokenManager.HasTypeAsync(token, [.. context.ValidTokenTypes])
                 }))
                 {
                     context.Reject(

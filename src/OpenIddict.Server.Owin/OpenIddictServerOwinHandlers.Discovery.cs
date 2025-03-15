@@ -12,7 +12,8 @@ public static partial class OpenIddictServerOwinHandlers
 {
     public static class Discovery
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Configuration request extraction:
              */
@@ -40,6 +41,6 @@ public static partial class OpenIddictServerOwinHandlers
             SuppressFormsAuthenticationRedirect<ApplyJsonWebKeySetResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyJsonWebKeySetResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyJsonWebKeySetResponseContext>.Descriptor
-        ]);
+        ];
     }
 }

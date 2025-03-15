@@ -20,7 +20,8 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Session
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * End-session request top-level processing:
              */
@@ -53,7 +54,7 @@ public static partial class OpenIddictServerHandlers
              */
             AttachPostLogoutRedirectUri.Descriptor,
             AttachResponseState.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for extracting end session requests and invoking the corresponding event handlers.

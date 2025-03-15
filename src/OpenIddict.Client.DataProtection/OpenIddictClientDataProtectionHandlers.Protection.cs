@@ -21,7 +21,8 @@ public static partial class OpenIddictClientDataProtectionHandlers
 {
     public static class Protection
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Token validation:
              */
@@ -32,7 +33,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
              */
             OverrideGeneratedTokenFormat.Descriptor,
             GenerateDataProtectionToken.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using Data Protection.

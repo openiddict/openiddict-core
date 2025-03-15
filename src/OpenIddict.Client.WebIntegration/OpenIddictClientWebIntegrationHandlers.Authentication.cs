@@ -13,12 +13,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 {
     public static class Authentication
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Authorization request preparation:
              */
             MapNonStandardRequestParameters.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for mapping non-standard request parameters

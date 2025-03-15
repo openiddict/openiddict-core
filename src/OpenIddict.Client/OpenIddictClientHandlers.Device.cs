@@ -15,7 +15,8 @@ public static partial class OpenIddictClientHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Device authorization response handling:
              */
@@ -23,7 +24,7 @@ public static partial class OpenIddictClientHandlers
             HandleErrorResponse.Descriptor,
             ValidateVerificationEndpointUri.Descriptor,
             ValidateExpiration.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the device authorization response.

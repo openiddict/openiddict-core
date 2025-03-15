@@ -423,7 +423,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string[]?) response[Metadata.TokenEndpointAuthMethodsSupported];
+        var methods = (string?[]?) response[Metadata.TokenEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
@@ -465,7 +465,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string[]?) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
+        var methods = (string?[]?) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
@@ -507,7 +507,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string[]?) response[Metadata.RevocationEndpointAuthMethodsSupported];
+        var methods = (string?[]?) response[Metadata.RevocationEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
@@ -550,7 +550,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string[]?) response[Metadata.DeviceAuthorizationEndpointAuthMethodsSupported];
+        var methods = (string?[]?) response[Metadata.DeviceAuthorizationEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
@@ -592,7 +592,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string[]?) response[Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported];
+        var methods = (string?[]?) response[Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
@@ -617,7 +617,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var types = (string[]?) response[Metadata.GrantTypesSupported];
+        var types = (string?[]?) response[Metadata.GrantTypesSupported];
 
         // Assert
         Assert.NotNull(types);
@@ -659,7 +659,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string[]?) response[Metadata.CodeChallengeMethodsSupported];
+        var methods = (string?[]?) response[Metadata.CodeChallengeMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
@@ -701,7 +701,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var modes = (string[]?) response[Metadata.ResponseModesSupported];
+        var modes = (string?[]?) response[Metadata.ResponseModesSupported];
 
         // Assert
         Assert.NotNull(modes);
@@ -743,7 +743,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var types = (string[]?) response[Metadata.ResponseTypesSupported];
+        var types = (string?[]?) response[Metadata.ResponseTypesSupported];
 
         // Assert
         Assert.NotNull(types);
@@ -785,7 +785,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var scopes = (string[]?) response[Metadata.ScopesSupported];
+        var scopes = (string?[]?) response[Metadata.ScopesSupported];
 
         // Assert
         Assert.NotNull(scopes);
@@ -827,7 +827,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var claims = (string[]?) response[Metadata.ClaimsSupported];
+        var claims = (string?[]?) response[Metadata.ClaimsSupported];
 
         // Assert
         Assert.NotNull(claims);
@@ -850,7 +850,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var types = (string[]?) response[Metadata.SubjectTypesSupported];
+        var types = (string?[]?) response[Metadata.SubjectTypesSupported];
 
         // Assert
         Assert.NotNull(types);
@@ -874,7 +874,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var types = (string[]?) response[Metadata.PromptValuesSupported];
+        var types = (string?[]?) response[Metadata.PromptValuesSupported];
 
         // Assert
         Assert.NotNull(types);
@@ -905,7 +905,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
+        var algorithms = (string?[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
         Assert.NotNull(algorithms);
@@ -927,7 +927,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
+        var algorithms = (string?[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
         Assert.NotNull(algorithms);
@@ -953,7 +953,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
+        var algorithms = (string?[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
         Assert.NotNull(algorithms);
@@ -1646,6 +1646,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
     }
 }

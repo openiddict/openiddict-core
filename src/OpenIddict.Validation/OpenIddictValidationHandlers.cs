@@ -18,7 +18,8 @@ namespace OpenIddict.Validation;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictValidationHandlers
 {
-    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } =
+    [
         /*
          * Authentication processing:
          */
@@ -53,7 +54,7 @@ public static partial class OpenIddictValidationHandlers
         .. Discovery.DefaultHandlers,
         .. Introspection.DefaultHandlers,
         .. Protection.DefaultHandlers
-    ]);
+    ];
 
     /// <summary>
     /// Contains the logic responsible for selecting the token types that should be validated.

@@ -173,7 +173,7 @@ public class OpenIddictQuartzBuilderTests
         => new ServiceCollection().AddOptions();
 
     private static OpenIddictQuartzBuilder CreateBuilder(IServiceCollection services)
-        => new OpenIddictQuartzBuilder(services);
+        => new(services);
 
     private static OpenIddictQuartzOptions GetOptions(IServiceCollection services)
     {

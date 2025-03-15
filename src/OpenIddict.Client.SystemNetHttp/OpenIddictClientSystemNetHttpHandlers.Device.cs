@@ -12,7 +12,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Device authorization request processing:
              */
@@ -35,6 +36,6 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractWwwAuthenticateHeader<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractDeviceAuthorizationResponseContext>.Descriptor
-        ]);
+        ];
     }
 }

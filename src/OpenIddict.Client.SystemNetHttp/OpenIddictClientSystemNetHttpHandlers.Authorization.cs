@@ -12,7 +12,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static class Authorization
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Pushed authorization request processing:
              */
@@ -35,6 +36,6 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             ExtractWwwAuthenticateHeader<ExtractPushedAuthorizationResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractPushedAuthorizationResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractPushedAuthorizationResponseContext>.Descriptor
-        ]);
+        ];
     }
 }

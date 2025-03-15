@@ -24,7 +24,8 @@ namespace OpenIddict.Validation.SystemNetHttp;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictValidationSystemNetHttpHandlers
 {
-    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } =
+    [
         /*
          * Authentication processing:
          */
@@ -32,7 +33,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
         .. Discovery.DefaultHandlers,
         .. Introspection.DefaultHandlers
-    ]);
+    ];
 
     /// <summary>
     /// Contains the logic responsible for negotiating the best introspection endpoint client

@@ -1345,7 +1345,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(application);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray.Create("rst:" + type));
+                .ReturnsAsync(["rst:" + type]);
 
             mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -1417,7 +1417,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray<string>.Empty);
+                .ReturnsAsync([]);
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -1593,7 +1593,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray<string>.Empty);
+                .ReturnsAsync([]);
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -1640,7 +1640,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(application);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray.Create("rst:" + type));
+                .ReturnsAsync(["rst:" + type]);
 
             mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -2541,7 +2541,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Null(response.ErrorUri);
         Assert.NotNull(response.AccessToken);
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
     }
 
     [Theory]
@@ -2683,7 +2683,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]
@@ -4089,7 +4089,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(application);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray.Create("rst:" + type));
+                .ReturnsAsync(["rst:" + type]);
 
             mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -4152,7 +4152,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray<string>.Empty);
+                .ReturnsAsync([]);
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -4328,7 +4328,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray<string>.Empty);
+                .ReturnsAsync([]);
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -4375,7 +4375,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(application);
 
             mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray.Create("rst:" + type));
+                .ReturnsAsync(["rst:" + type]);
 
             mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -5231,7 +5231,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Null(response.ErrorUri);
         Assert.NotNull(response.RequestUri);
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]
@@ -5306,6 +5306,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
     }
 }

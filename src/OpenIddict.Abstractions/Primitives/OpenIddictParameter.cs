@@ -528,7 +528,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 is JsonElement { ValueKind: JsonValueKind.Array } element
                 => GetParametersFromJsonElement(element),
 
-            _ => ImmutableList.Create<OpenIddictParameter>()
+            _ => []
         };
 
         static IReadOnlyList<OpenIddictParameter> GetParametersFromArray(string?[] array)

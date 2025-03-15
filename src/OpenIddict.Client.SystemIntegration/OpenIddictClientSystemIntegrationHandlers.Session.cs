@@ -43,7 +43,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 {
     public static class Session
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * End session request processing:
              */
@@ -67,7 +68,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             ProcessEmptyHttpResponse.Descriptor,
             ProcessProtocolActivationResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor,
             ProcessPlatformCallbackResponse<ApplyPostLogoutRedirectionResponseContext>.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for initiating end session requests using an AS web authentication session.

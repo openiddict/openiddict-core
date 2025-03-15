@@ -15,7 +15,8 @@ public static partial class OpenIddictServerHandlers
 {
     public static class UserInfo
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * UserInfo request top-level processing:
              */
@@ -38,7 +39,7 @@ public static partial class OpenIddictServerHandlers
             AttachPrincipal.Descriptor,
             AttachAudiences.Descriptor,
             AttachClaims.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for extracting userinfo requests and invoking the corresponding event handlers.

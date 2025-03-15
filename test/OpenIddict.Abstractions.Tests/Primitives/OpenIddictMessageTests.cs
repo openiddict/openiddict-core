@@ -98,7 +98,7 @@ public class OpenIddictMessageTests
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
+        Assert.Equal<string?[]?>(["Fabrikam", "Contoso"], (string?[]?) message.GetParameter("parameter"));
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public class OpenIddictMessageTests
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
+        Assert.Equal<string?[]?>(["Fabrikam", "Contoso"], (string?[]?) message.GetParameter("parameter"));
     }
 
     [Fact]

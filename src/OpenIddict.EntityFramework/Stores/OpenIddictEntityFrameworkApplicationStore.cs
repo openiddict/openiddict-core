@@ -475,7 +475,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
         if (string.IsNullOrEmpty(application.Permissions))
         {
-            return new(ImmutableArray<string>.Empty);
+            return new([]);
         }
 
         // Note: parsing the stringified permissions is an expensive operation.
@@ -516,7 +516,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
         if (string.IsNullOrEmpty(application.PostLogoutRedirectUris))
         {
-            return new(ImmutableArray<string>.Empty);
+            return new([]);
         }
 
         // Note: parsing the stringified URIs is an expensive operation.
@@ -592,7 +592,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
         if (string.IsNullOrEmpty(application.RedirectUris))
         {
-            return new(ImmutableArray<string>.Empty);
+            return new([]);
         }
 
         // Note: parsing the stringified URIs is an expensive operation.
@@ -633,7 +633,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
         if (string.IsNullOrEmpty(application.Requirements))
         {
-            return new(ImmutableArray<string>.Empty);
+            return new([]);
         }
 
         // Note: parsing the stringified requirements is an expensive operation.

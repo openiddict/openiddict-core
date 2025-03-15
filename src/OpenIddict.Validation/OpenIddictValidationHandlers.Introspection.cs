@@ -18,7 +18,8 @@ public static partial class OpenIddictValidationHandlers
 {
     public static class Introspection
     {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Introspection response handling:
              */
@@ -30,7 +31,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateTokenUsage.Descriptor,
             PopulateClaims.Descriptor,
             MapInternalClaims.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the introspection response.
@@ -494,18 +495,17 @@ public static partial class OpenIddictValidationHandlers
                 // Map the internal "oi_prst" claims from the standard "client_id" claim, if available.
                 context.Principal.SetPresenters(context.Principal.GetClaim(Claims.ClientId) switch
                 {
-                    string identifier when !string.IsNullOrEmpty(identifier)
-                        => ImmutableArray.Create(identifier),
+                    string identifier when !string.IsNullOrEmpty(identifier) => [identifier],
 
-                    _ => ImmutableArray<string>.Empty
+                    _ => []
                 });
 
                 // Map the internal "oi_scp" claims from the standard, space-separated "scope" claim, if available.
                 context.Principal.SetScopes(context.Principal.GetClaim(Claims.Scope) switch
                 {
-                    string scope => scope.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray(),
+                    string scope => [.. scope.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)],
 
-                    _ => ImmutableArray<string>.Empty
+                    _ => []
                 });
 
                 return default;

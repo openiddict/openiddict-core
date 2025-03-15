@@ -302,10 +302,10 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
 
         if (authorization.Scopes is not { Count: > 0 })
         {
-            return new(ImmutableArray<string>.Empty);
+            return new([]);
         }
 
-        return new(authorization.Scopes.ToImmutableArray());
+        return new([.. authorization.Scopes]);
     }
 
     /// <inheritdoc/>

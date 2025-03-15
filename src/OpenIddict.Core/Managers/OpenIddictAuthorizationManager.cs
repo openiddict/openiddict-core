@@ -781,7 +781,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         await Store.SetApplicationIdAsync(authorization, descriptor.ApplicationId, cancellationToken);
         await Store.SetCreationDateAsync(authorization, descriptor.CreationDate, cancellationToken);
         await Store.SetPropertiesAsync(authorization, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
-        await Store.SetScopesAsync(authorization, descriptor.Scopes.ToImmutableArray(), cancellationToken);
+        await Store.SetScopesAsync(authorization, [.. descriptor.Scopes], cancellationToken);
         await Store.SetStatusAsync(authorization, descriptor.Status, cancellationToken);
         await Store.SetSubjectAsync(authorization, descriptor.Subject, cancellationToken);
         await Store.SetTypeAsync(authorization, descriptor.Type, cancellationToken);

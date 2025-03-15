@@ -12,6 +12,5 @@ namespace OpenIddict.Validation.DataProtection;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class OpenIddictValidationDataProtectionHandlers
 {
-    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; }
-        = ImmutableArray.Create([.. Protection.DefaultHandlers]);
+    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } = [.. Protection.DefaultHandlers];
 }

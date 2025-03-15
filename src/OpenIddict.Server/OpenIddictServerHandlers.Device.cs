@@ -18,7 +18,8 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Device
     {
-        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Device request top-level processing:
              */
@@ -61,7 +62,7 @@ public static partial class OpenIddictServerHandlers
              * Verification request handling:
              */
             AttachUserCodePrincipal.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for extracting device requests and invoking the corresponding event handlers.
@@ -502,7 +503,7 @@ public static partial class OpenIddictServerHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                     }
 
-                    await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
+                    await foreach (var scope in _scopeManager.FindByNamesAsync([.. scopes]))
                     {
                         var name = await _scopeManager.GetNameAsync(scope);
                         if (!string.IsNullOrEmpty(name))

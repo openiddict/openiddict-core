@@ -49,7 +49,7 @@ public class OpenIddictMongoDbAuthorization
     /// Gets or sets the scopes associated with the current authorization.
     /// </summary>
     [BsonElement("scopes"), BsonIgnoreIfNull]
-    public virtual IReadOnlyList<string>? Scopes { get; set; } = ImmutableList.Create<string>();
+    public virtual IReadOnlyList<string>? Scopes { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the status of the current authorization.

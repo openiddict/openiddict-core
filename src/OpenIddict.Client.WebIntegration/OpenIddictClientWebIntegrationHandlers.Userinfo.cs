@@ -21,7 +21,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 {
     public static class UserInfo
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * UserInfo request preparation:
              */
@@ -37,7 +38,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             NormalizeContentType.Descriptor,
             UnwrapUserInfoResponse.Descriptor,
             MapNonStandardResponseParameters.Descriptor,
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for overriding the HTTP method for the providers that require it.

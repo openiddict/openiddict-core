@@ -43,7 +43,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 {
     public static class Authentication
     {
-        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
+        public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
+        [
             /*
              * Authorization request processing:
              */
@@ -67,7 +68,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             ProcessEmptyHttpResponse.Descriptor,
             ProcessProtocolActivationResponse<ApplyRedirectionResponseContext>.Descriptor,
             ProcessPlatformCallbackResponse<ApplyRedirectionResponseContext>.Descriptor
-        ]);
+        ];
 
         /// <summary>
         /// Contains the logic responsible for initiating authorization requests using an AS web authentication session.
