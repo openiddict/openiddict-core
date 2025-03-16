@@ -240,8 +240,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     NSUrl CreateUrl() => new(OpenIddictHelpers.AddQueryStringParameters(
                         uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
                         parameters: context.Transaction.Request.GetParameters().ToDictionary(
-                            parameter => parameter.Key,
-                            parameter => new StringValues((string?[]?) parameter.Value))).AbsoluteUri);
+                            static parameter => parameter.Key,
+                            static parameter => (StringValues) parameter.Value)).AbsoluteUri);
 
                     void HandleCallback(NSUrl? url, NSError? error)
                     {
@@ -253,12 +253,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                             {
                                 foreach (var parameter in OpenIddictHelpers.ParseQuery(url.Query))
                                 {
-                                    parameters[parameter.Key] = parameter.Value.Count switch
-                                    {
-                                        0 => default,
-                                        1 => parameter.Value[0],
-                                        _ => parameter.Value.ToArray()
-                                    };
+                                    parameters[parameter.Key] = parameter.Value;
                                 }
                             }
 
@@ -270,12 +265,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                             {
                                 foreach (var parameter in OpenIddictHelpers.ParseFragment(url.Fragment))
                                 {
-                                    parameters[parameter.Key] = parameter.Value.Count switch
-                                    {
-                                        0 => default,
-                                        1 => parameter.Value[0],
-                                        _ => parameter.Value.ToArray()
-                                    };
+                                    parameters[parameter.Key] = parameter.Value;
                                 }
                             }
 
@@ -370,8 +360,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 intent.LaunchUrl(Application.Context, NativeUri.Parse(OpenIddictHelpers.AddQueryStringParameters(
                     uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
                     parameters: context.Transaction.Request.GetParameters().ToDictionary(
-                        parameter => parameter.Key,
-                        parameter => new StringValues((string?[]?) parameter.Value))).AbsoluteUri)!);
+                        static parameter => parameter.Key,
+                        static parameter => (StringValues) parameter.Value)).AbsoluteUri)!);
 
                 context.HandleRequest();
 #else
@@ -455,8 +445,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     requestUri : OpenIddictHelpers.AddQueryStringParameters(
                         uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
                         parameters: context.Transaction.Request.GetParameters().ToDictionary(
-                            parameter => parameter.Key,
-                            parameter => new StringValues((string?[]?) parameter.Value))),
+                            static parameter => parameter.Key,
+                            static parameter => (StringValues) parameter.Value)),
                     callbackUri: new Uri(context.PostLogoutRedirectUri, UriKind.Absolute)))
                 {
                     case { ResponseStatus: WebAuthenticationStatus.Success } result
@@ -467,12 +457,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                         {
                             foreach (var parameter in OpenIddictHelpers.ParseQuery(uri.Query))
                             {
-                                parameters[parameter.Key] = parameter.Value.Count switch
-                                {
-                                    0 => default,
-                                    1 => parameter.Value[0],
-                                    _ => parameter.Value.ToArray()
-                                };
+                                parameters[parameter.Key] = parameter.Value;
                             }
                         }
 
@@ -484,12 +469,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                         {
                             foreach (var parameter in OpenIddictHelpers.ParseFragment(uri.Fragment))
                             {
-                                parameters[parameter.Key] = parameter.Value.Count switch
-                                {
-                                    0 => default,
-                                    1 => parameter.Value[0],
-                                    _ => parameter.Value.ToArray()
-                                };
+                                parameters[parameter.Key] = parameter.Value;
                             }
                         }
 
@@ -576,8 +556,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 var uri = OpenIddictHelpers.AddQueryStringParameters(
                     uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
                     parameters: context.Transaction.Request.GetParameters().ToDictionary(
-                        parameter => parameter.Key,
-                        parameter => new StringValues((string?[]?) parameter.Value)));
+                        static parameter => parameter.Key,
+                        static parameter => (StringValues) parameter.Value));
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
@@ -184,8 +185,8 @@ public partial class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddict
                     }
 
                     var claims = result.Principal.Claims.GroupBy(claim => claim.Type)
-                        .Select(group => new KeyValuePair<string, string?[]?>(
-                            group.Key, group.Select(claim => claim.Value).ToArray()));
+                        .Select(group => new KeyValuePair<string, ImmutableArray<string?>?>(
+                            group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
 
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(claims)));

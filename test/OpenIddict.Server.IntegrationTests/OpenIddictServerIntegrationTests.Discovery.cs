@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -423,11 +424,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string?[]?) response[Metadata.TokenEndpointAuthMethodsSupported];
+        var methods = (ImmutableArray<string?>?) response[Metadata.TokenEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Equal(3, methods.Length);
+        Assert.Equal(3, methods.Value.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
         Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
         Assert.Contains("custom", methods);
@@ -465,11 +466,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string?[]?) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
+        var methods = (ImmutableArray<string?>?) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Equal(3, methods.Length);
+        Assert.Equal(3, methods.Value.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
         Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
         Assert.Contains("custom", methods);
@@ -507,11 +508,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string?[]?) response[Metadata.RevocationEndpointAuthMethodsSupported];
+        var methods = (ImmutableArray<string?>?) response[Metadata.RevocationEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Equal(3, methods.Length);
+        Assert.Equal(3, methods.Value.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
         Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
         Assert.Contains("custom", methods);
@@ -550,11 +551,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string?[]?) response[Metadata.DeviceAuthorizationEndpointAuthMethodsSupported];
+        var methods = (ImmutableArray<string?>?) response[Metadata.DeviceAuthorizationEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Equal(3, methods.Length);
+        Assert.Equal(3, methods.Value.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
         Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
         Assert.Contains("custom", methods);
@@ -592,11 +593,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string?[]?) response[Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported];
+        var methods = (ImmutableArray<string?>?) response[Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Equal(3, methods.Length);
+        Assert.Equal(3, methods.Value.Length);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
         Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
         Assert.Contains("custom", methods);
@@ -617,11 +618,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var types = (string?[]?) response[Metadata.GrantTypesSupported];
+        var types = (ImmutableArray<string?>?) response[Metadata.GrantTypesSupported];
 
         // Assert
         Assert.NotNull(types);
-        Assert.Equal(2, types.Length);
+        Assert.Equal(2, types.Value.Length);
         Assert.Contains(GrantTypes.AuthorizationCode, types);
         Assert.Contains(GrantTypes.Password, types);
     }
@@ -659,11 +660,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var methods = (string?[]?) response[Metadata.CodeChallengeMethodsSupported];
+        var methods = (ImmutableArray<string?>?) response[Metadata.CodeChallengeMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
-        Assert.Equal(2, methods.Length);
+        Assert.Equal(2, methods.Value.Length);
         Assert.Contains(CodeChallengeMethods.Sha256, methods);
         Assert.Contains(CodeChallengeMethods.Plain, methods);
     }
@@ -701,11 +702,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var modes = (string?[]?) response[Metadata.ResponseModesSupported];
+        var modes = (ImmutableArray<string?>?) response[Metadata.ResponseModesSupported];
 
         // Assert
         Assert.NotNull(modes);
-        Assert.Equal(2, modes.Length);
+        Assert.Equal(2, modes.Value.Length);
         Assert.Contains(ResponseModes.FormPost, modes);
         Assert.Contains(ResponseModes.Fragment, modes);
     }
@@ -743,11 +744,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var types = (string?[]?) response[Metadata.ResponseTypesSupported];
+        var types = (ImmutableArray<string?>?) response[Metadata.ResponseTypesSupported];
 
         // Assert
         Assert.NotNull(types);
-        Assert.Equal(2, types.Length);
+        Assert.Equal(2, types.Value.Length);
         Assert.Contains(ResponseTypes.Code, types);
         Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken, types);
     }
@@ -785,11 +786,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var scopes = (string?[]?) response[Metadata.ScopesSupported];
+        var scopes = (ImmutableArray<string?>?) response[Metadata.ScopesSupported];
 
         // Assert
         Assert.NotNull(scopes);
-        Assert.Equal(2, scopes.Length);
+        Assert.Equal(2, scopes.Value.Length);
         Assert.Contains(Scopes.OpenId, scopes);
         Assert.Contains("custom_scope", scopes);
     }
@@ -827,11 +828,11 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var claims = (string?[]?) response[Metadata.ClaimsSupported];
+        var claims = (ImmutableArray<string?>?) response[Metadata.ClaimsSupported];
 
         // Assert
         Assert.NotNull(claims);
-        Assert.Equal(2, claims.Length);
+        Assert.Equal(2, claims.Value.Length);
         Assert.Contains(Claims.Profile, claims);
         Assert.Contains("custom_claim", claims);
     }
@@ -850,7 +851,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var types = (string?[]?) response[Metadata.SubjectTypesSupported];
+        var types = (ImmutableArray<string?>?) response[Metadata.SubjectTypesSupported];
 
         // Assert
         Assert.NotNull(types);
@@ -874,7 +875,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var types = (string?[]?) response[Metadata.PromptValuesSupported];
+        var types = (ImmutableArray<string?>?) response[Metadata.PromptValuesSupported];
 
         // Assert
         Assert.NotNull(types);
@@ -905,7 +906,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var algorithms = (string?[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
+        var algorithms = (ImmutableArray<string?>?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
         Assert.NotNull(algorithms);
@@ -927,7 +928,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var algorithms = (string?[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
+        var algorithms = (ImmutableArray<string?>?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
         Assert.NotNull(algorithms);
@@ -953,7 +954,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
-        var algorithms = (string?[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
+        var algorithms = (ImmutableArray<string?>?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
         Assert.NotNull(algorithms);
@@ -1131,11 +1132,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     context.Response["custom_parameter"] = "custom_value";
-                    context.Response["parameter_with_multiple_values"] = new[]
-                    {
-                        "custom_value_1",
-                        "custom_value_2"
-                    };
+                    context.Response["parameter_with_multiple_values"] = new(["custom_value_1", "custom_value_2"]);
 
                     return default;
                 }));
@@ -1629,11 +1626,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     context.Response["custom_parameter"] = "custom_value";
-                    context.Response["parameter_with_multiple_values"] = new[]
-                    {
-                        "custom_value_1",
-                        "custom_value_2"
-                    };
+                    context.Response["parameter_with_multiple_values"] = new(["custom_value_1", "custom_value_2"]);
 
                     return default;
                 }));
@@ -1646,6 +1639,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<IEnumerable<string?>?>(["custom_value_1", "custom_value_2"], (ImmutableArray<string?>?) response["parameter_with_multiple_values"]);
     }
 }

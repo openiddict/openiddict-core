@@ -556,11 +556,18 @@ public static partial class OpenIddictServerHandlers
                 // Restore the claim destinations from the special oi_cl_dstn claim (represented as a dictionary/JSON object).
                 //
                 // Note: starting in 7.0, Wilson no longer uses JSON.NET and supports a limited set of types for the
-                // TryGetPayloadValue() API. Since ImmutableDictionary<string, string[]> is not supported, the value
-                // is retrieved as a Dictionary<string, string[]>, which is supported by both Wilson 6.x and 7.x.
+                // TryGetPayloadValue() API. Since ImmutableDictionary<string, string[]> is not supported, the value is
+                // retrieved as a Dictionary<string, string[]> and converted to ImmutableDictionary<string, ImmutableArray<string>.
                 if (token.TryGetPayloadValue(Claims.Private.ClaimDestinationsMap, out Dictionary<string, string[]> destinations))
                 {
-                    context.Principal.SetDestinations(destinations.ToImmutableDictionary());
+                    var builder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>();
+
+                    foreach (var destination in destinations)
+                    {
+                        builder.Add(destination.Key, [.. destination.Value]);
+                    }
+
+                    context.Principal.SetDestinations(builder.ToImmutable());
                 }
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);

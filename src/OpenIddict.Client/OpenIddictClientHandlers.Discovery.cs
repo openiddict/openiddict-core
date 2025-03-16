@@ -1486,24 +1486,12 @@ public static partial class OpenIddictClientHandlers
 
                     // The following parameters MUST be formatted as arrays of objects:
                     JsonWebKeySetParameterNames.Keys => ((JsonElement) value) is JsonElement element &&
-                        element.ValueKind is JsonValueKind.Array && ValidateObjectArray(element),
+                        element.ValueKind is JsonValueKind.Array &&
+                        OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.Object),
 
                     // Parameters that are not in the well-known list can be of any type.
                     _ => true
                 };
-
-                static bool ValidateObjectArray(JsonElement element)
-                {
-                    foreach (var item in element.EnumerateArray())
-                    {
-                        if (item.ValueKind is not JsonValueKind.Object)
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
             }
         }
 

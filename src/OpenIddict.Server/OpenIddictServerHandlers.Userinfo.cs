@@ -243,7 +243,7 @@ public static partial class OpenIddictServerHandlers
                         break;
 
                     default:
-                        response[Claims.Audience] = notification.Audiences.ToArray();
+                        response[Claims.Audience] = notification.Audiences.ToImmutableArray<string?>();
                         break;
                 }
 

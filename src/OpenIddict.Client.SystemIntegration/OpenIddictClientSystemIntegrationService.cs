@@ -69,12 +69,7 @@ public sealed class OpenIddictClientSystemIntegrationService
         {
             foreach (var parameter in OpenIddictHelpers.ParseQuery(intent.Data.Query))
             {
-                parameters[parameter.Key] = parameter.Value.Count switch
-                {
-                    0 => default,
-                    1 => parameter.Value[0],
-                    _ => parameter.Value.ToArray()
-                };
+                parameters[parameter.Key] = parameter.Value;
             }
         }
 
@@ -86,12 +81,7 @@ public sealed class OpenIddictClientSystemIntegrationService
         {
             foreach (var parameter in OpenIddictHelpers.ParseFragment(intent.Data.Fragment))
             {
-                parameters[parameter.Key] = parameter.Value.Count switch
-                {
-                    0 => default,
-                    1 => parameter.Value[0],
-                    _ => parameter.Value.ToArray()
-                };
+                parameters[parameter.Key] = parameter.Value;
             }
         }
 

@@ -5,6 +5,9 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
+using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace OpenIddict.Abstractions.Tests.Primitives;
@@ -145,7 +148,16 @@ public class OpenIddictResponseTests
         response.SetParameter(name, value);
 
         // Act and assert
-        Assert.Equal(value.Value, typeof(OpenIddictResponse).GetProperty(property)!.GetValue(response));
+        var info = typeof(OpenIddictResponse).GetProperty(property)!;
+        if (typeof(JsonNode).IsAssignableFrom(info.PropertyType))
+        {
+            Assert.True(JsonNode.DeepEquals((JsonNode?) value.GetRawValue(), (JsonNode?) info.GetValue(response)));
+        }
+
+        else
+        {
+            Assert.Equal(value.GetRawValue(), info.GetValue(response));
+        }
     }
 
     [Theory]
@@ -156,7 +168,16 @@ public class OpenIddictResponseTests
         var response = new OpenIddictResponse();
 
         // Act
-        typeof(OpenIddictResponse).GetProperty(property)!.SetValue(response, value.Value);
+        var info = typeof(OpenIddictResponse).GetProperty(property)!;
+        if (typeof(ImmutableArray<string?>).IsAssignableFrom(info.PropertyType))
+        {
+            info.SetValue(response, ImmutableCollectionsMarshal.AsImmutableArray((string?[]?) value.GetRawValue()));
+        }
+
+        else
+        {
+            info.SetValue(response, value.GetRawValue());
+        }
 
         // Assert
         Assert.Equal(value, response.GetParameter(name));

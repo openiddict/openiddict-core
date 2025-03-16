@@ -6,6 +6,7 @@
 
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace OpenIddict.Server;
 
@@ -102,7 +103,7 @@ public static partial class OpenIddictServerEvents
         /// Note: this value should only be populated if the "address"
         /// scope was requested and accepted by the resource owner.
         /// </summary>
-        public JsonElement Address { get; set; }
+        public JsonObject? Address { get; set; }
 
         /// <summary>
         /// Gets or sets the values used for the "aud" claim.

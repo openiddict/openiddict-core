@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -254,7 +255,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-        Assert.Equal(["Contoso", "Fabrikam"], (string?[]?) response["json_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (ImmutableArray<string?>?) response["json_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["json_parameter"]).ValueKind);
     }
 
@@ -479,7 +480,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-        Assert.Equal(["Contoso", "Fabrikam"], (string?[]?) response["json_parameter"]);
+        Assert.Equal(["Contoso", "Fabrikam"], (ImmutableArray<string?>?) response["json_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["json_parameter"]).ValueKind);
     }
 
@@ -697,8 +698,8 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     }
 
                     var claims = result.Identity.Claims.GroupBy(claim => claim.Type)
-                        .Select(group => new KeyValuePair<string, string?[]?>(
-                            group.Key, group.Select(claim => claim.Value).ToArray()));
+                        .Select(group => new KeyValuePair<string, ImmutableArray<string?>?>(
+                            group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
 
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(claims)));

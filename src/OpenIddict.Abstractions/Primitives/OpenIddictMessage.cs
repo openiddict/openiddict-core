@@ -4,9 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -141,17 +143,15 @@ public class OpenIddictMessage
                 continue;
             }
 
-            var values = parameter.Select(parameter => parameter.Value).ToArray();
-
             // Note: the core OAuth 2.0 specification requires that request parameters
             // not be present more than once but derived specifications like the
             // token exchange specification deliberately allow specifying multiple
             // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(parameter.Key, values.Length switch
+            AddParameter(parameter.Key, parameter.Select(parameter => parameter.Value).ToArray() switch
             {
-                0 => default,
-                1 => values[0],
-                _ => values
+                      []       => default,
+                [string value] => new OpenIddictParameter(value),
+                 [..] values   => new(ImmutableCollectionsMarshal.AsImmutableArray(values))
             });
         }
     }
@@ -161,7 +161,7 @@ public class OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The message parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
-    public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
+    public OpenIddictMessage(IEnumerable<KeyValuePair<string, ImmutableArray<string?>?>> parameters)
     {
         if (parameters is null)
         {
@@ -180,11 +180,11 @@ public class OpenIddictMessage
             // not be present more than once but derived specifications like the
             // token exchange specification deliberately allow specifying multiple
             // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(parameter.Key, parameter.Value?.Length switch
+            AddParameter(parameter.Key, parameter.Value switch
             {
-                null or 0 => default,
-                1         => parameter.Value[0],
-                _         => parameter.Value
+                   null or []  => default,
+                [string value] => new OpenIddictParameter(value),
+                 [..] values   => new OpenIddictParameter(values)
             });
         }
     }
@@ -213,11 +213,11 @@ public class OpenIddictMessage
             // not be present more than once but derived specifications like the
             // token exchange specification deliberately allow specifying multiple
             // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(parameter.Key, parameter.Value.Count switch
+            AddParameter(parameter.Key, parameter.Value switch
             {
-                0 => default,
-                1 => parameter.Value[0],
-                _ => parameter.Value.ToArray()
+                      []       => default,
+                [string value] => new OpenIddictParameter(value),
+                 [..] values   => new(ImmutableCollectionsMarshal.AsImmutableArray(values.ToArray()))
             });
         }
     }
@@ -243,17 +243,15 @@ public class OpenIddictMessage
                 continue;
             }
 
-            var values = parameters.GetValues(name);
-
             // Note: the core OAuth 2.0 specification requires that request parameters
             // not be present more than once but derived specifications like the
             // token exchange specification deliberately allow specifying multiple
             // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(name, values?.Length switch
+            AddParameter(name, parameters.GetValues(name) switch
             {
-                null or 0 => default,
-                1         => values[0],
-                _         => values
+                  null or []   => default,
+                [string value] => new OpenIddictParameter(value),
+                 [..] values   => new(ImmutableCollectionsMarshal.AsImmutableArray<string?>(values))
             });
         }
     }

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
@@ -378,7 +379,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     /// The <see cref="Uri"/> if the application instance was activated
     /// via a protocol activation, <see langword="null"/> otherwise.
     /// </returns>
-    internal static Uri? GetProtocolActivationUriFromCommandLineArguments(string?[]? arguments) => arguments switch
+    internal static Uri? GetProtocolActivationUriFromCommandLineArguments(ImmutableArray<string> arguments) => arguments switch
     {
         // In most cases, the first segment present in the command line arguments contains the path of the
         // executable, but it's technically possible to start an application in a way that the command line

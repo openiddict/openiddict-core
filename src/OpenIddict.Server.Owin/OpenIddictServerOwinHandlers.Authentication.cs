@@ -195,9 +195,9 @@ public static partial class OpenIddictServerOwinHandlers
                 var location = context.RequestUri.GetLeftPart(UriPartial.Path);
                 foreach (var (key, value) in
                     from parameter in context.Response.GetParameters()
-                    let values = (string?[]?) parameter.Value
+                    let values = (ImmutableArray<string?>?) parameter.Value
                     where values is not null
-                    from value in values
+                    from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select (parameter.Key, Value: value))
                 {
@@ -271,9 +271,9 @@ public static partial class OpenIddictServerOwinHandlers
                 // For consistency, multiple parameters with the same name are also supported by this endpoint.
                 foreach (var (key, value) in
                     from parameter in context.Response.GetParameters()
-                    let values = (string?[]?) parameter.Value
+                    let values = (ImmutableArray<string?>?) parameter.Value
                     where values is not null
-                    from value in values
+                    from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select (parameter.Key, Value: value))
                 {
@@ -347,9 +347,9 @@ public static partial class OpenIddictServerOwinHandlers
                 // For consistency, multiple parameters with the same name are also supported by this endpoint.
                 foreach (var (key, value) in
                     from parameter in context.Response.GetParameters()
-                    let values = (string?[]?) parameter.Value
+                    let values = (ImmutableArray<string?>?) parameter.Value
                     where values is not null
-                    from value in values
+                    from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select (parameter.Key, Value: value))
                 {
@@ -408,9 +408,9 @@ public static partial class OpenIddictServerOwinHandlers
                 // For consistency, multiple parameters with the same name are also supported by this endpoint.
                 foreach (var (key, value) in
                     from parameter in context.Response.GetParameters()
-                    let values = (string?[]?) parameter.Value
+                    let values = (ImmutableArray<string?>?) parameter.Value
                     where values is not null
-                    from value in values
+                    from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select (parameter.Key, Value: value))
                 {

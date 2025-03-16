@@ -13,6 +13,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
@@ -524,7 +525,10 @@ public static partial class OpenIddictServerOwinHandlers
 
             if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase))
             {
-                context.Transaction.Request = new OpenIddictRequest(request.Query);
+                context.Transaction.Request = new OpenIddictRequest(
+                    from parameter in request.Query
+                    let values = new StringValues(parameter.Value)
+                    select new KeyValuePair<string, StringValues>(parameter.Key, values));
             }
 
             else
@@ -575,7 +579,10 @@ public static partial class OpenIddictServerOwinHandlers
 
             if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase))
             {
-                context.Transaction.Request = new OpenIddictRequest(request.Query);
+                context.Transaction.Request = new OpenIddictRequest(
+                    from parameter in request.Query
+                    let values = new StringValues(parameter.Value)
+                    select new KeyValuePair<string, StringValues>(parameter.Key, values));
             }
 
             else if (string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
@@ -606,7 +613,10 @@ public static partial class OpenIddictServerOwinHandlers
                     return;
                 }
 
-                context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync());
+                context.Transaction.Request = new OpenIddictRequest(
+                    from parameter in await request.ReadFormAsync()
+                    let values = new StringValues(parameter.Value)
+                    select new KeyValuePair<string, StringValues>(parameter.Key, values));
             }
 
             else
@@ -681,7 +691,10 @@ public static partial class OpenIddictServerOwinHandlers
                     return;
                 }
 
-                context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync());
+                context.Transaction.Request = new OpenIddictRequest(
+                    from parameter in await request.ReadFormAsync()
+                    let values = new StringValues(parameter.Value)
+                    select new KeyValuePair<string, StringValues>(parameter.Key, values));
             }
 
             else

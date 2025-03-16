@@ -78,9 +78,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 #if SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS
                 var location = QueryHelpers.AddQueryString(context.EndSessionEndpoint,
                     from parameter in context.Request.GetParameters()
-                    let values = (string?[]?) parameter.Value
+                    let values = (ImmutableArray<string?>?) parameter.Value
                     where values is not null
-                    from value in values
+                    from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select KeyValuePair.Create(parameter.Key, value));
 #else
@@ -88,9 +88,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 
                 foreach (var (key, value) in
                     from parameter in context.Request.GetParameters()
-                    let values = (string?[]?) parameter.Value
+                    let values = (ImmutableArray<string?>?) parameter.Value
                     where values is not null
-                    from value in values
+                    from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select (parameter.Key, Value: value))
                 {

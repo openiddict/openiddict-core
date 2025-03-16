@@ -1044,8 +1044,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             {
                 request.RequestUri = OpenIddictHelpers.AddQueryStringParameters(request.RequestUri,
                     context.Transaction.Request.GetParameters().ToDictionary(
-                        parameter => parameter.Key,
-                        parameter => new StringValues((string?[]?) parameter.Value)));
+                        static parameter => parameter.Key,
+                        static parameter => (StringValues) parameter.Value));
             }
 
             // For POST requests, attach the request parameters to the request form by default.
@@ -1053,9 +1053,9 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             {
                 request.Content = new FormUrlEncodedContent(
                     from parameter in context.Transaction.Request.GetParameters()
-                    let values = (string?[]?) parameter.Value
+                    let values = (ImmutableArray<string?>?) parameter.Value
                     where values is not null
-                    from value in values
+                    from value in values.GetValueOrDefault()
                     select new KeyValuePair<string?, string?>(parameter.Key, value));
             }
 

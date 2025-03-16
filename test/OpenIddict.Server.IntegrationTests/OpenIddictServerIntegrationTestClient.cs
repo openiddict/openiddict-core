@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Net.Http;
 using System.Net.Http.Json;
 using AngleSharp.Html.Parser;
@@ -245,17 +246,17 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
         {
             message.RequestUri = OpenIddictHelpers.AddQueryStringParameters(message.RequestUri!,
                 request.GetParameters().ToDictionary(
-                    parameter => parameter.Key,
-                    parameter => new StringValues((string?[]?) parameter.Value)));
+                    static parameter => parameter.Key,
+                    static parameter => (StringValues) parameter.Value));
         }
 
         if (message.Method != HttpMethod.Get)
         {
             message.Content = new FormUrlEncodedContent(
                 from parameter in request.GetParameters()
-                let values = (string?[]?) parameter.Value
+                let values = (ImmutableArray<string?>?) parameter.Value
                 where values is not null
-                from value in values
+                from value in values.GetValueOrDefault()
                 select new KeyValuePair<string?, string?>(parameter.Key, value));
         }
 

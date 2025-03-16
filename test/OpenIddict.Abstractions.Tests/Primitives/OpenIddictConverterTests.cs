@@ -269,7 +269,7 @@ public class OpenIddictConverterTests
 
         var message = new OpenIddictMessage();
         message.AddParameter("string", "value");
-        message.AddParameter("array", new[] { "value" });
+        message.AddParameter("array", new OpenIddictParameter(["value"]));
 
         // Act
         converter.Write(writer, value: message, options: null!);

@@ -1125,8 +1125,8 @@ public class OpenIddictExtensionsTests
 
         // Assert
         Assert.Equal(2, destinations.Count);
-        Assert.Equal<string[]>([Destinations.AccessToken, Destinations.IdentityToken], destinations[Claims.Name]);
-        Assert.Equal<string[]>([Destinations.IdentityToken], destinations[Claims.Email]);
+        Assert.Equal<string[]>([Destinations.AccessToken, Destinations.IdentityToken], [.. destinations[Claims.Name]]);
+        Assert.Equal<string[]>([Destinations.IdentityToken], [.. destinations[Claims.Email]]);
     }
 
     [Fact]
@@ -1159,8 +1159,8 @@ public class OpenIddictExtensionsTests
 
         // Assert
         Assert.Equal(2, destinations.Count);
-        Assert.Equal<string[]>([Destinations.AccessToken, Destinations.IdentityToken], destinations[Claims.Name]);
-        Assert.Equal<string[]>([Destinations.IdentityToken], destinations[Claims.Email]);
+        Assert.Equal<string[]>([Destinations.AccessToken, Destinations.IdentityToken], [.. destinations[Claims.Name]]);
+        Assert.Equal<string[]>([Destinations.IdentityToken], [.. destinations[Claims.Email]]);
     }
 
     [Fact]
@@ -1192,7 +1192,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        var destinations = (ImmutableDictionary<string, string[]>) null!;
+        var destinations = (ImmutableDictionary<string, ImmutableArray<string>>) null!;
 
         // Act and assert
         var exception = Assert.Throws<ArgumentNullException>(() => identity.SetDestinations(destinations));
@@ -1205,7 +1205,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        var destinations = (ImmutableDictionary<string, string[]>) null!;
+        var destinations = (ImmutableDictionary<string, ImmutableArray<string>>) null!;
 
         // Act and assert
         var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDestinations(destinations));
@@ -1226,7 +1226,7 @@ public class OpenIddictExtensionsTests
 
         var identity = new ClaimsIdentity(claims);
 
-        var destinations = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
+        var destinations = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>(StringComparer.Ordinal);
         destinations.Add(Claims.Name, [Destinations.AccessToken, Destinations.IdentityToken]);
         destinations.Add(Claims.Email, [Destinations.IdentityToken]);
         destinations.Add(Claims.Nonce, []);
@@ -1253,7 +1253,7 @@ public class OpenIddictExtensionsTests
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
 
-        var destinations = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
+        var destinations = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>(StringComparer.Ordinal);
         destinations.Add(Claims.Name, [Destinations.AccessToken, Destinations.IdentityToken]);
         destinations.Add(Claims.Email, [Destinations.IdentityToken]);
         destinations.Add(Claims.Nonce, []);

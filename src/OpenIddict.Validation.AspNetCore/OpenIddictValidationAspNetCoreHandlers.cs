@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -368,13 +369,17 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                     context.Parameters[parameter.Key] = parameter.Value switch
                     {
                         OpenIddictParameter value => value,
-                        JsonElement         value => new OpenIddictParameter(value),
-                        JsonNode            value => new OpenIddictParameter(value),
-                        bool                value => new OpenIddictParameter(value),
-                        int                 value => new OpenIddictParameter(value),
-                        long                value => new OpenIddictParameter(value),
-                        string              value => new OpenIddictParameter(value),
-                        string[]            value => new OpenIddictParameter(value),
+
+                        JsonElement             value => new OpenIddictParameter(value),
+                        JsonNode                value => new OpenIddictParameter(value),
+                        bool                    value => new OpenIddictParameter(value),
+                        int                     value => new OpenIddictParameter(value),
+                        long                    value => new OpenIddictParameter(value),
+                        string                  value => new OpenIddictParameter(value),
+                        ImmutableArray<string?> value => new OpenIddictParameter(value),
+
+                        string?[]            value => new(ImmutableCollectionsMarshal.AsImmutableArray(value)),
+                        IEnumerable<string?> value => new OpenIddictParameter([.. value]),
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
                     };

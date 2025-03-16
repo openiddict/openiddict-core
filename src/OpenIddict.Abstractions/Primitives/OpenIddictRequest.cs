@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -79,7 +80,7 @@ public class OpenIddictRequest : OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The request parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
-    public OpenIddictRequest(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
+    public OpenIddictRequest(IEnumerable<KeyValuePair<string, ImmutableArray<string?>?>> parameters)
         : base(parameters)
     {
     }
@@ -134,18 +135,18 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "audience" parameters.
     /// </summary>
-    public string?[]? Audiences
+    public ImmutableArray<string?>? Audiences
     {
-        get => (string?[]?) GetParameter(OpenIddictConstants.Parameters.Audience);
+        get => (ImmutableArray<string?>?) GetParameter(OpenIddictConstants.Parameters.Audience);
         set => SetParameter(OpenIddictConstants.Parameters.Audience, value);
     }
 
     /// <summary>
     /// Gets or sets the "claims" parameter.
     /// </summary>
-    public JsonElement Claims
+    public JsonObject? Claims
     {
-        get => (JsonElement) GetParameter(OpenIddictConstants.Parameters.Claims);
+        get => (JsonObject?) GetParameter(OpenIddictConstants.Parameters.Claims);
         set => SetParameter(OpenIddictConstants.Parameters.Claims, value);
     }
 
@@ -389,9 +390,9 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "resource" parameters.
     /// </summary>
-    public string?[]? Resources
+    public ImmutableArray<string?>? Resources
     {
-        get => (string?[]?) GetParameter(OpenIddictConstants.Parameters.Resource);
+        get => (ImmutableArray<string?>?) GetParameter(OpenIddictConstants.Parameters.Resource);
         set => SetParameter(OpenIddictConstants.Parameters.Resource, value);
     }
 
@@ -452,9 +453,9 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "registration" parameter.
     /// </summary>
-    public JsonElement Registration
+    public JsonObject? Registration
     {
-        get => (JsonElement) GetParameter(OpenIddictConstants.Parameters.Registration);
+        get => (JsonObject?) GetParameter(OpenIddictConstants.Parameters.Registration);
         set => SetParameter(OpenIddictConstants.Parameters.Registration, value);
     }
 

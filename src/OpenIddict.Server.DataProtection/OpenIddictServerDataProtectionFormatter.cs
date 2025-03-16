@@ -61,7 +61,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
         {
             // Read the version of the format used to serialize the ticket.
             var version = reader.ReadInt32();
-            if (version != 5)
+            if (version is not 5)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
             }

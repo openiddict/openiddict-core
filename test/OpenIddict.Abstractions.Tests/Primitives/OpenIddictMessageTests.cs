@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -98,7 +99,8 @@ public class OpenIddictMessageTests
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal<string?[]?>(["Fabrikam", "Contoso"], (string?[]?) message.GetParameter("parameter"));
+        Assert.Equal<IEnumerable<string?>?>(["Fabrikam", "Contoso"],
+            (ImmutableArray<string?>?) message.GetParameter("parameter"));
     }
 
     [Fact]
@@ -107,12 +109,13 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, string?[]?>("parameter", ["Fabrikam", "Contoso"])
+            new KeyValuePair<string, ImmutableArray<string?>?>("parameter", ["Fabrikam", "Contoso"])
         ]);
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal<string?[]?>(["Fabrikam", "Contoso"], (string?[]?) message.GetParameter("parameter"));
+        Assert.Equal<IEnumerable<string?>?>(["Fabrikam", "Contoso"],
+            (ImmutableArray<string?>?) message.GetParameter("parameter"));
     }
 
     [Fact]
@@ -121,12 +124,12 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, string?[]?>("parameter", ["Fabrikam"])
+            new KeyValuePair<string, ImmutableArray<string?>?>("parameter", ["Fabrikam"])
         ]);
 
         // Assert
         Assert.Equal(1, message.Count);
-        Assert.Equal("Fabrikam", message.GetParameter("parameter")?.Value);
+        Assert.Equal("Fabrikam", (string?) message.GetParameter("parameter"));
     }
 
     [Theory]
@@ -423,7 +426,7 @@ public class OpenIddictMessageTests
 
         // Act and assert
         Assert.True(message.TryGetParameter("parameter", out var parameter));
-        Assert.Equal(42, (long?) parameter.Value);
+        Assert.Equal(42, (long?) parameter);
     }
 
     [Fact]
@@ -434,7 +437,7 @@ public class OpenIddictMessageTests
 
         // Act and assert
         Assert.False(message.TryGetParameter("parameter", out OpenIddictParameter parameter));
-        Assert.Null(parameter.Value);
+        Assert.Equal(default, parameter);
     }
 
     [Fact]
@@ -507,7 +510,7 @@ public class OpenIddictMessageTests
         // Arrange
         var message = new OpenIddictMessage
         {
-            ["redirect_uris"] = new[] { "https://abc.org/callback" },
+            ["redirect_uris"] = new OpenIddictParameter(["https://abc.org/callback"]),
             ["client_name"] = "My Example Client"
         };
 

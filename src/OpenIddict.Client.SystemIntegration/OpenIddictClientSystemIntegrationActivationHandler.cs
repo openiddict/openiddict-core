@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -78,7 +79,9 @@ public sealed class OpenIddictClientSystemIntegrationActivationHandler : IHosted
             }
 #endif
             // Otherwise, try to extract the protocol activation from the command line arguments.
-            if (GetProtocolActivationUriFromCommandLineArguments(Environment.GetCommandLineArgs()) is Uri value)
+            var arguments = ImmutableCollectionsMarshal.AsImmutableArray(Environment.GetCommandLineArgs());
+
+            if (GetProtocolActivationUriFromCommandLineArguments(arguments) is Uri value)
             {
                 return new OpenIddictClientSystemIntegrationActivation(value);
             }

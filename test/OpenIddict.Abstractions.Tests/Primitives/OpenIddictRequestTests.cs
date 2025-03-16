@@ -5,7 +5,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Text.Json;
+using System.Collections.Immutable;
+using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace OpenIddict.Abstractions.Tests.Primitives;
@@ -48,7 +50,7 @@ public class OpenIddictRequestTests
             {
                 /* property: */ nameof(OpenIddictRequest.Claims),
                 /* name: */ Parameters.Claims,
-                /* value: */ new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(@"{""userinfo"": {}}"))
+                /* value: */ new OpenIddictParameter(JsonObject.Parse(@"{""userinfo"": {}}"))
             };
 
             yield return new object[]
@@ -216,7 +218,7 @@ public class OpenIddictRequestTests
             {
                 /* property: */ nameof(OpenIddictRequest.Registration),
                 /* name: */ Parameters.Registration,
-                /* value: */ new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(@"{""policy_uri"": ""http://www.fabrikam.com/policy""}"))
+                /* value: */ new OpenIddictParameter(JsonObject.Parse(@"{""policy_uri"": ""http://www.fabrikam.com/policy""}"))
             };
 
             yield return new object[]
@@ -314,7 +316,16 @@ public class OpenIddictRequestTests
         request.SetParameter(name, value);
 
         // Act and assert
-        Assert.Equal(value.Value, typeof(OpenIddictRequest).GetProperty(property)!.GetValue(request));
+        var info = typeof(OpenIddictRequest).GetProperty(property)!;
+        if (typeof(JsonNode).IsAssignableFrom(info.PropertyType))
+        {
+            Assert.True(JsonNode.DeepEquals((JsonNode?) value.GetRawValue(), (JsonNode?) info.GetValue(request)));
+        }
+
+        else
+        {
+            Assert.Equal(value.GetRawValue(), info.GetValue(request));
+        }
     }
 
     [Theory]
@@ -325,7 +336,16 @@ public class OpenIddictRequestTests
         var request = new OpenIddictRequest();
 
         // Act
-        typeof(OpenIddictRequest).GetProperty(property)!.SetValue(request, value.Value);
+        var info = typeof(OpenIddictRequest).GetProperty(property)!;
+        if (typeof(ImmutableArray<string?>).IsAssignableFrom(info.PropertyType))
+        {
+            info.SetValue(request, ImmutableCollectionsMarshal.AsImmutableArray((string?[]?) value.GetRawValue()));
+        }
+
+        else
+        {
+            info.SetValue(request, value.GetRawValue());
+        }
 
         // Assert
         Assert.Equal(value, request.GetParameter(name));

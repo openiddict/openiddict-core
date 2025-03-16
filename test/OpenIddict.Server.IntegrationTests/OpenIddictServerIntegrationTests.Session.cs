@@ -1044,11 +1044,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.SignOut();
 
                     context.Parameters["custom_parameter"] = "custom_value";
-                    context.Parameters["parameter_with_multiple_values"] = new[]
-                    {
-                        "custom_value_1",
-                        "custom_value_2"
-                    };
+                    context.Parameters["parameter_with_multiple_values"] = new(["custom_value_1", "custom_value_2"]);
 
                     return default;
                 }));
@@ -1064,7 +1060,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<IEnumerable<string?>?>(["custom_value_1", "custom_value_2"], (ImmutableArray<string?>?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]
@@ -1126,11 +1122,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     context.Response["custom_parameter"] = "custom_value";
-                    context.Response["parameter_with_multiple_values"] = new[]
-                    {
-                        "custom_value_1",
-                        "custom_value_2"
-                    };
+                    context.Response["parameter_with_multiple_values"] = new(["custom_value_1", "custom_value_2"]);
 
                     return default;
                 }));
@@ -1146,7 +1138,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_value", (string?) response["custom_parameter"]);
-        Assert.Equal<string?[]?>(["custom_value_1", "custom_value_2"], (string?[]?) response["parameter_with_multiple_values"]);
+        Assert.Equal<IEnumerable<string?>?>(["custom_value_1", "custom_value_2"], (ImmutableArray<string?>?) response["parameter_with_multiple_values"]);
     }
 
     [Fact]

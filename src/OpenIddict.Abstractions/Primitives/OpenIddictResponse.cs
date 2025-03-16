@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Text.Json;
@@ -78,7 +79,7 @@ public class OpenIddictResponse : OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The response parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
-    public OpenIddictResponse(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
+    public OpenIddictResponse(IEnumerable<KeyValuePair<string, ImmutableArray<string?>?>> parameters)
         : base(parameters)
     {
     }

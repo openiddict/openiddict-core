@@ -639,14 +639,14 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="identity">The identity.</param>
     /// <returns>The destinations, returned as a flattened dictionary.</returns>
-    public static ImmutableDictionary<string, string[]> GetDestinations(this ClaimsIdentity identity)
+    public static ImmutableDictionary<string, ImmutableArray<string>> GetDestinations(this ClaimsIdentity identity)
     {
         if (identity is null)
         {
             throw new ArgumentNullException(nameof(identity));
         }
 
-        var builder = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
+        var builder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>(StringComparer.Ordinal);
 
         foreach (var group in identity.Claims.GroupBy(claim => claim.Type))
         {
@@ -676,14 +676,14 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The principal.</param>
     /// <returns>The destinations, returned as a flattened dictionary.</returns>
-    public static ImmutableDictionary<string, string[]> GetDestinations(this ClaimsPrincipal principal)
+    public static ImmutableDictionary<string, ImmutableArray<string>> GetDestinations(this ClaimsPrincipal principal)
     {
         if (principal is null)
         {
             throw new ArgumentNullException(nameof(principal));
         }
 
-        var builder = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
+        var builder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>(StringComparer.Ordinal);
 
         foreach (var group in principal.Claims.GroupBy(claim => claim.Type))
         {
@@ -714,7 +714,8 @@ public static class OpenIddictExtensions
     /// <param name="identity">The identity.</param>
     /// <param name="destinations">The destinations, as a flattened dictionary.</param>
     /// <returns>The identity.</returns>
-    public static ClaimsIdentity SetDestinations(this ClaimsIdentity identity, ImmutableDictionary<string, string[]> destinations)
+    public static ClaimsIdentity SetDestinations(this ClaimsIdentity identity,
+        ImmutableDictionary<string, ImmutableArray<string>> destinations)
     {
         if (identity is null)
         {
@@ -743,7 +744,8 @@ public static class OpenIddictExtensions
     /// <param name="principal">The principal.</param>
     /// <param name="destinations">The destinations, as a flattened dictionary.</param>
     /// <returns>The principal.</returns>
-    public static ClaimsPrincipal SetDestinations(this ClaimsPrincipal principal, ImmutableDictionary<string, string[]> destinations)
+    public static ClaimsPrincipal SetDestinations(this ClaimsPrincipal principal,
+        ImmutableDictionary<string, ImmutableArray<string>> destinations)
     {
         if (principal is null)
         {
