@@ -17,29 +17,6 @@ namespace OpenIddict.Server.AspNetCore;
 public static class OpenIddictServerAspNetCoreHandlerFilters
 {
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if authorization request caching was not enabled.
-    /// </summary>
-    [Obsolete("This filter is obsolete and will be removed in a future version.")]
-    public sealed class RequireAuthorizationRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-    {
-        private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
-
-        public RequireAuthorizationRequestCachingEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(_options.CurrentValue.EnableAuthorizationRequestCaching);
-        }
-    }
-
-    /// <summary>
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the authorization endpoint.
     /// </summary>
@@ -59,29 +36,6 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
             }
 
             return new(_options.CurrentValue.EnableAuthorizationEndpointPassthrough);
-        }
-    }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if end session request caching was not enabled.
-    /// </summary>
-    [Obsolete("This filter is obsolete and will be removed in a future version.")]
-    public sealed class RequireEndSessionRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-    {
-        private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
-
-        public RequireEndSessionRequestCachingEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
-        /// <inheritdoc/>
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(_options.CurrentValue.EnableEndSessionRequestCaching);
         }
     }
 

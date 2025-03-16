@@ -11,23 +11,6 @@ namespace OpenIddict.Server.AspNetCore;
 /// </summary>
 public static class OpenIddictServerAspNetCoreConstants
 {
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
-    public static class Cache
-    {
-        public const string AuthorizationRequest = "openiddict-authorization-request:";
-        public const string EndSessionRequest = "openiddict-end_session-request:";
-    }
-
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
-    public static class JsonWebTokenTypes
-    {
-        public static class Private
-        {
-            public const string AuthorizationRequest = "oi_authrq+jwt";
-            public const string EndSessionRequest = "oi_endsessrq+jwt";
-        }
-    }
-
     public static class Properties
     {
         public const string AccessTokenPrincipal = ".access_token_principal";

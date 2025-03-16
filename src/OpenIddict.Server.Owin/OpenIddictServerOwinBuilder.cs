@@ -5,8 +5,6 @@
  */
 
 using System.ComponentModel;
-using Microsoft.Extensions.Caching.Distributed;
-using OpenIddict.Server;
 using OpenIddict.Server.Owin;
 using Owin;
 
@@ -118,35 +116,6 @@ public sealed class OpenIddictServerOwinBuilder
         => Configure(options => options.EnableUserInfoEndpointPassthrough = true);
 
     /// <summary>
-    /// Enables authorization request caching, so that authorization requests
-    /// are automatically stored in the distributed cache, which allows flowing
-    /// large payloads across requests. Enabling this option is recommended
-    /// when using external authentication providers or when large GET or POST
-    /// OpenID Connect authorization requests support is required.
-    /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    [Obsolete("This method is obsolete and will be removed in a future version.")]
-    public OpenIddictServerOwinBuilder EnableAuthorizationRequestCaching()
-    {
-        Services.Configure<OpenIddictServerOptions>(options => options.EnableAuthorizationRequestCaching = true);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Enables end session request caching, so that end session requests
-    /// are automatically stored in the distributed cache.
-    /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    [Obsolete("This method is obsolete and will be removed in a future version.")]
-    public OpenIddictServerOwinBuilder EnableEndSessionRequestCaching()
-    {
-        Services.Configure<OpenIddictServerOptions>(options => options.EnableEndSessionRequestCaching = true);
-
-        return this;
-    }
-
-    /// <summary>
     /// Suppresses indentation for the JSON responses returned by the OWIN host.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
@@ -166,40 +135,6 @@ public sealed class OpenIddictServerOwinBuilder
         }
 
         return Configure(options => options.Realm = realm);
-    }
-
-    /// <summary>
-    /// Sets the caching policy used by the authorization endpoint.
-    /// Note: the specified policy is only used when caching is explicitly enabled.
-    /// </summary>
-    /// <param name="policy">The caching policy.</param>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    [Obsolete("This method is obsolete and will be removed in a future version.")]
-    public OpenIddictServerOwinBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy)
-    {
-        if (policy is null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
-
-        return Configure(options => options.AuthorizationRequestCachingPolicy = policy);
-    }
-
-    /// <summary>
-    /// Sets the caching policy used by the end session endpoint.
-    /// Note: the specified policy is only used when caching is explicitly enabled.
-    /// </summary>
-    /// <param name="policy">The caching policy.</param>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
-    [Obsolete("This method is obsolete and will be removed in a future version.")]
-    public OpenIddictServerOwinBuilder SetEndSessionRequestCachingPolicy(DistributedCacheEntryOptions policy)
-    {
-        if (policy is null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
-
-        return Configure(options => options.EndSessionRequestCachingPolicy = policy);
     }
 
     /// <inheritdoc/>

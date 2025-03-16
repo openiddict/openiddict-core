@@ -11,13 +11,6 @@ namespace OpenIddict.Server.Owin;
 /// </summary>
 public static class OpenIddictServerOwinConstants
 {
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
-    public static class Cache
-    {
-        public const string AuthorizationRequest = "openiddict-authorization-request:";
-        public const string EndSessionRequest = "openiddict-end_session-request:";
-    }
-
     public static class Headers
     {
         public const string Authorization = "Authorization";
@@ -27,16 +20,6 @@ public static class OpenIddictServerOwinConstants
         public const string Host = "Host";
         public const string Pragma = "Pragma";
         public const string WwwAuthenticate = "WWW-Authenticate";
-    }
-
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
-    public static class JsonWebTokenTypes
-    {
-        public static class Private
-        {
-            public const string AuthorizationRequest = "oi_authrq+jwt";
-            public const string EndSessionRequest = "oi_endsessrq+jwt";
-        }
     }
 
     public static class Properties

@@ -369,8 +369,6 @@ public static class OpenIddictConstants
         public const string RefreshToken = "refresh_token";
         public const string Registration = "registration";
         public const string Request = "request";
-        [Obsolete("This property is obsolete and will be removed in a future version.")]
-        public const string RequestId = "request_id";
         public const string RequestUri = "request_uri";
         public const string Resource = "resource";
         public const string ResponseMode = "response_mode";

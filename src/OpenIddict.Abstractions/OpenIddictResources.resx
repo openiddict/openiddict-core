@@ -498,19 +498,6 @@ This may indicate that the event handler responsible for processing OpenID Conne
   <data name="ID0115" xml:space="preserve">
     <value>Only strings, booleans, integers, arrays of strings and instances of type 'OpenIddictParameter', 'JsonElement' or derived from 'JsonNode' can be returned as custom parameters.</value>
   </data>
-  <data name="ID0116" xml:space="preserve">
-    <value>A distributed cache instance must be registered when enabling request caching.
-To register the default in-memory distributed cache implementation, reference the 'Microsoft.Extensions.Caching.Memory' package and call 'services.AddDistributedMemoryCache()' from 'ConfigureServices'.</value>
-    <comment>This resource is no longer used and will be removed in a future version.</comment>
-  </data>
-  <data name="ID0117" xml:space="preserve">
-    <value>The authorization request payload is malformed.</value>
-    <comment>This resource is no longer used and will be removed in a future version.</comment>
-  </data>
-  <data name="ID0118" xml:space="preserve">
-    <value>The end session request payload is malformed.</value>
-    <comment>This resource is no longer used and will be removed in a future version.</comment>
-  </data>
   <data name="ID0119" xml:space="preserve">
     <value>The OpenIddict OWIN server handler cannot be used as an active authentication handler.
 Make sure that 'OpenIddictServerOwinOptions.AuthenticationMode' is not set to 'Active'.</value>
@@ -1306,19 +1293,11 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0340" xml:space="preserve">
     <value>The endpoint type associated with the state token cannot be resolved.</value>
   </data>
-  <data name="ID0341" xml:space="preserve">
-    <value>No client registration information was specified in the sign-out properties. When multiple clients are registered, an issuer, a provider name or a client registration identifier must be specified in the sign-out properties.</value>
-    <comment>This resource is no longer used and will be removed in a future version.</comment>
-  </data>
   <data name="ID0342" xml:space="preserve">
     <value>The same issuer cannot be used in multiple client registrations.</value>
   </data>
   <data name="ID0343" xml:space="preserve">
     <value>The request forgery protection claim cannot be resolved from the context.</value>
-  </data>
-  <data name="ID0344" xml:space="preserve">
-    <value>The request forgery protection claim cannot be resolved from the sign-out context.</value>
-    <comment>This resource is no longer used and will be removed in a future version.</comment>
   </data>
   <data name="ID0345" xml:space="preserve">
     <value>The product name cannot be null or empty.</value>
@@ -1343,10 +1322,6 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   </data>
   <data name="ID0352" xml:space="preserve">
     <value>The nonce cannot be resolved from the context.</value>
-  </data>
-  <data name="ID0353" xml:space="preserve">
-    <value>The nonce cannot be resolved from the sign-out context.</value>
-    <comment>This resource is no longer used and will be removed in a future version.</comment>
   </data>
   <data name="ID0354" xml:space="preserve">
     <value>The nonce cannot be resolved from the state token.</value>

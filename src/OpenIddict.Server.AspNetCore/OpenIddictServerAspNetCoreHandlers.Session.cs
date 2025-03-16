@@ -7,9 +7,7 @@
 using System.Collections.Immutable;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Server.AspNetCore;
 
@@ -42,95 +40,6 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             ProcessLocalErrorResponse<ApplyEndSessionResponseContext>.Descriptor,
             ProcessEmptyResponse<ApplyEndSessionResponseContext>.Descriptor
         ];
-
-        /// <summary>
-        /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.")]
-        public sealed class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractEndSessionRequestContext>
-        {
-            public RestoreCachedRequestParameters() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            public RestoreCachedRequestParameters(IDistributedCache cache)
-                 => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractEndSessionRequestContext>()
-                    .AddFilter<RequireHttpRequest>()
-                    .AddFilter<RequireEndSessionRequestCachingEnabled>()
-                    .UseSingletonHandler<RestoreCachedRequestParameters>()
-                    .SetOrder(ExtractGetOrPostRequest<ExtractEndSessionRequestContext>.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ExtractEndSessionRequestContext context)
-                 => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for caching end session requests, if applicable.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.")]
-        public sealed class CacheRequestParameters : IOpenIddictServerHandler<ExtractEndSessionRequestContext>
-        {
-            public CacheRequestParameters() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            public CacheRequestParameters(
-                IDistributedCache cache,
-                IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractEndSessionRequestContext>()
-                    .AddFilter<RequireHttpRequest>()
-                    .AddFilter<RequireEndSessionRequestCachingEnabled>()
-                    .UseSingletonHandler<CacheRequestParameters>()
-                    .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ExtractEndSessionRequestContext context)
-                 => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for removing cached end session requests from the distributed cache.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.")]
-        public sealed class RemoveCachedRequest : IOpenIddictServerHandler<ApplyEndSessionResponseContext>
-        {
-            public RemoveCachedRequest() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            public RemoveCachedRequest(IDistributedCache cache)
-                 => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyEndSessionResponseContext>()
-                    .AddFilter<RequireHttpRequest>()
-                    .AddFilter<RequireEndSessionRequestCachingEnabled>()
-                    .UseSingletonHandler<RemoveCachedRequest>()
-                    .SetOrder(int.MinValue + 100_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyEndSessionResponseContext context)
-                 => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
 
         /// <summary>
         /// Contains the logic responsible for processing end session responses requiring a self-redirection.

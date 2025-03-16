@@ -27,7 +27,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.Diagnostics.Abstractions"                   Version="2.3.0"           />
     <PackageVersion Include="Microsoft.Bcl.HashCode"                                          Version="6.0.0"           />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="2.3.0"           />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="8.0.0"           />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="8.0.1"           />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="8.0.2"           />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="8.0.1"           />
@@ -112,7 +111,6 @@
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0')) ">
     <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"   />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="8.0.14"  />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="8.0.0"   />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="8.0.1"   />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="8.0.2"   />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="8.0.1"   />
@@ -160,7 +158,6 @@
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '9.0')) ">
     <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"   />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="9.0.3"   />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="9.0.3"   />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="9.0.3"   />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="9.0.3"   />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="9.0.3"   />
@@ -224,7 +221,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection"                             Version="2.3.0"  />
     <PackageVersion Include="Microsoft.Bcl.HashCode"                                          Version="6.0.0"  />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="2.3.0"  />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="8.0.0"  />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="8.0.1"  />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="8.0.2"  />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="8.0.1"  />
@@ -273,7 +269,6 @@
     <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"  />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection"                             Version="2.3.0"  />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="2.3.0"  />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="8.0.0"  />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="8.0.1"  />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="8.0.2"  />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="8.0.1"  />
@@ -317,7 +312,7 @@
     <PackageVersion Include="NamedPipeServerStream.NetFrameworkVersion"                       Version="1.1.7"  />
 
     <!--
-      Note: OpenIddict uses PolySharp to dynamically generate polyfills for types that are not available on
+      Note: OpenIddict uses PolySharp to dynamically generate pstring?[]olyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
     <GlobalPackageReference Include="PolySharp" Condition=" '$(DisablePolySharp)' != 'true' " Version="1.15.0" />

@@ -7,9 +7,7 @@
 using System.Collections.Immutable;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Owin;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
 
@@ -62,95 +60,6 @@ public static partial class OpenIddictServerOwinHandlers
             AttachWwwAuthenticateHeader<ApplyPushedAuthorizationResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyPushedAuthorizationResponseContext>.Descriptor,
         ];
-
-        /// <summary>
-        /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.")]
-        public sealed class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
-        {
-            public RestoreCachedRequestParameters() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            public RestoreCachedRequestParameters(IDistributedCache cache)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractAuthorizationRequestContext>()
-                    .AddFilter<RequireOwinRequest>()
-                    .AddFilter<RequireAuthorizationRequestCachingEnabled>()
-                    .UseSingletonHandler<RestoreCachedRequestParameters>()
-                    .SetOrder(ExtractGetOrPostRequest<ExtractAuthorizationRequestContext>.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ExtractAuthorizationRequestContext context)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for caching authorization requests, if applicable.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.")]
-        public sealed class CacheRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
-        {
-            public CacheRequestParameters() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            public CacheRequestParameters(
-                IDistributedCache cache,
-                IOptionsMonitor<OpenIddictServerOwinOptions> options)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractAuthorizationRequestContext>()
-                    .AddFilter<RequireOwinRequest>()
-                    .AddFilter<RequireAuthorizationRequestCachingEnabled>()
-                    .UseSingletonHandler<CacheRequestParameters>()
-                    .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ExtractAuthorizationRequestContext context)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for removing cached authorization requests from the distributed cache.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-        /// </summary>
-        [Obsolete("This event handler is obsolete and will be removed in a future version.")]
-        public sealed class RemoveCachedRequest : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
-        {
-            public RemoveCachedRequest() => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            public RemoveCachedRequest(IDistributedCache cache)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
-                    .AddFilter<RequireOwinRequest>()
-                    .AddFilter<RequireAuthorizationRequestCachingEnabled>()
-                    .UseSingletonHandler<RemoveCachedRequest>()
-                    .SetOrder(int.MinValue + 100_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
-                => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
-        }
 
         /// <summary>
         /// Contains the logic responsible for processing authorization responses requiring a self-redirection.

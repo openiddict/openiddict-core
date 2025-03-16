@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using Microsoft.Extensions.Caching.Distributed;
 using Owin;
 
 namespace OpenIddict.Server.Owin;
@@ -76,23 +75,6 @@ public sealed class OpenIddictServerOwinOptions : AuthenticationOptions
     public bool EnableUserInfoEndpointPassthrough { get; set; }
 
     /// <summary>
-    /// Gets or sets a boolean indicating whether requests received by the authorization endpoint
-    /// should be cached. When enabled, authorization requests are automatically stored
-    /// in the distributed cache, which allows flowing large payloads across requests.
-    /// Enabling this option is recommended when using external authentication providers
-    /// or when large GET or POST OpenID Connect authorization requests support is required.
-    /// </summary>
-    [Obsolete("This property is obsolete and will be removed in a future version.")]
-    public bool EnableAuthorizationRequestCaching { get; set; }
-
-    /// <summary>
-    /// Gets or sets a boolean indicating whether requests received by the end session endpoint should be cached.
-    /// When enabled, authorization requests are automatically stored in the distributed cache.
-    /// </summary>
-    [Obsolete("This property is obsolete and will be removed in a future version.")]
-    public bool EnableEndSessionRequestCaching { get; set; }
-
-    /// <summary>
     /// Gets or sets a boolean whether JSON response indentation should be suppressed or not.
     /// </summary>
     public bool SuppressJsonResponseIndentation { get; set; }
@@ -101,24 +83,4 @@ public sealed class OpenIddictServerOwinOptions : AuthenticationOptions
     /// Gets or sets the optional "realm" value returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     public string? Realm { get; set; }
-
-    /// <summary>
-    /// Gets or sets the caching policy used by the authorization endpoint.
-    /// </summary>
-    [Obsolete("This property is obsolete and will be removed in a future version.")]
-    public DistributedCacheEntryOptions AuthorizationRequestCachingPolicy { get; set; } = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
-        SlidingExpiration = TimeSpan.FromMinutes(30)
-    };
-
-    /// <summary>
-    /// Gets or sets the caching policy used by the end session endpoint.
-    /// </summary>
-    [Obsolete("This property is obsolete and will be removed in a future version.")]
-    public DistributedCacheEntryOptions EndSessionRequestCachingPolicy { get; set; } = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
-        SlidingExpiration = TimeSpan.FromMinutes(30)
-    };
 }
