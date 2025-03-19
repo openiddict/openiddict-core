@@ -2276,7 +2276,7 @@ To apply pushed authorization responses, create a class implementing 'IOpenIddic
     <value>A '{0}' obtained from the pushed authorization request endpoint is required for this client application.</value>
   </data>
   <data name="ID2183" xml:space="preserve">
-    <value>This client application is not allowed to use the authorization endpoint.</value>
+    <value>This client application is not allowed to use the pushed authorization request endpoint.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
