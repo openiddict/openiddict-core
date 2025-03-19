@@ -146,49 +146,33 @@ public sealed class OpenIddictClientSystemIntegrationService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+        // Create a client transaction and store the specified instance so
+        // it can be retrieved by the event handlers that need to access it.
+        var transaction = await factory.CreateTransactionAsync();
+        transaction.SetProperty(typeof(TProperty).FullName!, property);
+
+        var context = new ProcessRequestContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            CancellationToken = cancellationToken
+        };
 
-            // Create a client transaction and store the specified instance so
-            // it can be retrieved by the event handlers that need to access it.
-            var transaction = await factory.CreateTransactionAsync();
-            transaction.SetProperty(typeof(TProperty).FullName!, property);
+        await dispatcher.DispatchAsync(context);
 
-            var context = new ProcessRequestContext(transaction)
-            {
-                CancellationToken = cancellationToken
-            };
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                await dispatcher.DispatchAsync(new ProcessErrorContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Error = context.Error ?? Errors.InvalidRequest,
-                    ErrorDescription = context.ErrorDescription,
-                    ErrorUri = context.ErrorUri,
-                    Response = new OpenIddictResponse()
-                });
-            }
-        }
-
-        finally
+        if (context.IsRejected)
         {
-            if (scope is IAsyncDisposable disposable)
+            await dispatcher.DispatchAsync(new ProcessErrorContext(transaction)
             {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
-            }
+                CancellationToken = cancellationToken,
+                Error = context.Error ?? Errors.InvalidRequest,
+                ErrorDescription = context.ErrorDescription,
+                ErrorUri = context.ErrorUri,
+                Response = new OpenIddictResponse()
+            });
         }
     }
 

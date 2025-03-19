@@ -128,7 +128,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
         {
             app.Use(async (context, next) =>
             {
-                using var scope = provider.CreateScope();
+                await using var scope = provider.CreateAsyncScope();
 
                 context.Set(typeof(IServiceProvider).FullName, scope.ServiceProvider);
 

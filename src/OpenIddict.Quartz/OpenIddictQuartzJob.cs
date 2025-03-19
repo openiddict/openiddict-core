@@ -55,124 +55,108 @@ public sealed class OpenIddictQuartzJob : IJob
 
         // Note: this job is registered as a transient service. As such, it cannot directly depend on scoped services
         // like the core managers. To work around this limitation, a scope is manually created for each invocation.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        try
+        // Important: since authorizations that still have tokens attached are never
+        // pruned, the tokens MUST be deleted before deleting the authorizations.
+
+        if (!_options.CurrentValue.DisableTokenPruning)
         {
-            // Important: since authorizations that still have tokens attached are never
-            // pruned, the tokens MUST be deleted before deleting the authorizations.
-
-            if (!_options.CurrentValue.DisableTokenPruning)
-            {
-                var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>() ??
-                    throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
-                    {
-                        RefireImmediately = false,
-                        UnscheduleAllTriggers = true,
-                        UnscheduleFiringTrigger = true
-                    };
-
-                var threshold = _options.CurrentValue.TimeProvider.GetUtcNow() - _options.CurrentValue.MinimumTokenLifespan;
-
-                try
+            var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>() ??
+                throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
                 {
-                    await manager.PruneAsync(threshold, context.CancellationToken);
-                }
-
-                // OperationCanceledExceptions are typically thrown when the host is about to shut down.
-                // To allow the host to shut down as fast as possible, this exception type is special-cased
-                // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
-                catch (OperationCanceledException exception) when (context.CancellationToken.IsCancellationRequested)
-                {
-                    throw new JobExecutionException(exception)
-                    {
-                        RefireImmediately = false
-                    };
-                }
-
-                // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
-                // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
-                catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
-                {
-                    exceptions ??= [];
-                    exceptions.AddRange(exception.InnerExceptions);
-                }
-
-                // Other non-fatal exceptions are assumed to be transient and are added to the exceptions collection
-                // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
-                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-                {
-                    exceptions ??= [];
-                    exceptions.Add(exception);
-                }
-            }
-
-            if (!_options.CurrentValue.DisableAuthorizationPruning)
-            {
-                var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>() ??
-                    throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
-                    {
-                        RefireImmediately = false,
-                        UnscheduleAllTriggers = true,
-                        UnscheduleFiringTrigger = true
-                    };
-
-                var threshold = _options.CurrentValue.TimeProvider.GetUtcNow() - _options.CurrentValue.MinimumAuthorizationLifespan;
-
-                try
-                {
-                    await manager.PruneAsync(threshold, context.CancellationToken);
-                }
-
-                // OperationCanceledExceptions are typically thrown when the host is about to shut down.
-                // To allow the host to shut down as fast as possible, this exception type is special-cased
-                // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
-                catch (OperationCanceledException exception) when (context.CancellationToken.IsCancellationRequested)
-                {
-                    throw new JobExecutionException(exception)
-                    {
-                        RefireImmediately = false
-                    };
-                }
-
-                // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
-                // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
-                catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
-                {
-                    exceptions ??= [];
-                    exceptions.AddRange(exception.InnerExceptions);
-                }
-
-                // Other non-fatal exceptions are assumed to be transient and are added to the exceptions collection
-                // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
-                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-                {
-                    exceptions ??= [];
-                    exceptions.Add(exception);
-                }
-            }
-
-            if (exceptions is not null)
-            {
-                throw new JobExecutionException(new AggregateException(exceptions))
-                {
-                    // Only refire the job if the maximum refire count set in the options wasn't reached.
-                    RefireImmediately = context.RefireCount < _options.CurrentValue.MaximumRefireCount
+                    RefireImmediately = false,
+                    UnscheduleAllTriggers = true,
+                    UnscheduleFiringTrigger = true
                 };
+
+            var threshold = _options.CurrentValue.TimeProvider.GetUtcNow() - _options.CurrentValue.MinimumTokenLifespan;
+
+            try
+            {
+                await manager.PruneAsync(threshold, context.CancellationToken);
+            }
+
+            // OperationCanceledExceptions are typically thrown when the host is about to shut down.
+            // To allow the host to shut down as fast as possible, this exception type is special-cased
+            // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
+            catch (OperationCanceledException exception) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw new JobExecutionException(exception)
+                {
+                    RefireImmediately = false
+                };
+            }
+
+            // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
+            // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
+            catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                exceptions ??= [];
+                exceptions.AddRange(exception.InnerExceptions);
+            }
+
+            // Other non-fatal exceptions are assumed to be transient and are added to the exceptions collection
+            // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                exceptions ??= [];
+                exceptions.Add(exception);
             }
         }
 
-        finally
+        if (!_options.CurrentValue.DisableAuthorizationPruning)
         {
-            if (scope is IAsyncDisposable disposable)
+            var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>() ??
+                throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
+                {
+                    RefireImmediately = false,
+                    UnscheduleAllTriggers = true,
+                    UnscheduleFiringTrigger = true
+                };
+
+            var threshold = _options.CurrentValue.TimeProvider.GetUtcNow() - _options.CurrentValue.MinimumAuthorizationLifespan;
+
+            try
             {
-                await disposable.DisposeAsync();
+                await manager.PruneAsync(threshold, context.CancellationToken);
             }
 
-            else
+            // OperationCanceledExceptions are typically thrown when the host is about to shut down.
+            // To allow the host to shut down as fast as possible, this exception type is special-cased
+            // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
+            catch (OperationCanceledException exception) when (context.CancellationToken.IsCancellationRequested)
             {
-                scope.Dispose();
+                throw new JobExecutionException(exception)
+                {
+                    RefireImmediately = false
+                };
             }
+
+            // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
+            // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
+            catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                exceptions ??= [];
+                exceptions.AddRange(exception.InnerExceptions);
+            }
+
+            // Other non-fatal exceptions are assumed to be transient and are added to the exceptions collection
+            // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                exceptions ??= [];
+                exceptions.Add(exception);
+            }
+        }
+
+        if (exceptions is not null)
+        {
+            throw new JobExecutionException(new AggregateException(exceptions))
+            {
+                // Only refire the job if the maximum refire count set in the options wasn't reached.
+                RefireImmediately = context.RefireCount < _options.CurrentValue.MaximumRefireCount
+            };
         }
     }
 }

@@ -46,47 +46,29 @@ public class OpenIddictValidationService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessAuthenticationContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-            var transaction = await factory.CreateTransactionAsync();
+            AccessToken = token
+        };
 
-            var context = new ProcessAuthenticationContext(transaction)
-            {
-                AccessToken = token
-            };
+        await dispatcher.DispatchAsync(context);
 
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0163(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-            return context.AccessTokenPrincipal;
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0163(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
         }
 
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
+        Debug.Assert(context.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            else
-            {
-                scope.Dispose();
-            }
-        }
+        return context.AccessTokenPrincipal;
     }
 
     /// <summary>
@@ -112,123 +94,105 @@ public class OpenIddictValidationService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var request = new OpenIddictRequest();
+        request = await PrepareConfigurationRequestAsync();
+        request = await ApplyConfigurationRequestAsync();
+        var response = await ExtractConfigurationResponseAsync();
+
+        return await HandleConfigurationResponseAsync() ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
+
+        async ValueTask<OpenIddictRequest> PrepareConfigurationRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            var request = new OpenIddictRequest();
-            request = await PrepareConfigurationRequestAsync();
-            request = await ApplyConfigurationRequestAsync();
-            var response = await ExtractConfigurationResponseAsync();
-
-            return await HandleConfigurationResponseAsync() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
-
-            async ValueTask<OpenIddictRequest> PrepareConfigurationRequestAsync()
+            var context = new PrepareConfigurationRequestContext(transaction)
             {
-                var context = new PrepareConfigurationRequestContext(transaction)
-                {
-                    RemoteUri = uri,
-                    Request = request
-                };
+                RemoteUri = uri,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0148(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0148(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyConfigurationRequestAsync()
-            {
-                var context = new ApplyConfigurationRequestContext(transaction)
-                {
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0149(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6186), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractConfigurationResponseAsync()
-            {
-                var context = new ExtractConfigurationResponseContext(transaction)
-                {
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0150(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6187), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<OpenIddictConfiguration> HandleConfigurationResponseAsync()
-            {
-                var context = new HandleConfigurationResponseContext(transaction)
-                {
-                    RemoteUri = uri,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0151(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Configuration;
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyConfigurationRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyConfigurationRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0149(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6186), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractConfigurationResponseAsync()
+        {
+            var context = new ExtractConfigurationResponseContext(transaction)
             {
-                scope.Dispose();
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0150(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6187), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<OpenIddictConfiguration> HandleConfigurationResponseAsync()
+        {
+            var context = new HandleConfigurationResponseContext(transaction)
+            {
+                RemoteUri = uri,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0151(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Configuration;
         }
     }
 
@@ -255,123 +219,105 @@ public class OpenIddictValidationService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var request = new OpenIddictRequest();
+        request = await PrepareJsonWebKeySetRequestAsync();
+        request = await ApplyJsonWebKeySetRequestAsync();
+
+        var response = await ExtractJsonWebKeySetResponseAsync();
+
+        return await HandleJsonWebKeySetResponseAsync() ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
+
+        async ValueTask<OpenIddictRequest> PrepareJsonWebKeySetRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            var request = new OpenIddictRequest();
-            request = await PrepareJsonWebKeySetRequestAsync();
-            request = await ApplyJsonWebKeySetRequestAsync();
-
-            var response = await ExtractJsonWebKeySetResponseAsync();
-
-            return await HandleJsonWebKeySetResponseAsync() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
-
-            async ValueTask<OpenIddictRequest> PrepareJsonWebKeySetRequestAsync()
+            var context = new PrepareJsonWebKeySetRequestContext(transaction)
             {
-                var context = new PrepareJsonWebKeySetRequestContext(transaction)
-                {
-                    RemoteUri = uri,
-                    Request = request
-                };
+                RemoteUri = uri,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0152(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0152(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyJsonWebKeySetRequestAsync()
-            {
-                var context = new ApplyJsonWebKeySetRequestContext(transaction)
-                {
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0153(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6188), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractJsonWebKeySetResponseAsync()
-            {
-                var context = new ExtractJsonWebKeySetResponseContext(transaction)
-                {
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0154(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6189), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<JsonWebKeySet> HandleJsonWebKeySetResponseAsync()
-            {
-                var context = new HandleJsonWebKeySetResponseContext(transaction)
-                {
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0155(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.SecurityKeys;
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyJsonWebKeySetRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyJsonWebKeySetRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0153(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6188), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractJsonWebKeySetResponseAsync()
+        {
+            var context = new ExtractJsonWebKeySetResponseContext(transaction)
             {
-                scope.Dispose();
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0154(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6189), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<JsonWebKeySet> HandleJsonWebKeySetResponseAsync()
+        {
+            var context = new HandleJsonWebKeySetResponseContext(transaction)
+            {
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0155(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.SecurityKeys;
         }
     }
 
@@ -413,133 +359,115 @@ public class OpenIddictValidationService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        request = await PrepareIntrospectionRequestAsync();
+        request = await ApplyIntrospectionRequestAsync();
+
+        var response = await ExtractIntrospectionResponseAsync();
+
+        return await HandleIntrospectionResponseAsync();
+
+        async ValueTask<OpenIddictRequest> PrepareIntrospectionRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            request = await PrepareIntrospectionRequestAsync();
-            request = await ApplyIntrospectionRequestAsync();
-
-            var response = await ExtractIntrospectionResponseAsync();
-
-            return await HandleIntrospectionResponseAsync();
-
-            async ValueTask<OpenIddictRequest> PrepareIntrospectionRequestAsync()
+            var context = new PrepareIntrospectionRequestContext(transaction)
             {
-                var context = new PrepareIntrospectionRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    ClientAuthenticationMethod = method,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                ClientAuthenticationMethod = method,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0158(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0158(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyIntrospectionRequestAsync()
-            {
-                var context = new ApplyIntrospectionRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0159(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractIntrospectionResponseAsync()
-            {
-                var context = new ExtractIntrospectionResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0160(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> HandleIntrospectionResponseAsync()
-            {
-                var context = new HandleIntrospectionResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0161(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-                return (context.Response, context.Principal);
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyIntrospectionRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyIntrospectionRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0159(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractIntrospectionResponseAsync()
+        {
+            var context = new ExtractIntrospectionResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0160(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> HandleIntrospectionResponseAsync()
+        {
+            var context = new HandleIntrospectionResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0161(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            return (context.Response, context.Principal);
         }
     }
 }

@@ -579,7 +579,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         {
             app.Use(async (context, next) =>
             {
-                using var scope = provider.CreateScope();
+                await using var scope = provider.CreateAsyncScope();
 
                 context.Set(typeof(IServiceProvider).FullName, scope.ServiceProvider);
 

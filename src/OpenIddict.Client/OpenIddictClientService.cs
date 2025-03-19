@@ -282,77 +282,59 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessAuthenticationContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            CancellationToken = request.CancellationToken,
+            Nonce = request.Nonce
+        };
 
-            var transaction = await factory.CreateTransactionAsync();
-
-            var context = new ProcessAuthenticationContext(transaction)
+        if (request.Properties is { Count: > 0 })
+        {
+            foreach (var property in request.Properties)
             {
-                CancellationToken = request.CancellationToken,
-                Nonce = request.Nonce
-            };
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
-            }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            else
-            {
-                Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-
-                return new()
-                {
-                    AuthorizationCode = context.AuthorizationCode,
-                    AuthorizationResponse = context.Request is not null ? new(context.Request.GetParameters()) : new(),
-                    BackchannelAccessToken = context.BackchannelAccessToken,
-                    BackchannelAccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
-                    BackchannelIdentityToken = context.BackchannelIdentityToken,
-                    BackchannelIdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                    FrontchannelAccessToken = context.FrontchannelAccessToken,
-                    FrontchannelAccessTokenExpirationDate = context.FrontchannelAccessTokenExpirationDate,
-                    FrontchannelIdentityToken = context.FrontchannelIdentityToken,
-                    FrontchannelIdentityTokenPrincipal = context.FrontchannelIdentityTokenPrincipal,
-                    Principal = context.MergedPrincipal,
-                    Properties = context.Properties,
-                    RefreshToken = context.RefreshToken,
-                    StateTokenPrincipal = context.StateTokenPrincipal,
-                    TokenResponse = context.TokenResponse ?? new(),
-                    UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
-                };
+                context.Properties[property.Key] = property.Value;
             }
         }
 
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
+        await dispatcher.DispatchAsync(context);
 
-            else
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        else
+        {
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+            return new()
             {
-                scope.Dispose();
-            }
+                AuthorizationCode = context.AuthorizationCode,
+                AuthorizationResponse = context.Request is not null ? new(context.Request.GetParameters()) : new(),
+                BackchannelAccessToken = context.BackchannelAccessToken,
+                BackchannelAccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+                BackchannelIdentityToken = context.BackchannelIdentityToken,
+                BackchannelIdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+                FrontchannelAccessToken = context.FrontchannelAccessToken,
+                FrontchannelAccessTokenExpirationDate = context.FrontchannelAccessTokenExpirationDate,
+                FrontchannelIdentityToken = context.FrontchannelIdentityToken,
+                FrontchannelIdentityTokenPrincipal = context.FrontchannelIdentityTokenPrincipal,
+                Principal = context.MergedPrincipal,
+                Properties = context.Properties,
+                RefreshToken = context.RefreshToken,
+                StateTokenPrincipal = context.StateTokenPrincipal,
+                TokenResponse = context.TokenResponse ?? new(),
+                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+            };
         }
     }
 
@@ -373,80 +355,62 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessChallengeContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            CancellationToken = request.CancellationToken,
+            CodeChallengeMethod = request.CodeChallengeMethod,
+            GrantType = request.GrantType,
+            IdentityTokenHint = request.IdentityTokenHint,
+            Issuer = request.Issuer,
+            LoginHint = request.LoginHint,
+            Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            Request = request.AdditionalAuthorizationRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+            ResponseMode = request.ResponseMode,
+            ResponseType = request.ResponseType
+        };
 
-            var transaction = await factory.CreateTransactionAsync();
-
-            var context = new ProcessChallengeContext(transaction)
-            {
-                CancellationToken = request.CancellationToken,
-                CodeChallengeMethod = request.CodeChallengeMethod,
-                GrantType = request.GrantType,
-                IdentityTokenHint = request.IdentityTokenHint,
-                Issuer = request.Issuer,
-                LoginHint = request.LoginHint,
-                Principal = new ClaimsPrincipal(new ClaimsIdentity()),
-                ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                Request = request.AdditionalAuthorizationRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-                ResponseMode = request.ResponseMode,
-                ResponseType = request.ResponseType
-            };
-
-            if (request.Scopes is { Count: > 0 })
-            {
-                context.Scopes.UnionWith(request.Scopes);
-            }
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
-            }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            if (string.IsNullOrEmpty(context.Nonce))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
-            }
-
-            return new()
-            {
-                Nonce = context.Nonce,
-                Properties = context.Properties
-            };
+        if (request.Scopes is { Count: > 0 })
+        {
+            context.Scopes.UnionWith(request.Scopes);
         }
 
-        finally
+        if (request.Properties is { Count: > 0 })
         {
-            if (scope is IAsyncDisposable disposable)
+            foreach (var property in request.Properties)
             {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
+                context.Properties[property.Key] = property.Value;
             }
         }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        if (string.IsNullOrEmpty(context.Nonce))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
+        }
+
+        return new()
+        {
+            Nonce = context.Nonce,
+            Properties = context.Properties
+        };
     }
 
     /// <summary>
@@ -467,79 +431,61 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessAuthenticationContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
+            CancellationToken = request.CancellationToken,
+            GrantType = GrantTypes.ClientCredentials,
+            Issuer = request.Issuer,
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            TokenRequest = request.AdditionalTokenRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+        };
 
-            var context = new ProcessAuthenticationContext(transaction)
-            {
-                CancellationToken = request.CancellationToken,
-                GrantType = GrantTypes.ClientCredentials,
-                Issuer = request.Issuer,
-                ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                TokenRequest = request.AdditionalTokenRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-            };
-
-            if (request.Scopes is { Count: > 0 })
-            {
-                context.Scopes.UnionWith(request.Scopes);
-            }
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
-            }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0435(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            return new()
-            {
-                AccessToken = context.BackchannelAccessToken!,
-                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
-                IdentityToken = context.BackchannelIdentityToken,
-                IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                Principal = context.MergedPrincipal,
-                Properties = context.Properties,
-                RefreshToken = context.RefreshToken,
-                TokenResponse = context.TokenResponse,
-                UserInfoToken = context.UserInfoToken,
-                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
-            };
+        if (request.Scopes is { Count: > 0 })
+        {
+            context.Scopes.UnionWith(request.Scopes);
         }
 
-        finally
+        if (request.Properties is { Count: > 0 })
         {
-            if (scope is IAsyncDisposable disposable)
+            foreach (var property in request.Properties)
             {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
+                context.Properties[property.Key] = property.Value;
             }
         }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0435(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+        Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+        return new()
+        {
+            AccessToken = context.BackchannelAccessToken!,
+            AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+            IdentityToken = context.BackchannelIdentityToken,
+            IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+            Principal = context.MergedPrincipal,
+            Properties = context.Properties,
+            RefreshToken = context.RefreshToken,
+            TokenResponse = context.TokenResponse,
+            UserInfoToken = context.UserInfoToken,
+            UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+        };
     }
 
     /// <summary>
@@ -568,80 +514,62 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessAuthenticationContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
+            CancellationToken = request.CancellationToken,
+            DisableUserInfoRetrieval = request.DisableUserInfo,
+            DisableUserInfoValidation = request.DisableUserInfo,
+            GrantType = request.GrantType,
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            TokenRequest = request.AdditionalTokenRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
+        };
 
-            var context = new ProcessAuthenticationContext(transaction)
-            {
-                CancellationToken = request.CancellationToken,
-                DisableUserInfoRetrieval = request.DisableUserInfo,
-                DisableUserInfoValidation = request.DisableUserInfo,
-                GrantType = request.GrantType,
-                ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                TokenRequest = request.AdditionalTokenRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
-            };
-
-            if (request.Scopes is { Count: > 0 })
-            {
-                context.Scopes.UnionWith(request.Scopes);
-            }
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
-            }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            return new()
-            {
-                AccessToken = context.BackchannelAccessToken!,
-                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
-                IdentityToken = context.BackchannelIdentityToken,
-                IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                Principal = context.MergedPrincipal,
-                Properties = context.Properties,
-                RefreshToken = context.RefreshToken,
-                TokenResponse = context.TokenResponse,
-                UserInfoToken = context.UserInfoToken,
-                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
-            };
+        if (request.Scopes is { Count: > 0 })
+        {
+            context.Scopes.UnionWith(request.Scopes);
         }
 
-        finally
+        if (request.Properties is { Count: > 0 })
         {
-            if (scope is IAsyncDisposable disposable)
+            foreach (var property in request.Properties)
             {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
+                context.Properties[property.Key] = property.Value;
             }
         }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+        Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+        return new()
+        {
+            AccessToken = context.BackchannelAccessToken!,
+            AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+            IdentityToken = context.BackchannelIdentityToken,
+            IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+            Principal = context.MergedPrincipal,
+            Properties = context.Properties,
+            RefreshToken = context.RefreshToken,
+            TokenResponse = context.TokenResponse,
+            UserInfoToken = context.UserInfoToken,
+            UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+        };
     }
 
     /// <summary>
@@ -670,84 +598,66 @@ public class OpenIddictClientService
                 // Note: this service is registered as a singleton service. As such, it cannot
                 // directly depend on scoped services like the validation provider. To work around
                 // this limitation, a scope is manually created for each method to this service.
-                var scope = _provider.CreateScope();
+                await using var scope = _provider.CreateAsyncScope();
 
-                // Note: a try/finally block is deliberately used here to ensure the service scope
-                // can be disposed of asynchronously if it implements IAsyncDisposable.
-                try
+                var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+                var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+                var transaction = await factory.CreateTransactionAsync();
+
+                var context = new ProcessAuthenticationContext(transaction)
                 {
-                    var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-                    var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+                    CancellationToken = source.Token,
+                    DeviceCode = request.DeviceCode,
+                    DisableUserInfoRetrieval = request.DisableUserInfo,
+                    DisableUserInfoValidation = request.DisableUserInfo,
+                    GrantType = GrantTypes.DeviceCode,
+                    Issuer = request.Issuer,
+                    ProviderName = request.ProviderName,
+                    RegistrationId = request.RegistrationId,
+                    TokenRequest = request.AdditionalTokenRequestParameters
+                        is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                };
 
-                    var transaction = await factory.CreateTransactionAsync();
+                if (request.Scopes is { Count: > 0 })
+                {
+                    context.Scopes.UnionWith(request.Scopes);
+                }
 
-                    var context = new ProcessAuthenticationContext(transaction)
+                if (request.Properties is { Count: > 0 })
+                {
+                    foreach (var property in request.Properties)
                     {
-                        CancellationToken = source.Token,
-                        DeviceCode = request.DeviceCode,
-                        DisableUserInfoRetrieval = request.DisableUserInfo,
-                        DisableUserInfoValidation = request.DisableUserInfo,
-                        GrantType = GrantTypes.DeviceCode,
-                        Issuer = request.Issuer,
-                        ProviderName = request.ProviderName,
-                        RegistrationId = request.RegistrationId,
-                        TokenRequest = request.AdditionalTokenRequestParameters
-                            is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-                    };
-
-                    if (request.Scopes is { Count: > 0 })
-                    {
-                        context.Scopes.UnionWith(request.Scopes);
-                    }
-
-                    if (request.Properties is { Count: > 0 })
-                    {
-                        foreach (var property in request.Properties)
-                        {
-                            context.Properties[property.Key] = property.Value;
-                        }
-                    }
-
-                    await dispatcher.DispatchAsync(context);
-
-                    if (context.IsRejected)
-                    {
-                        throw new ProtocolException(
-                            SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
-                            context.Error, context.ErrorDescription, context.ErrorUri);
-                    }
-
-                    else
-                    {
-                        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-
-                        return new()
-                        {
-                            AccessToken = context.BackchannelAccessToken!,
-                            AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
-                            IdentityToken = context.BackchannelIdentityToken,
-                            IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                            Principal = context.MergedPrincipal,
-                            Properties = context.Properties,
-                            RefreshToken = context.RefreshToken,
-                            TokenResponse = context.TokenResponse ?? new(),
-                            UserInfoToken = context.UserInfoToken,
-                            UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
-                        };
+                        context.Properties[property.Key] = property.Value;
                     }
                 }
 
-                finally
-                {
-                    if (scope is IAsyncDisposable disposable)
-                    {
-                        await disposable.DisposeAsync();
-                    }
+                await dispatcher.DispatchAsync(context);
 
-                    else
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                else
+                {
+                    Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+                    return new()
                     {
-                        scope.Dispose();
-                    }
+                        AccessToken = context.BackchannelAccessToken!,
+                        AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+                        IdentityToken = context.BackchannelIdentityToken,
+                        IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+                        Principal = context.MergedPrincipal,
+                        Properties = context.Properties,
+                        RefreshToken = context.RefreshToken,
+                        TokenResponse = context.TokenResponse ?? new(),
+                        UserInfoToken = context.UserInfoToken,
+                        UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+                    };
                 }
             }
 
@@ -786,78 +696,60 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessChallengeContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            CancellationToken = request.CancellationToken,
+            DeviceAuthorizationRequest = request.AdditionalDeviceAuthorizationRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+            GrantType = GrantTypes.DeviceCode,
+            Issuer = request.Issuer,
+            Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            Request = new()
+        };
 
-            var transaction = await factory.CreateTransactionAsync();
-
-            var context = new ProcessChallengeContext(transaction)
-            {
-                CancellationToken = request.CancellationToken,
-                DeviceAuthorizationRequest = request.AdditionalDeviceAuthorizationRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-                GrantType = GrantTypes.DeviceCode,
-                Issuer = request.Issuer,
-                Principal = new ClaimsPrincipal(new ClaimsIdentity()),
-                ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                Request = new()
-            };
-
-            if (request.Scopes is { Count: > 0 })
-            {
-                context.Scopes.UnionWith(request.Scopes);
-            }
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
-            }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            return new()
-            {
-                DeviceAuthorizationResponse = context.DeviceAuthorizationResponse ?? new(),
-                DeviceCode = context.DeviceCode!,
-                ExpiresIn = TimeSpan.FromSeconds((double) context.DeviceAuthorizationResponse?.ExpiresIn!),
-                Interval = TimeSpan.FromSeconds((long?) context.DeviceAuthorizationResponse[Parameters.Interval] ?? 5),
-                Properties = context.Properties,
-                UserCode = context.UserCode!,
-                VerificationUri = new Uri(context.DeviceAuthorizationResponse?.VerificationUri!, UriKind.Absolute),
-                VerificationUriComplete = context.DeviceAuthorizationResponse?.VerificationUriComplete
-                    is string value ? new Uri(value, UriKind.Absolute) : null
-            };
+        if (request.Scopes is { Count: > 0 })
+        {
+            context.Scopes.UnionWith(request.Scopes);
         }
 
-        finally
+        if (request.Properties is { Count: > 0 })
         {
-            if (scope is IAsyncDisposable disposable)
+            foreach (var property in request.Properties)
             {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
+                context.Properties[property.Key] = property.Value;
             }
         }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        return new()
+        {
+            DeviceAuthorizationResponse = context.DeviceAuthorizationResponse ?? new(),
+            DeviceCode = context.DeviceCode!,
+            ExpiresIn = TimeSpan.FromSeconds((double) context.DeviceAuthorizationResponse?.ExpiresIn!),
+            Interval = TimeSpan.FromSeconds((long?) context.DeviceAuthorizationResponse[Parameters.Interval] ?? 5),
+            Properties = context.Properties,
+            UserCode = context.UserCode!,
+            VerificationUri = new Uri(context.DeviceAuthorizationResponse?.VerificationUri!, UriKind.Absolute),
+            VerificationUriComplete = context.DeviceAuthorizationResponse?.VerificationUriComplete
+                is string value ? new Uri(value, UriKind.Absolute) : null
+        };
     }
 
     /// <summary>
@@ -877,83 +769,65 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessAuthenticationContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
+            CancellationToken = request.CancellationToken,
+            DisableUserInfoRetrieval = request.DisableUserInfo,
+            DisableUserInfoValidation = request.DisableUserInfo,
+            GrantType = GrantTypes.Password,
+            Issuer = request.Issuer,
+            Password = request.Password,
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            TokenRequest = request.AdditionalTokenRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+            Username = request.Username
+        };
 
-            var context = new ProcessAuthenticationContext(transaction)
-            {
-                CancellationToken = request.CancellationToken,
-                DisableUserInfoRetrieval = request.DisableUserInfo,
-                DisableUserInfoValidation = request.DisableUserInfo,
-                GrantType = GrantTypes.Password,
-                Issuer = request.Issuer,
-                Password = request.Password,
-                ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                TokenRequest = request.AdditionalTokenRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-                Username = request.Username
-            };
-
-            if (request.Scopes is { Count: > 0 })
-            {
-                context.Scopes.UnionWith(request.Scopes);
-            }
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
-            }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            return new()
-            {
-                AccessToken = context.BackchannelAccessToken!,
-                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
-                IdentityToken = context.BackchannelIdentityToken,
-                IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                Principal = context.MergedPrincipal,
-                Properties = context.Properties,
-                RefreshToken = context.RefreshToken,
-                TokenResponse = context.TokenResponse,
-                UserInfoToken = context.UserInfoToken,
-                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
-            };
+        if (request.Scopes is { Count: > 0 })
+        {
+            context.Scopes.UnionWith(request.Scopes);
         }
 
-        finally
+        if (request.Properties is { Count: > 0 })
         {
-            if (scope is IAsyncDisposable disposable)
+            foreach (var property in request.Properties)
             {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
+                context.Properties[property.Key] = property.Value;
             }
         }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+        Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+        return new()
+        {
+            AccessToken = context.BackchannelAccessToken!,
+            AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+            IdentityToken = context.BackchannelIdentityToken,
+            IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+            Principal = context.MergedPrincipal,
+            Properties = context.Properties,
+            RefreshToken = context.RefreshToken,
+            TokenResponse = context.TokenResponse,
+            UserInfoToken = context.UserInfoToken,
+            UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+        };
     }
 
     /// <summary>
@@ -974,82 +848,64 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessAuthenticationContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
+            CancellationToken = request.CancellationToken,
+            DisableUserInfoRetrieval = request.DisableUserInfo,
+            DisableUserInfoValidation = request.DisableUserInfo,
+            GrantType = GrantTypes.RefreshToken,
+            Issuer = request.Issuer,
+            ProviderName = request.ProviderName,
+            RefreshToken = request.RefreshToken,
+            RegistrationId = request.RegistrationId,
+            TokenRequest = request.AdditionalTokenRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+        };
 
-            var context = new ProcessAuthenticationContext(transaction)
-            {
-                CancellationToken = request.CancellationToken,
-                DisableUserInfoRetrieval = request.DisableUserInfo,
-                DisableUserInfoValidation = request.DisableUserInfo,
-                GrantType = GrantTypes.RefreshToken,
-                Issuer = request.Issuer,
-                ProviderName = request.ProviderName,
-                RefreshToken = request.RefreshToken,
-                RegistrationId = request.RegistrationId,
-                TokenRequest = request.AdditionalTokenRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-            };
-
-            if (request.Scopes is { Count: > 0 })
-            {
-                context.Scopes.UnionWith(request.Scopes);
-            }
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
-            }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            return new()
-            {
-                AccessToken = context.BackchannelAccessToken!,
-                AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
-                IdentityToken = context.BackchannelIdentityToken,
-                IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                Principal = context.MergedPrincipal,
-                Properties = context.Properties,
-                RefreshToken = context.RefreshToken,
-                TokenResponse = context.TokenResponse,
-                UserInfoToken = context.UserInfoToken,
-                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
-            };
+        if (request.Scopes is { Count: > 0 })
+        {
+            context.Scopes.UnionWith(request.Scopes);
         }
 
-        finally
+        if (request.Properties is { Count: > 0 })
         {
-            if (scope is IAsyncDisposable disposable)
+            foreach (var property in request.Properties)
             {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
+                context.Properties[property.Key] = property.Value;
             }
         }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+        Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+        return new()
+        {
+            AccessToken = context.BackchannelAccessToken!,
+            AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+            IdentityToken = context.BackchannelIdentityToken,
+            IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+            Principal = context.MergedPrincipal,
+            Properties = context.Properties,
+            RefreshToken = context.RefreshToken,
+            TokenResponse = context.TokenResponse,
+            UserInfoToken = context.UserInfoToken,
+            UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+        };
     }
 
     /// <summary>
@@ -1069,68 +925,50 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessIntrospectionContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
+            CancellationToken = request.CancellationToken,
+            IntrospectionRequest = request.AdditionalIntrospectionRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+            Issuer = request.Issuer,
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            Token = request.Token,
+            TokenTypeHint = request.TokenTypeHint
+        };
 
-            var context = new ProcessIntrospectionContext(transaction)
+        if (request.Properties is { Count: > 0 })
+        {
+            foreach (var property in request.Properties)
             {
-                CancellationToken = request.CancellationToken,
-                IntrospectionRequest = request.AdditionalIntrospectionRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-                Issuer = request.Issuer,
-                ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                Token = request.Token,
-                TokenTypeHint = request.TokenTypeHint
-            };
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
+                context.Properties[property.Key] = property.Value;
             }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0428(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-            Debug.Assert(context.IntrospectionResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            return new()
-            {
-                IntrospectionResponse = context.IntrospectionResponse,
-                Principal = context.Principal!,
-                Properties = context.Properties
-            };
         }
 
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
+        await dispatcher.DispatchAsync(context);
 
-            else
-            {
-                scope.Dispose();
-            }
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0428(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
         }
+
+        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+        Debug.Assert(context.IntrospectionResponse is not null, SR.GetResourceString(SR.ID4007));
+
+        return new()
+        {
+            IntrospectionResponse = context.IntrospectionResponse,
+            Principal = context.Principal!,
+            Properties = context.Properties
+        };
     }
 
     /// <summary>
@@ -1150,67 +988,49 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessRevocationContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
+            CancellationToken = request.CancellationToken,
+            Issuer = request.Issuer,
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            RevocationRequest = request.AdditionalRevocationRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+            Token = request.Token,
+            TokenTypeHint = request.TokenTypeHint
+        };
 
-            var context = new ProcessRevocationContext(transaction)
+        if (request.Properties is { Count: > 0 })
+        {
+            foreach (var property in request.Properties)
             {
-                CancellationToken = request.CancellationToken,
-                Issuer = request.Issuer,
-                ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                RevocationRequest = request.AdditionalRevocationRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-                Token = request.Token,
-                TokenTypeHint = request.TokenTypeHint
-            };
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
+                context.Properties[property.Key] = property.Value;
             }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0429(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-            Debug.Assert(context.RevocationResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            return new()
-            {
-                Properties = context.Properties,
-                RevocationResponse = context.RevocationResponse
-            };
         }
 
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
+        await dispatcher.DispatchAsync(context);
 
-            else
-            {
-                scope.Dispose();
-            }
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0429(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
         }
+
+        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+        Debug.Assert(context.RevocationResponse is not null, SR.GetResourceString(SR.ID4007));
+
+        return new()
+        {
+            Properties = context.Properties,
+            RevocationResponse = context.RevocationResponse
+        };
     }
 
     /// <summary>
@@ -1243,131 +1063,113 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var request = new OpenIddictRequest();
+        request = await PrepareConfigurationRequestAsync();
+        request = await ApplyConfigurationRequestAsync();
+        var response = await ExtractConfigurationResponseAsync();
+
+        return await HandleConfigurationResponseAsync() ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
+
+        async ValueTask<OpenIddictRequest> PrepareConfigurationRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            var request = new OpenIddictRequest();
-            request = await PrepareConfigurationRequestAsync();
-            request = await ApplyConfigurationRequestAsync();
-            var response = await ExtractConfigurationResponseAsync();
-
-            return await HandleConfigurationResponseAsync() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
-
-            async ValueTask<OpenIddictRequest> PrepareConfigurationRequestAsync()
+            var context = new PrepareConfigurationRequestContext(transaction)
             {
-                var context = new PrepareConfigurationRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0148(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0148(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyConfigurationRequestAsync()
-            {
-                var context = new ApplyConfigurationRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0149(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6186), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractConfigurationResponseAsync()
-            {
-                var context = new ExtractConfigurationResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0150(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6187), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<OpenIddictConfiguration> HandleConfigurationResponseAsync()
-            {
-                var context = new HandleConfigurationResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0151(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Configuration;
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyConfigurationRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyConfigurationRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0149(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6186), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractConfigurationResponseAsync()
+        {
+            var context = new ExtractConfigurationResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0150(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6187), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<OpenIddictConfiguration> HandleConfigurationResponseAsync()
+        {
+            var context = new HandleConfigurationResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0151(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Configuration;
         }
     }
 
@@ -1388,71 +1190,53 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessSignOutContext(transaction)
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            CancellationToken = request.CancellationToken,
+            IdentityTokenHint = request.IdentityTokenHint,
+            Issuer = request.Issuer,
+            LoginHint = request.LoginHint,
+            Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            Request = request.AdditionalEndSessionRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+        };
 
-            var transaction = await factory.CreateTransactionAsync();
-
-            var context = new ProcessSignOutContext(transaction)
+        if (request.Properties is { Count: > 0 })
+        {
+            foreach (var property in request.Properties)
             {
-                CancellationToken = request.CancellationToken,
-                IdentityTokenHint = request.IdentityTokenHint,
-                Issuer = request.Issuer,
-                LoginHint = request.LoginHint,
-                Principal = new ClaimsPrincipal(new ClaimsIdentity()),
-                ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId,
-                Request = request.AdditionalEndSessionRequestParameters
-                    is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
-            };
-
-            if (request.Properties is { Count: > 0 })
-            {
-                foreach (var property in request.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
+                context.Properties[property.Key] = property.Value;
             }
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    message: SR.GetResourceString(SR.ID0434),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            if (string.IsNullOrEmpty(context.Nonce))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
-            }
-
-            return new()
-            {
-                Nonce = context.Nonce,
-                Properties = context.Properties
-            };
         }
 
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
+        await dispatcher.DispatchAsync(context);
 
-            else
-            {
-                scope.Dispose();
-            }
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                message: SR.GetResourceString(SR.ID0434),
+                context.Error, context.ErrorDescription, context.ErrorUri);
         }
+
+        if (string.IsNullOrEmpty(context.Nonce))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
+        }
+
+        return new()
+        {
+            Nonce = context.Nonce,
+            Properties = context.Properties
+        };
     }
 
     /// <summary>
@@ -1485,132 +1269,114 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var request = new OpenIddictRequest();
+        request = await PrepareJsonWebKeySetRequestAsync();
+        request = await ApplyJsonWebKeySetRequestAsync();
+
+        var response = await ExtractJsonWebKeySetResponseAsync();
+
+        return await HandleJsonWebKeySetResponseAsync() ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
+
+        async ValueTask<OpenIddictRequest> PrepareJsonWebKeySetRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            var request = new OpenIddictRequest();
-            request = await PrepareJsonWebKeySetRequestAsync();
-            request = await ApplyJsonWebKeySetRequestAsync();
-
-            var response = await ExtractJsonWebKeySetResponseAsync();
-
-            return await HandleJsonWebKeySetResponseAsync() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
-
-            async ValueTask<OpenIddictRequest> PrepareJsonWebKeySetRequestAsync()
+            var context = new PrepareJsonWebKeySetRequestContext(transaction)
             {
-                var context = new PrepareJsonWebKeySetRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0152(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0152(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyJsonWebKeySetRequestAsync()
-            {
-                var context = new ApplyJsonWebKeySetRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0153(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6188), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractJsonWebKeySetResponseAsync()
-            {
-                var context = new ExtractJsonWebKeySetResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0154(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6189), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<JsonWebKeySet> HandleJsonWebKeySetResponseAsync()
-            {
-                var context = new HandleJsonWebKeySetResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0155(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.JsonWebKeySet;
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyJsonWebKeySetRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyJsonWebKeySetRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0153(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6188), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractJsonWebKeySetResponseAsync()
+        {
+            var context = new ExtractJsonWebKeySetResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0154(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6189), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<JsonWebKeySet> HandleJsonWebKeySetResponseAsync()
+        {
+            var context = new HandleJsonWebKeySetResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0155(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.JsonWebKeySet;
         }
     }
 
@@ -1658,135 +1424,117 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        request = await PrepareDeviceAuthorizationRequestAsync();
+        request = await ApplyDeviceAuthorizationRequestAsync();
+
+        var response = await ExtractDeviceAuthorizationResponseAsync();
+
+        return await HandleDeviceAuthorizationResponseAsync();
+
+        async ValueTask<OpenIddictRequest> PrepareDeviceAuthorizationRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            request = await PrepareDeviceAuthorizationRequestAsync();
-            request = await ApplyDeviceAuthorizationRequestAsync();
-
-            var response = await ExtractDeviceAuthorizationResponseAsync();
-
-            return await HandleDeviceAuthorizationResponseAsync();
-
-            async ValueTask<OpenIddictRequest> PrepareDeviceAuthorizationRequestAsync()
+            var context = new PrepareDeviceAuthorizationRequestContext(transaction)
             {
-                var context = new PrepareDeviceAuthorizationRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    ClientAuthenticationMethod = method,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Registration = registration,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                ClientAuthenticationMethod = method,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0398(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0398(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyDeviceAuthorizationRequestAsync()
-            {
-                var context = new ApplyDeviceAuthorizationRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0399(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6217), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractDeviceAuthorizationResponseAsync()
-            {
-                var context = new ExtractDeviceAuthorizationResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0400(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6218), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<OpenIddictResponse> HandleDeviceAuthorizationResponseAsync()
-            {
-                var context = new HandleDeviceAuthorizationResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Registration = registration,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0401(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Response;
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyDeviceAuthorizationRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyDeviceAuthorizationRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0399(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6217), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractDeviceAuthorizationResponseAsync()
+        {
+            var context = new ExtractDeviceAuthorizationResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0400(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6218), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<OpenIddictResponse> HandleDeviceAuthorizationResponseAsync()
+        {
+            var context = new HandleDeviceAuthorizationResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0401(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Response;
         }
     }
 
@@ -1829,137 +1577,119 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        request = await PrepareIntrospectionRequestAsync();
+        request = await ApplyIntrospectionRequestAsync();
+
+        var response = await ExtractIntrospectionResponseAsync();
+
+        return await HandleIntrospectionResponseAsync();
+
+        async ValueTask<OpenIddictRequest> PrepareIntrospectionRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            request = await PrepareIntrospectionRequestAsync();
-            request = await ApplyIntrospectionRequestAsync();
-
-            var response = await ExtractIntrospectionResponseAsync();
-
-            return await HandleIntrospectionResponseAsync();
-
-            async ValueTask<OpenIddictRequest> PrepareIntrospectionRequestAsync()
+            var context = new PrepareIntrospectionRequestContext(transaction)
             {
-                var context = new PrepareIntrospectionRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    ClientAuthenticationMethod = method,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                ClientAuthenticationMethod = method,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0158(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0158(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyIntrospectionRequestAsync()
-            {
-                var context = new ApplyIntrospectionRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0159(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractIntrospectionResponseAsync()
-            {
-                var context = new ExtractIntrospectionResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0160(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> HandleIntrospectionResponseAsync()
-            {
-                var context = new HandleIntrospectionResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0161(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-                return (context.Response, context.Principal);
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyIntrospectionRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyIntrospectionRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0159(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractIntrospectionResponseAsync()
+        {
+            var context = new ExtractIntrospectionResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0160(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> HandleIntrospectionResponseAsync()
+        {
+            var context = new HandleIntrospectionResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0161(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            return (context.Response, context.Principal);
         }
     }
 
@@ -2007,135 +1737,117 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        request = await PreparePushedAuthorizationRequestAsync();
+        request = await ApplyPushedAuthorizationRequestAsync();
+
+        var response = await ExtractPushedAuthorizationResponseAsync();
+
+        return await HandlePushedAuthorizationResponseAsync();
+
+        async ValueTask<OpenIddictRequest> PreparePushedAuthorizationRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            request = await PreparePushedAuthorizationRequestAsync();
-            request = await ApplyPushedAuthorizationRequestAsync();
-
-            var response = await ExtractPushedAuthorizationResponseAsync();
-
-            return await HandlePushedAuthorizationResponseAsync();
-
-            async ValueTask<OpenIddictRequest> PreparePushedAuthorizationRequestAsync()
+            var context = new PreparePushedAuthorizationRequestContext(transaction)
             {
-                var context = new PreparePushedAuthorizationRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    ClientAuthenticationMethod = method,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Registration = registration,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                ClientAuthenticationMethod = method,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0461(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0461(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyPushedAuthorizationRequestAsync()
-            {
-                var context = new ApplyPushedAuthorizationRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0462(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6235), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractPushedAuthorizationResponseAsync()
-            {
-                var context = new ExtractPushedAuthorizationResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0463(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6236), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<OpenIddictResponse> HandlePushedAuthorizationResponseAsync()
-            {
-                var context = new HandlePushedAuthorizationResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    RemoteUri = uri,
-                    Configuration = configuration,
-                    Registration = registration,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0464(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Response;
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyPushedAuthorizationRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyPushedAuthorizationRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0462(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6235), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractPushedAuthorizationResponseAsync()
+        {
+            var context = new ExtractPushedAuthorizationResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0463(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6236), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<OpenIddictResponse> HandlePushedAuthorizationResponseAsync()
+        {
+            var context = new HandlePushedAuthorizationResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0464(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Response;
         }
     }
 
@@ -2178,135 +1890,117 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        request = await PrepareRevocationRequestAsync();
+        request = await ApplyRevocationRequestAsync();
+
+        var response = await ExtractRevocationResponseAsync();
+
+        return await HandleRevocationResponseAsync();
+
+        async ValueTask<OpenIddictRequest> PrepareRevocationRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            request = await PrepareRevocationRequestAsync();
-            request = await ApplyRevocationRequestAsync();
-
-            var response = await ExtractRevocationResponseAsync();
-
-            return await HandleRevocationResponseAsync();
-
-            async ValueTask<OpenIddictRequest> PrepareRevocationRequestAsync()
+            var context = new PrepareRevocationRequestContext(transaction)
             {
-                var context = new PrepareRevocationRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    ClientAuthenticationMethod = method,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                ClientAuthenticationMethod = method,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0430(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0430(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyRevocationRequestAsync()
-            {
-                var context = new ApplyRevocationRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0431(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractRevocationResponseAsync()
-            {
-                var context = new ExtractRevocationResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0432(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<OpenIddictResponse> HandleRevocationResponseAsync()
-            {
-                var context = new HandleRevocationResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0433(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Response;
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyRevocationRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyRevocationRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0431(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractRevocationResponseAsync()
+        {
+            var context = new ExtractRevocationResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0432(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<OpenIddictResponse> HandleRevocationResponseAsync()
+        {
+            var context = new HandleRevocationResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0433(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Response;
         }
     }
 
@@ -2354,135 +2048,117 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        request = await PrepareTokenRequestAsync();
+        request = await ApplyTokenRequestAsync();
+
+        var response = await ExtractTokenResponseAsync();
+
+        return await HandleTokenResponseAsync();
+
+        async ValueTask<OpenIddictRequest> PrepareTokenRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            request = await PrepareTokenRequestAsync();
-            request = await ApplyTokenRequestAsync();
-
-            var response = await ExtractTokenResponseAsync();
-
-            return await HandleTokenResponseAsync();
-
-            async ValueTask<OpenIddictRequest> PrepareTokenRequestAsync()
+            var context = new PrepareTokenRequestContext(transaction)
             {
-                var context = new PrepareTokenRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    ClientAuthenticationMethod = method,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                ClientAuthenticationMethod = method,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0320(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0320(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyTokenRequestAsync()
-            {
-                var context = new ApplyTokenRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0321(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<OpenIddictResponse> ExtractTokenResponseAsync()
-            {
-                var context = new ExtractTokenResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0322(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
-
-                return context.Response;
-            }
-
-            async ValueTask<OpenIddictResponse> HandleTokenResponseAsync()
-            {
-                var context = new HandleTokenResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request,
-                    Response = response
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0323(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Response;
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyTokenRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyTokenRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0321(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractTokenResponseAsync()
+        {
+            var context = new ExtractTokenResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0322(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<OpenIddictResponse> HandleTokenResponseAsync()
+        {
+            var context = new HandleTokenResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0323(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Response;
         }
     }
 
@@ -2525,137 +2201,119 @@ public class OpenIddictClientService
         // Note: this service is registered as a singleton service. As such, it cannot
         // directly depend on scoped services like the validation provider. To work around
         // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
+        await using var scope = _provider.CreateAsyncScope();
 
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        request = await PrepareUserInfoRequestAsync();
+        request = await ApplyUserInfoRequestAsync();
+
+        var (response, token) = await ExtractUserInfoResponseAsync();
+
+        return await HandleUserInfoResponseAsync();
+
+        async ValueTask<OpenIddictRequest> PrepareUserInfoRequestAsync()
         {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            request = await PrepareUserInfoRequestAsync();
-            request = await ApplyUserInfoRequestAsync();
-
-            var (response, token) = await ExtractUserInfoResponseAsync();
-
-            return await HandleUserInfoResponseAsync();
-
-            async ValueTask<OpenIddictRequest> PrepareUserInfoRequestAsync()
+            var context = new PrepareUserInfoRequestContext(transaction)
             {
-                var context = new PrepareUserInfoRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
 
-                context.TokenBindingMethods.UnionWith(methods);
+            context.TokenBindingMethods.UnionWith(methods);
 
-                await dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0324(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return context.Request;
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0324(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            async ValueTask<OpenIddictRequest> ApplyUserInfoRequestAsync()
-            {
-                var context = new ApplyUserInfoRequestContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0325(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6194), context.RemoteUri, context.Request);
-
-                return context.Request;
-            }
-
-            async ValueTask<(OpenIddictResponse, string?)> ExtractUserInfoResponseAsync()
-            {
-                var context = new ExtractUserInfoResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    RemoteUri = uri,
-                    Registration = registration,
-                    Request = request
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0326(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6195), context.RemoteUri, context.Response);
-
-                return (context.Response, context.UserInfoToken);
-            }
-
-            async ValueTask<(OpenIddictResponse, (ClaimsPrincipal?, string?))> HandleUserInfoResponseAsync()
-            {
-                var context = new HandleUserInfoResponseContext(transaction)
-                {
-                    CancellationToken = cancellationToken,
-                    Configuration = configuration,
-                    Registration = registration,
-                    RemoteUri = uri,
-                    Request = request,
-                    Response = response,
-                    UserInfoToken = token
-                };
-
-                await dispatcher.DispatchAsync(context);
-
-                if (context.IsRejected)
-                {
-                    throw new ProtocolException(
-                        SR.FormatID0327(context.Error, context.ErrorDescription, context.ErrorUri),
-                        context.Error, context.ErrorDescription, context.ErrorUri);
-                }
-
-                return (context.Response, (context.Principal, context.UserInfoToken));
-            }
+            return context.Request;
         }
 
-        finally
+        async ValueTask<OpenIddictRequest> ApplyUserInfoRequestAsync()
         {
-            if (scope is IAsyncDisposable disposable)
+            var context = new ApplyUserInfoRequestContext(transaction)
             {
-                await disposable.DisposeAsync();
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0325(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            else
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6194), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<(OpenIddictResponse, string?)> ExtractUserInfoResponseAsync()
+        {
+            var context = new ExtractUserInfoResponseContext(transaction)
             {
-                scope.Dispose();
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0326(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
             }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(SR.GetResourceString(SR.ID6195), context.RemoteUri, context.Response);
+
+            return (context.Response, context.UserInfoToken);
+        }
+
+        async ValueTask<(OpenIddictResponse, (ClaimsPrincipal?, string?))> HandleUserInfoResponseAsync()
+        {
+            var context = new HandleUserInfoResponseContext(transaction)
+            {
+                CancellationToken = cancellationToken,
+                Configuration = configuration,
+                Registration = registration,
+                RemoteUri = uri,
+                Request = request,
+                Response = response,
+                UserInfoToken = token
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0327(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return (context.Response, (context.Principal, context.UserInfoToken));
         }
     }
 }
