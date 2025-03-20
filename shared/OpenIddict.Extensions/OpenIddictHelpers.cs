@@ -52,71 +52,6 @@ internal static class OpenIddictHelpers
         }
     }
 
-    /// <summary>
-    /// Finds the first base type that matches the specified generic type definition.
-    /// </summary>
-    /// <param name="type">The type to introspect.</param>
-    /// <param name="definition">The generic type definition.</param>
-    /// <returns>A <see cref="Type"/> instance if the base type was found, <see langword="null"/> otherwise.</returns>
-    public static Type? FindGenericBaseType(Type type, Type definition)
-        => FindGenericBaseTypes(type, definition).FirstOrDefault();
-
-    /// <summary>
-    /// Finds all the base types that matches the specified generic type definition.
-    /// </summary>
-    /// <param name="type">The type to introspect.</param>
-    /// <param name="definition">The generic type definition.</param>
-    /// <returns>A <see cref="Type"/> instance if the base type was found, <see langword="null"/> otherwise.</returns>
-    public static IEnumerable<Type> FindGenericBaseTypes(Type type, Type definition)
-    {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (definition is null)
-        {
-            throw new ArgumentNullException(nameof(definition));
-        }
-
-        if (!definition.IsGenericTypeDefinition)
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0263), nameof(definition));
-        }
-
-        if (definition.IsInterface)
-        {
-            foreach (var contract in type.GetInterfaces())
-            {
-                if (!contract.IsGenericType && !contract.IsConstructedGenericType)
-                {
-                    continue;
-                }
-
-                if (contract.GetGenericTypeDefinition() == definition)
-                {
-                    yield return contract;
-                }
-            }
-        }
-
-        else
-        {
-            for (var candidate = type; candidate is not null; candidate = candidate.BaseType)
-            {
-                if (!candidate.IsGenericType && !candidate.IsConstructedGenericType)
-                {
-                    continue;
-                }
-
-                if (candidate.GetGenericTypeDefinition() == definition)
-                {
-                    yield return candidate;
-                }
-            }
-        }
-    }
-
 #if !SUPPORTS_TASK_WAIT_ASYNC
     /// <summary>
     /// Waits until the specified task returns a result or the cancellation token is signaled.
@@ -502,12 +437,18 @@ internal static class OpenIddictHelpers
     /// The implementation resolved from <see cref="CryptoConfig.CreateFromName(string)"/> is not valid.
     /// </exception>
     public static ECDsa CreateEcdsaKey()
-        => CryptoConfig.CreateFromName("OpenIddict ECDSA Cryptographic Provider") switch
+    {
+        return GetAlgorithmFromConfig() switch
         {
             ECDsa result => result,
             null => ECDsa.Create(),
             var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
         };
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig() => CryptoConfig.CreateFromName("OpenIddict ECDSA Cryptographic Provider");
+    }
 
     /// <summary>
     /// Creates a new <see cref="ECDsa"/> key.
@@ -519,7 +460,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static ECDsa CreateEcdsaKey(ECCurve curve)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict ECDSA Cryptographic Provider") switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             ECDsa result => result,
             null => null,
@@ -546,6 +487,10 @@ internal static class OpenIddictHelpers
         }
 
         return algorithm;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig() => CryptoConfig.CreateFromName("OpenIddict ECDSA Cryptographic Provider");
     }
 #endif
 
@@ -559,7 +504,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static RSA CreateRsaKey(int size)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict RSA Cryptographic Provider") switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             RSA result => result,
 
@@ -619,6 +564,10 @@ internal static class OpenIddictHelpers
         }
 
         return algorithm;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig() => CryptoConfig.CreateFromName("OpenIddict RSA Cryptographic Provider");
     }
 
     /// <summary>
@@ -632,7 +581,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] ComputeSha256MessageAuthenticationCode(byte[] key, byte[] data)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict HMAC SHA-256 Cryptographic Provider", [key]) switch
+        var algorithm = GetAlgorithmFromConfig(key) switch
         {
             HMACSHA256 result => result,
             null => null,
@@ -659,6 +608,10 @@ internal static class OpenIddictHelpers
         {
             algorithm.Dispose();
         }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig(byte[] key) => CryptoConfig.CreateFromName("OpenIddict HMAC SHA-256 Cryptographic Provider", [key]);
     }
 
     /// <summary>
@@ -671,7 +624,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] ComputeSha256Hash(byte[] data)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict SHA-256 Cryptographic Provider") switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             SHA256 result => result,
             null => null,
@@ -698,6 +651,10 @@ internal static class OpenIddictHelpers
         {
             algorithm.Dispose();
         }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig() => CryptoConfig.CreateFromName("OpenIddict SHA-256 Cryptographic Provider");
     }
 
     /// <summary>
@@ -710,7 +667,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] ComputeSha384Hash(byte[] data)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict SHA-384 Cryptographic Provider") switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             SHA384 result => result,
             null => null,
@@ -737,6 +694,10 @@ internal static class OpenIddictHelpers
         {
             algorithm.Dispose();
         }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig() => CryptoConfig.CreateFromName("OpenIddict SHA-384 Cryptographic Provider");
     }
 
     /// <summary>
@@ -749,7 +710,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] ComputeSha512Hash(byte[] data)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict SHA-512 Cryptographic Provider") switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             SHA512 result => result,
             null => null,
@@ -776,6 +737,10 @@ internal static class OpenIddictHelpers
         {
             algorithm.Dispose();
         }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig() => CryptoConfig.CreateFromName("OpenIddict SHA-512 Cryptographic Provider");
     }
 
     /// <summary>
@@ -788,7 +753,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] CreateRandomArray(int size)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict RNG Cryptographic Provider") switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             RandomNumberGenerator result => result,
             null => null,
@@ -825,6 +790,10 @@ internal static class OpenIddictHelpers
         }
 
         return array;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig() => CryptoConfig.CreateFromName("OpenIddict RNG Cryptographic Provider");
     }
 
     /// <summary>
@@ -839,7 +808,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static string CreateRandomString(ReadOnlySpan<string> charset, int count)
     {
-        var algorithm = CryptoConfig.CreateFromName("OpenIddict RNG Cryptographic Provider") switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             RandomNumberGenerator result => result,
             null => null,
@@ -908,6 +877,10 @@ internal static class OpenIddictHelpers
 
             return (int) value + range.Start.Value;
         }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig() => CryptoConfig.CreateFromName("OpenIddict RNG Cryptographic Provider");
     }
 
     /// <summary>
@@ -1036,8 +1009,7 @@ internal static class OpenIddictHelpers
     {
         // Warning: the type and order of the arguments specified here MUST exactly match the parameters used with
         // Rfc2898DeriveBytes(string password, byte[] salt, int iterations, HashAlgorithmName hashAlgorithm).
-        using var generator = CryptoConfig.CreateFromName("OpenIddict PBKDF2 Cryptographic Provider",
-            args: [secret, salt, iterations, algorithm]) switch
+        using var generator = GetAlgorithmFromConfig(secret, salt, iterations, algorithm) switch
         {
             Rfc2898DeriveBytes result => result,
 
@@ -1049,6 +1021,11 @@ internal static class OpenIddictHelpers
         };
 
         return generator.GetBytes(length);
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The default implementation is always used when no custom algorithm was registered.")]
+        static object? GetAlgorithmFromConfig(string secret, byte[] salt, int iterations, HashAlgorithmName algorithm)
+            => CryptoConfig.CreateFromName("OpenIddict PBKDF2 Cryptographic Provider", [secret, salt, iterations, algorithm]);
     }
 #endif
 

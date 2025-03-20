@@ -23,9 +23,14 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
     private readonly IOpenIddictTokenStore<TToken> _store;
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictTokenCache{TToken}"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="store">The store.</param>
     public OpenIddictTokenCache(
         IOptionsMonitor<OpenIddictCoreOptions> options,
-        IOpenIddictTokenStoreResolver resolver)
+        IOpenIddictTokenStore<TToken> store)
     {
         _cache = new MemoryCache(new MemoryCacheOptions
         {
@@ -33,7 +38,7 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
         });
 
         _signals = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
-        _store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TToken>();
+        _store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     /// <inheritdoc/>

@@ -306,7 +306,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     // Trovo returns a 500 internal server error when using the standard
                     // "application/x-www-form-urlencoded" format and requires using JSON.
-                    ProviderTypes.Trovo => JsonContent.Create(context.Transaction.Request,
+                    ProviderTypes.Trovo => JsonContent.Create(
+                        context.Transaction.Request,
+                        OpenIddictSerializer.Default.Request,
                         new MediaTypeHeaderValue(MediaTypes.Json)
                         {
                             CharSet = Charsets.Utf8

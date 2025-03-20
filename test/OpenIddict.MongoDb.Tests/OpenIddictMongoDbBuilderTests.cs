@@ -29,7 +29,7 @@ public class OpenIddictMongoDbBuilderTests
     }
 
     [Fact]
-    public void ReplaceDefaultApplicationEntity_EntityIsCorrectlySet()
+    public void ReplaceDefaultApplicationEntity_StoreIsCorrectlyReplaced()
     {
         // Arrange
         var services = CreateServices();
@@ -39,14 +39,14 @@ public class OpenIddictMongoDbBuilderTests
         builder.ReplaceDefaultApplicationEntity<CustomApplication>();
 
         // Assert
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-
-        Assert.Equal(typeof(CustomApplication), options.DefaultApplicationType);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictApplicationStore<CustomApplication>) &&
+            service.ImplementationType == typeof(OpenIddictMongoDbApplicationStore<CustomApplication>));
     }
 
     [Fact]
-    public void ReplaceDefaultAuthorizationEntity_EntityIsCorrectlySet()
+    public void ReplaceDefaultAuthorizationEntity_StoreIsCorrectlyReplaced()
     {
         // Arrange
         var services = CreateServices();
@@ -56,14 +56,14 @@ public class OpenIddictMongoDbBuilderTests
         builder.ReplaceDefaultAuthorizationEntity<CustomAuthorization>();
 
         // Assert
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-
-        Assert.Equal(typeof(CustomAuthorization), options.DefaultAuthorizationType);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictAuthorizationStore<CustomAuthorization>) &&
+            service.ImplementationType == typeof(OpenIddictMongoDbAuthorizationStore<CustomAuthorization>));
     }
 
     [Fact]
-    public void ReplaceDefaultScopeEntity_EntityIsCorrectlySet()
+    public void ReplaceDefaultScopeEntity_StoreIsCorrectlyReplaced()
     {
         // Arrange
         var services = CreateServices();
@@ -73,14 +73,14 @@ public class OpenIddictMongoDbBuilderTests
         builder.ReplaceDefaultScopeEntity<CustomScope>();
 
         // Assert
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-
-        Assert.Equal(typeof(CustomScope), options.DefaultScopeType);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictScopeStore<CustomScope>) &&
+            service.ImplementationType == typeof(OpenIddictMongoDbScopeStore<CustomScope>));
     }
 
     [Fact]
-    public void ReplaceDefaultTokenEntity_EntityIsCorrectlySet()
+    public void ReplaceDefaultTokenEntity_StoreIsCorrectlyReplaced()
     {
         // Arrange
         var services = CreateServices();
@@ -90,10 +90,10 @@ public class OpenIddictMongoDbBuilderTests
         builder.ReplaceDefaultTokenEntity<CustomToken>();
 
         // Assert
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-
-        Assert.Equal(typeof(CustomToken), options.DefaultTokenType);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictTokenStore<CustomToken>) &&
+            service.ImplementationType == typeof(OpenIddictMongoDbTokenStore<CustomToken>));
     }
 
     [Theory]

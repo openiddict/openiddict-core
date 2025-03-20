@@ -6,8 +6,6 @@
 
 using System.Data.Entity;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using OpenIddict.Core;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
 
@@ -28,7 +26,7 @@ public class OpenIddictEntityFrameworkBuilderTests
     }
 
     [Fact]
-    public void ReplaceDefaultEntities_EntitiesAreCorrectlyReplaced()
+    public void ReplaceDefaultEntities_StoresAreCorrectlyReplaced()
     {
         // Arrange
         var services = CreateServices();
@@ -38,50 +36,26 @@ public class OpenIddictEntityFrameworkBuilderTests
         builder.ReplaceDefaultEntities<CustomApplication, CustomAuthorization, CustomScope, CustomToken, long>();
 
         // Assert
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-
-        Assert.Equal(typeof(CustomApplication), options.DefaultApplicationType);
-        Assert.Equal(typeof(CustomAuthorization), options.DefaultAuthorizationType);
-        Assert.Equal(typeof(CustomScope), options.DefaultScopeType);
-        Assert.Equal(typeof(CustomToken), options.DefaultTokenType);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictApplicationStore<CustomApplication>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkApplicationStore<CustomApplication, CustomAuthorization, CustomToken, long>));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictAuthorizationStore<CustomAuthorization>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkAuthorizationStore<CustomAuthorization, CustomApplication, CustomToken, long>));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictScopeStore<CustomScope>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkScopeStore<CustomScope, long>));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictTokenStore<CustomToken>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkTokenStore<CustomToken, CustomApplication, CustomAuthorization, long>));
     }
 
     [Fact]
-    public void UseDbContext_ThrowsAnExceptionForNullType()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(delegate
-        {
-            return builder.UseDbContext(type: null!);
-        });
-
-        Assert.Equal("type", exception.ParamName);
-    }
-
-    [Fact]
-    public void UseDbContext_ThrowsAnExceptionForInvalidType()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act and assert
-        var exception = Assert.Throws<ArgumentException>(delegate
-        {
-            return builder.UseDbContext(typeof(object));
-        });
-
-        Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
-    }
-
-    [Fact]
-    public void UseDbContext_RegistersDbContextAsScopedService()
+    public void UseDbContext_OverridesContextType()
     {
         // Arrange
         var services = CreateServices();
@@ -91,26 +65,10 @@ public class OpenIddictEntityFrameworkBuilderTests
         builder.UseDbContext<CustomDbContext>();
 
         // Assert
-        Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                             service.ServiceType == typeof(CustomDbContext) &&
-                                             service.ImplementationType == typeof(CustomDbContext));
-    }
-
-    [Fact]
-    public void UseDbContext_SetsDbContextTypeInOptions()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        // Act
-        builder.UseDbContext<CustomDbContext>();
-
-        // Assert
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>().CurrentValue;
-
-        Assert.Equal(typeof(CustomDbContext), options.DbContextType);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictEntityFrameworkContext) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkContext<CustomDbContext>));
     }
 
     private static OpenIddictEntityFrameworkBuilder CreateBuilder(IServiceCollection services)

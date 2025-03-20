@@ -308,7 +308,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
             Mock.Of<IOpenIddictAuthorizationCache<OpenIddictAuthorization>>(),
             OutputHelper.ToLogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(),
             Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
-            Mock.Of<IOpenIddictAuthorizationStoreResolver>());
+            Mock.Of<IOpenIddictAuthorizationStore<OpenIddictAuthorization>>());
 
         configuration?.Invoke(manager);
 
@@ -322,7 +322,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
             Mock.Of<IOpenIddictTokenCache<OpenIddictToken>>(),
             OutputHelper.ToLogger<OpenIddictTokenManager<OpenIddictToken>>(),
             Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
-            Mock.Of<IOpenIddictTokenStoreResolver>());
+            Mock.Of<IOpenIddictTokenStore<OpenIddictToken>>());
 
         configuration?.Invoke(manager);
 

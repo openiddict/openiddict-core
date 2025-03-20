@@ -40,15 +40,10 @@ public static class OpenIddictMongoDbExtensions
 
         // Note: the Mongo stores/resolvers don't depend on scoped/transient services and thus
         // can be safely registered as singleton services and shared/reused across requests.
-        builder.ReplaceApplicationStoreResolver<OpenIddictMongoDbApplicationStoreResolver>(ServiceLifetime.Singleton)
-               .ReplaceAuthorizationStoreResolver<OpenIddictMongoDbAuthorizationStoreResolver>(ServiceLifetime.Singleton)
-               .ReplaceScopeStoreResolver<OpenIddictMongoDbScopeStoreResolver>(ServiceLifetime.Singleton)
-               .ReplaceTokenStoreResolver<OpenIddictMongoDbTokenStoreResolver>(ServiceLifetime.Singleton);
-
-        builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbApplicationStore<>));
-        builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbAuthorizationStore<>));
-        builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbScopeStore<>));
-        builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbTokenStore<>));
+        builder.ReplaceApplicationStore<OpenIddictMongoDbApplication, OpenIddictMongoDbApplicationStore>(ServiceLifetime.Singleton)
+               .ReplaceAuthorizationStore<OpenIddictMongoDbAuthorization, OpenIddictMongoDbAuthorizationStore>(ServiceLifetime.Singleton)
+               .ReplaceScopeStore<OpenIddictMongoDbScope, OpenIddictMongoDbScopeStore>(ServiceLifetime.Singleton)
+               .ReplaceTokenStore<OpenIddictMongoDbToken, OpenIddictMongoDbTokenStore>(ServiceLifetime.Singleton);
 
         builder.Services.TryAddSingleton<IOpenIddictMongoDbContext, OpenIddictMongoDbContext>();
 

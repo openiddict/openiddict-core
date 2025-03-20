@@ -1593,13 +1593,14 @@ public static class OpenIddictExtensions
             // values. When the individual values are not strings, their string representation is returned.
             if (claim.ValueType is "JSON_ARRAY")
             {
-                var element = JsonSerializer.Deserialize<JsonElement>(claim.Value);
-                if (element.ValueKind is not JsonValueKind.Array)
+                using var document = JsonDocument.Parse(claim.Value);
+
+                if (document.RootElement.ValueKind is not JsonValueKind.Array)
                 {
                     continue;
                 }
 
-                foreach (var item in element.EnumerateArray())
+                foreach (var item in document.RootElement.EnumerateArray())
                 {
                     var value = item.ToString();
                     if (!builder.Contains(value))
@@ -1644,13 +1645,14 @@ public static class OpenIddictExtensions
             // values. When the individual values are not strings, their string representation is returned.
             if (claim.ValueType is "JSON_ARRAY")
             {
-                var element = JsonSerializer.Deserialize<JsonElement>(claim.Value);
-                if (element.ValueKind is not JsonValueKind.Array)
+                using var document = JsonDocument.Parse(claim.Value);
+
+                if (document.RootElement.ValueKind is not JsonValueKind.Array)
                 {
                     continue;
                 }
 
-                foreach (var item in element.EnumerateArray())
+                foreach (var item in document.RootElement.EnumerateArray())
                 {
                     var value = item.ToString();
                     if (!builder.Contains(value))

@@ -22,22 +22,28 @@ namespace OpenIddict.Core;
 /// </summary>
 /// <remarks>
 /// Applications that do not want to depend on a specific entity type can use the non-generic
-/// <see cref="IOpenIddictTokenManager"/> instead, for which the actual entity type
-/// is resolved at runtime based on the default entity type registered in the core options.
+/// <see cref="IOpenIddictTokenManager"/> instead, for which the actual entity type is resolved at runtime.
 /// </remarks>
 /// <typeparam name="TToken">The type of the Token entity.</typeparam>
 public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TToken : class
 {
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictTokenManager{TToken}"/> class.
+    /// </summary>
+    /// <param name="cache">The cache.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="options">The options.</param>
+    /// <param name="store">The store.</param>
     public OpenIddictTokenManager(
         IOpenIddictTokenCache<TToken> cache,
         ILogger<OpenIddictTokenManager<TToken>> logger,
         IOptionsMonitor<OpenIddictCoreOptions> options,
-        IOpenIddictTokenStoreResolver resolver)
+        IOpenIddictTokenStore<TToken> store)
     {
         Cache = cache ?? throw new ArgumentNullException(nameof(cache));
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         Options = options ?? throw new ArgumentNullException(nameof(options));
-        Store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TToken>();
+        Store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     /// <summary>

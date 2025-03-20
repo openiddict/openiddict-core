@@ -5,6 +5,7 @@
  */
 
 using System.Data.Entity.Infrastructure;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFramework;
@@ -40,7 +41,12 @@ public static class OpenIddictEntityFrameworkHelpers
     /// </remarks>
     /// <param name="builder">The builder used to configure the Entity Framework context.</param>
     /// <returns>The Entity Framework context builder.</returns>
-    public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(this DbModelBuilder builder)
+    public static DbModelBuilder UseOpenIddict<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(this DbModelBuilder builder)
         where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
         where TScope : OpenIddictEntityFrameworkScope<TKey>

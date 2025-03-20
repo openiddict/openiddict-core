@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
+using System.Diagnostics.CodeAnalysis;
 using OpenIddict.EntityFramework.Models;
 
 namespace OpenIddict.EntityFramework;
@@ -20,7 +21,11 @@ namespace OpenIddict.EntityFramework;
 /// <typeparam name="TToken">The type of the Token entity.</typeparam>
 /// <typeparam name="TKey">The type of the Key entity.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TToken, TKey> : EntityTypeConfiguration<TApplication>
+public sealed class OpenIddictEntityFrameworkApplicationConfiguration<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : EntityTypeConfiguration<TApplication>
     where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
     where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
     where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>

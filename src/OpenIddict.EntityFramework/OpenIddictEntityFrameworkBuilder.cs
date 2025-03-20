@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework;
@@ -53,15 +54,21 @@ public sealed class OpenIddictEntityFrameworkBuilder
     /// from the default OpenIddict Entity Framework 6.x entities.
     /// </summary>
     /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
-    public OpenIddictEntityFrameworkBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
+    public OpenIddictEntityFrameworkBuilder ReplaceDefaultEntities<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>()
         where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
         where TScope : OpenIddictEntityFrameworkScope<TKey>
         where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
     {
-        // Note: unlike Entity Framework Core 1.x/2.x/3.x, Entity Framework 6.x
-        // always throws an exception when using generic types as entity types.
+        // Note: unlike Entity Framework Core, Entity Framework 6.x always
+        // throws an exception when using generic types as entity types.
+        //
         // To ensure a better exception is thrown, a manual check is made here.
         if (typeof(TApplication).IsGenericType || typeof(TAuthorization).IsGenericType ||
             typeof(TScope).IsGenericType || typeof(TToken).IsGenericType)
@@ -69,13 +76,23 @@ public sealed class OpenIddictEntityFrameworkBuilder
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0277));
         }
 
-        Services.Configure<OpenIddictCoreOptions>(options =>
-        {
-            options.DefaultApplicationType = typeof(TApplication);
-            options.DefaultAuthorizationType = typeof(TAuthorization);
-            options.DefaultScopeType = typeof(TScope);
-            options.DefaultTokenType = typeof(TToken);
-        });
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictApplicationManager>(static provider =>
+            provider.GetRequiredService<OpenIddictApplicationManager<TApplication>>()));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationManager>(static provider =>
+            provider.GetRequiredService<OpenIddictAuthorizationManager<TAuthorization>>()));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeManager>(static provider =>
+            provider.GetRequiredService<OpenIddictScopeManager<TScope>>()));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictTokenManager>(static provider =>
+            provider.GetRequiredService<OpenIddictTokenManager<TToken>>()));
+
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictApplicationStore<TApplication>,
+            OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorization, TToken, TKey>>());
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationStore<TAuthorization>,
+            OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplication, TToken, TKey>>());
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeStore<TScope>,
+            OpenIddictEntityFrameworkScopeStore<TScope, TKey>>());
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictTokenStore<TToken>,
+            OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthorization, TKey>>());
 
         return this;
     }
@@ -85,30 +102,12 @@ public sealed class OpenIddictEntityFrameworkBuilder
     /// </summary>
     /// <typeparam name="TContext">The type of the <see cref="DbContext"/> used by OpenIddict.</typeparam>
     /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
-    public OpenIddictEntityFrameworkBuilder UseDbContext<TContext>()
-        where TContext : DbContext
-        => UseDbContext(typeof(TContext));
-
-    /// <summary>
-    /// Configures the OpenIddict Entity Framework 6.x stores to use the specified database context type.
-    /// </summary>
-    /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
-    public OpenIddictEntityFrameworkBuilder UseDbContext(Type type)
+    public OpenIddictEntityFrameworkBuilder UseDbContext<TContext>() where TContext : DbContext
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        Services.Replace(ServiceDescriptor.Scoped<
+            IOpenIddictEntityFrameworkContext, OpenIddictEntityFrameworkContext<TContext>>());
 
-        if (!typeof(DbContext).IsAssignableFrom(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
-
-        Services.TryAddScoped(type);
-
-        return Configure(options => options.DbContextType = type);
+        return this;
     }
 
     /// <inheritdoc/>

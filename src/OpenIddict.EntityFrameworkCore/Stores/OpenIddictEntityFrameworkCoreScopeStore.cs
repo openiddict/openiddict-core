@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -21,13 +22,11 @@ namespace OpenIddict.EntityFrameworkCore;
 /// <summary>
 /// Provides methods allowing to manage the scopes stored in a database.
 /// </summary>
-/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-public class OpenIddictEntityFrameworkCoreScopeStore<TContext> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope, TContext, string>
-    where TContext : DbContext
+public class OpenIddictEntityFrameworkCoreScopeStore : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope, string>
 {
     public OpenIddictEntityFrameworkCoreScopeStore(
         IMemoryCache cache,
-        TContext context,
+        IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
         : base(cache, context, options)
     {
@@ -37,15 +36,14 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TContext> : OpenIddictEntit
 /// <summary>
 /// Provides methods allowing to manage the scopes stored in a database.
 /// </summary>
-/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-public class OpenIddictEntityFrameworkCoreScopeStore<TContext, TKey> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope<TKey>, TContext, TKey>
-    where TContext : DbContext
+public class OpenIddictEntityFrameworkCoreScopeStore<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope<TKey>, TKey>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreScopeStore(
         IMemoryCache cache,
-        TContext context,
+        IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
         : base(cache, context, options)
     {
@@ -56,16 +54,16 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TContext, TKey> : OpenIddic
 /// Provides methods allowing to manage the scopes stored in a database.
 /// </summary>
 /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
+public class OpenIddictEntityFrameworkCoreScopeStore<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : IOpenIddictScopeStore<TScope>
     where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
-    where TContext : DbContext
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreScopeStore(
         IMemoryCache cache,
-        TContext context,
+        IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
     {
         Cache = cache ?? throw new ArgumentNullException(nameof(cache));
@@ -81,21 +79,20 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
     /// <summary>
     /// Gets the database context associated with the current store.
     /// </summary>
-    protected TContext Context { get; }
+    protected IOpenIddictEntityFrameworkCoreContext Context { get; }
 
     /// <summary>
     /// Gets the options associated with the current store.
     /// </summary>
     protected IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> Options { get; }
 
-    /// <summary>
-    /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.
-    /// </summary>
-    private DbSet<TScope> Scopes => Context.Set<TScope>();
-
     /// <inheritdoc/>
     public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
-        => await Scopes.AsQueryable().LongCountAsync(cancellationToken);
+    {
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        return await context.Set<TScope>().LongCountAsync(cancellationToken);
+    }
 
     /// <inheritdoc/>
     public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
@@ -105,7 +102,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             throw new ArgumentNullException(nameof(query));
         }
 
-        return await query(Scopes).LongCountAsync(cancellationToken);
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        return await query(context.Set<TScope>()).LongCountAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -116,9 +115,11 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             throw new ArgumentNullException(nameof(scope));
         }
 
-        Scopes.Add(scope);
+        var context = await Context.GetDbContextAsync(cancellationToken);
 
-        await Context.SaveChangesAsync(cancellationToken);
+        context.Add(scope);
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -129,80 +130,94 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             throw new ArgumentNullException(nameof(scope));
         }
 
-        Context.Remove(scope);
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        context.Remove(scope);
 
         try
         {
-            await Context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         catch (DbUpdateConcurrencyException exception)
         {
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-            Context.Entry(scope).State = EntityState.Unchanged;
+            context.Entry(scope).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
         }
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+    public virtual async ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
-        return GetTrackedEntity() is TScope scope ? new(scope) : new(QueryAsync());
+        return GetTrackedEntity() is TScope scope ? scope : await QueryAsync();
 
         TScope? GetTrackedEntity() =>
-            (from entry in Context.ChangeTracker.Entries<TScope>()
+            (from entry in context.ChangeTracker.Entries<TScope>()
              where entry.Entity.Id is TKey identifier && identifier.Equals(key)
              select entry.Entity).FirstOrDefault();
 
         Task<TScope?> QueryAsync() =>
-            (from scope in Scopes.AsTracking()
+            (from scope in context.Set<TScope>().AsTracking()
              where scope.Id!.Equals(key)
              select scope).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
+    public virtual async ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(name))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
         }
 
-        return GetTrackedEntity() is TScope scope ? new(scope) : new(QueryAsync());
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        return GetTrackedEntity() is TScope scope ? scope : await QueryAsync();
 
         TScope? GetTrackedEntity() =>
-            (from entry in Context.ChangeTracker.Entries<TScope>()
+            (from entry in context.ChangeTracker.Entries<TScope>()
              where string.Equals(entry.Entity.Name, name, StringComparison.Ordinal)
              select entry.Entity).FirstOrDefault();
 
         Task<TScope?> QueryAsync() =>
-            (from scope in Scopes.AsTracking()
+            (from scope in context.Set<TScope>().AsTracking()
              where scope.Name == name
              select scope).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TScope> FindByNamesAsync(
-        ImmutableArray<string> names, CancellationToken cancellationToken)
+    public virtual IAsyncEnumerable<TScope> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken)
     {
         if (names.Any(string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
         }
 
-        // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
-        // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
-        return (from scope in Scopes.AsTracking()
-                where Enumerable.Contains(names, scope.Name)
-                select scope).AsAsyncEnumerable(cancellationToken);
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
+            // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
+            await foreach (var scope in (from scope in context.Set<TScope>().AsTracking()
+                                         where Enumerable.Contains(names, scope.Name)
+                                         select scope).AsAsyncEnumerable(cancellationToken))
+            {
+                yield return scope;
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -224,7 +239,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
 
         async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var scopes = (from scope in Scopes.AsTracking()
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            var scopes = (from scope in context.Set<TScope>().AsTracking()
                           where scope.Resources!.Contains(resource)
                           select scope).AsAsyncEnumerable(cancellationToken);
 
@@ -249,7 +266,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             throw new ArgumentNullException(nameof(query));
         }
 
-        return await query(Scopes.AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        return await query(context.Set<TScope>().AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -470,9 +489,12 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TScope> ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+    public virtual async IAsyncEnumerable<TScope> ListAsync(int? count, int? offset,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var query = Scopes.AsQueryable().OrderBy(scope => scope.Id!).AsTracking();
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        var query = context.Set<TScope>().OrderBy(scope => scope.Id!).AsTracking();
 
         if (offset.HasValue)
         {
@@ -484,7 +506,10 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             query = query.Take(count.Value);
         }
 
-        return query.AsAsyncEnumerable(cancellationToken);
+        await foreach (var scope in query.AsAsyncEnumerable(cancellationToken))
+        {
+            yield return scope;
+        }
     }
 
     /// <inheritdoc/>
@@ -497,7 +522,17 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             throw new ArgumentNullException(nameof(query));
         }
 
-        return query(Scopes.AsTracking(), state).AsAsyncEnumerable(cancellationToken);
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            await foreach (var scope in query(context.Set<TScope>().AsTracking(), state).AsAsyncEnumerable(cancellationToken))
+            {
+                yield return scope;
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -701,23 +736,25 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             throw new ArgumentNullException(nameof(scope));
         }
 
-        Context.Attach(scope);
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        context.Attach(scope);
 
         // Generate a new concurrency token and attach it
         // to the scope before persisting the changes.
         scope.ConcurrencyToken = Guid.NewGuid().ToString();
 
-        Context.Update(scope);
+        context.Update(scope);
 
         try
         {
-            await Context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         catch (DbUpdateConcurrencyException exception)
         {
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-            Context.Entry(scope).State = EntityState.Unchanged;
+            context.Entry(scope).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
         }
@@ -735,7 +772,11 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             return default;
         }
 
-        return (TKey?) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        return (TKey?) GetConverter().ConvertFromInvariantString(identifier);
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "Only primitive types are supported as entity keys.")]
+        static TypeConverter GetConverter() => TypeDescriptor.GetConverter(typeof(TKey));
     }
 
     /// <summary>
@@ -750,6 +791,10 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             return null;
         }
 
-        return TypeDescriptor.GetConverter(typeof(TKey)).ConvertToInvariantString(identifier);
+        return GetConverter().ConvertToInvariantString(identifier);
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "Only primitive types are supported as entity keys.")]
+        static TypeConverter GetConverter() => TypeDescriptor.GetConverter(typeof(TKey));
     }
 }

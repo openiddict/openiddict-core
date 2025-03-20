@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using OpenIddict.EntityFrameworkCore.Models;
 
 namespace OpenIddict.EntityFrameworkCore;
@@ -12,7 +13,12 @@ namespace OpenIddict.EntityFrameworkCore;
 /// Represents a model customizer able to register the entity sets
 /// required by the OpenIddict stack in an Entity Framework Core context.
 /// </summary>
-public sealed class OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TScope, TToken, TKey> : RelationalModelCustomizer
+public sealed class OpenIddictEntityFrameworkCoreCustomizer<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : RelationalModelCustomizer
     where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
     where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
     where TScope : OpenIddictEntityFrameworkCoreScope<TKey>

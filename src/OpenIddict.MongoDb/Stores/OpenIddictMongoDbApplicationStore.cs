@@ -21,8 +21,22 @@ namespace OpenIddict.MongoDb;
 /// <summary>
 /// Provides methods allowing to manage the applications stored in a database.
 /// </summary>
+public class OpenIddictMongoDbApplicationStore : OpenIddictMongoDbApplicationStore<OpenIddictMongoDbApplication>
+{
+    public OpenIddictMongoDbApplicationStore(
+        IOpenIddictMongoDbContext context,
+        IOptionsMonitor<OpenIddictMongoDbOptions> options)
+        : base(context, options)
+    {
+    }
+}
+
+/// <summary>
+/// Provides methods allowing to manage the applications stored in a database.
+/// </summary>
 /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplicationStore<TApplication>
+public class OpenIddictMongoDbApplicationStore<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication> : IOpenIddictApplicationStore<TApplication>
     where TApplication : OpenIddictMongoDbApplication
 {
     public OpenIddictMongoDbApplicationStore(
@@ -599,7 +613,8 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             throw new ArgumentNullException(nameof(application));
         }
 
-        application.JsonWebKeySet = set is not null ? BsonDocument.Parse(JsonSerializer.Serialize(set)) : null;
+        application.JsonWebKeySet = set is not null ? BsonDocument.Parse(
+            JsonSerializer.Serialize(set, OpenIddictSerializer.Default.JsonWebKeySet)) : null;
 
         return default;
     }

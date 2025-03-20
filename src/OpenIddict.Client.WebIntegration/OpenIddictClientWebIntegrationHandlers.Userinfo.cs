@@ -282,8 +282,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     // The userinfo endpoints exposed by these providers are based on GraphQL,
                     // which requires sending the request parameters as a JSON payload:
-                    ProviderTypes.Meetup or ProviderTypes.SubscribeStar
-                        => JsonContent.Create(context.Transaction.Request, new MediaTypeHeaderValue(MediaTypes.Json)
+                    ProviderTypes.Meetup or ProviderTypes.SubscribeStar => JsonContent.Create(
+                        context.Transaction.Request,
+                        OpenIddictSerializer.Default.Request,
+                        new MediaTypeHeaderValue(MediaTypes.Json)
                         {
                             CharSet = Charsets.Utf8
                         }),

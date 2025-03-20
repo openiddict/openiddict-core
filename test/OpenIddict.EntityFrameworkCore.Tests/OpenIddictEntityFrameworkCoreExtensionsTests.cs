@@ -5,8 +5,6 @@
  */
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
 using Xunit;
 
@@ -40,7 +38,7 @@ public class OpenIddictEntityFrameworkCoreExtensionsTests
     }
 
     [Fact]
-    public void UseEntityFrameworkCore_RegistersDefaultEntities()
+    public void UseEntityFrameworkCore_RegistersUntypedManagers()
     {
         // Arrange
         var services = new ServiceCollection().AddOptions();
@@ -50,21 +48,26 @@ public class OpenIddictEntityFrameworkCoreExtensionsTests
         builder.UseEntityFrameworkCore();
 
         // Assert
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-
-        Assert.Equal(typeof(OpenIddictEntityFrameworkCoreApplication), options.DefaultApplicationType);
-        Assert.Equal(typeof(OpenIddictEntityFrameworkCoreAuthorization), options.DefaultAuthorizationType);
-        Assert.Equal(typeof(OpenIddictEntityFrameworkCoreScope), options.DefaultScopeType);
-        Assert.Equal(typeof(OpenIddictEntityFrameworkCoreToken), options.DefaultTokenType);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictApplicationManager) &&
+            service.ImplementationFactory is not null);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictAuthorizationManager) &&
+            service.ImplementationFactory is not null);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictScopeManager) &&
+            service.ImplementationFactory is not null);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictTokenManager) &&
+            service.ImplementationFactory is not null);
     }
 
-    [Theory]
-    [InlineData(typeof(IOpenIddictApplicationStoreResolver), typeof(OpenIddictEntityFrameworkCoreApplicationStoreResolver))]
-    [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictEntityFrameworkCoreAuthorizationStoreResolver))]
-    [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictEntityFrameworkCoreScopeStoreResolver))]
-    [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictEntityFrameworkCoreTokenStoreResolver))]
-    public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolvers(Type serviceType, Type implementationType)
+    [Fact]
+    public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStores()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -74,44 +77,21 @@ public class OpenIddictEntityFrameworkCoreExtensionsTests
         builder.UseEntityFrameworkCore();
 
         // Assert
-        Assert.Contains(services, service => service.ServiceType == serviceType &&
-                                             service.ImplementationType == implementationType);
-    }
-
-    [Theory]
-    [InlineData(typeof(OpenIddictEntityFrameworkCoreApplicationStoreResolver.TypeResolutionCache))]
-    [InlineData(typeof(OpenIddictEntityFrameworkCoreAuthorizationStoreResolver.TypeResolutionCache))]
-    [InlineData(typeof(OpenIddictEntityFrameworkCoreScopeStoreResolver.TypeResolutionCache))]
-    [InlineData(typeof(OpenIddictEntityFrameworkCoreTokenStoreResolver.TypeResolutionCache))]
-    public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolverCaches(Type type)
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var builder = new OpenIddictCoreBuilder(services);
-
-        // Act
-        builder.UseEntityFrameworkCore();
-
-        // Assert
-        Assert.Contains(services, service => service.ServiceType == type &&
-                                             service.ImplementationType == type);
-    }
-
-    [Theory]
-    [InlineData(typeof(OpenIddictEntityFrameworkCoreApplicationStore<,,,,>))]
-    [InlineData(typeof(OpenIddictEntityFrameworkCoreAuthorizationStore<,,,,>))]
-    [InlineData(typeof(OpenIddictEntityFrameworkCoreScopeStore<,,>))]
-    [InlineData(typeof(OpenIddictEntityFrameworkCoreTokenStore<,,,,>))]
-    public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStore(Type type)
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var builder = new OpenIddictCoreBuilder(services);
-
-        // Act
-        builder.UseEntityFrameworkCore();
-
-        // Assert
-        Assert.Contains(services, service => service.ServiceType == type && service.ImplementationType == type);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictApplicationStore<OpenIddictEntityFrameworkCoreApplication>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkCoreApplicationStore));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictAuthorizationStore<OpenIddictEntityFrameworkCoreAuthorization>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkCoreAuthorizationStore));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictScopeStore<OpenIddictEntityFrameworkCoreScope>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkCoreScopeStore));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictTokenStore<OpenIddictEntityFrameworkCoreToken>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkCoreTokenStore));
     }
 }

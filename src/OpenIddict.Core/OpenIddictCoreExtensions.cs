@@ -5,11 +5,10 @@
  */
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 
 namespace Microsoft.Extensions.DependencyInjection;
-
-using Microsoft.Extensions.Options;
 
 /// <summary>
 /// Exposes extensions allowing to register the OpenIddict core services.
@@ -33,60 +32,27 @@ public static class OpenIddictCoreExtensions
         builder.Services.AddMemoryCache();
         builder.Services.AddOptions();
 
-        builder.Services.TryAddScoped(typeof(OpenIddictApplicationManager<>));
-        builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationManager<>));
-        builder.Services.TryAddScoped(typeof(OpenIddictScopeManager<>));
-        builder.Services.TryAddScoped(typeof(OpenIddictTokenManager<>));
-
         builder.Services.TryAddScoped(typeof(IOpenIddictApplicationCache<>), typeof(OpenIddictApplicationCache<>));
         builder.Services.TryAddScoped(typeof(IOpenIddictAuthorizationCache<>), typeof(OpenIddictAuthorizationCache<>));
         builder.Services.TryAddScoped(typeof(IOpenIddictScopeCache<>), typeof(OpenIddictScopeCache<>));
         builder.Services.TryAddScoped(typeof(IOpenIddictTokenCache<>), typeof(OpenIddictTokenCache<>));
 
-        builder.Services.TryAddScoped<IOpenIddictApplicationStoreResolver, OpenIddictApplicationStoreResolver>();
-        builder.Services.TryAddScoped<IOpenIddictAuthorizationStoreResolver, OpenIddictAuthorizationStoreResolver>();
-        builder.Services.TryAddScoped<IOpenIddictScopeStoreResolver, OpenIddictScopeStoreResolver>();
-        builder.Services.TryAddScoped<IOpenIddictTokenStoreResolver, OpenIddictTokenStoreResolver>();
+        builder.Services.TryAddScoped(typeof(OpenIddictApplicationManager<>));
+        builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationManager<>));
+        builder.Services.TryAddScoped(typeof(OpenIddictScopeManager<>));
+        builder.Services.TryAddScoped(typeof(OpenIddictTokenManager<>));
 
-        builder.Services.TryAddScoped(static provider =>
-        {
-            var type = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>()
-                .CurrentValue?.DefaultApplicationType ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0273));
-
-            return (IOpenIddictApplicationManager) provider.GetRequiredService(
-                typeof(OpenIddictApplicationManager<>).MakeGenericType(type));
-        });
-
-        builder.Services.TryAddScoped(static provider =>
-        {
-            var type = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>()
-                .CurrentValue?.DefaultAuthorizationType ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0274));
-
-            return (IOpenIddictAuthorizationManager) provider.GetRequiredService(
-                typeof(OpenIddictAuthorizationManager<>).MakeGenericType(type));
-        });
-
-        builder.Services.TryAddScoped(static provider =>
-        {
-            var type = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>()
-                .CurrentValue?.DefaultScopeType ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0275));
-
-            return (IOpenIddictScopeManager) provider.GetRequiredService(
-                typeof(OpenIddictScopeManager<>).MakeGenericType(type));
-        });
-
-        builder.Services.TryAddScoped(static provider =>
-        {
-            var type = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>()
-                .CurrentValue?.DefaultTokenType ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0276));
-
-            return (IOpenIddictTokenManager) provider.GetRequiredService(
-                typeof(OpenIddictTokenManager<>).MakeGenericType(type));
-        });
+        // Note: default factories for the untyped managers are always registered to make debugging
+        // easier if no store was configured. It is expected that store implementations replace the
+        // registrations with working implementation factories that use the correct entity types.
+        builder.Services.TryAddScoped<IOpenIddictApplicationManager>(static provider =>
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
+        builder.Services.TryAddScoped<IOpenIddictAuthorizationManager>(static provider =>
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
+        builder.Services.TryAddScoped<IOpenIddictScopeManager>(static provider =>
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
+        builder.Services.TryAddScoped<IOpenIddictTokenManager>(static provider =>
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
 
         // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

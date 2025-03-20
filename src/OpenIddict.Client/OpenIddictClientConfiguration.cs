@@ -76,23 +76,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             // hash based on the issuer URI and the provider name, if available.
             if (string.IsNullOrEmpty(registration.RegistrationId))
             {
-                using var algorithm = CryptoConfig.CreateFromName("OpenIddict SHA-256 Cryptographic Provider") switch
-                {
-                    SHA256 result => result,
-                    null => SHA256.Create(),
-                    var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
-                };
-
-                TransformBlock(algorithm, registration.Issuer.AbsoluteUri);
-
-                if (!string.IsNullOrEmpty(registration.ProviderName))
-                {
-                    TransformBlock(algorithm, registration.ProviderName);
-                }
-
-                algorithm.TransformFinalBlock([], 0, 0);
-
-                registration.RegistrationId = Base64UrlEncoder.Encode(algorithm.Hash);
+                registration.RegistrationId = ComputeDefaultRegistrationId(registration);
             }
 
             // Ensure the registration identifier doesn't contain U+001E or U+001F separators as they are
@@ -322,11 +306,38 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             return null;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void TransformBlock(HashAlgorithm algorithm, string input)
+        static string ComputeDefaultRegistrationId(OpenIddictClientRegistration registration)
         {
-            var buffer = Encoding.UTF8.GetBytes(input);
-            algorithm.TransformBlock(buffer, 0, buffer.Length, outputBuffer: null, outputOffset: 0);
+            Debug.Assert(registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+            using var algorithm = CreateAlgorithm();
+
+            TransformBlock(algorithm, registration.Issuer.AbsoluteUri);
+
+            if (!string.IsNullOrEmpty(registration.ProviderName))
+            {
+                TransformBlock(algorithm, registration.ProviderName);
+            }
+
+            algorithm.TransformFinalBlock([], 0, 0);
+
+            return Base64UrlEncoder.Encode(algorithm.Hash);
+
+            [UnconditionalSuppressMessage("Trimming", "IL2026",
+                Justification = "The default implementation is always used when no custom algorithm was registered.")]
+            static SHA256 CreateAlgorithm() => CryptoConfig.CreateFromName("OpenIddict SHA-256 Cryptographic Provider") switch
+            {
+                SHA256 result => result,
+                null => SHA256.Create(),
+                var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
+            };
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static void TransformBlock(HashAlgorithm algorithm, string input)
+            {
+                var buffer = Encoding.UTF8.GetBytes(input);
+                algorithm.TransformBlock(buffer, 0, buffer.Length, outputBuffer: null, outputOffset: 0);
+            }
         }
     }
 }

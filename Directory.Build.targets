@@ -16,6 +16,15 @@
   </PropertyGroup>
 
   <!--
+    Note: the trimming and Native AOT analyzers are only supported on .NET.
+  -->
+
+  <PropertyGroup
+    Condition=" $(RepoRelativeProjectDir.Contains('src')) And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!--
     Note: .NET Native, .NET Framework and .NET Standard assemblies are not annotated with
     nullable references annotations. To avoid errors on these target frameworks, related
     warnings are disabled by setting <Nullable> to "annotations" instead of "enable".
@@ -55,6 +64,7 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_INT32_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_NATIVE_AOT</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON</DefineConstants>

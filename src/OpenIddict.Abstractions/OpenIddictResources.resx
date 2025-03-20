@@ -881,51 +881,15 @@ To register the validation services, use 'services.AddOpenIddict().AddValidation
   <data name="ID0227" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to update an existing token:</value>
   </data>
-  <data name="ID0228" xml:space="preserve">
-    <value>No application store has been registered in the dependency injection container.
-To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
-To register a custom store, create an implementation of 'IOpenIddictApplicationStore' and use 'services.AddOpenIddict().AddCore().AddApplicationStore()' to add it to the DI container.</value>
-  </data>
-  <data name="ID0229" xml:space="preserve">
-    <value>No authorization store has been registered in the dependency injection container.
-To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
-To register a custom store, create an implementation of 'IOpenIddictAuthorizationStore' and use 'services.AddOpenIddict().AddCore().AddAuthorizationStore()' to add it to the DI container.</value>
-  </data>
-  <data name="ID0230" xml:space="preserve">
-    <value>No scope store has been registered in the dependency injection container.
-To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
-To register a custom store, create an implementation of 'IOpenIddictScopeStore' and use 'services.AddOpenIddict().AddCore().AddScopeStore()' to add it to the DI container.</value>
-  </data>
-  <data name="ID0231" xml:space="preserve">
-    <value>No token store has been registered in the dependency injection container.
-To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
-To register a custom store, create an implementation of 'IOpenIddictTokenStore' and use 'services.AddOpenIddict().AddCore().AddTokenStore()' to add it to the DI container.</value>
-  </data>
   <data name="ID0232" xml:space="preserve">
     <value>The specified type is invalid.</value>
   </data>
   <data name="ID0233" xml:space="preserve">
     <value>The cache size cannot be less than 10.</value>
   </data>
-  <data name="ID0234" xml:space="preserve">
-    <value>The specified application type is not compatible with the Entity Framework 6.x stores.
-When enabling the Entity Framework 6.x stores, make sure you use the built-in 'OpenIddictEntityFrameworkApplication' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkApplication' entity.</value>
-  </data>
   <data name="ID0235" xml:space="preserve">
-    <value>No Entity Framework 6.x context was specified in the OpenIddict options.
+    <value>No Entity Framework 6.x context was configured to be used with OpenIddict.
 To configure the OpenIddict Entity Framework 6.x stores to use a specific 'DbContext', use 'options.UseEntityFramework().UseDbContext&lt;TContext&gt;()'.</value>
-  </data>
-  <data name="ID0236" xml:space="preserve">
-    <value>The specified authorization type is not compatible with the Entity Framework 6.x stores.
-When enabling the Entity Framework 6.x stores, make sure you use the built-in 'OpenIddictEntityFrameworkAuthorization' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkAuthorization' entity.</value>
-  </data>
-  <data name="ID0237" xml:space="preserve">
-    <value>The specified scope type is not compatible with the Entity Framework 6.x stores.
-When enabling the Entity Framework 6.x stores, make sure you use the built-in 'OpenIddictEntityFrameworkScope' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkScope' entity.</value>
-  </data>
-  <data name="ID0238" xml:space="preserve">
-    <value>The specified token type is not compatible with the Entity Framework 6.x stores.
-When enabling the Entity Framework 6.x stores, make sure you use the built-in 'OpenIddictEntityFrameworkToken' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkToken' entity.</value>
   </data>
   <data name="ID0239" xml:space="preserve">
     <value>The application was concurrently updated and cannot be persisted in its current state.
@@ -974,41 +938,9 @@ Make sure that the token entity is not abstract and has a public parameterless c
   <data name="ID0251" xml:space="preserve">
     <value>The authorization associated with the token cannot be found.</value>
   </data>
-  <data name="ID0252" xml:space="preserve">
-    <value>The specified application type is not compatible with the Entity Framework Core stores.
-When enabling the Entity Framework Core stores, make sure you use the built-in 'OpenIddictEntityFrameworkCoreApplication' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkCoreApplication' entity.</value>
-  </data>
   <data name="ID0253" xml:space="preserve">
-    <value>No Entity Framework Core context was specified in the OpenIddict options.
+    <value>No Entity Framework Core context was configured to be used with OpenIddict.
 To configure the OpenIddict Entity Framework Core stores to use a specific 'DbContext', use 'options.UseEntityFrameworkCore().UseDbContext&lt;TContext&gt;()'.</value>
-  </data>
-  <data name="ID0254" xml:space="preserve">
-    <value>The specified authorization type is not compatible with the Entity Framework Core stores.
-When enabling the Entity Framework Core stores, make sure you use the built-in 'OpenIddictEntityFrameworkCoreAuthorization' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkCoreAuthorization' entity.</value>
-  </data>
-  <data name="ID0255" xml:space="preserve">
-    <value>The specified scope type is not compatible with the Entity Framework Core stores.
-When enabling the Entity Framework Core stores, make sure you use the built-in 'OpenIddictEntityFrameworkCoreScope' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkCoreScope' entity.</value>
-  </data>
-  <data name="ID0256" xml:space="preserve">
-    <value>The specified token type is not compatible with the Entity Framework Core stores.
-When enabling the Entity Framework Core stores, make sure you use the built-in 'OpenIddictEntityFrameworkCoreToken' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkCoreToken' entity.</value>
-  </data>
-  <data name="ID0257" xml:space="preserve">
-    <value>The specified application type is not compatible with the MongoDB stores.
-When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictMongoDbApplication' entity or a custom entity that inherits from the 'OpenIddictMongoDbApplication' entity.</value>
-  </data>
-  <data name="ID0258" xml:space="preserve">
-    <value>The specified authorization type is not compatible with the MongoDB stores.
-When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictMongoDbAuthorization' entity or a custom entity that inherits from the 'OpenIddictMongoDbAuthorization' entity.</value>
-  </data>
-  <data name="ID0259" xml:space="preserve">
-    <value>The specified scope type is not compatible with the MongoDB stores.
-When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictMongoDbScope' entity or a custom entity that inherits from the 'OpenIddictMongoDbScope' entity.</value>
-  </data>
-  <data name="ID0260" xml:space="preserve">
-    <value>The specified token type is not compatible with the MongoDB stores.
-When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictMongoDbToken' entity or a custom entity that inherits from the 'OpenIddictMongoDbToken' entity.</value>
   </data>
   <data name="ID0261" xml:space="preserve">
     <value>The collection name cannot be null or empty.</value>
@@ -1047,22 +979,6 @@ To configure the OpenIddict MongoDB stores to use a specific database, use 'serv
   <data name="ID0272" xml:space="preserve">
     <value>The configuration response was not correctly applied.
 To apply configuration responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyConfigurationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
-  </data>
-  <data name="ID0273" xml:space="preserve">
-    <value>No default application entity type was configured in the OpenIddict core options, which generally indicates that no application store was registered in the DI container.
-To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
-  </data>
-  <data name="ID0274" xml:space="preserve">
-    <value>No default authorization entity type was configured in the OpenIddict core options, which generally indicates that no authorization store was registered in the DI container.
-To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
-  </data>
-  <data name="ID0275" xml:space="preserve">
-    <value>No default scope entity type was configured in the OpenIddict core options, which generally indicates that no scope store was registered in the DI container.
-To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
-  </data>
-  <data name="ID0276" xml:space="preserve">
-    <value>No default token entity type was configured in the OpenIddict core options, which generally indicates that no token store was registered in the DI container.
-To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
   </data>
   <data name="ID0277" xml:space="preserve">
     <value>The Entity Framework 6.x stores cannot be used with generic types.
@@ -1728,6 +1644,20 @@ To extract pushed authorization requests, create a class implementing 'IOpenIddi
   <data name="ID0469" xml:space="preserve">
     <value>The pushed authorization response was not correctly applied.
 To apply pushed authorization responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyPushedAuthorizationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0470" xml:space="preserve">
+    <value>The Entity Framework 6.x context configured to be used with OpenIddict cannot be resolved from the dependency injection container.
+Ensure the context is correctly registered using 'services.AddScoped(() => new ApplicationDbContext(connectionString))'.</value>
+  </data>
+  <data name="ID0471" xml:space="preserve">
+    <value>The Entity Framework Core context configured to be used with OpenIddict cannot be resolved from the dependency injection container.
+Ensure the context is correctly registered using 'services.AddDbContext&lt;ApplicationDbContext&gt;()'.</value>
+  </data>
+  <data name="ID0472" xml:space="preserve">
+    <value>No database integration was configured to be used with OpenIddict.
+To use the Entity Framework 6.x integration, reference the 'OpenIddict.EntityFramework' package and call 'services.AddOpenIddict().AddCore().UseEntityFramework()'.
+To use the Entity Framework Core integration, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
+To use the MongoDB integration, reference the 'OpenIddict.MongoDb' package and call 'services.AddOpenIddict().AddCore().UseMongoDb()'.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>

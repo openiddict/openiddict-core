@@ -23,22 +23,28 @@ namespace OpenIddict.Core;
 /// </summary>
 /// <remarks>
 /// Applications that do not want to depend on a specific entity type can use the non-generic
-/// <see cref="IOpenIddictAuthorizationManager"/> instead, for which the actual entity type
-/// is resolved at runtime based on the default entity type registered in the core options.
+/// <see cref="IOpenIddictAuthorizationManager"/> instead, for which the actual entity type is resolved at runtime.
 /// </remarks>
 /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
 public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthorizationManager where TAuthorization : class
 {
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictAuthorizationManager{TAuthorization}"/> class.
+    /// </summary>
+    /// <param name="cache">The cache.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="options">The options.</param>
+    /// <param name="store">The store.</param>
     public OpenIddictAuthorizationManager(
         IOpenIddictAuthorizationCache<TAuthorization> cache,
         ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
         IOptionsMonitor<OpenIddictCoreOptions> options,
-        IOpenIddictAuthorizationStoreResolver resolver)
+        IOpenIddictAuthorizationStore<TAuthorization> store)
     {
         Cache = cache ?? throw new ArgumentNullException(nameof(cache));
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         Options = options ?? throw new ArgumentNullException(nameof(options));
-        Store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TAuthorization>();
+        Store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     /// <summary>

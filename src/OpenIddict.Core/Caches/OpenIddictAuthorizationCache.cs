@@ -23,9 +23,14 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
     private readonly IOpenIddictAuthorizationStore<TAuthorization> _store;
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictAuthorizationCache{TAuthorization}"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="store">The store.</param>
     public OpenIddictAuthorizationCache(
         IOptionsMonitor<OpenIddictCoreOptions> options,
-        IOpenIddictAuthorizationStoreResolver resolver)
+        IOpenIddictAuthorizationStore<TAuthorization> store)
     {
         _cache = new MemoryCache(new MemoryCacheOptions
         {
@@ -33,7 +38,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
         });
 
         _signals = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
-        _store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TAuthorization>();
+        _store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     /// <inheritdoc/>

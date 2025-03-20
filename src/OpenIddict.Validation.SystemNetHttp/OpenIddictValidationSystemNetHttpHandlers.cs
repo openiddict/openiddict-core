@@ -883,8 +883,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             {
                 // Note: ReadFromJsonAsync() automatically validates the content encoding and transparently
                 // transcodes the response stream if a non-UTF-8 response is returned by the remote server.
-                context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>(
-                    cancellationToken: context.CancellationToken);
+                context.Transaction.Response = await response.Content.ReadFromJsonAsync(
+                    OpenIddictSerializer.Default.Response, context.CancellationToken);
             }
 
             // If an exception is thrown at this stage, this likely means the returned response was not a valid

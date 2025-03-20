@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -19,8 +20,22 @@ namespace OpenIddict.MongoDb;
 /// <summary>
 /// Provides methods allowing to manage the scopes stored in a database.
 /// </summary>
+public class OpenIddictMongoDbScopeStore : OpenIddictMongoDbScopeStore<OpenIddictMongoDbScope>
+{
+    public OpenIddictMongoDbScopeStore(
+        IOpenIddictMongoDbContext context,
+        IOptionsMonitor<OpenIddictMongoDbOptions> options)
+        : base(context, options)
+    {
+    }
+}
+
+/// <summary>
+/// Provides methods allowing to manage the scopes stored in a database.
+/// </summary>
 /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
+public class OpenIddictMongoDbScopeStore<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope> : IOpenIddictScopeStore<TScope>
     where TScope : OpenIddictMongoDbScope
 {
     public OpenIddictMongoDbScopeStore(

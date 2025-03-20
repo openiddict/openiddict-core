@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace OpenIddict.Validation;
@@ -69,33 +70,15 @@ public sealed class OpenIddictValidationHandlerDescriptor
         /// <summary>
         /// Adds the type of a handler filter to the filters list.
         /// </summary>
-        /// <param name="type">The event handler filter type.</param>
-        /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> AddFilter(Type type)
-        {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (!typeof(IOpenIddictValidationHandlerFilter<>).MakeGenericType(typeof(TContext)).IsAssignableFrom(type))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0104));
-            }
-
-            _filters.Add(type);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Adds the type of a handler filter to the filters list.
-        /// </summary>
         /// <typeparam name="TFilter">The event handler filter type.</typeparam>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> AddFilter<TFilter>()
-            where TFilter : IOpenIddictValidationHandlerFilter<TContext>
-            => AddFilter(typeof(TFilter));
+            where TFilter : class, IOpenIddictValidationHandlerFilter<TContext>
+        {
+            _filters.Add(typeof(TFilter));
+
+            return this;
+        }
 
         /// <summary>
         /// Imports the properties set on the specified descriptor.
@@ -136,8 +119,7 @@ public sealed class OpenIddictValidationHandlerDescriptor
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var type = descriptor.ServiceType;
-            if (!typeof(IOpenIddictValidationHandler<>).MakeGenericType(typeof(TContext)).IsAssignableFrom(type))
+            if (!typeof(IOpenIddictValidationHandler<TContext>).IsAssignableFrom(descriptor.ServiceType))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0104));
             }
@@ -182,24 +164,18 @@ public sealed class OpenIddictValidationHandlerDescriptor
         /// <param name="handler">The handler instance.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> UseInlineHandler(Func<TContext, ValueTask> handler)
-        {
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            return UseSingletonHandler(new OpenIddictValidationHandler<TContext>(handler));
-        }
+            => UseSingletonHandler(new OpenIddictValidationHandler<TContext>(handler ??
+                throw new ArgumentNullException(nameof(handler))));
 
         /// <summary>
         /// Configures the descriptor to use the specified scoped handler.
         /// </summary>
         /// <typeparam name="THandler">The handler type.</typeparam>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> UseScopedHandler<THandler>()
-            where THandler : IOpenIddictValidationHandler<TContext>
-            => SetServiceDescriptor(new ServiceDescriptor(
-                typeof(THandler), typeof(THandler), ServiceLifetime.Scoped));
+        public Builder<TContext> UseScopedHandler<
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>()
+            where THandler : class, IOpenIddictValidationHandler<TContext>
+            => SetServiceDescriptor(ServiceDescriptor.Scoped<THandler, THandler>());
 
         /// <summary>
         /// Configures the descriptor to use the specified scoped handler.
@@ -207,27 +183,20 @@ public sealed class OpenIddictValidationHandlerDescriptor
         /// <typeparam name="THandler">The handler type.</typeparam>
         /// <param name="factory">The factory used to create the handler.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> UseScopedHandler<THandler>(Func<IServiceProvider, object> factory)
-            where THandler : IOpenIddictValidationHandler<TContext>
-        {
-            if (factory is null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            return SetServiceDescriptor(new ServiceDescriptor(
-                typeof(THandler), factory, ServiceLifetime.Scoped));
-        }
+        public Builder<TContext> UseScopedHandler<THandler>(Func<IServiceProvider, THandler> factory)
+            where THandler : class, IOpenIddictValidationHandler<TContext>
+            => SetServiceDescriptor(ServiceDescriptor.Scoped(factory ??
+                throw new ArgumentNullException(nameof(factory))));
 
         /// <summary>
         /// Configures the descriptor to use the specified singleton handler.
         /// </summary>
         /// <typeparam name="THandler">The handler type.</typeparam>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> UseSingletonHandler<THandler>()
-            where THandler : IOpenIddictValidationHandler<TContext>
-            => SetServiceDescriptor(new ServiceDescriptor(
-                typeof(THandler), typeof(THandler), ServiceLifetime.Singleton));
+        public Builder<TContext> UseSingletonHandler<
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>()
+            where THandler : class, IOpenIddictValidationHandler<TContext>
+            => SetServiceDescriptor(ServiceDescriptor.Singleton<THandler, THandler>());
 
         /// <summary>
         /// Configures the descriptor to use the specified singleton handler.
@@ -235,17 +204,10 @@ public sealed class OpenIddictValidationHandlerDescriptor
         /// <typeparam name="THandler">The handler type.</typeparam>
         /// <param name="factory">The factory used to create the handler.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> UseSingletonHandler<THandler>(Func<IServiceProvider, object> factory)
-            where THandler : IOpenIddictValidationHandler<TContext>
-        {
-            if (factory is null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            return SetServiceDescriptor(new ServiceDescriptor(
-                typeof(THandler), factory, ServiceLifetime.Singleton));
-        }
+        public Builder<TContext> UseSingletonHandler<THandler>(Func<IServiceProvider, THandler> factory)
+            where THandler : class, IOpenIddictValidationHandler<TContext>
+            => SetServiceDescriptor(ServiceDescriptor.Singleton(factory ??
+                throw new ArgumentNullException(nameof(factory))));
 
         /// <summary>
         /// Configures the descriptor to use the specified singleton handler.
@@ -254,15 +216,9 @@ public sealed class OpenIddictValidationHandlerDescriptor
         /// <param name="handler">The handler instance.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> UseSingletonHandler<THandler>(THandler handler)
-            where THandler : IOpenIddictValidationHandler<TContext>
-        {
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            return SetServiceDescriptor(new ServiceDescriptor(typeof(THandler), handler));
-        }
+            where THandler : class, IOpenIddictValidationHandler<TContext>
+            => SetServiceDescriptor(ServiceDescriptor.Singleton(handler ??
+                throw new ArgumentNullException(nameof(handler))));
 
         /// <summary>
         /// Build a new descriptor instance, based on the parameters that were previously set.

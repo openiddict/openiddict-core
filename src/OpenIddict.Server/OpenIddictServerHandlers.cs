@@ -746,7 +746,8 @@ public static partial class OpenIddictServerHandlers
                        // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
                        // if the individual elements of the parsed JSON array are all string values.
                        (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
-                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
+                            is { ValueKind: JsonValueKind.Array } element &&
                         OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique numeric dates.
@@ -2421,7 +2422,8 @@ public static partial class OpenIddictServerHandlers
                        // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
                        // if the individual elements of the parsed JSON array are all string values.
                        (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
-                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
+                            is { ValueKind: JsonValueKind.Array } element &&
                         OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // Note: unlike other claims (e.g "aud"), the "amr" claim MUST be represented as a unique
@@ -2432,7 +2434,8 @@ public static partial class OpenIddictServerHandlers
                 Claims.AuthenticationMethodReference
                     => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String) ||
                        (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
-                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
+                            is { ValueKind: JsonValueKind.Array } element &&
                         OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique integers.
@@ -3562,8 +3565,11 @@ public static partial class OpenIddictServerHandlers
                                                          Parameters.ClientSecret)
                              select parameter;
 
-            principal.SetClaim(Claims.Private.RequestParameters, JsonSerializer.Deserialize<JsonElement>(
-                JsonSerializer.Serialize(new OpenIddictRequest(parameters))));
+            principal.SetClaim(Claims.Private.RequestParameters, JsonSerializer.Deserialize(
+                JsonSerializer.Serialize(
+                    new OpenIddictRequest(parameters),
+                    OpenIddictSerializer.Default.Request),
+                OpenIddictSerializer.Default.JsonElement));
 
             context.RequestTokenPrincipal = principal;
         }

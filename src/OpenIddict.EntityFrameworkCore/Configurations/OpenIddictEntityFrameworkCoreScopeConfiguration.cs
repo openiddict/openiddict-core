@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -16,7 +17,9 @@ namespace OpenIddict.EntityFrameworkCore;
 /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
 /// <typeparam name="TKey">The type of the Key entity.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey> : IEntityTypeConfiguration<TScope>
+public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : IEntityTypeConfiguration<TScope>
     where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
     where TKey : notnull, IEquatable<TKey>
 {

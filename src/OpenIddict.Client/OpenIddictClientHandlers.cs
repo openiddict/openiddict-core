@@ -1774,7 +1774,8 @@ public static partial class OpenIddictClientHandlers
                        // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
                        // if the individual elements of the parsed JSON array are all string values.
                        (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
-                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
+                            is { ValueKind: JsonValueKind.Array } element &&
                         OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique numeric dates.
@@ -3209,7 +3210,8 @@ public static partial class OpenIddictClientHandlers
                        // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
                        // if the individual elements of the parsed JSON array are all string values.
                        (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
-                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
+                            is { ValueKind: JsonValueKind.Array } element &&
                         OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique numeric dates.
@@ -4477,7 +4479,8 @@ public static partial class OpenIddictClientHandlers
                        // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
                        // if the individual elements of the parsed JSON array are all string values.
                        (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
-                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
+                            is { ValueKind: JsonValueKind.Array } element &&
                         OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique integers.
@@ -8035,7 +8038,8 @@ public static partial class OpenIddictClientHandlers
                        // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
                        // if the individual elements of the parsed JSON array are all string values.
                        (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
-                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
+                            is { ValueKind: JsonValueKind.Array } element &&
                         OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique integers.

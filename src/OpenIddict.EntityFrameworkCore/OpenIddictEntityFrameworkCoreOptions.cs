@@ -13,13 +13,6 @@ namespace OpenIddict.EntityFrameworkCore;
 public sealed class OpenIddictEntityFrameworkCoreOptions
 {
     /// <summary>
-    /// Gets or sets the concrete type of the <see cref="DbContext"/> used by the
-    /// OpenIddict Entity Framework Core stores. If this property is not populated,
-    /// an exception is thrown at runtime when trying to use the stores.
-    /// </summary>
-    public Type? DbContextType { get; set; }
-
-    /// <summary>
     /// Gets or sets a boolean indicating whether bulk operations should be disabled.
     /// </summary>
     /// <remarks>

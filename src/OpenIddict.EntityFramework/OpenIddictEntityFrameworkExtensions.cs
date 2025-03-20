@@ -39,20 +39,16 @@ public static class OpenIddictEntityFrameworkExtensions
                .SetDefaultScopeEntity<OpenIddictEntityFrameworkScope>()
                .SetDefaultTokenEntity<OpenIddictEntityFrameworkToken>();
 
-        builder.ReplaceApplicationStoreResolver<OpenIddictEntityFrameworkApplicationStoreResolver>()
-               .ReplaceAuthorizationStoreResolver<OpenIddictEntityFrameworkAuthorizationStoreResolver>()
-               .ReplaceScopeStoreResolver<OpenIddictEntityFrameworkScopeStoreResolver>()
-               .ReplaceTokenStoreResolver<OpenIddictEntityFrameworkTokenStoreResolver>();
+        builder.ReplaceApplicationStore<OpenIddictEntityFrameworkApplication, OpenIddictEntityFrameworkApplicationStore>()
+               .ReplaceAuthorizationStore<OpenIddictEntityFrameworkAuthorization, OpenIddictEntityFrameworkAuthorizationStore>()
+               .ReplaceScopeStore<OpenIddictEntityFrameworkScope, OpenIddictEntityFrameworkScopeStore>()
+               .ReplaceTokenStore<OpenIddictEntityFrameworkToken, OpenIddictEntityFrameworkTokenStore>();
 
-        builder.Services.TryAddSingleton<OpenIddictEntityFrameworkApplicationStoreResolver.TypeResolutionCache>();
-        builder.Services.TryAddSingleton<OpenIddictEntityFrameworkAuthorizationStoreResolver.TypeResolutionCache>();
-        builder.Services.TryAddSingleton<OpenIddictEntityFrameworkScopeStoreResolver.TypeResolutionCache>();
-        builder.Services.TryAddSingleton<OpenIddictEntityFrameworkTokenStoreResolver.TypeResolutionCache>();
-
-        builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkApplicationStore<,,,,>));
-        builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkAuthorizationStore<,,,,>));
-        builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkScopeStore<,,>));
-        builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkTokenStore<,,,,>));
+        // Note: a default context factory is always registered to make debugging easier when
+        // no database context type was configured by the user: the default implementation
+        // registered here is automatically replaced by the UseDbContext<TContext>() API.
+        builder.Services.TryAddScoped<IOpenIddictEntityFrameworkContext>(static provider =>
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0235)));
 
         return new OpenIddictEntityFrameworkBuilder(builder.Services);
     }

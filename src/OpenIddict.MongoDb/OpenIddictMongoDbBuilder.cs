@@ -5,6 +5,8 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 using OpenIddict.MongoDb;
 using OpenIddict.MongoDb.Models;
@@ -51,10 +53,15 @@ public sealed class OpenIddictMongoDbBuilder
     /// Configures OpenIddict to use the specified entity as the default application entity.
     /// </summary>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
-    public OpenIddictMongoDbBuilder ReplaceDefaultApplicationEntity<TApplication>()
+    public OpenIddictMongoDbBuilder ReplaceDefaultApplicationEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication>()
         where TApplication : OpenIddictMongoDbApplication
     {
-        Services.Configure<OpenIddictCoreOptions>(options => options.DefaultApplicationType = typeof(TApplication));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictApplicationManager>(static provider =>
+            provider.GetRequiredService<OpenIddictApplicationManager<TApplication>>()));
+
+        Services.Replace(ServiceDescriptor.Scoped<
+            IOpenIddictApplicationStore<TApplication>, OpenIddictMongoDbApplicationStore<TApplication>>());
 
         return this;
     }
@@ -63,10 +70,15 @@ public sealed class OpenIddictMongoDbBuilder
     /// Configures OpenIddict to use the specified entity as the default authorization entity.
     /// </summary>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
-    public OpenIddictMongoDbBuilder ReplaceDefaultAuthorizationEntity<TAuthorization>()
+    public OpenIddictMongoDbBuilder ReplaceDefaultAuthorizationEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization>()
         where TAuthorization : OpenIddictMongoDbAuthorization
     {
-        Services.Configure<OpenIddictCoreOptions>(options => options.DefaultAuthorizationType = typeof(TAuthorization));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationManager>(static provider =>
+            provider.GetRequiredService<OpenIddictAuthorizationManager<TAuthorization>>()));
+
+        Services.Replace(ServiceDescriptor.Scoped<
+            IOpenIddictAuthorizationStore<TAuthorization>, OpenIddictMongoDbAuthorizationStore<TAuthorization>>());
 
         return this;
     }
@@ -75,10 +87,15 @@ public sealed class OpenIddictMongoDbBuilder
     /// Configures OpenIddict to use the specified entity as the default scope entity.
     /// </summary>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
-    public OpenIddictMongoDbBuilder ReplaceDefaultScopeEntity<TScope>()
+    public OpenIddictMongoDbBuilder ReplaceDefaultScopeEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope>()
         where TScope : OpenIddictMongoDbScope
     {
-        Services.Configure<OpenIddictCoreOptions>(options => options.DefaultScopeType = typeof(TScope));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeManager>(static provider =>
+            provider.GetRequiredService<OpenIddictScopeManager<TScope>>()));
+
+        Services.Replace(ServiceDescriptor.Scoped<
+            IOpenIddictScopeStore<TScope>, OpenIddictMongoDbScopeStore<TScope>>());
 
         return this;
     }
@@ -87,10 +104,15 @@ public sealed class OpenIddictMongoDbBuilder
     /// Configures OpenIddict to use the specified entity as the default token entity.
     /// </summary>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
-    public OpenIddictMongoDbBuilder ReplaceDefaultTokenEntity<TToken>()
+    public OpenIddictMongoDbBuilder ReplaceDefaultTokenEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken>()
         where TToken : OpenIddictMongoDbToken
     {
-        Services.Configure<OpenIddictCoreOptions>(options => options.DefaultTokenType = typeof(TToken));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictTokenManager>(static provider =>
+            provider.GetRequiredService<OpenIddictTokenManager<TToken>>()));
+
+        Services.Replace(ServiceDescriptor.Scoped<
+            IOpenIddictTokenStore<TToken>, OpenIddictMongoDbTokenStore<TToken>>());
 
         return this;
     }

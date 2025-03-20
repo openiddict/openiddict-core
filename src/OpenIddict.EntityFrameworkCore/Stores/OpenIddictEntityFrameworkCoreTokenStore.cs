@@ -7,6 +7,8 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -21,16 +23,14 @@ namespace OpenIddict.EntityFrameworkCore;
 /// <summary>
 /// Provides methods allowing to manage the tokens stored in a database.
 /// </summary>
-/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-public class OpenIddictEntityFrameworkCoreTokenStore<TContext> :
+public class OpenIddictEntityFrameworkCoreTokenStore :
     OpenIddictEntityFrameworkCoreTokenStore<OpenIddictEntityFrameworkCoreToken,
                                             OpenIddictEntityFrameworkCoreApplication,
-                                            OpenIddictEntityFrameworkCoreAuthorization, TContext, string>
-    where TContext : DbContext
+                                            OpenIddictEntityFrameworkCoreAuthorization, string>
 {
     public OpenIddictEntityFrameworkCoreTokenStore(
         IMemoryCache cache,
-        TContext context,
+        IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
         : base(cache, context, options)
     {
@@ -40,18 +40,17 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TContext> :
 /// <summary>
 /// Provides methods allowing to manage the tokens stored in a database.
 /// </summary>
-/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-public class OpenIddictEntityFrameworkCoreTokenStore<TContext, TKey> :
+public class OpenIddictEntityFrameworkCoreTokenStore<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> :
     OpenIddictEntityFrameworkCoreTokenStore<OpenIddictEntityFrameworkCoreToken<TKey>,
                                             OpenIddictEntityFrameworkCoreApplication<TKey>,
-                                            OpenIddictEntityFrameworkCoreAuthorization<TKey>, TContext, TKey>
-    where TContext : DbContext
+                                            OpenIddictEntityFrameworkCoreAuthorization<TKey>, TKey>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreTokenStore(
         IMemoryCache cache,
-        TContext context,
+        IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
         : base(cache, context, options)
     {
@@ -64,18 +63,20 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TContext, TKey> :
 /// <typeparam name="TToken">The type of the Token entity.</typeparam>
 /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
 /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuthorization, TContext, TKey> : IOpenIddictTokenStore<TToken>
+public class OpenIddictEntityFrameworkCoreTokenStore<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : IOpenIddictTokenStore<TToken>
     where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
     where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
     where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
-    where TContext : DbContext
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreTokenStore(
         IMemoryCache cache,
-        TContext context,
+        IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
     {
         Cache = cache ?? throw new ArgumentNullException(nameof(cache));
@@ -91,31 +92,20 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     /// <summary>
     /// Gets the database context associated with the current store.
     /// </summary>
-    protected TContext Context { get; }
+    protected IOpenIddictEntityFrameworkCoreContext Context { get; }
 
     /// <summary>
     /// Gets the options associated with the current store.
     /// </summary>
     protected IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> Options { get; }
 
-    /// <summary>
-    /// Gets the database set corresponding to the <typeparamref name="TApplication"/> entity.
-    /// </summary>
-    private DbSet<TApplication> Applications => Context.Set<TApplication>();
-
-    /// <summary>
-    /// Gets the database set corresponding to the <typeparamref name="TAuthorization"/> entity.
-    /// </summary>
-    private DbSet<TAuthorization> Authorizations => Context.Set<TAuthorization>();
-
-    /// <summary>
-    /// Gets the database set corresponding to the <typeparamref name="TToken"/> entity.
-    /// </summary>
-    private DbSet<TToken> Tokens => Context.Set<TToken>();
-
     /// <inheritdoc/>
     public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
-        => await Tokens.AsQueryable().LongCountAsync(cancellationToken);
+    {
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        return await context.Set<TToken>().AsQueryable().LongCountAsync(cancellationToken);
+    }
 
     /// <inheritdoc/>
     public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
@@ -125,7 +115,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(query));
         }
 
-        return await query(Tokens).LongCountAsync(cancellationToken);
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        return await query(context.Set<TToken>()).LongCountAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -136,9 +128,11 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(token));
         }
 
-        Context.Add(token);
+        var context = await Context.GetDbContextAsync(cancellationToken);
 
-        await Context.SaveChangesAsync(cancellationToken);
+        context.Add(token);
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -149,28 +143,35 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(token));
         }
 
-        Context.Remove(token);
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        context.Remove(token);
 
         try
         {
-            await Context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         catch (DbUpdateConcurrencyException exception)
         {
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-            Context.Entry(token).State = EntityState.Unchanged;
+            context.Entry(token).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0247), exception);
         }
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TToken> FindAsync(
+    public virtual async IAsyncEnumerable<TToken> FindAsync(
         string? subject, string? client,
-        string? status, string? type, CancellationToken cancellationToken)
+        string? status, string? type, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        IQueryable<TToken> query = Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking();
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        IQueryable<TToken> query = context.Set<TToken>()
+                                          .Include(token => token.Application)
+                                          .Include(token => token.Authorization)
+                                          .AsTracking();
 
         if (!string.IsNullOrEmpty(subject))
         {
@@ -187,7 +188,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             var key = ConvertIdentifierFromString(client);
 
             query = from authorization in query
-                    join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
+                    join application in context.Set<TApplication>().AsTracking() on authorization.Application!.Id equals application.Id
                     where application.Id!.Equals(key)
                     select authorization;
         }
@@ -202,7 +203,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             query = query.Where(token => token.Type == type);
         }
 
-        return query.AsAsyncEnumerable(cancellationToken);
+        await foreach (var token in query.AsAsyncEnumerable(cancellationToken))
+        {
+            yield return token;
+        }
     }
 
     /// <inheritdoc/>
@@ -213,18 +217,31 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
-        // can't be filtered using token.Application.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+        return ExecuteAsync(cancellationToken);
 
-        var key = ConvertIdentifierFromString(identifier);
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+            var key = ConvertIdentifierFromString(identifier);
 
-        return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
-                join application in Applications.AsTracking() on token.Application!.Id equals application.Id
-                where application.Id!.Equals(key)
-                select token).AsAsyncEnumerable(cancellationToken);
+            // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+            // can't be filtered using token.Application.Id.Equals(key). To work around
+            // this issue, this query uses use an explicit join to apply the equality check.
+            //
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            await foreach (var token in
+                (from token in context.Set<TToken>()
+                                      .Include(token => token.Application)
+                                      .Include(token => token.Authorization)
+                                      .AsTracking()
+                 join application in context.Set<TApplication>().AsTracking() on token.Application!.Id equals application.Id
+                 where application.Id!.Equals(key)
+                 select token).AsAsyncEnumerable(cancellationToken))
+            {
+                yield return token;
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -235,60 +252,76 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
-        // can't be filtered using token.Authorization.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+        return ExecuteAsync(cancellationToken);
 
-        var key = ConvertIdentifierFromString(identifier);
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+            var key = ConvertIdentifierFromString(identifier);
 
-        return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
-                join authorization in Authorizations.AsTracking() on token.Authorization!.Id equals authorization.Id
-                where authorization.Id!.Equals(key)
-                select token).AsAsyncEnumerable(cancellationToken);
+            // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+            // can't be filtered using token.Authorization.Id.Equals(key). To work around
+            // this issue, this query uses use an explicit join to apply the equality check.
+            //
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            await foreach (var token in
+                (from token in context.Set<TToken>()
+                                      .Include(token => token.Application)
+                                      .Include(token => token.Authorization)
+                                      .AsTracking()
+                 join authorization in context.Set<TAuthorization>().AsTracking() on token.Authorization!.Id equals authorization.Id
+                 where authorization.Id!.Equals(key)
+                 select token).AsAsyncEnumerable(cancellationToken))
+            {
+                yield return token;
+            }
+        }
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+    public virtual async ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
-        return GetTrackedEntity() is TToken token ? new(token) : new(QueryAsync());
+        return GetTrackedEntity() is TToken token ? token : await QueryAsync();
 
         TToken? GetTrackedEntity() =>
-            (from entry in Context.ChangeTracker.Entries<TToken>()
+            (from entry in context.ChangeTracker.Entries<TToken>()
              where entry.Entity.Id is TKey identifier && identifier.Equals(key)
              select entry.Entity).FirstOrDefault();
 
         Task<TToken?> QueryAsync() =>
-            (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+            (from token in context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization).AsTracking()
              where token.Id!.Equals(key)
              select token).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken)
+    public virtual async ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        return GetTrackedEntity() is TToken token ? new(token) : new(QueryAsync());
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        return GetTrackedEntity() is TToken token ? token : await QueryAsync();
 
         TToken? GetTrackedEntity() =>
-            (from entry in Context.ChangeTracker.Entries<TToken>()
+            (from entry in context.ChangeTracker.Entries<TToken>()
              where string.Equals(entry.Entity.ReferenceId, identifier, StringComparison.Ordinal)
              select entry.Entity).FirstOrDefault();
 
         Task<TToken?> QueryAsync() =>
-            (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+            (from token in context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization).AsTracking()
              where token.ReferenceId == identifier
              select token).FirstOrDefaultAsync(cancellationToken);
     }
@@ -301,9 +334,20 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
         }
 
-        return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
-                where token.Subject == subject
-                select token).AsAsyncEnumerable(cancellationToken);
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            await foreach (var token in
+                (from token in context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                 where token.Subject == subject
+                 select token).AsAsyncEnumerable(cancellationToken))
+            {
+                yield return token;
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -314,10 +358,12 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(token));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
         // If the application is not attached to the token, try to load it manually.
         if (token.Application is null)
         {
-            var reference = Context.Entry(token).Reference(entry => entry.Application);
+            var reference = context.Entry(token).Reference(entry => entry.Application);
             if (reference.EntityEntry.State is EntityState.Detached)
             {
                 return null;
@@ -344,7 +390,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(query));
         }
 
-        return await query(Tokens.Include(token => token.Application)
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        return await query(context.Set<TToken>().Include(token => token.Application)
             .Include(token => token.Authorization)
             .AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
     }
@@ -357,10 +405,12 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(token));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
         // If the authorization is not attached to the token, try to load it manually.
         if (token.Authorization is null)
         {
-            var reference = Context.Entry(token).Reference(entry => entry.Authorization);
+            var reference = context.Entry(token).Reference(entry => entry.Authorization);
             if (reference.EntityEntry.State is EntityState.Detached)
             {
                 return null;
@@ -542,12 +592,17 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TToken> ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+    public virtual async IAsyncEnumerable<TToken> ListAsync(int? count, int? offset,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var query = Tokens.Include(token => token.Application)
-                          .Include(token => token.Authorization)
-                          .OrderBy(token => token.Id!)
-                          .AsTracking();
+
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        var query = context.Set<TToken>()
+                           .Include(token => token.Application)
+                           .Include(token => token.Authorization)
+                           .OrderBy(token => token.Id!)
+                           .AsTracking();
 
         if (offset.HasValue)
         {
@@ -559,7 +614,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             query = query.Take(count.Value);
         }
 
-        return query.AsAsyncEnumerable(cancellationToken);
+        await foreach (var token in query.AsAsyncEnumerable(cancellationToken))
+        {
+            yield return token;
+        }
     }
 
     /// <inheritdoc/>
@@ -572,15 +630,28 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(query));
         }
 
-        return query(
-            Tokens.Include(token => token.Application)
-                  .Include(token => token.Authorization)
-                  .AsTracking(), state).AsAsyncEnumerable(cancellationToken);
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            await foreach (var token in query(
+                context.Set<TToken>()
+                       .Include(token => token.Application)
+                       .Include(token => token.Authorization)
+                       .AsTracking(), state).AsAsyncEnumerable(cancellationToken))
+            {
+                yield return token;
+            }
+        }
     }
 
     /// <inheritdoc/>
     public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
         List<Exception>? exceptions = null;
 
         var result = 0L;
@@ -603,7 +674,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                 try
                 {
                     var count = await
-                        (from token in Tokens
+                        (from token in context.Set<TToken>()
                          where token.CreationDate < date
                          where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
                                (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
@@ -632,17 +703,17 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             else
 #endif
             {
-                var strategy = Context.Database.CreateExecutionStrategy();
+                var strategy = context.Database.CreateExecutionStrategy();
                 var count = await strategy.ExecuteAsync(async () =>
                 {
                     // To prevent concurrency exceptions from being thrown if an entry is modified
                     // after it was retrieved from the database, the following logic is executed in
                     // a repeatable read transaction, that will put a lock on the retrieved entries
                     // and thus prevent them from being concurrently modified outside this block.
-                    using var transaction = await Context.CreateTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
+                    using var transaction = await context.CreateTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
 
                     var tokens = await
-                        (from token in Tokens.AsTracking()
+                        (from token in context.Set<TToken>().AsTracking()
                          where token.CreationDate < date
                          where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
                                (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
@@ -652,11 +723,11 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
                     if (tokens.Count is not 0)
                     {
-                        Context.RemoveRange(tokens);
+                        context.RemoveRange(tokens);
 
                         try
                         {
-                            await Context.SaveChangesAsync(cancellationToken);
+                            await context.SaveChangesAsync(cancellationToken);
                             transaction?.Commit();
                         }
 
@@ -690,9 +761,11 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string ?type, CancellationToken cancellationToken)
     {
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
         IQueryable<TToken> query = Options.CurrentValue.DisableBulkOperations ?
-            Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking() :
-            Tokens;
+            context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization).AsTracking() :
+            context.Set<TToken>();
 
         if (!string.IsNullOrEmpty(subject))
         {
@@ -709,7 +782,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             var key = ConvertIdentifierFromString(client);
 
             query = from authorization in query
-                    join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
+                    join application in context.Set<TApplication>().AsTracking() on authorization.Application!.Id equals application.Id
                     where application.Id!.Equals(key)
                     select authorization;
         }
@@ -744,13 +817,13 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
             try
             {
-                await Context.SaveChangesAsync(cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(token).State = EntityState.Unchanged;
+                context.Entry(token).State = EntityState.Unchanged;
 
                 exceptions ??= [];
                 exceptions.Add(exception);
@@ -777,13 +850,14 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
 #if SUPPORTS_BULK_DBSET_OPERATIONS
         if (!Options.CurrentValue.DisableBulkOperations)
         {
             return await (
-                from token in Tokens
+                from token in context.Set<TToken>()
                 where token.Application!.Id!.Equals(key)
                 select token).ExecuteUpdateAsync(entity => entity.SetProperty(
                     token => token.Status, Statuses.Revoked), cancellationToken);
@@ -802,10 +876,11 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
         //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-        foreach (var token in await (from token in Tokens.Include(token => token.Application)
-                                                         .Include(token => token.Authorization)
-                                                         .AsTracking()
-                                     join application in Applications.AsTracking() on token.Application!.Id equals application.Id
+        foreach (var token in await (from token in context.Set<TToken>()
+                                                          .Include(token => token.Application)
+                                                          .Include(token => token.Authorization)
+                                                          .AsTracking()
+                                     join application in context.Set<TApplication>().AsTracking() on token.Application!.Id equals application.Id
                                      where application.Id!.Equals(key)
                                      select token).ToListAsync(cancellationToken))
         {
@@ -813,13 +888,13 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
             try
             {
-                await Context.SaveChangesAsync(cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(token).State = EntityState.Unchanged;
+                context.Entry(token).State = EntityState.Unchanged;
 
                 exceptions ??= [];
                 exceptions.Add(exception);
@@ -846,13 +921,14 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
 #if SUPPORTS_BULK_DBSET_OPERATIONS
         if (!Options.CurrentValue.DisableBulkOperations)
         {
             return await (
-                from token in Tokens
+                from token in context.Set<TToken>()
                 where token.Authorization!.Id!.Equals(key)
                 select token).ExecuteUpdateAsync(entity => entity.SetProperty(
                     token => token.Status, Statuses.Revoked), cancellationToken);
@@ -871,10 +947,11 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
         //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-        foreach (var token in await (from token in Tokens.Include(token => token.Application)
-                                                         .Include(token => token.Authorization)
-                                                         .AsTracking()
-                                     join authorization in Authorizations.AsTracking() on token.Authorization!.Id equals authorization.Id
+        foreach (var token in await (from token in context.Set<TToken>()
+                                                          .Include(token => token.Application)
+                                                          .Include(token => token.Authorization)
+                                                          .AsTracking()
+                                     join authorization in context.Set<TAuthorization>().AsTracking() on token.Authorization!.Id equals authorization.Id
                                      where authorization.Id!.Equals(key)
                                      select token).ToListAsync(cancellationToken))
         {
@@ -882,13 +959,13 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
             try
             {
-                await Context.SaveChangesAsync(cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(token).State = EntityState.Unchanged;
+                context.Entry(token).State = EntityState.Unchanged;
 
                 exceptions ??= [];
                 exceptions.Add(exception);
@@ -915,11 +992,13 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(subject));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
 #if SUPPORTS_BULK_DBSET_OPERATIONS
         if (!Options.CurrentValue.DisableBulkOperations)
         {
             return await (
-                from token in Tokens
+                from token in context.Set<TToken>()
                 where token.Subject == subject
                 select token).ExecuteUpdateAsync(entity => entity.SetProperty(
                     token => token.Status, Statuses.Revoked), cancellationToken);
@@ -932,9 +1011,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
         var result = 0L;
 
-        foreach (var token in await (from token in Tokens.Include(token => token.Application)
-                                                         .Include(token => token.Authorization)
-                                                         .AsTracking()
+        foreach (var token in await (from token in context.Set<TToken>()
+                                                          .Include(token => token.Application)
+                                                          .Include(token => token.Authorization)
+                                                          .AsTracking()
                                      where token.Subject == subject
                                      select token).ToListAsync(cancellationToken))
         {
@@ -942,13 +1022,13 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
             try
             {
-                await Context.SaveChangesAsync(cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(token).State = EntityState.Unchanged;
+                context.Entry(token).State = EntityState.Unchanged;
 
                 exceptions ??= [];
                 exceptions.Add(exception);
@@ -975,10 +1055,13 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(token));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
         if (!string.IsNullOrEmpty(identifier))
         {
 #if SUPPORTS_DBSET_VALUETASK_FINDASYNC
-            token.Application = await Applications.FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken);
+            token.Application = await context.Set<TApplication>()
+                .FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken);
 #else
             // Warning: when targeting older TFMs, FindAsync() is deliberately not used to work around a breaking
             // change introduced in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
@@ -989,12 +1072,12 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0250));
 
             TApplication? GetTrackedEntity() =>
-                (from entry in Context.ChangeTracker.Entries<TApplication>()
+                (from entry in context.ChangeTracker.Entries<TApplication>()
                  where entry.Entity.Id is TKey identifier && identifier.Equals(key)
                  select entry.Entity).FirstOrDefault();
 
             Task<TApplication?> QueryAsync() =>
-                (from application in Applications.AsTracking()
+                (from application in context.Set<TApplication>().AsTracking()
                  where application.Id!.Equals(key)
                  select application).FirstOrDefaultAsync(cancellationToken);
 #endif
@@ -1005,7 +1088,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             // If the application is not attached to the token, try to load it manually.
             if (token.Application is null)
             {
-                var reference = Context.Entry(token).Reference(entry => entry.Application);
+                var reference = context.Entry(token).Reference(entry => entry.Application);
                 if (reference.EntityEntry.State is EntityState.Detached)
                 {
                     return;
@@ -1026,10 +1109,13 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(token));
         }
 
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
         if (!string.IsNullOrEmpty(identifier))
         {
 #if SUPPORTS_DBSET_VALUETASK_FINDASYNC
-            token.Authorization = await Authorizations.FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken);
+            token.Authorization = await context.Set<TAuthorization>()
+                .FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken);
 #else
             // Warning: when targeting older TFMs, FindAsync() is deliberately not used to work around a breaking
             // change introduced in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
@@ -1040,12 +1126,12 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
 
             TAuthorization? GetTrackedEntity() =>
-                (from entry in Context.ChangeTracker.Entries<TAuthorization>()
+                (from entry in context.ChangeTracker.Entries<TAuthorization>()
                  where entry.Entity.Id is TKey identifier && identifier.Equals(key)
                  select entry.Entity).FirstOrDefault();
 
             Task<TAuthorization?> QueryAsync() =>
-                (from authorization in Authorizations.AsTracking()
+                (from authorization in context.Set<TAuthorization>().AsTracking()
                  where authorization.Id!.Equals(key)
                  select authorization).FirstOrDefaultAsync(cancellationToken);
 #endif
@@ -1056,7 +1142,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             // If the authorization is not attached to the token, try to load it manually.
             if (token.Authorization is null)
             {
-                var reference = Context.Entry(token).Reference(entry => entry.Authorization);
+                var reference = context.Entry(token).Reference(entry => entry.Authorization);
                 if (reference.EntityEntry.State is EntityState.Detached)
                 {
                     return;
@@ -1220,23 +1306,25 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentNullException(nameof(token));
         }
 
-        Context.Attach(token);
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        context.Attach(token);
 
         // Generate a new concurrency token and attach it
         // to the token before persisting the changes.
         token.ConcurrencyToken = Guid.NewGuid().ToString();
 
-        Context.Update(token);
+        context.Update(token);
 
         try
         {
-            await Context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         catch (DbUpdateConcurrencyException exception)
         {
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-            Context.Entry(token).State = EntityState.Unchanged;
+            context.Entry(token).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0247), exception);
         }
@@ -1254,7 +1342,11 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             return default;
         }
 
-        return (TKey?) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        return (TKey?) GetConverter().ConvertFromInvariantString(identifier);
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "Only primitive types are supported as entity keys.")]
+        static TypeConverter GetConverter() => TypeDescriptor.GetConverter(typeof(TKey));
     }
 
     /// <summary>
@@ -1269,6 +1361,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             return null;
         }
 
-        return TypeDescriptor.GetConverter(typeof(TKey)).ConvertToInvariantString(identifier);
+        return GetConverter().ConvertToInvariantString(identifier);
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "Only primitive types are supported as entity keys.")]
+        static TypeConverter GetConverter() => TypeDescriptor.GetConverter(typeof(TKey));
     }
 }

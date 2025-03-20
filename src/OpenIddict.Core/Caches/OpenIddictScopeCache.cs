@@ -23,9 +23,14 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
     private readonly IOpenIddictScopeStore<TScope> _store;
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictScopeCache{TScope}"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="store">The store.</param>
     public OpenIddictScopeCache(
         IOptionsMonitor<OpenIddictCoreOptions> options,
-        IOpenIddictScopeStoreResolver resolver)
+        IOpenIddictScopeStore<TScope> store)
     {
         _cache = new MemoryCache(new MemoryCacheOptions
         {
@@ -33,7 +38,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
         });
 
         _signals = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
-        _store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TScope>();
+        _store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     /// <inheritdoc/>

@@ -33,22 +33,28 @@ namespace OpenIddict.Core;
 /// </summary>
 /// <remarks>
 /// Applications that do not want to depend on a specific entity type can use the non-generic
-/// <see cref="IOpenIddictApplicationManager"/> instead, for which the actual entity type
-/// is resolved at runtime based on the default entity type registered in the core options.
+/// <see cref="IOpenIddictApplicationManager"/> instead, for which the actual entity type is resolved at runtime.
 /// </remarks>
 /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
 public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplicationManager where TApplication : class
 {
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictApplicationManager{TApplication}"/> class.
+    /// </summary>
+    /// <param name="cache">The cache.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="options">The options.</param>
+    /// <param name="store">The store.</param>
     public OpenIddictApplicationManager(
         IOpenIddictApplicationCache<TApplication> cache,
         ILogger<OpenIddictApplicationManager<TApplication>> logger,
         IOptionsMonitor<OpenIddictCoreOptions> options,
-        IOpenIddictApplicationStoreResolver resolver)
+        IOpenIddictApplicationStore<TApplication> store)
     {
         Cache = cache ?? throw new ArgumentNullException(nameof(cache));
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         Options = options ?? throw new ArgumentNullException(nameof(options));
-        Store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TApplication>();
+        Store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     /// <summary>

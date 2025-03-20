@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -19,8 +20,22 @@ namespace OpenIddict.MongoDb;
 /// <summary>
 /// Provides methods allowing to manage the authorizations stored in a database.
 /// </summary>
+public class OpenIddictMongoDbAuthorizationStore : OpenIddictMongoDbAuthorizationStore<OpenIddictMongoDbAuthorization>
+{
+    public OpenIddictMongoDbAuthorizationStore(
+        IOpenIddictMongoDbContext context,
+        IOptionsMonitor<OpenIddictMongoDbOptions> options)
+        : base(context, options)
+    {
+    }
+}
+
+/// <summary>
+/// Provides methods allowing to manage the authorizations stored in a database.
+/// </summary>
 /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAuthorizationStore<TAuthorization>
+public class OpenIddictMongoDbAuthorizationStore<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization> : IOpenIddictAuthorizationStore<TAuthorization>
     where TAuthorization : OpenIddictMongoDbAuthorization
 {
     public OpenIddictMongoDbAuthorizationStore(

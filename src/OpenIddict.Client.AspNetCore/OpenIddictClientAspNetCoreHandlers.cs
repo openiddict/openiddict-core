@@ -1110,7 +1110,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     /// </summary>
     public sealed class EnablePassthroughMode<TContext, TFilter> : IOpenIddictClientHandler<TContext>
         where TContext : BaseRequestContext
-        where TFilter : IOpenIddictClientHandlerFilter<TContext>
+        where TFilter : class, IOpenIddictClientHandlerFilter<TContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1227,7 +1227,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     /// </summary>
     public sealed class ProcessPassthroughErrorResponse<TContext, TFilter> : IOpenIddictClientHandler<TContext>
         where TContext : BaseRequestContext
-        where TFilter : IOpenIddictClientHandlerFilter<TContext>
+        where TFilter : class, IOpenIddictClientHandlerFilter<TContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.

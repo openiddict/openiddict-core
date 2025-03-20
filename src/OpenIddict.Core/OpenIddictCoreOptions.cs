@@ -4,6 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace OpenIddict.Core;
 
 /// <summary>
@@ -11,30 +13,6 @@ namespace OpenIddict.Core;
 /// </summary>
 public sealed class OpenIddictCoreOptions
 {
-    /// <summary>
-    /// Gets or sets the type corresponding to the default Application entity,
-    /// used by the non-generic application manager and the server/validation services.
-    /// </summary>
-    public Type? DefaultApplicationType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the type corresponding to the default Authorization entity,
-    /// used by the non-generic authorization manager and the server/validation services.
-    /// </summary>
-    public Type? DefaultAuthorizationType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the type corresponding to the default Scope entity,
-    /// used by the non-generic scope manager and the server/validation services.
-    /// </summary>
-    public Type? DefaultScopeType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the type corresponding to the default Token entity,
-    /// used by the non-generic token manager and the server/validation services.
-    /// </summary>
-    public Type? DefaultTokenType { get; set; }
-
     /// <summary>
     /// Gets or sets a boolean indicating whether additional filtering should be disabled,
     /// so that the OpenIddict managers don't execute a second check to ensure the results

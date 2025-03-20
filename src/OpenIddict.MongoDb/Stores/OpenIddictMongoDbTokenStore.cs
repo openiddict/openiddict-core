@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -19,8 +20,22 @@ namespace OpenIddict.MongoDb;
 /// <summary>
 /// Provides methods allowing to manage the tokens stored in a database.
 /// </summary>
+public class OpenIddictMongoDbTokenStore : OpenIddictMongoDbTokenStore<OpenIddictMongoDbToken>
+{
+    public OpenIddictMongoDbTokenStore(
+        IOpenIddictMongoDbContext context,
+        IOptionsMonitor<OpenIddictMongoDbOptions> options)
+        : base(context, options)
+    {
+    }
+}
+
+/// <summary>
+/// Provides methods allowing to manage the tokens stored in a database.
+/// </summary>
 /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
+public class OpenIddictMongoDbTokenStore<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken> : IOpenIddictTokenStore<TToken>
     where TToken : OpenIddictMongoDbToken
 {
     public OpenIddictMongoDbTokenStore(

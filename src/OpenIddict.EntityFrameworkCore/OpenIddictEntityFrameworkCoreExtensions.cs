@@ -39,20 +39,16 @@ public static class OpenIddictEntityFrameworkCoreExtensions
                .SetDefaultScopeEntity<OpenIddictEntityFrameworkCoreScope>()
                .SetDefaultTokenEntity<OpenIddictEntityFrameworkCoreToken>();
 
-        builder.ReplaceApplicationStoreResolver<OpenIddictEntityFrameworkCoreApplicationStoreResolver>()
-               .ReplaceAuthorizationStoreResolver<OpenIddictEntityFrameworkCoreAuthorizationStoreResolver>()
-               .ReplaceScopeStoreResolver<OpenIddictEntityFrameworkCoreScopeStoreResolver>()
-               .ReplaceTokenStoreResolver<OpenIddictEntityFrameworkCoreTokenStoreResolver>();
+        builder.ReplaceApplicationStore<OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreApplicationStore>()
+               .ReplaceAuthorizationStore<OpenIddictEntityFrameworkCoreAuthorization, OpenIddictEntityFrameworkCoreAuthorizationStore>()
+               .ReplaceScopeStore<OpenIddictEntityFrameworkCoreScope, OpenIddictEntityFrameworkCoreScopeStore>()
+               .ReplaceTokenStore<OpenIddictEntityFrameworkCoreToken, OpenIddictEntityFrameworkCoreTokenStore>();
 
-        builder.Services.TryAddSingleton<OpenIddictEntityFrameworkCoreApplicationStoreResolver.TypeResolutionCache>();
-        builder.Services.TryAddSingleton<OpenIddictEntityFrameworkCoreAuthorizationStoreResolver.TypeResolutionCache>();
-        builder.Services.TryAddSingleton<OpenIddictEntityFrameworkCoreScopeStoreResolver.TypeResolutionCache>();
-        builder.Services.TryAddSingleton<OpenIddictEntityFrameworkCoreTokenStoreResolver.TypeResolutionCache>();
-
-        builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkCoreApplicationStore<,,,,>));
-        builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkCoreAuthorizationStore<,,,,>));
-        builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkCoreScopeStore<,,>));
-        builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkCoreTokenStore<,,,,>));
+        // Note: a default context factory is always registered to make debugging easier when
+        // no database context type was configured by the user: the default implementation
+        // registered here is automatically replaced by the UseDbContext<TContext>() API.
+        builder.Services.TryAddScoped<IOpenIddictEntityFrameworkCoreContext>(static provider =>
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0253)));
 
         return new OpenIddictEntityFrameworkCoreBuilder(builder.Services);
     }

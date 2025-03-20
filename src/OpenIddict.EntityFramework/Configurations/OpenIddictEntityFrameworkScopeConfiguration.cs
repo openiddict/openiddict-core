@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
+using System.Diagnostics.CodeAnalysis;
 using OpenIddict.EntityFramework.Models;
 
 namespace OpenIddict.EntityFramework;
@@ -18,7 +19,9 @@ namespace OpenIddict.EntityFramework;
 /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
 /// <typeparam name="TKey">The type of the Key entity.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class OpenIddictEntityFrameworkScopeConfiguration<TScope, TKey> : EntityTypeConfiguration<TScope>
+public sealed class OpenIddictEntityFrameworkScopeConfiguration<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : EntityTypeConfiguration<TScope>
     where TScope : OpenIddictEntityFrameworkScope<TKey>
     where TKey : notnull, IEquatable<TKey>
 {
