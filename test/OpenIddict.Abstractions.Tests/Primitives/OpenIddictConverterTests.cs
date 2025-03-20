@@ -150,8 +150,8 @@ public class OpenIddictConverterTests
         Assert.NotNull(message.GetParameter("array"));
         Assert.NotNull(message.GetParameter("object"));
         Assert.Empty(((string?) message.GetParameter("string"))!);
-        Assert.NotNull((JsonElement?) message.GetParameter("array"));
-        Assert.NotNull((JsonElement?) message.GetParameter("object"));
+        Assert.True(((JsonElement?) message.GetParameter("array")).HasValue);
+        Assert.True(((JsonElement?) message.GetParameter("object")).HasValue);
         Assert.NotNull((JsonNode?) message.GetParameter("array"));
         Assert.NotNull((JsonNode?) message.GetParameter("object"));
     }

@@ -20,7 +20,13 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <!--
+      Note: Microsoft.AspNetCore.Identity is explicitly referenced to override the vulnerable
+      2.3.0 version referenced by the Microsoft.AspNetCore.Identity.EntityFrameworkCore package.
+    -->
+
     <PackageReference Include="Microsoft.AspNetCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" />
   </ItemGroup>

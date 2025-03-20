@@ -22,6 +22,21 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
   </ItemGroup>
 
+  <!--
+    Note: Entity Framework Core 2.3 references an old System.Interactive.Async version
+    that doesn't include a .NET Standard 2.0 target framework moniker and depends on the
+    legacy NETStandard.Library 1.6.0 package that references vulnerable versions of the
+    System.Net.Http and System.Security.Cryptography.X509Certificates packages. While the
+    inbox implementation of these packages is always going to be preferred in practice,
+    OpenIddict explicitly references a newer version of System.Interactive.Async that is
+    natively compatible with .NET Standard 2.0 to avoid having to ignore NuGet warnings.
+  -->
+
+  <ItemGroup
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+    <PackageReference Include="System.Interactive.Async" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="OpenIddict.Abstractions" />
     <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
