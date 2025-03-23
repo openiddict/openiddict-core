@@ -105,6 +105,29 @@ public sealed class OpenIddictCoreBuilder
     }
 
     /// <summary>
+    /// Replaces the application store by the specified type.
+    /// </summary>
+    /// <remarks>
+    /// Note: the specified type MUST be an open generic type definition containing exactly one generic argument.
+    /// </remarks>
+    /// <param name="type">The type of the store.</param>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceApplicationStore(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        if (!type.IsGenericTypeDefinition || type.GetGenericArguments() is not { Length: 1 })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictApplicationStore<>), type, lifetime));
+
+        return this;
+    }
+
+    /// <summary>
     /// Replaces the authorization manager by the specified type.
     /// </summary>
     /// <typeparam name="TAuthorization">The type of the entity.</typeparam>
@@ -157,6 +180,29 @@ public sealed class OpenIddictCoreBuilder
         where TStore : IOpenIddictAuthorizationStore<TAuthorization>
     {
         Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictAuthorizationStore<TAuthorization>), typeof(TStore), lifetime));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the authorization store by the specified type.
+    /// </summary>
+    /// <remarks>
+    /// Note: the specified type MUST be an open generic type definition containing exactly one generic argument.
+    /// </remarks>
+    /// <param name="type">The type of the store.</param>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceAuthorizationStore(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        if (!type.IsGenericTypeDefinition || type.GetGenericArguments() is not { Length: 1 })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictAuthorizationStore<>), type, lifetime));
 
         return this;
     }
@@ -219,6 +265,29 @@ public sealed class OpenIddictCoreBuilder
     }
 
     /// <summary>
+    /// Replaces the scope store by the specified type.
+    /// </summary>
+    /// <remarks>
+    /// Note: the specified type MUST be an open generic type definition containing exactly one generic argument.
+    /// </remarks>
+    /// <param name="type">The type of the store.</param>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceScopeStore(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        if (!type.IsGenericTypeDefinition || type.GetGenericArguments() is not { Length: 1 })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictScopeStore<>), type, lifetime));
+
+        return this;
+    }
+
+    /// <summary>
     /// Replaces the token manager by the specified type.
     /// </summary>
     /// <typeparam name="TToken">The type of the entity.</typeparam>
@@ -271,6 +340,29 @@ public sealed class OpenIddictCoreBuilder
         where TStore : IOpenIddictTokenStore<TToken>
     {
         Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictTokenStore<TToken>), typeof(TStore), lifetime));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the token store by the specified type.
+    /// </summary>
+    /// <remarks>
+    /// Note: the specified type MUST be an open generic type definition containing exactly one generic argument.
+    /// </remarks>
+    /// <param name="type">The type of the store.</param>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceTokenStore(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        if (!type.IsGenericTypeDefinition || type.GetGenericArguments() is not { Length: 1 })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictTokenStore<>), type, lifetime));
 
         return this;
     }
