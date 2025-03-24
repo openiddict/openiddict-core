@@ -104,6 +104,9 @@ public class Startup
         var builder = new ContainerBuilder();
         builder.Populate(services);
 
+        // Register the Entity Framework context.
+        builder.RegisterType<ApplicationDbContext>().AsSelf().InstancePerLifetimeScope();
+
         // Register the MVC controllers.
         builder.RegisterControllers(typeof(Startup).Assembly);
 
