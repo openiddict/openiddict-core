@@ -243,9 +243,10 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // If the base or request URIs couldn't be resolved, don't try to infer the endpoint type.
             if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0127));
+                return default;
             }
 
             context.EndpointType =

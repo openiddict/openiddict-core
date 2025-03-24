@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,6 +31,84 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
     public OpenIddictServerAspNetCoreIntegrationTests(ITestOutputHelper outputHelper)
         : base(outputHelper)
     {
+    }
+
+    [Fact]
+    public async Task ProcessRequest_IgnoresInvalidBaseUris()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ProcessRequestContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    var request = context.Transaction.GetHttpRequest()!;
+                    request.Host = new HostString("fabrikam.com:100000");
+
+                    return default;
+                });
+
+                builder.SetOrder(int.MinValue);
+            });
+
+            options.AddEventHandler<ProcessRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.Null(context.BaseUri);
+                    Assert.Null(context.RequestUri);
+                    Assert.Equal(OpenIddictServerEndpointType.Unknown, context.EndpointType);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.GetAsync("/.well-known/openid-configuration", new OpenIddictRequest());
+    }
+
+    [Fact]
+    public async Task ProcessRequest_IgnoresInvalidRequestUris()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ProcessRequestContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    var request = context.Transaction.GetHttpRequest()!;
+                    request.QueryString = new QueryString("?" + new string([.. Enumerable.Repeat('x', 100_000)]));
+
+                    return default;
+                });
+
+                builder.SetOrder(int.MinValue);
+            });
+
+            options.AddEventHandler<ProcessRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.NotNull(context.BaseUri);
+                    Assert.Null(context.RequestUri);
+                    Assert.Equal(OpenIddictServerEndpointType.Unknown, context.EndpointType);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.GetAsync("/.well-known/openid-configuration", new OpenIddictRequest());
     }
 
     [Fact]

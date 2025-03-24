@@ -30,6 +30,84 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
     }
 
     [Fact]
+    public async Task ProcessRequest_IgnoresInvalidBaseUris()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ProcessRequestContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    var request = context.Transaction.GetOwinRequest()!;
+                    request.Host = new HostString("fabrikam.com:100000");
+
+                    return default;
+                });
+
+                builder.SetOrder(int.MinValue);
+            });
+
+            options.AddEventHandler<ProcessRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.Null(context.BaseUri);
+                    Assert.Null(context.RequestUri);
+                    Assert.Equal(OpenIddictServerEndpointType.Unknown, context.EndpointType);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.GetAsync("/.well-known/openid-configuration", new OpenIddictRequest());
+    }
+
+    [Fact]
+    public async Task ProcessRequest_IgnoresInvalidRequestUris()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ProcessRequestContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    var request = context.Transaction.GetOwinRequest()!;
+                    request.QueryString = new QueryString("?" + new string([.. Enumerable.Repeat('x', 100_000)]));
+
+                    return default;
+                });
+
+                builder.SetOrder(int.MinValue);
+            });
+
+            options.AddEventHandler<ProcessRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.NotNull(context.BaseUri);
+                    Assert.Null(context.RequestUri);
+                    Assert.Equal(OpenIddictServerEndpointType.Unknown, context.EndpointType);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.GetAsync("/.well-known/openid-configuration", new OpenIddictRequest());
+    }
+
+    [Fact]
     public async Task ProcessAuthentication_CreationDateIsMappedToIssuedUtc()
     {
         // Arrange

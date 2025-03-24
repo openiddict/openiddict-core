@@ -115,28 +115,17 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // used to build an absolute base URI and a request URI that will be used to determine whether the
             // received request matches one of the URIs assigned to an OpenIddict endpoint. If the request
             // is later handled by OpenIddict, an additional check will be made to require the Host header.
+            var host = request.Host.HasValue ? request.Host : new HostString("localhost");
 
-            (context.BaseUri, context.RequestUri) = request.Host switch
-            {
-                { HasValue: true } host => (
-                    BaseUri: new Uri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase, UriKind.Absolute),
-                    RequestUri: new Uri(request.GetEncodedUrl(), UriKind.Absolute)),
-
-                { HasValue: false } => (
-                    BaseUri: new UriBuilder
-                    {
-                        Scheme = request.Scheme,
-                        Path = request.PathBase.ToUriComponent()
-                    }.Uri,
-                    RequestUri: new UriBuilder
-                    {
-                        Scheme = request.Scheme,
-                        Path = (request.PathBase + request.Path).ToUriComponent(),
-                        Query = request.QueryString.ToUriComponent()
-                    }.Uri)
-            };
+            context.BaseUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase));
+            context.RequestUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase, request.Path, request.QueryString));
 
             return default;
+
+            // Note: the BCL System.Uri class has strict rules (e.g it rejects specific characters and enforces a
+            // limit of 65519 characters for the complete URI representation). To ensure no exception is thrown if the
+            // URI cannot be built (which would also affect non-OpenIddict endpoints), Uri.TryCreate() is used here.
+            static Uri? CreateUri(string value) => Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) ? uri : null;
         }
     }
 

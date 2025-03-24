@@ -260,9 +260,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // If the base or request URIs couldn't be resolved, don't try to infer the endpoint type.
             if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0127));
+                return default;
             }
 
             // If an endpoint was already inferred by the generic handler, don't override it.
