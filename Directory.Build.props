@@ -172,6 +172,7 @@
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <AfterTargetFrameworkInferenceTargets>$(MSBuildThisFileDirectory)eng\AfterTargetFrameworkInference.targets</AfterTargetFrameworkInferenceTargets>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddTfmSpecificPlaceholders</TargetsForTfmSpecificContentInPackage>
+    <WebApplicationsTargetPath>$(MSBuildThisFileDirectory)eng\msbuild\web\WebApplications\Microsoft.WebApplication.targets</WebApplicationsTargetPath>
   </PropertyGroup>
 
   <!--

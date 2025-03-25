@@ -4,7 +4,6 @@
     <TargetFramework>net48</TargetFramework>
     <AppConfig>Web.config</AppConfig>
     <GeneratedBindingRedirectsAction>Overwrite</GeneratedBindingRedirectsAction>
-    <VSToolsPath>$(RepoRoot)eng\msbuild\web</VSToolsPath>
     <MvcBuildViews>false</MvcBuildViews>
     <ImplicitUsings>disable</ImplicitUsings>
     <NoWarn>CA3147</NoWarn>
