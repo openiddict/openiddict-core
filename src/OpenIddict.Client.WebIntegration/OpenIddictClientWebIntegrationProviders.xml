@@ -1070,6 +1070,28 @@
   </Provider>
 
   <!--
+  LINEAR
+  -->
+  <Provider Name="Linear" Id="9d5f20c2-1b3d-4375-8eb0-c6fcef63c3f7"
+            Documentation="https://developers.linear.app/docs/oauth/authentication">
+    <Environment Issuer="https://linear.app">
+      <Configuration AuthorizationEndpoint="https://linear.app/oauth/authorize"
+                     TokenEndpoint="https://api.linear.app/oauth/token"
+                     UserInfoEndpoint="https://api.linear.app/graphql" />
+    </Environment>
+
+    <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
+             Description="The list of user fields to expand from the GraphQL endpoint (by default, only basic fields are requested)">
+      <Item Value="id"    Default="true" Required="false" />
+      <Item Value="name"  Default="true" Required="false" />
+      <Item Value="email" Default="true" Required="false" />
+    </Setting>
+
+    <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="false"
+             Description="The value used as the 'prompt' parameter (can be set to 'consent' to display the consent form for each authorization demand)" />
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ████▄ ▄██ ▀██ ██ █▀▄██ ▄▄▄██ ▄▄▀█▄ ▄██ ▀██ ██
                                         ██ █████ ███ █ █ ██ ▄▀███ ▄▄▄██ ██ ██ ███ █ █ ██
