@@ -195,14 +195,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     // MusicBrainz returns empty revocation responses declared as "text/html" responses.
                     //
-                    // Since empty HTML payloads are not valid JSON nodes, the Content-Length is manually set
-                    // to 0 to prevent OpenIddict from trying to extract a JSON payload from such responses.
+                    // Since empty HTML payloads are not valid JSON nodes, the Content-Type is manually set
+                    // to null to prevent OpenIddict from trying to extract a JSON payload from such responses.
                     ProviderTypes.MusicBrainz when response.Content.Headers.ContentLength is 0 => null,
 
                     // Reddit returns empty revocation responses declared as "application/json" responses.
                     //
-                    // Since empty JSON payloads are not valid JSON nodes, the Content-Length is manually set
-                    // to 0 to prevent OpenIddict from trying to extract a JSON payload from such responses.
+                    // Since empty JSON payloads are not valid JSON nodes, the Content-Type is manually set
+                    // to null to prevent OpenIddict from trying to extract a JSON payload from such responses.
                     ProviderTypes.Reddit when response.Content.Headers.ContentLength is 0 => null,
 
                     _ => response.Content.Headers.ContentType

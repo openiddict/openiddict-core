@@ -681,7 +681,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         var result = _value switch
         {
-            // When the parameter is a JsonElement representing an array, return the requested item.
+            // When the parameter is a JsonElement representing an object, return the requested item.
             JsonElement { ValueKind: JsonValueKind.Object } element =>
                 element.TryGetProperty(name, out JsonElement property) ? new(property) : null,
 

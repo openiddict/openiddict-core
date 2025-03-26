@@ -64,7 +64,12 @@
                                 <xs:simpleType>
                                   <xs:restriction base="xs:string">
                                     <xs:enumeration value="client_secret_basic" />
+                                    <xs:enumeration value="client_secret_jwt" />
                                     <xs:enumeration value="client_secret_post" />
+                                    <xs:enumeration value="none" />
+                                    <xs:enumeration value="private_key_jwt" />
+                                    <xs:enumeration value="self_signed_tls_client_auth" />
+                                    <xs:enumeration value="tls_client_auth" />
                                   </xs:restriction>
                                 </xs:simpleType>
                               </xs:attribute>
@@ -171,7 +176,12 @@
                                 <xs:simpleType>
                                   <xs:restriction base="xs:string">
                                     <xs:enumeration value="client_secret_basic" />
+                                    <xs:enumeration value="client_secret_jwt" />
                                     <xs:enumeration value="client_secret_post" />
+                                    <xs:enumeration value="none" />
+                                    <xs:enumeration value="private_key_jwt" />
+                                    <xs:enumeration value="self_signed_tls_client_auth" />
+                                    <xs:enumeration value="tls_client_auth" />
                                   </xs:restriction>
                                 </xs:simpleType>
                               </xs:attribute>
@@ -192,7 +202,12 @@
                                 <xs:simpleType>
                                   <xs:restriction base="xs:string">
                                     <xs:enumeration value="client_secret_basic" />
+                                    <xs:enumeration value="client_secret_jwt" />
                                     <xs:enumeration value="client_secret_post" />
+                                    <xs:enumeration value="none" />
+                                    <xs:enumeration value="private_key_jwt" />
+                                    <xs:enumeration value="self_signed_tls_client_auth" />
+                                    <xs:enumeration value="tls_client_auth" />
                                   </xs:restriction>
                                 </xs:simpleType>
                               </xs:attribute>
@@ -213,7 +228,12 @@
                                 <xs:simpleType>
                                   <xs:restriction base="xs:string">
                                     <xs:enumeration value="client_secret_basic" />
+                                    <xs:enumeration value="client_secret_jwt" />
                                     <xs:enumeration value="client_secret_post" />
+                                    <xs:enumeration value="none" />
+                                    <xs:enumeration value="private_key_jwt" />
+                                    <xs:enumeration value="self_signed_tls_client_auth" />
+                                    <xs:enumeration value="tls_client_auth" />
                                   </xs:restriction>
                                 </xs:simpleType>
                               </xs:attribute>
