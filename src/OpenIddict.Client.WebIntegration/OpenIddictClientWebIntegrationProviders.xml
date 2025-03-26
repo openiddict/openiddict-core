@@ -1221,6 +1221,19 @@
   </Provider>
 
   <!--
+ MIRO
+  -->
+
+  <Provider Name="Miro" Id="4e9426b3-7fd5-480a-a89e-67a80cfc5622"
+            Documentation="https://developers.miro.com/docs/getting-started-with-oauth">
+    <Environment Issuer="https://miro.com/">
+      <Configuration AuthorizationEndpoint="https://miro.com/oauth/authorize"
+                     TokenEndpoint="https://api.miro.com/v1/oauth/token"
+                     UserInfoEndpoint="https://api.miro.com/v1/oauth-token" />
+    </Environment>
+  </Provider>
+
+  <!--
                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                       ██ ▄▀▄ █▄ ▄█▄▀█▀▄██ ▄▄▀██ █████ ▄▄▄ ██ ██ ██ ▄▄▀██
                                       ██ █ █ ██ ████ ████ █████ █████ ███ ██ ██ ██ ██ ██
