@@ -1229,6 +1229,7 @@
     <Environment Issuer="https://miro.com/">
       <Configuration AuthorizationEndpoint="https://miro.com/oauth/authorize"
                      TokenEndpoint="https://api.miro.com/v1/oauth/token"
+                     RevocationEndpoint="https://api.miro.com/v2/oauth/revoke"
                      UserInfoEndpoint="https://api.miro.com/v1/oauth-token" />
     </Environment>
   </Provider>

@@ -5,8 +5,11 @@
  */
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using OpenIddict.Client.SystemNetHttp;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
@@ -25,12 +28,64 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             MapNonStandardRequestParameters.Descriptor,
             OverrideHttpMethod.Descriptor,
             AttachBearerAccessToken.Descriptor,
+            AttachNonStandardRequestPayload.Descriptor,
 
             /*
              * Revocation response extraction:
              */
             NormalizeContentType.Descriptor
         ];
+        
+        /// <summary>
+        /// Contains the logic responsible for attaching a non-standard payload for the providers that require it.
+        /// </summary>
+        public sealed class AttachNonStandardRequestPayload : IOpenIddictClientHandler<PrepareRevocationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareRevocationRequestContext>()
+                    .AddFilter<RequireHttpUri>()
+                    .UseSingletonHandler<AttachNonStandardRequestPayload>()
+                    .SetOrder(AttachHttpParameters<PrepareRevocationRequestContext>.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareRevocationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                request.Content = context.Registration.ProviderType switch
+                {
+                    // The token revocation endpoints exposed by these providers requires sending the
+                    // request parameters as a JSON payload:
+                    ProviderTypes.Miro => JsonContent.Create(
+                        context.Transaction.Request,
+                        OpenIddictSerializer.Default.Request,
+                        new MediaTypeHeaderValue(OpenIddictClientSystemNetHttpConstants.MediaTypes.Json)
+                        {
+                            CharSet = OpenIddictClientSystemNetHttpConstants.Charsets.Utf8
+                        }),
+
+                    _ => request.Content
+                };
+
+                return default;
+            }
+        }
+
 
         /// <summary>
         /// Contains the logic responsible for mapping non-standard request parameters
@@ -56,13 +111,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Weibo, VK ID and Yandex don't support the standard "token" parameter and
+                // Webflow, Weibo, VK ID and Yandex don't support the standard "token" parameter and
                 // require using the non-standard "access_token" parameter instead.
-                if (context.Registration.ProviderType is ProviderTypes.Weibo or ProviderTypes.VkId or ProviderTypes.Yandex)
+                if (context.Registration.ProviderType is ProviderTypes.Webflow or ProviderTypes.Weibo or ProviderTypes.VkId or ProviderTypes.Yandex)
                 {
                     context.Request.AccessToken = context.Token;
                     context.Request.Token = null;
                     context.Request.TokenTypeHint = null;
+                }
+                
+                // Miro uses a JSON payload that expects the "accessToken", "clientId", and "clientSecret" properties
+                else if (context.Registration.ProviderType is ProviderTypes.Miro)
+                {
+                    context.Request["accessToken"] = context.Token;
+                    context.Request["clientId"] = context.Request.ClientId;
+                    context.Request["clientSecret"] = context.Request.ClientSecret;
+                    context.Request.Token = null;
+                    context.Request.TokenTypeHint = null;
+                    context.Request.ClientId = null;
+                    context.Request.ClientSecret = null;
                 }
 
                 return default;
@@ -146,6 +213,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                     // Remove the token from the request payload to ensure it's not sent twice.
                     context.Request.Token = null;
+                }
+
+                // Miro requires using bearer authentication with the token that is going to be revoked.
+                // In the case of Miro, we renamed the Token to accessToken, so we cannot use the Token property.
+                else if (context.Registration.ProviderType is ProviderTypes.Miro)
+                {
+                    if (context.Request.TryGetParameter("accessToken", out var parameter) && parameter.GetRawValue() is string accessToken)
+                    {
+                        request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, accessToken);
+                    } 
                 }
 
                 return default;
