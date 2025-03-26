@@ -1077,6 +1077,7 @@
     <Environment Issuer="https://linear.app">
       <Configuration AuthorizationEndpoint="https://linear.app/oauth/authorize"
                      TokenEndpoint="https://api.linear.app/oauth/token"
+                     RevocationEndpoint="https://api.linear.app/oauth/revoke"
                      UserInfoEndpoint="https://api.linear.app/graphql" />
     </Environment>
 
