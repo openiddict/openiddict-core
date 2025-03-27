@@ -1082,7 +1082,9 @@
       <Configuration AuthorizationEndpoint="https://linear.app/oauth/authorize"
                      TokenEndpoint="https://api.linear.app/oauth/token"
                      RevocationEndpoint="https://api.linear.app/oauth/revoke"
-                     UserInfoEndpoint="https://api.linear.app/graphql" />
+                     UserInfoEndpoint="https://api.linear.app/graphql">
+        <RevocationEndpointAuthMethod Value="none"/>
+      </Configuration>
     </Environment>
 
     <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"

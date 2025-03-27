@@ -127,7 +127,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.Token = null;
                     context.Request.TokenTypeHint = null;
                     context.Request.ClientId = null;
-                    context.Request.ClientSecret = null;
                 }
                 
                 // Miro uses a JSON payload that expects the "accessToken", "clientId", and "clientSecret" properties
