@@ -1087,9 +1087,9 @@
 
     <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
              Description="The list of user fields to expand from the GraphQL endpoint (by default, only basic fields are requested)">
+      <Item Value="email" Default="true" Required="false" />
       <Item Value="id"    Default="true" Required="false" />
       <Item Value="name"  Default="true" Required="false" />
-      <Item Value="email" Default="true" Required="false" />
     </Setting>
 
     <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="false"

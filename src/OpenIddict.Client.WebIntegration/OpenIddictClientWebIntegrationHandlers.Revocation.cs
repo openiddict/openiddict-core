@@ -119,6 +119,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.Token = null;
                     context.Request.TokenTypeHint = null;
                 }
+
+                // Linear requires only the access_token and no other parameters
+                else if (context.Registration.ProviderType is ProviderTypes.Linear)
+                {
+                    context.Request.AccessToken = context.Token;
+                    context.Request.Token = null;
+                    context.Request.TokenTypeHint = null;
+                    context.Request.ClientId = null;
+                    context.Request.ClientSecret = null;
+                }
                 
                 // Miro uses a JSON payload that expects the "accessToken", "clientId", and "clientSecret" properties
                 else if (context.Registration.ProviderType is ProviderTypes.Miro)
@@ -217,12 +227,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Miro requires using bearer authentication with the token that is going to be revoked.
                 // In the case of Miro, we renamed the Token to accessToken, so we cannot use the Token property.
-                else if (context.Registration.ProviderType is ProviderTypes.Miro)
+                else if (context.Registration.ProviderType is ProviderTypes.Miro &&
+                         (string?) context.Request["accessToken"] is { Length: > 0 } token)
                 {
-                    if (context.Request.TryGetParameter("accessToken", out var parameter) && parameter.GetRawValue() is string accessToken)
-                    {
-                        request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, accessToken);
-                    } 
+                    request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, token);
                 }
 
                 return default;

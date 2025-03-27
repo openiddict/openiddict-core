@@ -441,9 +441,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.Meetup => new(context.Response["data"]?["self"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("data/self"))),
 
-                    // Miro returns a nested "user" object.
+                    // Miro returns a nested "user" object, as well as a nested "team" and "organization".
                     ProviderTypes.Miro => new(context.Response["user"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("user"))),
+                        throw new InvalidOperationException(SR.FormatID0334("user")))
+                    {
+                        ["organization"] = context.Response["organization"],
+                        ["team"] = context.Response["team"]
+                    },
 
                     // Nextcloud returns a nested "data" object that is itself nested in a "ocs" node.
                     ProviderTypes.Nextcloud => new(context.Response["ocs"]?["data"]?.GetNamedParameters() ??
