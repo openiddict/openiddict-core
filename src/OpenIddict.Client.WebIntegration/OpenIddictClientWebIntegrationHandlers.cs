@@ -1928,8 +1928,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request.Display = settings.Display;
             }
 
-            // Linear allows setting the prompt parameter. Setting it to "consent" will force the consent
-            // screen to be displayed every time
+            // Linear allows setting the prompt parameter (setting it to "consent" will
+            // force the consent screen to be displayed for each authorization request).
             else if (context.Registration.ProviderType is ProviderTypes.Linear)
             {
                 var settings = context.Registration.GetLinearSettings();

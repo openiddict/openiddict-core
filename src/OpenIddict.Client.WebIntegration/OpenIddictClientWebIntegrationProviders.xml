@@ -1070,18 +1070,18 @@
   </Provider>
 
   <!--
-                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                          ██ ████▄ ▄██ ▀██ ██ ▄▄▄█ ▄▄▀██ ▄▄▀██
-                                          ██ █████ ███ █ █ ██ ▄▄▄█ ▀▀ ██ ▀▀▄██
-                                          ██ ▀▀ █▀ ▀██ ██▄ ██ ▀▀▀█ ██ ██ ██ ██
-                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ████▄ ▄██ ▀██ ██ ▄▄▄█ ▄▄▀██ ▄▄▀██
+                                              ██ █████ ███ █ █ ██ ▄▄▄█ ▀▀ ██ ▀▀▄██
+                                              ██ ▀▀ █▀ ▀██ ██▄ ██ ▀▀▀█ ██ ██ ██ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
   <Provider Name="Linear" Id="9d5f20c2-1b3d-4375-8eb0-c6fcef63c3f7"
             Documentation="https://developers.linear.app/docs/oauth/authentication">
-    <Environment Issuer="https://linear.app">
+    <Environment Issuer="https://linear.app/">
       <Configuration AuthorizationEndpoint="https://linear.app/oauth/authorize"
-                     TokenEndpoint="https://api.linear.app/oauth/token"
                      RevocationEndpoint="https://api.linear.app/oauth/revoke"
+                     TokenEndpoint="https://api.linear.app/oauth/token"
                      UserInfoEndpoint="https://api.linear.app/graphql">
         <RevocationEndpointAuthMethod Value="none"/>
       </Configuration>
@@ -1228,19 +1228,19 @@
   </Provider>
 
   <!--
-                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                          ██ ▄▀▄ █▄ ▄██ ▄▄▀██ ▄▄▄ ██
-                                          ██ █ █ ██ ███ ▀▀▄██ ███ ██
-                                          ██ ███ █▀ ▀██ ██ ██ ▀▀▀ ██
-                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                  ██ ▄▀▄ █▄ ▄██ ▄▄▀██ ▄▄▄ ██
+                                                  ██ █ █ ██ ███ ▀▀▄██ ███ ██
+                                                  ██ ███ █▀ ▀██ ██ ██ ▀▀▀ ██
+                                                  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
   <Provider Name="Miro" Id="4e9426b3-7fd5-480a-a89e-67a80cfc5622"
             Documentation="https://developers.miro.com/docs/getting-started-with-oauth">
     <Environment Issuer="https://miro.com/">
       <Configuration AuthorizationEndpoint="https://miro.com/oauth/authorize"
-                     TokenEndpoint="https://api.miro.com/v1/oauth/token"
                      RevocationEndpoint="https://api.miro.com/v2/oauth/revoke"
+                     TokenEndpoint="https://api.miro.com/v1/oauth/token"
                      UserInfoEndpoint="https://api.miro.com/v1/oauth-token" />
     </Environment>
   </Provider>
@@ -2199,11 +2199,10 @@
                      RevocationEndpoint="https://webflow.com/oauth/revoke_authorization"
                      TokenEndpoint="https://api.webflow.com/oauth/access_token"
                      UserInfoEndpoint="https://api.webflow.com/v2/token/authorized_by" />
-
       <!--
         Note: Webflow requires sending the "authorized_user:read" scope to be able to use the userinfo endpoint.
       -->
-      
+
       <Scope Name="authorized_user:read" Default="true" Required="true" />
     </Environment>
   </Provider>
