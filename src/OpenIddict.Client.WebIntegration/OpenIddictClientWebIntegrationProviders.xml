@@ -1070,6 +1070,35 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ████▄ ▄██ ▀██ ██ ▄▄▄█ ▄▄▀██ ▄▄▀██
+                                              ██ █████ ███ █ █ ██ ▄▄▄█ ▀▀ ██ ▀▀▄██
+                                              ██ ▀▀ █▀ ▀██ ██▄ ██ ▀▀▀█ ██ ██ ██ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+  <Provider Name="Linear" Id="9d5f20c2-1b3d-4375-8eb0-c6fcef63c3f7"
+            Documentation="https://developers.linear.app/docs/oauth/authentication">
+    <Environment Issuer="https://linear.app/">
+      <Configuration AuthorizationEndpoint="https://linear.app/oauth/authorize"
+                     RevocationEndpoint="https://api.linear.app/oauth/revoke"
+                     TokenEndpoint="https://api.linear.app/oauth/token"
+                     UserInfoEndpoint="https://api.linear.app/graphql">
+        <RevocationEndpointAuthMethod Value="none"/>
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
+             Description="The list of user fields to expand from the GraphQL endpoint (by default, only basic fields are requested)">
+      <Item Value="email" Default="true" Required="false" />
+      <Item Value="id"    Default="true" Required="false" />
+      <Item Value="name"  Default="true" Required="false" />
+    </Setting>
+
+    <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="false"
+             Description="The value used as the 'prompt' parameter (can be set to 'consent' to display the consent form for each authorization demand)" />
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ████▄ ▄██ ▀██ ██ █▀▄██ ▄▄▄██ ▄▄▀█▄ ▄██ ▀██ ██
                                         ██ █████ ███ █ █ ██ ▄▀███ ▄▄▄██ ██ ██ ███ █ █ ██
@@ -1196,6 +1225,24 @@
 
     <Setting PropertyName="Tenant" ParameterName="tenant" Type="String" Required="true" DefaultValue="common"
              Description="The tenant used to identify the Microsoft Entra instance (by default, the common tenant is used)" />
+  </Provider>
+
+  <!--
+                                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                  ██ ▄▀▄ █▄ ▄██ ▄▄▀██ ▄▄▄ ██
+                                                  ██ █ █ ██ ███ ▀▀▄██ ███ ██
+                                                  ██ ███ █▀ ▀██ ██ ██ ▀▀▀ ██
+                                                  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Miro" Id="4e9426b3-7fd5-480a-a89e-67a80cfc5622"
+            Documentation="https://developers.miro.com/docs/getting-started-with-oauth">
+    <Environment Issuer="https://miro.com/">
+      <Configuration AuthorizationEndpoint="https://miro.com/oauth/authorize"
+                     RevocationEndpoint="https://api.miro.com/v2/oauth/revoke"
+                     TokenEndpoint="https://api.miro.com/v1/oauth/token"
+                     UserInfoEndpoint="https://api.miro.com/v1/oauth-token" />
+    </Environment>
   </Provider>
 
   <!--
@@ -2135,6 +2182,29 @@
     -->
 
     <Environment Issuer="https://www.webex.com/" ConfigurationEndpoint="https://webexapis.com/v1/.well-known/openid-configuration" />
+  </Provider>
+
+  <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          ██ ███ ██ ▄▄▄██ ▄▄▀██ ▄▄▄██ █████ ▄▄▄ ██ ███ ██
+                                          ██ █ █ ██ ▄▄▄██ ▄▄▀██ ▄▄███ █████ ███ ██ █ █ ██
+                                          ██▄▀▄▀▄██ ▀▀▀██ ▀▀ ██ █████ ▀▀ ██ ▀▀▀ ██▄▀▄▀▄██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Webflow" Id="87ec6fc6-771c-46a9-a8e9-f0049927536e"
+            Documentation="https://developers.webflow.com/v2.0.0/data/reference/oauth-app">
+    <Environment Issuer="https://webflow.com/">
+      <Configuration AuthorizationEndpoint="https://webflow.com/oauth/authorize"
+                     RevocationEndpoint="https://webflow.com/oauth/revoke_authorization"
+                     TokenEndpoint="https://api.webflow.com/oauth/access_token"
+                     UserInfoEndpoint="https://api.webflow.com/v2/token/authorized_by" />
+      <!--
+        Note: Webflow requires sending the "authorized_user:read" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="authorized_user:read" Default="true" Required="true" />
+    </Environment>
   </Provider>
 
   <!--

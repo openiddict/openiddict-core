@@ -1147,6 +1147,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserInfoRequest["fields"] = string.Join(",", settings.Fields);
             }
 
+            // Linear's userinfo endpoint is a GraphQL implementation that requires
+            // sending a proper "query" parameter containing the requested user details.
+            else if (context.Registration.ProviderType is ProviderTypes.Linear)
+            {
+                var settings = context.Registration.GetLinearSettings();
+
+                context.UserInfoRequest["query"] = $"query {{ viewer {{ {string.Join(" ", settings.UserFields)} }} }}";
+            }
+
             // Meetup's userinfo endpoint is a GraphQL implementation that requires
             // sending a proper "query" parameter containing the requested user details.
             else if (context.Registration.ProviderType is ProviderTypes.Meetup)
@@ -1503,15 +1512,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Airtable    or ProviderTypes.Basecamp      or ProviderTypes.Box        or
-                ProviderTypes.Dailymotion or ProviderTypes.Deezer        or ProviderTypes.Discord    or
-                ProviderTypes.Disqus      or ProviderTypes.Facebook      or ProviderTypes.Gitee      or
-                ProviderTypes.GitHub      or ProviderTypes.Harvest       or ProviderTypes.Kook       or
-                ProviderTypes.Kroger      or ProviderTypes.Lichess       or ProviderTypes.Mastodon   or
-                ProviderTypes.Meetup      or ProviderTypes.Nextcloud     or ProviderTypes.Patreon    or
-                ProviderTypes.Pipedrive   or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
-                ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or
-                ProviderTypes.Twitter     or ProviderTypes.Weibo         or ProviderTypes.Yandex     or 
+                ProviderTypes.Airtable      or ProviderTypes.Basecamp   or ProviderTypes.Box       or
+                ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or ProviderTypes.Discord   or
+                ProviderTypes.Disqus        or ProviderTypes.Facebook   or ProviderTypes.Gitee     or
+                ProviderTypes.GitHub        or ProviderTypes.Harvest    or ProviderTypes.Kook      or
+                ProviderTypes.Kroger        or ProviderTypes.Lichess    or ProviderTypes.Linear    or 
+                ProviderTypes.Mastodon      or ProviderTypes.Meetup     or ProviderTypes.Miro      or 
+                ProviderTypes.Nextcloud     or ProviderTypes.Patreon    or ProviderTypes.Pipedrive or 
+                ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify   or 
+                ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter   or
+                ProviderTypes.Webflow       or ProviderTypes.Weibo      or ProviderTypes.Yandex    or 
                 ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["id"],
 
@@ -1915,6 +1925,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.Request["access_type"] = settings.AccessType;
                 context.Request.Display = settings.Display;
+            }
+
+            // Linear allows setting the prompt parameter (setting it to "consent" will
+            // force the consent screen to be displayed for each authorization request).
+            else if (context.Registration.ProviderType is ProviderTypes.Linear)
+            {
+                var settings = context.Registration.GetLinearSettings();
+                
+                context.Request.Prompt = settings.Prompt;
             }
 
             // By default, MusicBrainz doesn't return a refresh token but allows sending an "access_type"
