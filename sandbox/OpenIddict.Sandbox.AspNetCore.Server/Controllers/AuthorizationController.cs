@@ -71,14 +71,17 @@ public class AuthorizationController : Controller
         //
         //  - If the user principal can't be extracted or the cookie is too old.
         //  - If prompt=login was specified by the client application.
+        //  - If max_age=0 was specified by the client application (max_age=0 is equivalent to prompt=login).
         //  - If a max_age parameter was provided and the authentication cookie is not considered "fresh" enough.
         //
         // For scenarios where the default authentication handler configured in the ASP.NET Core
         // authentication options shouldn't be used, a specific scheme can be specified here.
         var result = await HttpContext.AuthenticateAsync();
-        if (result == null || !result.Succeeded || request.HasPromptValue(PromptValues.Login) ||
-           (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
-            TimeProvider.System.GetUtcNow() - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
+        if (result is not { Succeeded: true } ||
+            ((request.HasPromptValue(PromptValues.Login) || request.MaxAge is 0 ||
+             (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
+              TimeProvider.System.GetUtcNow() - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value))) &&
+            TempData["IgnoreAuthenticationChallenge"] is null or false))
         {
             // If the client application requested promptless authentication,
             // return an error indicating that the user is not logged in.
@@ -93,15 +96,14 @@ public class AuthorizationController : Controller
                     }));
             }
 
-            // To avoid endless login -> authorization redirects, the prompt=login flag
-            // is removed from the authorization request payload before redirecting the user.
-            var prompt = string.Join(" ", request.GetPromptValues().Remove(PromptValues.Login));
-
-            var parameters = Request.HasFormContentType ?
-                Request.Form.Where(parameter => parameter.Key != Parameters.Prompt).ToList() :
-                Request.Query.Where(parameter => parameter.Key != Parameters.Prompt).ToList();
-
-            parameters.Add(new(Parameters.Prompt, new StringValues(prompt)));
+            // To avoid endless login endpoint -> authorization endpoint redirects, a special temp data entry is
+            // used to skip the challenge if the user agent has already been redirected to the login endpoint.
+            //
+            // Note: this flag doesn't guarantee that the user has accepted to re-authenticate. If such a guarantee
+            // is needed, the existing authentication cookie MUST be deleted AND revoked (e.g using ASP.NET Core
+            // Identity's security stamp feature with an extremely short revalidation time span) before triggering
+            // a challenge to redirect the user agent to the login endpoint.
+            TempData["IgnoreAuthenticationChallenge"] = true;
 
             // For applications that want to allow the client to select the external authentication provider
             // that will be used to authenticate the user, the identity_provider parameter can be used for that.
@@ -125,7 +127,8 @@ public class AuthorizationController : Controller
                     provider: request.IdentityProvider,
                     redirectUrl: Url.Action("ExternalLoginCallback", "Account", new
                     {
-                        ReturnUrl = Request.PathBase + Request.Path + QueryString.Create(parameters)
+                        ReturnUrl = Request.PathBase + Request.Path + QueryString.Create(
+                            Request.HasFormContentType ? Request.Form : Request.Query)
                     }));
 
                 // Note: when only one client is registered in the client options,
@@ -140,7 +143,8 @@ public class AuthorizationController : Controller
             // authentication options shouldn't be used, a specific scheme can be specified here.
             return Challenge(new AuthenticationProperties
             {
-                RedirectUri = Request.PathBase + Request.Path + QueryString.Create(parameters)
+                RedirectUri = Request.PathBase + Request.Path + QueryString.Create(
+                    Request.HasFormContentType ? Request.Form : Request.Query)
             });
         }
 

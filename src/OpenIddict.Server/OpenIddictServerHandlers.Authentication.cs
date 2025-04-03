@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -706,16 +705,6 @@ public static partial class OpenIddictServerHandlers
                 //
                 // For more information, see https://datatracker.ietf.org/doc/html/rfc9101#section-5 and
                 // https://openid.net/specs/openid-connect-core-1_0.html#RequestUriRationale.
-
-                // Note: the prompt parameter is special-cased to allow application code to override the "login" prompt
-                // value after redirecting the user agent to the login endpoint and asking the user to re-authenticate.
-                if (request.HasPromptValue(PromptValues.Login) && context.Request.HasParameter(Parameters.Prompt) &&
-                                                                 !context.Request.HasPromptValue(PromptValues.Login))
-                {
-                    request.Prompt = string.Join(",", request.GetPromptValues()
-                        .ToImmutableHashSet(StringComparer.Ordinal)
-                        .Remove(PromptValues.Login));
-                }
 
                 context.Request = request;
                 context.RedirectUri = request.RedirectUri;

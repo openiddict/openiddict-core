@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -57,13 +56,29 @@ public class AuthorizationController : Controller
         var request = context.GetOpenIddictServerRequest() ??
             throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
-        // Retrieve the user principal stored in the authentication cookie.
-        // If a max_age parameter was provided, ensure that the cookie is not too old.
-        // If the user principal can't be extracted or the cookie is too old, redirect the user to the login page.
+        // Try to retrieve the user principal stored in the authentication cookie and redirect
+        // the user agent to the login page (or to an external provider) in the following cases:
+        //
+        //  - If the user principal can't be extracted or the cookie is too old.
+        //  - If prompt=login was specified by the client application.
+        //  - If max_age=0 was specified by the client application (max_age=0 is equivalent to prompt=login).
+        //  - If a max_age parameter was provided and the authentication cookie is not considered "fresh" enough.
         var result = await context.Authentication.AuthenticateAsync(DefaultAuthenticationTypes.ApplicationCookie);
-        if (result?.Identity == null || (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
-            TimeProvider.System.GetUtcNow() - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
+        if (result is not { Identity: ClaimsIdentity } ||
+            ((request.HasPromptValue(PromptValues.Login) || request.MaxAge is 0 ||
+             (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
+              TimeProvider.System.GetUtcNow() - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value))) &&
+            TempData["IgnoreAuthenticationChallenge"] is null or false))
         {
+            // To avoid endless login endpoint -> authorization endpoint redirects, a special temp data entry is
+            // used to skip the challenge if the user agent has already been redirected to the login endpoint.
+            //
+            // Note: this flag doesn't guarantee that the user has accepted to re-authenticate. If such a guarantee
+            // is needed, the existing authentication cookie MUST be deleted AND revoked (e.g using ASP.NET
+            // Identity's security stamp feature with an extremely short revalidation time span) before triggering
+            // a challenge to redirect the user agent to the login endpoint.
+            TempData["IgnoreAuthenticationChallenge"] = true;
+
             // For applications that want to allow the client to select the external authentication provider
             // that will be used to authenticate the user, the identity_provider parameter can be used for that.
             if (!string.IsNullOrEmpty(request.IdentityProvider))
