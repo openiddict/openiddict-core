@@ -168,3 +168,6 @@ $RECYCLE.BIN/
 # Arcade-related folders
 .dotnet/
 artifacts/
+
+# Jetbrains IDE folders
+.idea/*
