@@ -3,9 +3,9 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>13.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>preview</AnalysisLevel>
+    <AnalysisLevel>9.0</AnalysisLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591;NU5128</NoWarn>
     <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
