@@ -788,7 +788,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 break;
 
             case JsonNode value:
-                value.WriteTo(writer);
+                value.WriteTo(writer, OpenIddictSerializer.Default.Options);
                 break;
         }
     }
