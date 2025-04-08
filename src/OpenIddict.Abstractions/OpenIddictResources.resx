@@ -297,7 +297,7 @@ To extract end session requests, create a class implementing 'IOpenIddictServerH
   </data>
   <data name="ID0051" xml:space="preserve">
     <value>The end session request was not handled.
-To handle end session requests in a controller, create a custom controller action with the same route as the end session endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableLogoutEndpointPassthrough()'.
+To handle end session requests in a controller, create a custom controller action with the same route as the end session endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableEndSessionEndpointPassthrough()'.
 Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleEndSessionRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0052" xml:space="preserve">
