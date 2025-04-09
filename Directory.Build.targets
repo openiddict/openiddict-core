@@ -16,11 +16,15 @@
   </PropertyGroup>
 
   <!--
-    Note: the trimming and Native AOT analyzers are only supported on .NET.
+    Note: the trimming and Native AOT analyzers are only supported on .NET. Since the OpenIddict
+    Entity Framework 6.x and Entity Framework Core stores internally use new trimming/AOT-friendly
+    TypeDescriptor APIs introduced in .NET 9.0, only the .NET 9.0+ TFMs are marked as AOT-compatible.
   -->
 
   <PropertyGroup
-    Condition=" $(RepoRelativeProjectDir.Contains('src')) And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
+    Condition=" $(RepoRelativeProjectDir.Contains('src')) And
+               '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0')) ">
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
@@ -112,6 +116,7 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_LOADER</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_DEEP_EQUALS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup

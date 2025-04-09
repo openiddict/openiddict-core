@@ -1139,11 +1139,23 @@ public class OpenIddictEntityFrameworkTokenStore<
             return default;
         }
 
-        return (TKey?) GetConverter().ConvertFromInvariantString(identifier);
+        // Optimization: if the key is a string, directly return it as-is.
+        if (typeof(TKey) == typeof(string))
+        {
+            return (TKey?) (object?) identifier;
+        }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026",
-            Justification = "Only primitive types are supported as entity keys.")]
-        static TypeConverter GetConverter() => TypeDescriptor.GetConverter(typeof(TKey));
+        else
+        {
+            var converter =
+#if SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION
+                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+#else
+                TypeDescriptor.GetConverter(typeof(TKey));
+#endif
+
+            return (TKey?) converter.ConvertFromInvariantString(identifier);
+        }
     }
 
     /// <summary>
@@ -1158,10 +1170,22 @@ public class OpenIddictEntityFrameworkTokenStore<
             return null;
         }
 
-        return GetConverter().ConvertToInvariantString(identifier);
+        // Optimization: if the key is a string, directly return it as-is.
+        if (identifier is string value)
+        {
+            return value;
+        }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026",
-            Justification = "Only primitive types are supported as entity keys.")]
-        static TypeConverter GetConverter() => TypeDescriptor.GetConverter(typeof(TKey));
+        else
+        {
+            var converter =
+#if SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION
+                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+#else
+                TypeDescriptor.GetConverter(typeof(TKey));
+#endif
+
+            return converter.ConvertToInvariantString(identifier);
+        }
     }
 }

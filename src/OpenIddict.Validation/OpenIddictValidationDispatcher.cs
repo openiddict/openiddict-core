@@ -121,7 +121,7 @@ public sealed class OpenIddictValidationDispatcher : IOpenIddictValidationDispat
         {
             for (var index = 0; index < descriptor.FilterTypes.Length; index++)
             {
-                if (!(_provider.GetService(descriptor.FilterTypes[index]) is IOpenIddictValidationHandlerFilter<TContext> filter))
+                if (_provider.GetService(descriptor.FilterTypes[index]) is not IOpenIddictValidationHandlerFilter<TContext> filter)
                 {
                     throw new InvalidOperationException(SR.FormatID0099(descriptor.FilterTypes[index]));
                 }

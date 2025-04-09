@@ -89,6 +89,15 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
     {
+#if SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION
+        // If the specified key type isn't a string (which is special-cased by the stores to avoid having to resolve
+        // a TypeDescriptor instance) and the platform supports type registration, register the key type to ensure the
+        // TypeDescriptor associated with that type will be preserved by the IL Linker and can be resolved at runtime.
+        if (typeof(TKey) != typeof(string))
+        {
+            TypeDescriptor.RegisterType<TKey>();
+        }
+#endif
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictApplicationManager>(static provider =>
             provider.GetRequiredService<OpenIddictApplicationManager<TApplication>>()));
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationManager>(static provider =>
