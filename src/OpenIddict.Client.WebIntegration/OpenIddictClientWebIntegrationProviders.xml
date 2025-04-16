@@ -2011,12 +2011,12 @@
                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Twitter" Id="1fd20ab5-d3f2-40aa-8c91-094f71652c65"
-            Documentation="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">
+  <Provider Name="Twitter" DisplayName="X (Twitter)" Id="1fd20ab5-d3f2-40aa-8c91-094f71652c65"
+            Documentation="https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/authorization-code">
     <Environment Issuer="https://twitter.com/">
-      <Configuration AuthorizationEndpoint="https://twitter.com/i/oauth2/authorize"
-                     TokenEndpoint="https://api.twitter.com/2/oauth2/token"
-                     UserInfoEndpoint="https://api.twitter.com/2/users/me">
+      <Configuration AuthorizationEndpoint="https://x.com/i/oauth2/authorize"
+                     TokenEndpoint="https://api.x.com/2/oauth2/token"
+                     UserInfoEndpoint="https://api.x.com/2/users/me">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
