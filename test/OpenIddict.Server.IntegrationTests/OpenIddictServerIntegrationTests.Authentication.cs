@@ -227,10 +227,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("6esc_11ACC5bwc014ltc14eY22c", context.Token);
-                    Assert.Equal([TokenTypeHints.Private.RequestToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.Private.RequestToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.Private.RequestToken)
+                        .SetTokenType(TokenTypeIdentifiers.Private.RequestToken)
                         .SetClaim(Claims.Private.RequestTokenType, RequestTokenTypes.Private.PushedAuthorizationRequest)
                         .SetClaim(Claims.Private.RequestParameters, $$"""
                         {
@@ -2161,10 +2161,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("id_token", context.Token);
-                    Assert.Equal([TokenTypeHints.IdToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.IdentityToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetTokenType(TokenTypeIdentifiers.IdentityToken)
                         .SetPresenters("Contoso")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -2232,10 +2232,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("id_token", context.Token);
-                    Assert.Equal([TokenTypeHints.IdToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.IdentityToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetTokenType(TokenTypeIdentifiers.IdentityToken)
                         .SetPresenters("Fabrikam")
                         .SetExpirationDate(new DateTimeOffset(2017, 1, 1, 0, 0, 0, TimeSpan.Zero))
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -4849,10 +4849,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("id_token", context.Token);
-                    Assert.Equal([TokenTypeHints.IdToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.IdentityToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetTokenType(TokenTypeIdentifiers.IdentityToken)
                         .SetPresenters("Contoso")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -4920,10 +4920,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("id_token", context.Token);
-                    Assert.Equal([TokenTypeHints.IdToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.IdentityToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetTokenType(TokenTypeIdentifiers.IdentityToken)
                         .SetPresenters("Fabrikam")
                         .SetExpirationDate(new DateTimeOffset(2017, 1, 1, 0, 0, 0, TimeSpan.Zero))
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");

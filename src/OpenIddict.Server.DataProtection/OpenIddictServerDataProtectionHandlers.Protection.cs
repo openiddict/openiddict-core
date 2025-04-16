@@ -109,65 +109,32 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     // In this case, common types (e.g access/refresh tokens) are checked first.
                     0 => context.TokenTypeHint switch
                     {
-                        TokenTypeHints.AuthorizationCode =>
-                            ValidateToken(TokenTypeHints.AuthorizationCode) ??
-                            ValidateToken(TokenTypeHints.AccessToken)       ??
-                            ValidateToken(TokenTypeHints.RefreshToken)      ??
-                            ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.UserCode)          ??
-                            ValidateToken(TokenTypeHints.Private.RequestToken),
-
-                        TokenTypeHints.DeviceCode =>
-                            ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.AccessToken)       ??
-                            ValidateToken(TokenTypeHints.RefreshToken)      ??
-                            ValidateToken(TokenTypeHints.AuthorizationCode) ??
-                            ValidateToken(TokenTypeHints.UserCode)          ??
-                            ValidateToken(TokenTypeHints.Private.RequestToken),
-
                         TokenTypeHints.RefreshToken =>
-                            ValidateToken(TokenTypeHints.RefreshToken)      ??
-                            ValidateToken(TokenTypeHints.AccessToken)       ??
-                            ValidateToken(TokenTypeHints.AuthorizationCode) ??
-                            ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.UserCode)          ??
-                            ValidateToken(TokenTypeHints.Private.RequestToken),
+                            ValidateToken(TokenTypeIdentifiers.RefreshToken)              ??
+                            ValidateToken(TokenTypeIdentifiers.AccessToken)               ??
+                            ValidateToken(TokenTypeIdentifiers.Private.AuthorizationCode) ??
+                            ValidateToken(TokenTypeIdentifiers.Private.DeviceCode)        ??
+                            ValidateToken(TokenTypeIdentifiers.Private.UserCode)          ??
+                            ValidateToken(TokenTypeIdentifiers.Private.RequestToken),
 
-                        TokenTypeHints.UserCode =>
-                            ValidateToken(TokenTypeHints.UserCode)          ??
-                            ValidateToken(TokenTypeHints.AccessToken)       ??
-                            ValidateToken(TokenTypeHints.RefreshToken)      ??
-                            ValidateToken(TokenTypeHints.AuthorizationCode) ??
-                            ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.Private.RequestToken),
-
-                        TokenTypeHints.Private.RequestToken =>
-                            ValidateToken(TokenTypeHints.AccessToken)       ??
-                            ValidateToken(TokenTypeHints.RefreshToken)      ??
-                            ValidateToken(TokenTypeHints.AuthorizationCode) ??
-                            ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.UserCode)          ??
-                            ValidateToken(TokenTypeHints.Private.RequestToken),
-
-                        _ =>
-                            ValidateToken(TokenTypeHints.AccessToken)       ??
-                            ValidateToken(TokenTypeHints.RefreshToken)      ??
-                            ValidateToken(TokenTypeHints.AuthorizationCode) ??
-                            ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.UserCode)          ??
-                            ValidateToken(TokenTypeHints.Private.RequestToken),
+                        TokenTypeHints.AccessToken or _ =>
+                            ValidateToken(TokenTypeIdentifiers.AccessToken)               ??
+                            ValidateToken(TokenTypeIdentifiers.RefreshToken)              ??
+                            ValidateToken(TokenTypeIdentifiers.Private.AuthorizationCode) ??
+                            ValidateToken(TokenTypeIdentifiers.Private.DeviceCode)        ??
+                            ValidateToken(TokenTypeIdentifiers.Private.UserCode)          ??
+                            ValidateToken(TokenTypeIdentifiers.Private.RequestToken),
                     },
 
                     // If a single valid token type was set, ignore the specified token type hint.
                     1 => context.ValidTokenTypes.ElementAt(0) switch
                     {
-                        TokenTypeHints.AccessToken       => ValidateToken(TokenTypeHints.AccessToken),
-                        TokenTypeHints.RefreshToken      => ValidateToken(TokenTypeHints.RefreshToken),
-                        TokenTypeHints.AuthorizationCode => ValidateToken(TokenTypeHints.AuthorizationCode),
-                        TokenTypeHints.DeviceCode        => ValidateToken(TokenTypeHints.DeviceCode),
-                        TokenTypeHints.UserCode          => ValidateToken(TokenTypeHints.UserCode),
-
-                        TokenTypeHints.Private.RequestToken => ValidateToken(TokenTypeHints.Private.RequestToken),
+                        TokenTypeIdentifiers.AccessToken               => ValidateToken(TokenTypeIdentifiers.AccessToken),
+                        TokenTypeIdentifiers.RefreshToken              => ValidateToken(TokenTypeIdentifiers.RefreshToken),
+                        TokenTypeIdentifiers.Private.AuthorizationCode => ValidateToken(TokenTypeIdentifiers.Private.AuthorizationCode),
+                        TokenTypeIdentifiers.Private.DeviceCode        => ValidateToken(TokenTypeIdentifiers.Private.DeviceCode),
+                        TokenTypeIdentifiers.Private.RequestToken      => ValidateToken(TokenTypeIdentifiers.Private.RequestToken),
+                        TokenTypeIdentifiers.Private.UserCode          => ValidateToken(TokenTypeIdentifiers.Private.UserCode),
 
                         _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
                     },
@@ -179,25 +146,23 @@ public static partial class OpenIddictServerDataProtectionHandlers
                         // If the token type hint corresponds to one of the valid types, test it first.
                         string value when value == context.TokenTypeHint => 0,
 
-                        TokenTypeHints.AccessToken       => 1,
-                        TokenTypeHints.RefreshToken      => 2,
-                        TokenTypeHints.AuthorizationCode => 3,
-                        TokenTypeHints.DeviceCode        => 4,
-                        TokenTypeHints.UserCode          => 5,
-
-                        TokenTypeHints.Private.RequestToken => 6,
+                        TokenTypeIdentifiers.AccessToken               => 1,
+                        TokenTypeIdentifiers.RefreshToken              => 2,
+                        TokenTypeIdentifiers.Private.AuthorizationCode => 3,
+                        TokenTypeIdentifiers.Private.DeviceCode        => 4,
+                        TokenTypeIdentifiers.Private.UserCode          => 5,
+                        TokenTypeIdentifiers.Private.RequestToken      => 6,
 
                         _ => int.MaxValue
                     })
                     .Select(type => type switch
                     {
-                        TokenTypeHints.AccessToken       => ValidateToken(TokenTypeHints.AccessToken),
-                        TokenTypeHints.RefreshToken      => ValidateToken(TokenTypeHints.RefreshToken),
-                        TokenTypeHints.AuthorizationCode => ValidateToken(TokenTypeHints.AuthorizationCode),
-                        TokenTypeHints.DeviceCode        => ValidateToken(TokenTypeHints.DeviceCode),
-                        TokenTypeHints.UserCode          => ValidateToken(TokenTypeHints.UserCode),
-
-                        TokenTypeHints.Private.RequestToken => ValidateToken(TokenTypeHints.Private.RequestToken),
+                        TokenTypeIdentifiers.AccessToken               => ValidateToken(TokenTypeIdentifiers.AccessToken),
+                        TokenTypeIdentifiers.RefreshToken              => ValidateToken(TokenTypeIdentifiers.RefreshToken),
+                        TokenTypeIdentifiers.Private.AuthorizationCode => ValidateToken(TokenTypeIdentifiers.Private.AuthorizationCode),
+                        TokenTypeIdentifiers.Private.DeviceCode        => ValidateToken(TokenTypeIdentifiers.Private.DeviceCode),
+                        TokenTypeIdentifiers.Private.UserCode          => ValidateToken(TokenTypeIdentifiers.Private.UserCode),
+                        TokenTypeIdentifiers.Private.RequestToken      => ValidateToken(TokenTypeIdentifiers.Private.RequestToken),
 
                         _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
                     })
@@ -229,34 +194,34 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         (type, context.IsReferenceToken) switch
                         {
-                            (TokenTypeHints.AccessToken, true)
+                            (TokenTypeIdentifiers.AccessToken, true)
                                 => [Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server],
-                            (TokenTypeHints.AccessToken, false)
+                            (TokenTypeIdentifiers.AccessToken, false)
                                 => [Handlers.Server, Formats.AccessToken, Schemes.Server],
 
-                            (TokenTypeHints.AuthorizationCode, true)
+                            (TokenTypeIdentifiers.Private.AuthorizationCode, true)
                                 => [Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server],
-                            (TokenTypeHints.AuthorizationCode, false)
+                            (TokenTypeIdentifiers.Private.AuthorizationCode, false)
                                 => [Handlers.Server, Formats.AuthorizationCode, Schemes.Server],
 
-                            (TokenTypeHints.DeviceCode, true)
+                            (TokenTypeIdentifiers.Private.DeviceCode, true)
                                 => [Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server],
-                            (TokenTypeHints.DeviceCode, false)
+                            (TokenTypeIdentifiers.Private.DeviceCode, false)
                                 => [Handlers.Server, Formats.DeviceCode, Schemes.Server],
 
-                            (TokenTypeHints.RefreshToken, true)
+                            (TokenTypeIdentifiers.RefreshToken, true)
                                 => [Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server],
-                            (TokenTypeHints.RefreshToken, false)
+                            (TokenTypeIdentifiers.RefreshToken, false)
                                 => [Handlers.Server, Formats.RefreshToken, Schemes.Server],
 
-                            (TokenTypeHints.UserCode, true)
+                            (TokenTypeIdentifiers.Private.UserCode, true)
                                 => [Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server],
-                            (TokenTypeHints.UserCode, false)
+                            (TokenTypeIdentifiers.Private.UserCode, false)
                                 => [Handlers.Server, Formats.UserCode, Schemes.Server],
 
-                            (TokenTypeHints.Private.RequestToken, true)
+                            (TokenTypeIdentifiers.Private.RequestToken, true)
                                 => [Handlers.Server, Formats.RequestToken, Features.ReferenceTokens, Schemes.Server],
-                            (TokenTypeHints.Private.RequestToken, false)
+                            (TokenTypeIdentifiers.Private.RequestToken, false)
                                 => [Handlers.Server, Formats.RequestToken, Schemes.Server],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
@@ -319,22 +284,22 @@ public static partial class OpenIddictServerDataProtectionHandlers
 
                 context.TokenFormat = context.TokenType switch
                 {
-                    TokenTypeHints.AccessToken when !_options.CurrentValue.PreferDefaultAccessTokenFormat
+                    TokenTypeIdentifiers.AccessToken when !_options.CurrentValue.PreferDefaultAccessTokenFormat
                         => TokenFormats.Private.DataProtection,
 
-                    TokenTypeHints.AuthorizationCode when !_options.CurrentValue.PreferDefaultAuthorizationCodeFormat
+                    TokenTypeIdentifiers.Private.AuthorizationCode when !_options.CurrentValue.PreferDefaultAuthorizationCodeFormat
                         => TokenFormats.Private.DataProtection,
 
-                    TokenTypeHints.DeviceCode when !_options.CurrentValue.PreferDefaultDeviceCodeFormat
+                    TokenTypeIdentifiers.Private.DeviceCode when !_options.CurrentValue.PreferDefaultDeviceCodeFormat
                         => TokenFormats.Private.DataProtection,
 
-                    TokenTypeHints.RefreshToken when !_options.CurrentValue.PreferDefaultRefreshTokenFormat
+                    TokenTypeIdentifiers.RefreshToken when !_options.CurrentValue.PreferDefaultRefreshTokenFormat
                         => TokenFormats.Private.DataProtection,
 
-                    TokenTypeHints.UserCode when !_options.CurrentValue.PreferDefaultUserCodeFormat
+                    TokenTypeIdentifiers.Private.UserCode when !_options.CurrentValue.PreferDefaultUserCodeFormat
                         => TokenFormats.Private.DataProtection,
 
-                    TokenTypeHints.Private.RequestToken when !_options.CurrentValue.PreferDefaultRequestTokenFormat
+                    TokenTypeIdentifiers.Private.RequestToken when !_options.CurrentValue.PreferDefaultRequestTokenFormat
                         => TokenFormats.Private.DataProtection,
 
                     _ => context.TokenFormat // Don't override the format if the token type is not supported.
@@ -385,34 +350,34 @@ public static partial class OpenIddictServerDataProtectionHandlers
                 var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
                     (context.TokenType, context.IsReferenceToken) switch
                     {
-                        (TokenTypeHints.AccessToken, true)
+                        (TokenTypeIdentifiers.AccessToken, true)
                             => [Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server],
-                        (TokenTypeHints.AccessToken, false)
+                        (TokenTypeIdentifiers.AccessToken, false)
                             => [Handlers.Server, Formats.AccessToken, Schemes.Server],
 
-                        (TokenTypeHints.AuthorizationCode, true)
+                        (TokenTypeIdentifiers.Private.AuthorizationCode, true)
                             => [Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server],
-                        (TokenTypeHints.AuthorizationCode, false)
+                        (TokenTypeIdentifiers.Private.AuthorizationCode, false)
                             => [Handlers.Server, Formats.AuthorizationCode, Schemes.Server],
 
-                        (TokenTypeHints.DeviceCode, true)
+                        (TokenTypeIdentifiers.Private.DeviceCode, true)
                             => [Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server],
-                        (TokenTypeHints.DeviceCode, false)
+                        (TokenTypeIdentifiers.Private.DeviceCode, false)
                             => [Handlers.Server, Formats.DeviceCode, Schemes.Server],
 
-                        (TokenTypeHints.RefreshToken, true)
+                        (TokenTypeIdentifiers.RefreshToken, true)
                             => [Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server],
-                        (TokenTypeHints.RefreshToken, false)
+                        (TokenTypeIdentifiers.RefreshToken, false)
                             => [Handlers.Server, Formats.RefreshToken, Schemes.Server],
 
-                        (TokenTypeHints.UserCode, true)
+                        (TokenTypeIdentifiers.Private.UserCode, true)
                             => [Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server],
-                        (TokenTypeHints.UserCode, false)
+                        (TokenTypeIdentifiers.Private.UserCode, false)
                             => [Handlers.Server, Formats.UserCode, Schemes.Server],
 
-                        (TokenTypeHints.Private.RequestToken, true)
+                        (TokenTypeIdentifiers.Private.RequestToken, true)
                             => [Handlers.Server, Formats.RequestToken, Features.ReferenceTokens, Schemes.Server],
-                        (TokenTypeHints.Private.RequestToken, false)
+                        (TokenTypeIdentifiers.Private.RequestToken, false)
                             => [Handlers.Server, Formats.RequestToken, Schemes.Server],
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))

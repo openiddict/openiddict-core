@@ -604,10 +604,10 @@ public static partial class OpenIddictServerHandlers
                 Token = context.ClientAssertion,
                 TokenFormat = context.ClientAssertionType switch
                 {
-                    ClientAssertionTypes.JwtBearer => TokenFormats.Jwt,
+                    ClientAssertionTypes.JwtBearer => TokenFormats.Private.JsonWebToken,
                     _ => null
                 },
-                ValidTokenTypes = { TokenTypeHints.ClientAssertion }
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.ClientAssertion }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -1320,7 +1320,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.RequestToken,
-                ValidTokenTypes = { TokenTypeHints.Private.RequestToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.RequestToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -1444,7 +1444,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.AccessToken,
-                ValidTokenTypes = { TokenTypeHints.AccessToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -1516,7 +1516,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.AuthorizationCode,
-                ValidTokenTypes = { TokenTypeHints.AuthorizationCode }
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.AuthorizationCode }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -1588,7 +1588,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.DeviceCode,
-                ValidTokenTypes = { TokenTypeHints.DeviceCode }
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.DeviceCode }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -1672,12 +1672,12 @@ public static partial class OpenIddictServerHandlers
                 // are deliberately excluded and not present in the following list:
                 ValidTokenTypes =
                 {
-                    TokenTypeHints.AccessToken,
-                    TokenTypeHints.AuthorizationCode,
-                    TokenTypeHints.DeviceCode,
-                    TokenTypeHints.IdToken,
-                    TokenTypeHints.RefreshToken,
-                    TokenTypeHints.UserCode
+                    TokenTypeIdentifiers.AccessToken,
+                    TokenTypeIdentifiers.Private.AuthorizationCode,
+                    TokenTypeIdentifiers.Private.DeviceCode,
+                    TokenTypeIdentifiers.IdentityToken,
+                    TokenTypeIdentifiers.RefreshToken,
+                    TokenTypeIdentifiers.Private.UserCode
                 }
             };
 
@@ -1754,7 +1754,7 @@ public static partial class OpenIddictServerHandlers
                                                                     OpenIddictServerEndpointType.EndSession    or
                                                                     OpenIddictServerEndpointType.PushedAuthorization,
                 Token = context.IdentityToken,
-                ValidTokenTypes = { TokenTypeHints.IdToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.IdentityToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -1826,7 +1826,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.RefreshToken,
-                ValidTokenTypes = { TokenTypeHints.RefreshToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.RefreshToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -1898,7 +1898,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.UserCode,
-                ValidTokenTypes = { TokenTypeHints.UserCode }
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.UserCode }
             };
 
             // Note: restrict the allowed characters to the user code charset set in the options.
@@ -2563,17 +2563,17 @@ public static partial class OpenIddictServerHandlers
                     error: Errors.InvalidToken,
                     description: principal.GetTokenType() switch
                     {
-                        TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2010),
-                        TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2011),
-                        TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2012),
+                        TokenTypeIdentifiers.Private.AuthorizationCode => SR.GetResourceString(SR.ID2010),
+                        TokenTypeIdentifiers.Private.DeviceCode        => SR.GetResourceString(SR.ID2011),
+                        TokenTypeIdentifiers.RefreshToken              => SR.GetResourceString(SR.ID2012),
 
                         _ => SR.GetResourceString(SR.ID2013)
                     },
                     uri: principal.GetTokenType() switch
                     {
-                        TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2010),
-                        TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2011),
-                        TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2012),
+                        TokenTypeIdentifiers.Private.AuthorizationCode => SR.FormatID8000(SR.ID2010),
+                        TokenTypeIdentifiers.Private.DeviceCode        => SR.FormatID8000(SR.ID2011),
+                        TokenTypeIdentifiers.RefreshToken              => SR.FormatID8000(SR.ID2012),
 
                         _ => SR.FormatID8000(SR.ID2013)
                     });
@@ -4001,8 +4001,8 @@ public static partial class OpenIddictServerHandlers
                 IsReferenceToken = context.Options.UseReferenceAccessTokens,
                 PersistTokenPayload = context.Options.UseReferenceAccessTokens,
                 Principal = context.AccessTokenPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.AccessToken
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.AccessToken
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -4068,8 +4068,8 @@ public static partial class OpenIddictServerHandlers
                 IsReferenceToken = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.AuthorizationCodePrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.AuthorizationCode
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.AuthorizationCode
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -4149,8 +4149,8 @@ public static partial class OpenIddictServerHandlers
                     _ => !context.Options.DisableTokenStorage
                 },
                 Principal = context.DeviceCodePrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.DeviceCode
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.DeviceCode
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -4216,8 +4216,8 @@ public static partial class OpenIddictServerHandlers
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 IsReferenceToken = !context.Options.DisableTokenStorage,
                 Principal = context.RequestTokenPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.Private.RequestToken
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.RequestToken
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -4285,8 +4285,8 @@ public static partial class OpenIddictServerHandlers
                 IsReferenceToken = context.Options.UseReferenceRefreshTokens,
                 PersistTokenPayload = context.Options.UseReferenceRefreshTokens,
                 Principal = context.RefreshTokenPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.RefreshToken
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.RefreshToken
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -4557,8 +4557,8 @@ public static partial class OpenIddictServerHandlers
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 IsReferenceToken = !context.Options.DisableTokenStorage,
                 Principal = context.UserCodePrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.UserCode
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.UserCode
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -4625,8 +4625,8 @@ public static partial class OpenIddictServerHandlers
                 IsReferenceToken = false,
                 PersistTokenPayload = false,
                 Principal = context.IdentityTokenPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.IdToken
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.IdentityToken
             };
 
             await _dispatcher.DispatchAsync(notification);

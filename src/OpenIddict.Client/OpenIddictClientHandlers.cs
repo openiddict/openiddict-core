@@ -684,7 +684,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.StateToken,
-                ValidTokenTypes = { TokenTypeHints.StateToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.StateToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -1626,7 +1626,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.FrontchannelIdentityToken,
-                ValidTokenTypes = { TokenTypeHints.IdToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.IdentityToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -2146,7 +2146,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.FrontchannelAccessToken,
-                ValidTokenTypes = { TokenTypeHints.AccessToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -2220,7 +2220,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.AuthorizationCode,
-                ValidTokenTypes = { TokenTypeHints.AuthorizationCode }
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.AuthorizationCode }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -2455,7 +2455,7 @@ public static partial class OpenIddictClientHandlers
                 GrantTypes.Implicit => GrantTypes.AuthorizationCode,
 
                 // For other values, don't do any mapping.
-                string type => type
+                string value => value
             };
 
             if (context.Scopes.Count > 0 &&
@@ -2657,8 +2657,8 @@ public static partial class OpenIddictClientHandlers
                 IsReferenceToken = false,
                 PersistTokenPayload = false,
                 Principal = context.ClientAssertionPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.ClientAssertion
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.ClientAssertion
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -2687,8 +2687,8 @@ public static partial class OpenIddictClientHandlers
             context.ClientAssertion = notification.Token;
             context.ClientAssertionType = notification.TokenFormat switch
             {
-                TokenFormats.Jwt   => ClientAssertionTypes.JwtBearer,
-                TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
+                TokenFormats.Private.JsonWebToken => ClientAssertionTypes.JwtBearer,
+                TokenFormats.Private.Saml2        => ClientAssertionTypes.Saml2Bearer,
 
                 _ => null
             };
@@ -3062,7 +3062,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.BackchannelIdentityToken,
-                ValidTokenTypes = { TokenTypeHints.IdToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.IdentityToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -3546,7 +3546,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.BackchannelAccessToken,
-                ValidTokenTypes = { TokenTypeHints.AccessToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -3620,7 +3620,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.RefreshToken,
-                ValidTokenTypes = { TokenTypeHints.RefreshToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.RefreshToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -4047,7 +4047,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.UserInfoToken,
-                ValidTokenTypes = { TokenTypeHints.UserInfoToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.UserInfoToken }
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -5433,8 +5433,8 @@ public static partial class OpenIddictClientHandlers
                 IsReferenceToken = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.StateTokenPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.StateToken
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.StateToken
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -6078,8 +6078,8 @@ public static partial class OpenIddictClientHandlers
                 IsReferenceToken = false,
                 PersistTokenPayload = false,
                 Principal = context.ClientAssertionPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.ClientAssertion
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.ClientAssertion
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -6108,8 +6108,8 @@ public static partial class OpenIddictClientHandlers
             context.ClientAssertion = notification.Token;
             context.ClientAssertionType = notification.TokenFormat switch
             {
-                TokenFormats.Jwt => ClientAssertionTypes.JwtBearer,
-                TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
+                TokenFormats.Private.JsonWebToken => ClientAssertionTypes.JwtBearer,
+                TokenFormats.Private.Saml2        => ClientAssertionTypes.Saml2Bearer,
 
                 _ => null
             };
@@ -7145,8 +7145,8 @@ public static partial class OpenIddictClientHandlers
                 IsReferenceToken = false,
                 PersistTokenPayload = false,
                 Principal = context.ClientAssertionPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.ClientAssertion
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.ClientAssertion
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -7175,8 +7175,8 @@ public static partial class OpenIddictClientHandlers
             context.ClientAssertion = notification.Token;
             context.ClientAssertionType = notification.TokenFormat switch
             {
-                TokenFormats.Jwt   => ClientAssertionTypes.JwtBearer,
-                TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
+                TokenFormats.Private.JsonWebToken => ClientAssertionTypes.JwtBearer,
+                TokenFormats.Private.Saml2        => ClientAssertionTypes.Saml2Bearer,
 
                 _ => null
             };
@@ -7816,8 +7816,8 @@ public static partial class OpenIddictClientHandlers
                 IsReferenceToken = false,
                 PersistTokenPayload = false,
                 Principal = context.ClientAssertionPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.ClientAssertion
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.ClientAssertion
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -7846,8 +7846,8 @@ public static partial class OpenIddictClientHandlers
             context.ClientAssertion = notification.Token;
             context.ClientAssertionType = notification.TokenFormat switch
             {
-                TokenFormats.Jwt   => ClientAssertionTypes.JwtBearer,
-                TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
+                TokenFormats.Private.JsonWebToken => ClientAssertionTypes.JwtBearer,
+                TokenFormats.Private.Saml2        => ClientAssertionTypes.Saml2Bearer,
 
                 _ => null
             };
@@ -8489,8 +8489,8 @@ public static partial class OpenIddictClientHandlers
                 IsReferenceToken = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.StateTokenPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.StateToken
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.StateToken
             };
 
             await _dispatcher.DispatchAsync(notification);

@@ -449,7 +449,7 @@ public static class OpenIddictServerHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.TokenFormat is TokenFormats.Jwt);
+            return new(context.TokenFormat is TokenFormats.Private.JsonWebToken);
         }
     }
 

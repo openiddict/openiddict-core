@@ -490,8 +490,8 @@ public static partial class OpenIddictValidationHandlers
                 IsReferenceToken = false,
                 PersistTokenPayload = false,
                 Principal = context.ClientAssertionPrincipal!,
-                TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.ClientAssertion
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.ClientAssertion
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -520,8 +520,8 @@ public static partial class OpenIddictValidationHandlers
             context.ClientAssertion = notification.Token;
             context.ClientAssertionType = notification.TokenFormat switch
             {
-                TokenFormats.Jwt   => ClientAssertionTypes.JwtBearer,
-                TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
+                TokenFormats.Private.JsonWebToken => ClientAssertionTypes.JwtBearer,
+                TokenFormats.Private.Saml2        => ClientAssertionTypes.Saml2Bearer,
 
                 _ => null
             };
@@ -672,7 +672,7 @@ public static partial class OpenIddictValidationHandlers
             // If a "token_usage" claim can be extracted from the principal, use it to determine whether
             // the token details returned by the authorization server correspond to an access token.
             var usage = context.AccessTokenPrincipal.GetClaim(Claims.TokenUsage);
-            if (!string.IsNullOrEmpty(usage) && usage is not TokenTypeHints.AccessToken)
+            if (!string.IsNullOrEmpty(usage) && usage is not "access_token")
             {
                 context.Reject(
                     error: Errors.InvalidToken,
@@ -683,7 +683,7 @@ public static partial class OpenIddictValidationHandlers
             }
 
             // Note: if no token usage could be resolved, the token is assumed to be an access token.
-            context.AccessTokenPrincipal = context.AccessTokenPrincipal.SetTokenType(usage ?? TokenTypeHints.AccessToken);
+            context.AccessTokenPrincipal = context.AccessTokenPrincipal.SetTokenType(usage ?? TokenTypeIdentifiers.AccessToken);
 
             return default;
         }
@@ -795,7 +795,7 @@ public static partial class OpenIddictValidationHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 Token = context.AccessToken,
-                ValidTokenTypes = { TokenTypeHints.AccessToken }
+                ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
 
             await _dispatcher.DispatchAsync(notification);

@@ -179,7 +179,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetExpirationDate(TimeProvider.System.GetUtcNow() - TimeSpan.FromDays(1));
 
                     return default;
@@ -225,7 +225,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -271,7 +271,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -320,7 +320,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -364,7 +364,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetPresenters("Fabrikam", "Contoso")
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
@@ -413,7 +413,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     identity.AddClaim(Claims.PhoneNumber, "0148962355");
 
                     context.Principal = new ClaimsPrincipal(identity)
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetPresenters("Fabrikam")
                         .SetScopes(ImmutableArray<string>.Empty);
 
@@ -460,7 +460,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     identity.AddClaim(Claims.Birthdate, "04/09/1933");
 
                     context.Principal = new ClaimsPrincipal(identity)
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetPresenters("Fabrikam")
                         .SetScopes(Scopes.Profile)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
@@ -501,7 +501,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetPresenters("Fabrikam")
                         .SetScopes(Scopes.Email)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
@@ -541,7 +541,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetPresenters("Fabrikam")
                         .SetScopes(Scopes.Phone)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
@@ -588,7 +588,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -634,7 +634,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -683,7 +683,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -727,7 +727,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -776,7 +776,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });

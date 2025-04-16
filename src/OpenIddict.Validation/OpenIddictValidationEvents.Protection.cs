@@ -53,19 +53,32 @@ public static partial class OpenIddictValidationEvents
         public bool PersistTokenPayload { get; set; }
 
         /// <summary>
-        /// Gets or sets the security principal used to create the token.
+        /// Gets or sets the security principal that will be derived to create the token.
         /// </summary>
         public ClaimsPrincipal Principal { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the encryption credentials used to encrypt the token.
         /// </summary>
-        public EncryptingCredentials? EncryptionCredentials { get; set; }
+        public EncryptingCredentials? EncryptionCredentials
+        {
+            get => SecurityTokenDescriptor.EncryptingCredentials;
+            set => SecurityTokenDescriptor.EncryptingCredentials = value;
+        }
 
         /// <summary>
         /// Gets or sets the signing credentials used to sign the token.
         /// </summary>
-        public SigningCredentials? SigningCredentials { get; set; }
+        public SigningCredentials? SigningCredentials
+        {
+            get => SecurityTokenDescriptor.SigningCredentials;
+            set => SecurityTokenDescriptor.SigningCredentials = value;
+        }
+
+        /// <summary>
+        /// Gets the security token descriptor used to create the token.
+        /// </summary>
+        public SecurityTokenDescriptor SecurityTokenDescriptor { get; } = new();
 
         /// <summary>
         /// Gets or sets the security token handler used to serialize the security principal.

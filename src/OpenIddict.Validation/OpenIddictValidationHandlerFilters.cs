@@ -126,7 +126,7 @@ public static class OpenIddictValidationHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.TokenFormat is TokenFormats.Jwt);
+            return new(context.TokenFormat is TokenFormats.Private.JsonWebToken);
         }
     }
 

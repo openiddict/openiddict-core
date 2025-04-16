@@ -86,10 +86,10 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                 var principal = context.ValidTokenTypes.Count switch
                 {
                     // If no valid token type was set, all supported token types are allowed.
-                    0 => ValidateToken(TokenTypeHints.AccessToken),
+                    0 => ValidateToken(TokenTypeIdentifiers.AccessToken),
 
-                    _ when context.ValidTokenTypes.Contains(TokenTypeHints.AccessToken)
-                        => ValidateToken(TokenTypeHints.AccessToken),
+                    _ when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.AccessToken)
+                        => ValidateToken(TokenTypeIdentifiers.AccessToken),
 
                     _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
                 };
@@ -118,9 +118,9 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         (type, context.IsReferenceToken) switch
                         {
-                            (TokenTypeHints.AccessToken, true)
+                            (TokenTypeIdentifiers.AccessToken, true)
                                 => [Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server],
-                            (TokenTypeHints.AccessToken, false)
+                            (TokenTypeIdentifiers.AccessToken, false)
                                 => [Handlers.Server, Formats.AccessToken, Schemes.Server],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))

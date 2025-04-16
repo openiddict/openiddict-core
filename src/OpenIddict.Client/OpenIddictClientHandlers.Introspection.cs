@@ -339,24 +339,27 @@ public static partial class OpenIddictClientHandlers
                 // In this handler, the "token_usage" is verified to ensure it corresponds to a supported
                 // value so that the component that triggered the introspection request can determine
                 // whether the returned token has an acceptable type depending on the context.
-                var usage = (string?) context.Response[Claims.TokenUsage];
-                if (string.IsNullOrEmpty(usage))
+                switch ((string?) context.Response[Claims.TokenUsage])
                 {
-                    return default;
-                }
+                    case null or { Length: 0 }: return default;
 
-                // Note: by default, OpenIddict only allows access/refresh tokens to be
-                // introspected but additional types can be added using the events model.
-                if (usage is not (TokenTypeHints.AccessToken  or TokenTypeHints.AuthorizationCode or
-                                  TokenTypeHints.DeviceCode   or TokenTypeHints.IdToken           or
-                                  TokenTypeHints.RefreshToken or TokenTypeHints.UserCode))
-                {
-                    context.Reject(
-                        error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2118),
-                        uri: SR.FormatID8000(SR.ID2118));
+                    // Note: by default, OpenIddict only allows access/refresh tokens to be
+                    // introspected but additional types can be added using the events model.
+                    case "access_token":
+                    case "authorization_code":
+                    case "device_code":
+                    case "id_token":
+                    case "refresh_token":
+                    case "user_code":
+                        break;
 
-                    return default;
+                    default:
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.GetResourceString(SR.ID2118),
+                            uri: SR.FormatID8000(SR.ID2118));
+
+                        return default;
                 }
 
                 return default;

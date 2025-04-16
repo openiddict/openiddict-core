@@ -1878,9 +1878,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             // By default, Alibaba Cloud doesn't return a refresh token for native applications but allows sending an
             // "access_type" parameter to retrieve one (but it is only returned during the first authorization dance).
-            // The documentation also indicates the "prompt" parameter is supported but not required,
-            // which can be set to "admin_consent" to force the display of the authorization page
-            if (context.Registration.ProviderType is ProviderTypes.AlibabaCloud)
+            //
+            // The documentation also indicates the "prompt" parameter is supported but not required
+            // and can be set to "admin_consent" to force the display of the authorization page.
+            else if (context.Registration.ProviderType is ProviderTypes.AlibabaCloud)
             {
                 var settings = context.Registration.GetAlibabaCloudSettings();
 

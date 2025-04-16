@@ -572,36 +572,45 @@ public static class OpenIddictConstants
 
     public static class TokenFormats
     {
-        public const string Jwt = "urn:ietf:params:oauth:token-type:jwt";
-        public const string Saml1 = "urn:ietf:params:oauth:token-type:saml1";
-        public const string Saml2 = "urn:ietf:params:oauth:token-type:saml2";
-
         public static class Private
         {
-            public const string DataProtection = "urn:openiddict:params:oauth:token-type:dp";
+            public const string DataProtection = "urn:openiddict:params:oauth:token-format:data_protection";
+            public const string JsonWebToken = "urn:openiddict:params:oauth:token-format:jwt";
+            public const string Saml1 = "urn:openiddict:params:oauth:token-format:saml1";
+            public const string Saml2 = "urn:openiddict:params:oauth:token-format:saml2";
         }
     }
 
     public static class TokenTypeHints
     {
         public const string AccessToken = "access_token";
-        public const string AuthorizationCode = "authorization_code";
-        public const string ClientAssertion = "client_assertion";
-        public const string DeviceCode = "device_code";
-        public const string IdToken = "id_token";
         public const string RefreshToken = "refresh_token";
-        public const string StateToken = "state_token";
-        public const string UserInfoToken = "userinfo_token";
-        public const string UserCode = "user_code";
+    }
+
+    public static class TokenTypeIdentifiers
+    {
+        public const string AccessToken = "urn:ietf:params:oauth:token-type:access_token";
+        public const string GenericJsonWebToken = "urn:ietf:params:oauth:token-type:jwt";
+        public const string GenericSaml1Assertion = "urn:ietf:params:oauth:token-type:saml1";
+        public const string GenericSaml2Assertion = "urn:ietf:params:oauth:token-type:saml2";
+        public const string IdentityToken = "urn:ietf:params:oauth:token-type:id_token";
+        public const string RefreshToken = "urn:ietf:params:oauth:token-type:refresh_token";
 
         public static class Private
         {
-            public const string RequestToken = "request_token";
+            public const string AuthorizationCode = "urn:openiddict:params:oauth:token-type:authorization_code";
+            public const string ClientAssertion = "urn:openiddict:params:oauth:token-type:client_assertion";
+            public const string DeviceCode = "urn:openiddict:params:oauth:token-type:device_code";
+            public const string RequestToken = "urn:openiddict:params:oauth:token-type:request_token";
+            public const string StateToken = "urn:openiddict:params:oauth:token-type:state_token";
+            public const string UserCode = "urn:openiddict:params:oauth:token-type:user_code";
+            public const string UserInfoToken = "urn:openiddict:params:oauth:token-type:userinfo_token";
         }
     }
 
     public static class TokenTypes
     {
         public const string Bearer = "Bearer";
+        public const string NotApplicable = "N_A";
     }
 }

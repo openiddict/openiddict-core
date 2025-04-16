@@ -129,10 +129,10 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetCreationDate(new DateTimeOffset(2020, 01, 01, 00, 00, 00, TimeSpan.Zero));
 
@@ -180,10 +180,10 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetExpirationDate(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero));
 
                     return default;

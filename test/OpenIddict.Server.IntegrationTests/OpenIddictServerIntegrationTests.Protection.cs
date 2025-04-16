@@ -38,13 +38,13 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     var identity = new ClaimsIdentity("Bearer");
                     identity.AddClaim(new Claim(Claims.IssuedAt, "1577836800", ClaimValueTypes.Integer64));
 
                     context.Principal = new ClaimsPrincipal(identity)
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
                     return default;
@@ -90,13 +90,13 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     var identity = new ClaimsIdentity("Bearer");
                     identity.AddClaim(new Claim(Claims.ExpiresAt, "2524608000", ClaimValueTypes.Integer64));
 
                     context.Principal = new ClaimsPrincipal(identity)
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
                     return default;
@@ -142,10 +142,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetClaim(Claims.AuthorizedParty, "Fabrikam");
 
@@ -192,10 +192,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetClaim(Claims.ClientId, "Fabrikam");
 
@@ -242,10 +242,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetClaim(Claims.Audience, "Fabrikam");
 
@@ -292,10 +292,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetClaims(Claims.Audience, ["Fabrikam", "Contoso"]);
 
@@ -342,10 +342,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetClaims(Claims.Scope, [Scopes.OpenId, Scopes.Profile]);
 
@@ -391,10 +391,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetClaim(Claims.Scope, "openid profile");
 
@@ -440,10 +440,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetClaims(Claims.Scope, [Scopes.OpenId, Scopes.Profile]);
 
@@ -529,10 +529,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AuthorizationCode)
+                        .SetTokenType(TokenTypeIdentifiers.Private.AuthorizationCode)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
                     return default;
@@ -554,6 +554,6 @@ public abstract partial class OpenIddictServerIntegrationTests
         });
 
         // Assert
-        Assert.Equal(SR.FormatID0005(TokenTypeHints.AuthorizationCode, TokenTypeHints.AccessToken), exception.Message);
+        Assert.Equal(SR.FormatID0005(TokenTypeIdentifiers.Private.AuthorizationCode, TokenTypeIdentifiers.AccessToken), exception.Message);
     }
 }

@@ -147,8 +147,8 @@ public sealed class OpenIddictServerOptions
             {
                 type = usage switch
                 {
-                    TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
-                    TokenTypeHints.IdToken     => JsonWebTokenTypes.Jwt,
+                    "access_token" => JsonWebTokenTypes.AccessToken,
+                    "id_token"     => JsonWebTokenTypes.Jwt,
 
                     _ => throw new NotSupportedException(SR.GetResourceString(SR.ID0269))
                 };

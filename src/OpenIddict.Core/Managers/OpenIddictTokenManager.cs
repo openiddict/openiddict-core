@@ -719,14 +719,29 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the token type associated with the specified token.
     /// </returns>
-    public virtual ValueTask<string?> GetTypeAsync(TToken token, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<string?> GetTypeAsync(TToken token, CancellationToken cancellationToken = default)
     {
         if (token is null)
         {
             throw new ArgumentNullException(nameof(token));
         }
 
-        return Store.GetTypeAsync(token, cancellationToken);
+        return await Store.GetTypeAsync(token, cancellationToken) switch
+        {
+            null or { Length: 0 } => null,
+
+            "access_token"       => TokenTypeIdentifiers.AccessToken,
+            "authorization_code" => TokenTypeIdentifiers.Private.AuthorizationCode,
+            "client_assertion"   => TokenTypeIdentifiers.Private.ClientAssertion,
+            "device_code"        => TokenTypeIdentifiers.Private.DeviceCode,
+            "id_token"           => TokenTypeIdentifiers.IdentityToken,
+            "refresh_token"      => TokenTypeIdentifiers.RefreshToken,
+            "state_token"        => TokenTypeIdentifiers.Private.StateToken,
+            "user_code"          => TokenTypeIdentifiers.Private.UserCode,
+            "userinfo_token"     => TokenTypeIdentifiers.Private.UserInfoToken,
+
+            string value => value
+        };
     }
 
     /// <summary>
@@ -748,7 +763,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
         }
 
-        return string.Equals(await Store.GetStatusAsync(token, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetStatusAsync(token, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -770,7 +785,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
         }
 
-        return string.Equals(await Store.GetTypeAsync(token, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetTypeAsync(token, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -787,7 +802,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             throw new ArgumentNullException(nameof(token));
         }
 
-        var type = await Store.GetTypeAsync(token, cancellationToken);
+        var type = await GetTypeAsync(token, cancellationToken);
         if (string.IsNullOrEmpty(type))
         {
             return false;

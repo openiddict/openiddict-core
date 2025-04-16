@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Security.Claims;
 using Microsoft.Owin.Security.Infrastructure;
+using static OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants;
 using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.Properties;
 
 namespace OpenIddict.Validation.Owin;
@@ -186,7 +187,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Open
 
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                properties.Dictionary[TokenTypeHints.AccessToken] = context.AccessToken;
+                properties.Dictionary[Tokens.AccessToken] = context.AccessToken;
             }
 
             return properties;

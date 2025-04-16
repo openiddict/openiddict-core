@@ -92,10 +92,10 @@ public static partial class OpenIddictClientDataProtectionHandlers
                 var principal = context.ValidTokenTypes.Count switch
                 {
                     // If no valid token type was set, all supported token types are allowed.
-                    0 => ValidateToken(TokenTypeHints.StateToken),
+                    0 => ValidateToken(TokenTypeIdentifiers.Private.StateToken),
 
-                    _ when context.ValidTokenTypes.Contains(TokenTypeHints.StateToken)
-                        => ValidateToken(TokenTypeHints.StateToken),
+                    _ when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.StateToken)
+                        => ValidateToken(TokenTypeIdentifiers.Private.StateToken),
 
                     // The token type is not supported by the Data Protection integration (e.g client assertions).
                     _ => null
@@ -125,9 +125,9 @@ public static partial class OpenIddictClientDataProtectionHandlers
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         (type, context.IsReferenceToken) switch
                         {
-                            (TokenTypeHints.StateToken, true)
+                            (TokenTypeIdentifiers.Private.StateToken, true)
                                 => [Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server],
-                            (TokenTypeHints.StateToken, false)
+                            (TokenTypeIdentifiers.Private.StateToken, false)
                                 => [Handlers.Client, Formats.StateToken, Schemes.Server],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
@@ -190,7 +190,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
 
                 context.TokenFormat = context.TokenType switch
                 {
-                    TokenTypeHints.StateToken when !_options.CurrentValue.PreferDefaultStateTokenFormat
+                    TokenTypeIdentifiers.Private.StateToken when !_options.CurrentValue.PreferDefaultStateTokenFormat
                         => TokenFormats.Private.DataProtection,
 
                     _ => context.TokenFormat // Don't override the format if the token type is not supported.
@@ -241,9 +241,9 @@ public static partial class OpenIddictClientDataProtectionHandlers
                 var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
                     (context.TokenType, context.IsReferenceToken) switch
                     {
-                        (TokenTypeHints.StateToken, true)
+                        (TokenTypeIdentifiers.Private.StateToken, true)
                             => [Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server],
-                        (TokenTypeHints.StateToken, false)
+                        (TokenTypeIdentifiers.Private.StateToken, false)
                             => [Handlers.Client, Formats.StateToken, Schemes.Server],
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))

@@ -536,8 +536,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
-                    !context.Principal.HasTokenType(TokenTypeHints.RefreshToken))
+                if (!context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
+                    !context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6117));
 
@@ -588,7 +588,7 @@ public static partial class OpenIddictServerHandlers
                 // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
                 // If the access token doesn't contain any explicit presenter/audience, the token is assumed
                 // to be not specific to any resource server/client application and the check is bypassed.
-                if (context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
+                if (context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
                     context.Principal.HasClaim(Claims.Private.Audience) && !context.Principal.HasAudience(context.ClientId) &&
                     context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                 {
@@ -606,7 +606,7 @@ public static partial class OpenIddictServerHandlers
                 // listed as a presenter (i.e the party the token was issued to).
                 // If the refresh token doesn't contain any explicit presenter, the token is
                 // assumed to be not specific to any client application and the check is bypassed.
-                if (context.Principal.HasTokenType(TokenTypeHints.RefreshToken) &&
+                if (context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken) &&
                     context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                 {
                     context.Logger.LogWarning(SR.GetResourceString(SR.ID6121));

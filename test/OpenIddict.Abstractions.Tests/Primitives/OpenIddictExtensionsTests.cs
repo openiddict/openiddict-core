@@ -5297,7 +5297,7 @@ public class OpenIddictExtensionsTests
         var identity = (ClaimsIdentity) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => identity.HasTokenType(TokenTypeHints.AccessToken));
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.HasTokenType(TokenTypeIdentifiers.AccessToken));
 
         Assert.Equal("identity", exception.ParamName);
     }
@@ -5309,7 +5309,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.HasTokenType(TokenTypeHints.AccessToken));
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.HasTokenType(TokenTypeIdentifiers.AccessToken));
 
         Assert.Equal("principal", exception.ParamName);
     }
@@ -5349,11 +5349,11 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.SetTokenType(TokenTypeHints.AccessToken);
+        identity.SetTokenType(TokenTypeIdentifiers.AccessToken);
 
         // Act and assert
-        Assert.True(identity.HasTokenType(TokenTypeHints.AccessToken));
-        Assert.False(identity.HasTokenType(TokenTypeHints.RefreshToken));
+        Assert.True(identity.HasTokenType(TokenTypeIdentifiers.AccessToken));
+        Assert.False(identity.HasTokenType(TokenTypeIdentifiers.RefreshToken));
     }
 
     [Fact]
@@ -5361,11 +5361,11 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.SetTokenType(TokenTypeHints.AccessToken);
+        principal.SetTokenType(TokenTypeIdentifiers.AccessToken);
 
         // Act and assert
-        Assert.True(principal.HasTokenType(TokenTypeHints.AccessToken));
-        Assert.False(principal.HasTokenType(TokenTypeHints.RefreshToken));
+        Assert.True(principal.HasTokenType(TokenTypeIdentifiers.AccessToken));
+        Assert.False(principal.HasTokenType(TokenTypeIdentifiers.RefreshToken));
     }
 
     [Fact]
@@ -6489,10 +6489,10 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.SetTokenType(TokenTypeHints.AccessToken);
+        identity.SetTokenType(TokenTypeIdentifiers.AccessToken);
 
         // Assert
-        Assert.Equal(TokenTypeHints.AccessToken, identity.GetClaim(Claims.Private.TokenType));
+        Assert.Equal(TokenTypeIdentifiers.AccessToken, identity.GetClaim(Claims.Private.TokenType));
     }
 
     [Fact]
@@ -6502,9 +6502,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        principal.SetTokenType(TokenTypeHints.AccessToken);
+        principal.SetTokenType(TokenTypeIdentifiers.AccessToken);
 
         // Assert
-        Assert.Equal(TokenTypeHints.AccessToken, principal.GetClaim(Claims.Private.TokenType));
+        Assert.Equal(TokenTypeIdentifiers.AccessToken, principal.GetClaim(Claims.Private.TokenType));
     }
 }

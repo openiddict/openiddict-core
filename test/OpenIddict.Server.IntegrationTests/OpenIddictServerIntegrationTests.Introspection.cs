@@ -332,7 +332,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.RefreshToken);
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken);
 
                     return default;
                 });
@@ -522,7 +522,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("SlAV32hkKG", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.RefreshToken)
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
                         .SetExpirationDate(TimeProvider.System.GetUtcNow() - TimeSpan.FromDays(1));
 
                     return default;
@@ -550,10 +550,10 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Theory]
-    [InlineData(TokenTypeHints.AuthorizationCode)]
-    [InlineData(TokenTypeHints.DeviceCode)]
-    [InlineData(TokenTypeHints.IdToken)]
-    [InlineData(TokenTypeHints.UserCode)]
+    [InlineData(TokenTypeIdentifiers.Private.AuthorizationCode)]
+    [InlineData(TokenTypeIdentifiers.Private.DeviceCode)]
+    [InlineData(TokenTypeIdentifiers.IdentityToken)]
+    [InlineData(TokenTypeIdentifiers.Private.UserCode)]
     public async Task ValidateIntrospectionRequest_UnsupportedTokenTypeCausesAnError(string type)
     {
         // Arrange
@@ -609,7 +609,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetAudiences("AdventureWorks")
                         .SetPresenters("Contoso");
 
@@ -653,7 +653,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("8xLOxBtZp8", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.RefreshToken)
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
                         .SetPresenters("Contoso");
 
                     return default;
@@ -703,7 +703,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -749,7 +749,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -798,7 +798,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -842,7 +842,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetAudiences("Fabrikam")
                         .SetPresenters("Contoso", "AdventureWorks Cycles")
                         .SetCreationDate(new DateTimeOffset(2016, 1, 1, 0, 0, 0, TimeSpan.Zero))
@@ -874,7 +874,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.True((bool) response[Claims.Active]);
         Assert.Equal("66B65AED-4033-4E9C-B975-A8CA7FB6FA79", (string?) response[Claims.JwtId]);
         Assert.Equal(TokenTypes.Bearer, (string?) response[Claims.TokenType]);
-        Assert.Equal(TokenTypeHints.AccessToken, (string?) response[Claims.TokenUsage]);
+        Assert.Equal("access_token", (string?) response[Claims.TokenUsage]);
         Assert.Equal("http://localhost/", (string?) response[Claims.Issuer]);
         Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
         Assert.Equal(1451606400, (long) response[Claims.IssuedAt]);
@@ -899,7 +899,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.RefreshToken)
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
                         .SetPresenters("Fabrikam")
                         .SetClaim(Claims.Username, "Bob")
                         .SetClaim("custom_claim", "secret_value");
@@ -954,7 +954,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetAudiences("Fabrikam")
                         .SetPresenters("Contoso", "AdventureWorks Cycles")
                         .SetScopes(Scopes.OpenId, Scopes.Profile)
@@ -1020,7 +1020,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     identity.AddClaim(new Claim("object_claim", @"{""parameter"":""value""}", JsonClaimValueTypes.Json));
 
                     context.Principal = new ClaimsPrincipal(identity)
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetAudiences("Fabrikam");
 
                     return default;
@@ -1094,7 +1094,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     identity.AddClaim(new Claim("object_claim", @"{""parameter_2"":""value-2""}", JsonClaimValueTypes.Json));
 
                     context.Principal = new ClaimsPrincipal(identity)
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetAudiences("Fabrikam");
 
                     return default;
@@ -1214,7 +1214,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetAudiences("Fabrikam")
                         .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                         .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
                     return default;
@@ -1245,7 +1245,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(token);
 
                 mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(TokenTypeHints.AccessToken);
+                    .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
 
                 mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -1261,12 +1261,12 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.HasTypeAsync(token, ImmutableArray.Create(new[]
                 {
-                    TokenTypeHints.AccessToken,
-                    TokenTypeHints.AuthorizationCode,
-                    TokenTypeHints.DeviceCode,
-                    TokenTypeHints.IdToken,
-                    TokenTypeHints.RefreshToken,
-                    TokenTypeHints.UserCode
+                    TokenTypeIdentifiers.AccessToken,
+                    TokenTypeIdentifiers.Private.AuthorizationCode,
+                    TokenTypeIdentifiers.Private.DeviceCode,
+                    TokenTypeIdentifiers.IdentityToken,
+                    TokenTypeIdentifiers.RefreshToken,
+                    TokenTypeIdentifiers.Private.UserCode
                 }), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
@@ -1317,7 +1317,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetAudiences("Fabrikam")
                         .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                         .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
                     return default;
@@ -1348,7 +1348,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(token);
 
                 mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(TokenTypeHints.AccessToken);
+                    .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
 
                 mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -1364,12 +1364,12 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.HasTypeAsync(token, ImmutableArray.Create(new[]
                 {
-                    TokenTypeHints.AccessToken,
-                    TokenTypeHints.AuthorizationCode,
-                    TokenTypeHints.DeviceCode,
-                    TokenTypeHints.IdToken,
-                    TokenTypeHints.RefreshToken,
-                    TokenTypeHints.UserCode
+                    TokenTypeIdentifiers.AccessToken,
+                    TokenTypeIdentifiers.Private.AuthorizationCode,
+                    TokenTypeIdentifiers.Private.DeviceCode,
+                    TokenTypeIdentifiers.IdentityToken,
+                    TokenTypeIdentifiers.RefreshToken,
+                    TokenTypeIdentifiers.Private.UserCode
                 }), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
@@ -1427,7 +1427,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetAudiences("Fabrikam")
                         .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                         .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
                     return default;
@@ -1458,7 +1458,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(token);
 
                 mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(TokenTypeHints.AccessToken);
+                    .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
 
                 mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -1474,12 +1474,12 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                 mock.Setup(manager => manager.HasTypeAsync(token, ImmutableArray.Create(new[]
                 {
-                    TokenTypeHints.AccessToken,
-                    TokenTypeHints.AuthorizationCode,
-                    TokenTypeHints.DeviceCode,
-                    TokenTypeHints.IdToken,
-                    TokenTypeHints.RefreshToken,
-                    TokenTypeHints.UserCode
+                    TokenTypeIdentifiers.AccessToken,
+                    TokenTypeIdentifiers.Private.AuthorizationCode,
+                    TokenTypeIdentifiers.Private.DeviceCode,
+                    TokenTypeIdentifiers.IdentityToken,
+                    TokenTypeIdentifiers.RefreshToken,
+                    TokenTypeIdentifiers.Private.UserCode
                 }), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
@@ -1523,7 +1523,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(token);
 
             mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TokenTypeHints.AccessToken);
+                .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
 
             mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                 .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -1539,12 +1539,12 @@ public abstract partial class OpenIddictServerIntegrationTests
 
             mock.Setup(manager => manager.HasTypeAsync(token, ImmutableArray.Create(new[]
             {
-                TokenTypeHints.AccessToken,
-                TokenTypeHints.AuthorizationCode,
-                TokenTypeHints.DeviceCode,
-                TokenTypeHints.IdToken,
-                TokenTypeHints.RefreshToken,
-                TokenTypeHints.UserCode
+                TokenTypeIdentifiers.AccessToken,
+                TokenTypeIdentifiers.Private.AuthorizationCode,
+                TokenTypeIdentifiers.Private.DeviceCode,
+                TokenTypeIdentifiers.IdentityToken,
+                TokenTypeIdentifiers.RefreshToken,
+                TokenTypeIdentifiers.Private.UserCode
             }), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
         });
@@ -1561,7 +1561,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetAudiences("Fabrikam")
                         .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                         .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
                     return default;
@@ -1630,7 +1630,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -1676,7 +1676,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -1725,7 +1725,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });
@@ -1769,7 +1769,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken);
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken);
 
                     return default;
                 });

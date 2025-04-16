@@ -44,4 +44,9 @@ public static class OpenIddictValidationOwinConstants
         public const string Json = "#json";
         public const string String = "#string";
     }
+
+    public static class Tokens
+    {
+        public const string AccessToken = "access_token";
+    }
 }

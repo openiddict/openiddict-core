@@ -40,6 +40,8 @@ public static partial class OpenIddictValidationHandlers
              * Token generation:
              */
             AttachSecurityCredentials.Descriptor,
+            AttachTokenSubject.Descriptor,
+            AttachTokenMetadata.Descriptor,
             GenerateIdentityModelToken.Descriptor
         ];
 
@@ -114,16 +116,16 @@ public static partial class OpenIddictValidationHandlers
                     0 => null,
 
                     // Otherwise, map the token types to their JWT public or internal representation.
-                    _ => context.ValidTokenTypes.SelectMany(type => type switch
+                    _ => context.ValidTokenTypes.SelectMany<string, string>(type => type switch
                     {
                         // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
-                        TokenTypeHints.AccessToken => new[]
-                        {
+                        TokenTypeIdentifiers.AccessToken =>
+                        [
                             JsonWebTokenTypes.AccessToken,
                             JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
-                        },
+                        ],
 
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                        string value => [value]
                     })
                 };
 
@@ -288,7 +290,7 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 // If a specific token format is expected, return immediately if it doesn't match the expected value.
-                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Jwt)
+                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Private.JsonWebToken)
                 {
                     return;
                 }
@@ -366,9 +368,9 @@ public static partial class OpenIddictValidationHandlers
 
                     // Both at+jwt and application/at+jwt are supported for access tokens.
                     JsonWebTokenTypes.AccessToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
-                        => TokenTypeHints.AccessToken,
+                        => TokenTypeIdentifiers.AccessToken,
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                    string value => value
                 });
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
@@ -879,8 +881,115 @@ public static partial class OpenIddictValidationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                context.SecurityTokenDescriptor.SigningCredentials = context.Options.SigningCredentials.First();
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
-                context.SigningCredentials = context.Options.SigningCredentials.First();
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching the subject to the security token descriptor.
+        /// </summary>
+        public sealed class AttachTokenSubject : IOpenIddictValidationHandler<GenerateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .UseSingletonHandler<AttachTokenSubject>()
+                    .SetOrder(AttachSecurityCredentials.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Principal is not { Identity: ClaimsIdentity } principal)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
+                }
+
+                // Clone the principal and exclude the private claims mapped to standard JWT claims.
+                principal = context.Principal.Clone(claim => claim.Type switch
+                {
+                    Claims.Private.CreationDate or Claims.Private.ExpirationDate or
+                    Claims.Private.Issuer       or Claims.Private.TokenType => false,
+
+                    Claims.Private.Audience when context.TokenType is TokenTypeIdentifiers.Private.ClientAssertion => false,
+
+                    _ => true
+                });
+
+                Debug.Assert(principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                context.SecurityTokenDescriptor.Subject = (ClaimsIdentity) principal.Identity;
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching metadata claims to the security token descriptor, if necessary.
+        /// </summary>
+        public sealed class AttachTokenMetadata : IOpenIddictValidationHandler<GenerateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .UseSingletonHandler<AttachTokenMetadata>()
+                    .SetOrder(AttachTokenSubject.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var claims = context.SecurityTokenDescriptor.Claims is not null ?
+                    new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal) :
+                    new Dictionary<string, object>(StringComparer.Ordinal);
+
+                // For client assertions, set the public audience claims
+                // using the private audience claims from the security principal.
+                if (context.TokenType is TokenTypeIdentifiers.Private.ClientAssertion)
+                {
+                    var audiences = context.Principal.GetAudiences();
+                    if (audiences.Any())
+                    {
+                        claims.Add(Claims.Audience, audiences.Length switch
+                        {
+                            1 => audiences.ElementAt(0),
+                            _ => audiences
+                        });
+                    }
+                }
+
+                context.SecurityTokenDescriptor.Claims = claims;
+                context.SecurityTokenDescriptor.Expires = context.Principal.GetExpirationDate()?.UtcDateTime;
+                context.SecurityTokenDescriptor.IssuedAt = context.Principal.GetCreationDate()?.UtcDateTime;
+                context.SecurityTokenDescriptor.Issuer = context.Principal.GetClaim(Claims.Private.Issuer);
+                context.SecurityTokenDescriptor.TokenType = context.TokenType switch
+                {
+                    null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
+
+                    // For client assertions, use the generic "JWT" type.
+                    TokenTypeIdentifiers.Private.ClientAssertion => JsonWebTokenTypes.Jwt,
+
+                    string value => value
+                };
 
                 return default;
             }
@@ -898,7 +1007,7 @@ public static partial class OpenIddictValidationHandlers
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
                     .AddFilter<RequireJsonWebTokenFormat>()
                     .UseSingletonHandler<GenerateIdentityModelToken>()
-                    .SetOrder(AttachSecurityCredentials.Descriptor.Order + 1_000)
+                    .SetOrder(AttachTokenMetadata.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -916,64 +1025,10 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                if (context.Principal is not { Identity: ClaimsIdentity })
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
-                }
+                context.Token = context.SecurityTokenHandler.CreateToken(context.SecurityTokenDescriptor);
 
-                // Clone the principal and exclude the private claims mapped to standard JWT claims.
-                var principal = context.Principal.Clone(claim => claim.Type switch
-                {
-                    Claims.Private.CreationDate or Claims.Private.ExpirationDate or
-                    Claims.Private.Issuer       or Claims.Private.TokenType => false,
-
-                    Claims.Private.Audience when context.TokenType is TokenTypeHints.ClientAssertion => false,
-
-                    _ => true
-                });
-
-                Debug.Assert(principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-                var claims = new Dictionary<string, object>(StringComparer.Ordinal);
-
-                // For client assertions, set the public audience claims
-                // using the private audience claims from the security principal.
-                if (context.TokenType is TokenTypeHints.ClientAssertion)
-                {
-                    var audiences = context.Principal.GetAudiences();
-                    if (audiences.Any())
-                    {
-                        claims.Add(Claims.Audience, audiences.Length switch
-                        {
-                            1 => audiences.ElementAt(0),
-                            _ => audiences
-                        });
-                    }
-                }
-
-                var descriptor = new SecurityTokenDescriptor
-                {
-                    Claims = claims,
-                    EncryptingCredentials = context.EncryptionCredentials,
-                    Expires = context.Principal.GetExpirationDate()?.UtcDateTime,
-                    IssuedAt = context.Principal.GetCreationDate()?.UtcDateTime,
-                    Issuer = context.Principal.GetClaim(Claims.Private.Issuer),
-                    SigningCredentials = context.SigningCredentials,
-                    Subject = (ClaimsIdentity) principal.Identity,
-                    TokenType = context.TokenType switch
-                    {
-                        null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
-
-                        // For client assertions, use the generic "JWT" type.
-                        TokenTypeHints.ClientAssertion => JsonWebTokenTypes.Jwt,
-
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                    }
-                };
-
-                context.Token = context.SecurityTokenHandler.CreateToken(descriptor);
-
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType, context.Token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType,
+                    context.Token, context.SecurityTokenDescriptor.Subject?.Claims ?? []);
 
                 return default;
             }

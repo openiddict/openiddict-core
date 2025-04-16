@@ -1441,10 +1441,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("WDJB-MJHT", context.Token);
-                    Assert.Equal([TokenTypeHints.UserCode], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.Private.UserCode], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
-                        .SetTokenType(TokenTypeHints.UserCode);
+                        .SetTokenType(TokenTypeIdentifiers.Private.UserCode);
 
                     return default;
                 });

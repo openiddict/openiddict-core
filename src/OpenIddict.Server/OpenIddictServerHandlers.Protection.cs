@@ -43,6 +43,8 @@ public static partial class OpenIddictServerHandlers
              */
             AttachSecurityCredentials.Descriptor,
             CreateTokenEntry.Descriptor,
+            AttachTokenSubject.Descriptor,
+            AttachTokenMetadata.Descriptor,
             GenerateIdentityModelToken.Descriptor,
             AttachTokenPayload.Descriptor
         ];
@@ -92,7 +94,7 @@ public static partial class OpenIddictServerHandlers
                 // if multiple token types are considered valid and contain tokens issued by the
                 // authorization server and tokens issued by the client (e.g client assertions).
                 if (context.ValidTokenTypes.Count > 1 &&
-                    context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion))
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0308));
                 }
@@ -101,7 +103,7 @@ public static partial class OpenIddictServerHandlers
                 {
                     // When only client assertions are considered valid, create dynamic token validation
                     // parameters using the encryption keys/signing keys attached to the specific client.
-                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                    1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion)
                         => GetClientTokenValidationParameters(),
 
                     // Otherwise, use the token validation parameters of the authorization server.
@@ -191,36 +193,35 @@ public static partial class OpenIddictServerHandlers
                         _ => context.ValidTokenTypes.SelectMany<string, string>(type => type switch
                         {
                             // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
-                            TokenTypeHints.AccessToken =>
+                            TokenTypeIdentifiers.AccessToken =>
                             [
                                 JsonWebTokenTypes.AccessToken,
                                 JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
                             ],
 
                             // For identity tokens, both "JWT" and "application/jwt" are valid.
-                            TokenTypeHints.IdToken =>
+                            TokenTypeIdentifiers.IdentityToken =>
                             [
                                 JsonWebTokenTypes.Jwt,
                                 JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.Jwt
                             ],
 
                             // For authorization codes, only the short "oi_auc+jwt" form is valid.
-                            TokenTypeHints.AuthorizationCode => [JsonWebTokenTypes.Private.AuthorizationCode],
+                            TokenTypeIdentifiers.Private.AuthorizationCode => [JsonWebTokenTypes.Private.AuthorizationCode],
 
                             // For device codes, only the short "oi_dvc+jwt" form is valid.
-                            TokenTypeHints.DeviceCode => [JsonWebTokenTypes.Private.DeviceCode],
+                            TokenTypeIdentifiers.Private.DeviceCode => [JsonWebTokenTypes.Private.DeviceCode],
 
                             // For refresh tokens, only the short "oi_reft+jwt" form is valid.
-                            TokenTypeHints.RefreshToken => [JsonWebTokenTypes.Private.RefreshToken],
+                            TokenTypeIdentifiers.RefreshToken => [JsonWebTokenTypes.Private.RefreshToken],
 
                             // For user codes, only the short "oi_usrc+jwt" form is valid.
-                            TokenTypeHints.UserCode => [JsonWebTokenTypes.Private.UserCode],
+                            TokenTypeIdentifiers.Private.UserCode => [JsonWebTokenTypes.Private.UserCode],
 
                             // For user codes, only the short "oi_pshaurt+jwt" form is valid.
-                            TokenTypeHints.Private.RequestToken
-                                => [JsonWebTokenTypes.Private.RequestToken],
+                            TokenTypeIdentifiers.Private.RequestToken => [JsonWebTokenTypes.Private.RequestToken],
 
-                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                            _ => [type]
                         })
                     };
 
@@ -316,7 +317,7 @@ public static partial class OpenIddictServerHandlers
 
                 // Note: reference tokens are never used for client assertions.
                 if (context.ValidTokenTypes.Count is 1 &&
-                    context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion))
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion))
                 {
                     return;
                 }
@@ -345,29 +346,29 @@ public static partial class OpenIddictServerHandlers
                     context.Reject(
                         error: context.ValidTokenTypes.Count switch
                         {
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion)
                                 => Errors.InvalidClient,
 
                             _ => Errors.InvalidToken
                         },
                         description: context.ValidTokenTypes.Count switch
                         {
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.AuthorizationCode)
                                 => SR.GetResourceString(SR.ID2001),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.DeviceCode)
                                 => SR.GetResourceString(SR.ID2002),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.RefreshToken)
                                 => SR.GetResourceString(SR.ID2003),
 
                             _ => SR.GetResourceString(SR.ID2004)
                         },
                         uri: context.ValidTokenTypes.Count switch
                         {
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.AuthorizationCode)
                                 => SR.FormatID8000(SR.ID2001),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.DeviceCode)
                                 => SR.FormatID8000(SR.ID2002),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.RefreshToken)
                                 => SR.FormatID8000(SR.ID2003),
 
                             _ => SR.FormatID8000(SR.ID2004),
@@ -421,7 +422,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // If a specific token format is expected, return immediately if it doesn't match the expected value.
-                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Jwt)
+                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Private.JsonWebToken)
                 {
                     return;
                 }
@@ -456,7 +457,7 @@ public static partial class OpenIddictServerHandlers
                     context.Reject(
                         error: context.ValidTokenTypes.Count switch
                         {
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion)
                                 => Errors.InvalidClient,
 
                             _ => Errors.InvalidToken
@@ -465,16 +466,16 @@ public static partial class OpenIddictServerHandlers
                         {
                             SecurityTokenInvalidTypeException => context.ValidTokenTypes.Count switch
                             {
-                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
+                                1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.AuthorizationCode)
                                     => SR.GetResourceString(SR.ID2005),
 
-                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
+                                1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.DeviceCode)
                                     => SR.GetResourceString(SR.ID2006),
 
-                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
+                                1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.RefreshToken)
                                     => SR.GetResourceString(SR.ID2007),
 
-                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.AccessToken)
+                                1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.AccessToken)
                                     => SR.GetResourceString(SR.ID2008),
 
                                 _ => SR.GetResourceString(SR.ID2089)
@@ -490,16 +491,16 @@ public static partial class OpenIddictServerHandlers
                         {
                             SecurityTokenInvalidTypeException => context.ValidTokenTypes.Count switch
                             {
-                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
+                                1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.AuthorizationCode)
                                     => SR.FormatID8000(SR.ID2005),
 
-                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
+                                1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.DeviceCode)
                                     => SR.FormatID8000(SR.ID2006),
 
-                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
+                                1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.RefreshToken)
                                     => SR.FormatID8000(SR.ID2007),
 
-                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.AccessToken)
+                                1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.AccessToken)
                                     => SR.FormatID8000(SR.ID2008),
 
                                 _ => SR.FormatID8000(SR.ID2089)
@@ -530,27 +531,26 @@ public static partial class OpenIddictServerHandlers
                     // or a generic value like "JWT". Since the type defined by the client cannot be used as-is,
                     // validation is bypassed and tokens used as client assertions are assumed to be client assertions.
                     _ when context.ValidTokenTypes.Count is 1 &&
-                           context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
-                        => TokenTypeHints.ClientAssertion,
+                           context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion)
+                        => TokenTypeIdentifiers.Private.ClientAssertion,
 
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
                     // Both at+jwt and application/at+jwt are supported for access tokens.
                     JsonWebTokenTypes.AccessToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
-                        => TokenTypeHints.AccessToken,
+                        => TokenTypeIdentifiers.AccessToken,
 
                     // Both JWT and application/JWT are supported for identity tokens.
                     JsonWebTokenTypes.Jwt or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.Jwt
-                        => TokenTypeHints.IdToken,
+                        => TokenTypeIdentifiers.IdentityToken,
 
-                    JsonWebTokenTypes.Private.AuthorizationCode => TokenTypeHints.AuthorizationCode,
-                    JsonWebTokenTypes.Private.DeviceCode        => TokenTypeHints.DeviceCode,
-                    JsonWebTokenTypes.Private.RefreshToken      => TokenTypeHints.RefreshToken,
-                    JsonWebTokenTypes.Private.UserCode          => TokenTypeHints.UserCode,
+                    JsonWebTokenTypes.Private.AuthorizationCode => TokenTypeIdentifiers.Private.AuthorizationCode,
+                    JsonWebTokenTypes.Private.DeviceCode        => TokenTypeIdentifiers.Private.DeviceCode,
+                    JsonWebTokenTypes.Private.RefreshToken      => TokenTypeIdentifiers.RefreshToken,
+                    JsonWebTokenTypes.Private.RequestToken      => TokenTypeIdentifiers.Private.RequestToken,
+                    JsonWebTokenTypes.Private.UserCode          => TokenTypeIdentifiers.Private.UserCode,
 
-                    JsonWebTokenTypes.Private.RequestToken => TokenTypeHints.Private.RequestToken,
-
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                    string value => value
                 });
 
                 // Restore the claim destinations from the special oi_cl_dstn claim (represented as a dictionary/JSON object).
@@ -761,7 +761,7 @@ public static partial class OpenIddictServerHandlers
 
                 // Note: token entries are never used for client assertions.
                 if (context.ValidTokenTypes.Count is 1 &&
-                    context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion))
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion))
                 {
                     return;
                 }
@@ -784,17 +784,17 @@ public static partial class OpenIddictServerHandlers
                         error: Errors.InvalidToken,
                         description: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2001),
-                            TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2002),
-                            TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2003),
+                            TokenTypeIdentifiers.Private.AuthorizationCode => SR.GetResourceString(SR.ID2001),
+                            TokenTypeIdentifiers.Private.DeviceCode        => SR.GetResourceString(SR.ID2002),
+                            TokenTypeIdentifiers.RefreshToken              => SR.GetResourceString(SR.ID2003),
 
                             _ => SR.GetResourceString(SR.ID2004)
                         },
                         uri: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2001),
-                            TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2002),
-                            TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2003),
+                            TokenTypeIdentifiers.Private.AuthorizationCode => SR.FormatID8000(SR.ID2001),
+                            TokenTypeIdentifiers.Private.DeviceCode        => SR.FormatID8000(SR.ID2002),
+                            TokenTypeIdentifiers.RefreshToken              => SR.FormatID8000(SR.ID2003),
 
                             _ => SR.FormatID8000(SR.ID2004)
                         });
@@ -840,33 +840,33 @@ public static partial class OpenIddictServerHandlers
                     context.Reject(
                         error: context.ValidTokenTypes.Count switch
                         {
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.ClientAssertion)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion)
                                 => Errors.InvalidClient,
 
                             _ => Errors.InvalidToken
                         },
                         description: context.ValidTokenTypes.Count switch
                         {
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.AuthorizationCode)
                                 => SR.GetResourceString(SR.ID2001),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.DeviceCode)
                                 => SR.GetResourceString(SR.ID2002),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.RefreshToken)
                                 => SR.GetResourceString(SR.ID2003),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.IdToken)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.IdentityToken)
                                 => SR.GetResourceString(SR.ID2009),
 
                             _ => SR.GetResourceString(SR.ID2004)
                         },
                         uri: context.ValidTokenTypes.Count switch
                         {
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.AuthorizationCode)
                                 => SR.FormatID8000(SR.ID2001),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.DeviceCode)
                                 => SR.FormatID8000(SR.ID2002),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.RefreshToken)
                                 => SR.FormatID8000(SR.ID2003),
-                            1 when context.ValidTokenTypes.Contains(TokenTypeHints.IdToken)
+                            1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.IdentityToken)
                                 => SR.FormatID8000(SR.ID2009),
 
                             _ => SR.FormatID8000(SR.ID2004)
@@ -927,23 +927,23 @@ public static partial class OpenIddictServerHandlers
                     context.Reject(
                         error: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.ClientAssertion => Errors.InvalidClient,
-                            TokenTypeHints.DeviceCode      => Errors.ExpiredToken,
-                            _                              => Errors.InvalidToken
+                            TokenTypeIdentifiers.Private.ClientAssertion => Errors.InvalidClient,
+                            TokenTypeIdentifiers.Private.DeviceCode      => Errors.ExpiredToken,
+                            _                                            => Errors.InvalidToken
                         },
                         description: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2016),
-                            TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2017),
-                            TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2018),
+                            TokenTypeIdentifiers.Private.AuthorizationCode => SR.GetResourceString(SR.ID2016),
+                            TokenTypeIdentifiers.Private.DeviceCode        => SR.GetResourceString(SR.ID2017),
+                            TokenTypeIdentifiers.RefreshToken              => SR.GetResourceString(SR.ID2018),
 
                             _ => SR.GetResourceString(SR.ID2019)
                         },
                         uri: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2016),
-                            TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2017),
-                            TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2018),
+                            TokenTypeIdentifiers.Private.AuthorizationCode => SR.FormatID8000(SR.ID2016),
+                            TokenTypeIdentifiers.Private.DeviceCode        => SR.FormatID8000(SR.ID2017),
+                            TokenTypeIdentifiers.RefreshToken              => SR.FormatID8000(SR.ID2018),
 
                             _ => SR.FormatID8000(SR.ID2019)
                         });
@@ -1003,7 +1003,7 @@ public static partial class OpenIddictServerHandlers
                 // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
                 if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
                 {
-                    if (!context.Principal.HasTokenType(TokenTypeHints.RefreshToken) || !await IsReusableAsync(token))
+                    if (!context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken) || !await IsReusableAsync(token))
                     {
                         if (!string.IsNullOrEmpty(context.AuthorizationId))
                         {
@@ -1030,23 +1030,23 @@ public static partial class OpenIddictServerHandlers
                         context.Reject(
                             error: context.Principal.GetTokenType() switch
                             {
-                                TokenTypeHints.ClientAssertion => Errors.InvalidClient,
+                                TokenTypeIdentifiers.Private.ClientAssertion => Errors.InvalidClient,
 
                                 _ => Errors.InvalidToken
                             },
                             description: context.Principal.GetTokenType() switch
                             {
-                                TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2010),
-                                TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2011),
-                                TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2012),
+                                TokenTypeIdentifiers.Private.AuthorizationCode => SR.GetResourceString(SR.ID2010),
+                                TokenTypeIdentifiers.Private.DeviceCode        => SR.GetResourceString(SR.ID2011),
+                                TokenTypeIdentifiers.RefreshToken              => SR.GetResourceString(SR.ID2012),
 
                                 _ => SR.GetResourceString(SR.ID2013)
                             },
                             uri: context.Principal.GetTokenType() switch
                             {
-                                TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2010),
-                                TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2011),
-                                TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2012),
+                                TokenTypeIdentifiers.Private.AuthorizationCode => SR.FormatID8000(SR.ID2010),
+                                TokenTypeIdentifiers.Private.DeviceCode        => SR.FormatID8000(SR.ID2011),
+                                TokenTypeIdentifiers.RefreshToken              => SR.FormatID8000(SR.ID2012),
 
                                 _ => SR.FormatID8000(SR.ID2013)
                             });
@@ -1090,23 +1090,23 @@ public static partial class OpenIddictServerHandlers
                     context.Reject(
                         error: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.ClientAssertion => Errors.InvalidClient,
+                            TokenTypeIdentifiers.Private.ClientAssertion => Errors.InvalidClient,
 
                             _ => Errors.InvalidToken
                         },
                         description: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2016),
-                            TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2017),
-                            TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2018),
+                            TokenTypeIdentifiers.Private.AuthorizationCode => SR.GetResourceString(SR.ID2016),
+                            TokenTypeIdentifiers.Private.DeviceCode        => SR.GetResourceString(SR.ID2017),
+                            TokenTypeIdentifiers.RefreshToken              => SR.GetResourceString(SR.ID2018),
 
                             _ => SR.GetResourceString(SR.ID2019)
                         },
                         uri: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2016),
-                            TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2017),
-                            TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2018),
+                            TokenTypeIdentifiers.Private.AuthorizationCode => SR.FormatID8000(SR.ID2016),
+                            TokenTypeIdentifiers.Private.DeviceCode        => SR.FormatID8000(SR.ID2017),
+                            TokenTypeIdentifiers.RefreshToken              => SR.FormatID8000(SR.ID2018),
 
                             _ => SR.FormatID8000(SR.ID2019)
                         });
@@ -1180,23 +1180,23 @@ public static partial class OpenIddictServerHandlers
                     context.Reject(
                         error: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.ClientAssertion => Errors.InvalidClient,
+                            TokenTypeIdentifiers.Private.ClientAssertion => Errors.InvalidClient,
 
                             _ => Errors.InvalidToken
                         },
                         description: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2020),
-                            TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2021),
-                            TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2022),
+                            TokenTypeIdentifiers.Private.AuthorizationCode => SR.GetResourceString(SR.ID2020),
+                            TokenTypeIdentifiers.Private.DeviceCode        => SR.GetResourceString(SR.ID2021),
+                            TokenTypeIdentifiers.RefreshToken              => SR.GetResourceString(SR.ID2022),
 
                             _ => SR.GetResourceString(SR.ID2023)
                         },
                         uri: context.Principal.GetTokenType() switch
                         {
-                            TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2020),
-                            TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2021),
-                            TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2022),
+                            TokenTypeIdentifiers.Private.AuthorizationCode => SR.FormatID8000(SR.ID2020),
+                            TokenTypeIdentifiers.Private.DeviceCode        => SR.FormatID8000(SR.ID2021),
+                            TokenTypeIdentifiers.RefreshToken              => SR.FormatID8000(SR.ID2022),
 
                             _ => SR.FormatID8000(SR.ID2023)
                         });
@@ -1234,8 +1234,8 @@ public static partial class OpenIddictServerHandlers
                 context.EncryptionCredentials = context.TokenType switch
                 {
                     // Note: unlike other tokens, encryption can be disabled for access tokens.
-                    TokenTypeHints.AccessToken when context.Options.DisableAccessTokenEncryption => null,
-                    TokenTypeHints.IdToken => null,
+                    TokenTypeIdentifiers.AccessToken when context.Options.DisableAccessTokenEncryption => null,
+                    TokenTypeIdentifiers.IdentityToken                                                 => null,
 
                     _ => context.Options.EncryptionCredentials.First()
                 };
@@ -1244,7 +1244,7 @@ public static partial class OpenIddictServerHandlers
                 {
                     // Note: unlike other tokens, identity tokens can only be signed using an asymmetric key
                     // as they are meant to be validated by clients using the public keys exposed by the server.
-                    TokenTypeHints.IdToken => context.Options.SigningCredentials.First(credentials =>
+                    TokenTypeIdentifiers.IdentityToken => context.Options.SigningCredentials.First(static credentials =>
                         credentials.Key is AsymmetricSecurityKey),
 
                     _ => context.Options.SigningCredentials.First()
@@ -1309,7 +1309,7 @@ public static partial class OpenIddictServerHandlers
                     // approves the authorization demand, the UpdateReferenceDeviceCodeEntry handler
                     // changes the status to "active" and attaches a new payload with the claims
                     // corresponding the user, which allows the client to redeem the device code.
-                    TokenTypeHints.DeviceCode => Statuses.Inactive,
+                    TokenTypeIdentifiers.Private.DeviceCode => Statuses.Inactive,
 
                     // For all other tokens, "valid" is the default status.
                     _ => Statuses.Valid
@@ -1318,7 +1318,7 @@ public static partial class OpenIddictServerHandlers
                 descriptor.Subject = context.TokenType switch
                 {
                     // Device and user codes are not bound to a user, until authorization is granted.
-                    TokenTypeHints.DeviceCode or TokenTypeHints.UserCode => null,
+                    TokenTypeIdentifiers.Private.DeviceCode or TokenTypeIdentifiers.Private.UserCode => null,
 
                     // For all other tokens, the subject is resolved from the principal.
                     _ => context.Principal.GetClaim(Claims.Subject)
@@ -1346,17 +1346,16 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for generating a token using IdentityModel.
+        /// Contains the logic responsible for attaching the subject to the security token descriptor.
         /// </summary>
-        public sealed class GenerateIdentityModelToken : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class AttachTokenSubject : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
-                    .AddFilter<RequireJsonWebTokenFormat>()
-                    .UseSingletonHandler<GenerateIdentityModelToken>()
+                    .UseSingletonHandler<AttachTokenSubject>()
                     .SetOrder(CreateTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -1369,40 +1368,65 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // If a token was already attached by another handler, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Token))
-                {
-                    return default;
-                }
-
-                if (context.Principal is not { Identity: ClaimsIdentity })
+                if (context.Principal is not { Identity: ClaimsIdentity } principal)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Clone the principal and exclude the private claims mapped to standard JWT claims.
-                var principal = context.Principal.Clone(claim => claim.Type switch
+                principal = context.Principal.Clone(claim => claim.Type switch
                 {
                     Claims.Private.CreationDate or Claims.Private.ExpirationDate or
                     Claims.Private.Issuer       or Claims.Private.TokenType => false,
 
                     Claims.Private.Audience
-                        when context.TokenType is TokenTypeHints.AccessToken or TokenTypeHints.IdToken => false,
+                        when context.TokenType is TokenTypeIdentifiers.AccessToken or TokenTypeIdentifiers.IdentityToken => false,
 
-                    Claims.Private.Scope when context.TokenType is TokenTypeHints.AccessToken => false,
+                    Claims.Private.Scope when context.TokenType is TokenTypeIdentifiers.AccessToken => false,
 
-                    Claims.AuthenticationMethodReference when context.TokenType is TokenTypeHints.IdToken => false,
+                    Claims.AuthenticationMethodReference when context.TokenType is TokenTypeIdentifiers.IdentityToken => false,
 
                     _ => true
                 });
 
                 Debug.Assert(principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                var claims = new Dictionary<string, object>(StringComparer.Ordinal);
+                context.SecurityTokenDescriptor.Subject = (ClaimsIdentity) principal.Identity;
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching metadata claims to the security token descriptor, if necessary.
+        /// </summary>
+        public sealed class AttachTokenMetadata : IOpenIddictServerHandler<GenerateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .UseSingletonHandler<AttachTokenMetadata>()
+                    .SetOrder(AttachTokenSubject.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var claims = context.SecurityTokenDescriptor.Claims is not null ?
+                    new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal) :
+                    new Dictionary<string, object>(StringComparer.Ordinal);
 
                 // For access and identity tokens, set the public audience claims
                 // using the private audience claims from the security principal.
-                if (context.TokenType is TokenTypeHints.AccessToken or TokenTypeHints.IdToken)
+                if (context.TokenType is TokenTypeIdentifiers.AccessToken or TokenTypeIdentifiers.IdentityToken)
                 {
                     var audiences = context.Principal.GetAudiences();
                     if (audiences.Any())
@@ -1419,7 +1443,7 @@ public static partial class OpenIddictServerHandlers
                 // claim representing a JSON array, even if a single authentication method reference is
                 // present in the collection. To ensure an array is always returned, the "amr" claim is
                 // filtered out from the clone principal and manually added as a "string[]" claim value.
-                if (context.TokenType is TokenTypeHints.IdToken)
+                if (context.TokenType is TokenTypeIdentifiers.IdentityToken)
                 {
                     var methods = context.Principal.GetClaims(Claims.AuthenticationMethodReference);
                     if (methods.Any())
@@ -1442,7 +1466,7 @@ public static partial class OpenIddictServerHandlers
                 // string to respect the usual representation of the standard scope claim.
                 //
                 // See https://datatracker.ietf.org/doc/html/rfc9068 for more information.
-                if (context.TokenType is TokenTypeHints.AccessToken)
+                if (context.TokenType is TokenTypeIdentifiers.AccessToken)
                 {
                     var scopes = context.Principal.GetScopes();
                     if (scopes.Any())
@@ -1455,46 +1479,74 @@ public static partial class OpenIddictServerHandlers
 
                 // For authorization/device/user codes and refresh tokens,
                 // attach claims destinations to the JWT claims collection.
-                if (context.TokenType is TokenTypeHints.AuthorizationCode or TokenTypeHints.DeviceCode or
-                                         TokenTypeHints.RefreshToken      or TokenTypeHints.UserCode   or
-                                         TokenTypeHints.Private.RequestToken)
+                if (context.TokenType is TokenTypeIdentifiers.Private.AuthorizationCode or TokenTypeIdentifiers.Private.DeviceCode or
+                                         TokenTypeIdentifiers.RefreshToken              or TokenTypeIdentifiers.Private.UserCode   or
+                                         TokenTypeIdentifiers.Private.RequestToken)
                 {
-                    var destinations = principal.GetDestinations();
+                    var destinations = context.Principal.GetDestinations();
                     if (destinations.Count is not 0)
                     {
                         claims.Add(Claims.Private.ClaimDestinationsMap, destinations);
                     }
                 }
 
-                var descriptor = new SecurityTokenDescriptor
+                context.SecurityTokenDescriptor.Claims = claims;
+                context.SecurityTokenDescriptor.Expires = context.Principal.GetExpirationDate()?.UtcDateTime;
+                context.SecurityTokenDescriptor.IssuedAt = context.Principal.GetCreationDate()?.UtcDateTime;
+                context.SecurityTokenDescriptor.Issuer = context.Principal.GetClaim(Claims.Private.Issuer);
+                context.SecurityTokenDescriptor.TokenType = context.TokenType switch
                 {
-                    Claims = claims,
-                    EncryptingCredentials = context.EncryptionCredentials,
-                    Expires = context.Principal.GetExpirationDate()?.UtcDateTime,
-                    IssuedAt = context.Principal.GetCreationDate()?.UtcDateTime,
-                    Issuer = context.Principal.GetClaim(Claims.Private.Issuer),
-                    SigningCredentials = context.SigningCredentials,
-                    Subject = (ClaimsIdentity) principal.Identity,
-                    TokenType = context.TokenType switch
-                    {
-                        null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
+                    null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
-                        TokenTypeHints.AccessToken       => JsonWebTokenTypes.AccessToken,
-                        TokenTypeHints.IdToken           => JsonWebTokenTypes.Jwt,
-                        TokenTypeHints.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
-                        TokenTypeHints.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
-                        TokenTypeHints.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,
-                        TokenTypeHints.UserCode          => JsonWebTokenTypes.Private.UserCode,
+                    TokenTypeIdentifiers.AccessToken               => JsonWebTokenTypes.AccessToken,
+                    TokenTypeIdentifiers.Private.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
+                    TokenTypeIdentifiers.Private.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
+                    TokenTypeIdentifiers.IdentityToken             => JsonWebTokenTypes.Jwt,
+                    TokenTypeIdentifiers.RefreshToken              => JsonWebTokenTypes.Private.RefreshToken,
+                    TokenTypeIdentifiers.Private.RequestToken      => JsonWebTokenTypes.Private.RequestToken,
+                    TokenTypeIdentifiers.Private.UserCode          => JsonWebTokenTypes.Private.UserCode,
 
-                        TokenTypeHints.Private.RequestToken => JsonWebTokenTypes.Private.RequestToken,
-
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                    }
+                    string value => value
                 };
 
-                context.Token = context.SecurityTokenHandler.CreateToken(descriptor);
+                return default;
+            }
+        }
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType, context.Token, principal.Claims);
+        /// <summary>
+        /// Contains the logic responsible for generating a token using IdentityModel.
+        /// </summary>
+        public sealed class GenerateIdentityModelToken : IOpenIddictServerHandler<GenerateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .AddFilter<RequireJsonWebTokenFormat>()
+                    .UseSingletonHandler<GenerateIdentityModelToken>()
+                    .SetOrder(AttachTokenMetadata.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // If a token was already attached by another handler, don't overwrite it.
+                if (!string.IsNullOrEmpty(context.Token))
+                {
+                    return default;
+                }
+
+                context.Token = context.SecurityTokenHandler.CreateToken(context.SecurityTokenDescriptor);
+
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType,
+                    context.Token, context.SecurityTokenDescriptor.Subject?.Claims ?? []);
 
                 return default;
             }
@@ -1552,7 +1604,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (context.IsReferenceToken)
                 {
-                    if (context.TokenType is TokenTypeHints.UserCode &&
+                    if (context.TokenType is TokenTypeIdentifiers.Private.UserCode &&
                         context.Options is { UserCodeCharset.Count: > 0, UserCodeLength: > 0 })
                     {
                         do

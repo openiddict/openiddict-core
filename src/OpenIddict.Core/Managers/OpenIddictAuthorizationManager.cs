@@ -661,7 +661,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        return (await Store.GetScopesAsync(authorization, cancellationToken))
+        return (await GetScopesAsync(authorization, cancellationToken))
             .ToHashSet(StringComparer.Ordinal)
             .IsSupersetOf(scopes);
     }
@@ -686,7 +686,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
             throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
         }
 
-        return string.Equals(await Store.GetStatusAsync(authorization, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetStatusAsync(authorization, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -709,7 +709,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
             throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
         }
 
-        return string.Equals(await Store.GetTypeAsync(authorization, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetTypeAsync(authorization, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

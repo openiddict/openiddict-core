@@ -589,8 +589,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
-                    !context.Principal.HasTokenType(TokenTypeHints.RefreshToken))
+                if (!context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
+                    !context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6104));
 
@@ -641,8 +641,8 @@ public static partial class OpenIddictServerHandlers
                 // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
                 // If the access token doesn't contain any explicit presenter/audience, the token is assumed
                 // to be not specific to any resource server/client application and the check is bypassed.
-                if (context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
-                    context.Principal.HasClaim(Claims.Private.Audience) && !context.Principal.HasAudience(context.ClientId) &&
+                if (context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
+                    context.Principal.HasClaim(Claims.Private.Audience)  && !context.Principal.HasAudience(context.ClientId) &&
                     context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                 {
                     context.Logger.LogWarning(SR.GetResourceString(SR.ID6106));
@@ -659,7 +659,7 @@ public static partial class OpenIddictServerHandlers
                 // listed as a presenter (i.e the party the token was issued to).
                 // If the refresh token doesn't contain any explicit presenter, the token is
                 // assumed to be not specific to any client application and the check is bypassed.
-                if (context.Principal.HasTokenType(TokenTypeHints.RefreshToken) &&
+                if (context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken) &&
                     context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                 {
                     context.Logger.LogWarning(SR.GetResourceString(SR.ID6108));
@@ -740,8 +740,19 @@ public static partial class OpenIddictServerHandlers
                 context.Issuer = context.Options.Issuer ?? context.BaseUri;
 
                 context.TokenId = context.Principal.GetClaim(Claims.JwtId);
-                context.TokenUsage = context.Principal.GetTokenType();
                 context.Subject = context.Principal.GetClaim(Claims.Subject);
+
+                context.TokenUsage = context.Principal.GetTokenType() switch
+                {
+                    TokenTypeIdentifiers.AccessToken               => "access_token",
+                    TokenTypeIdentifiers.Private.AuthorizationCode => "authorization_code",
+                    TokenTypeIdentifiers.Private.DeviceCode        => "device_code",
+                    TokenTypeIdentifiers.IdentityToken             => "id_token",
+                    TokenTypeIdentifiers.RefreshToken              => "refresh_token",
+                    TokenTypeIdentifiers.Private.UserCode          => "user_code",
+
+                    _ => null
+                };
 
                 context.IssuedAt = context.NotBefore = context.Principal.GetCreationDate();
                 context.ExpiresAt = context.Principal.GetExpirationDate();
@@ -754,7 +765,7 @@ public static partial class OpenIddictServerHandlers
                 // Note: only set "token_type" when the received token is an access token.
                 // See https://tools.ietf.org/html/rfc7662#section-2.2
                 // and https://tools.ietf.org/html/rfc6749#section-5.1 for more information.
-                if (context.Principal.HasTokenType(TokenTypeHints.AccessToken))
+                if (context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken))
                 {
                     context.TokenType = TokenTypes.Bearer;
                 }
@@ -800,7 +811,7 @@ public static partial class OpenIddictServerHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Don't return application-specific claims if the token is not an access token.
-                if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken))
+                if (!context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken))
                 {
                     return;
                 }

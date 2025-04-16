@@ -152,10 +152,10 @@ public abstract partial class OpenIddictValidationIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     Assert.Equal("access_token", context.Token);
-                    Assert.Equal([TokenTypeHints.AccessToken], context.ValidTokenTypes);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AccessToken)
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
                     return default;
