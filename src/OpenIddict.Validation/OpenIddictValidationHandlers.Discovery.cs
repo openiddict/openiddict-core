@@ -374,17 +374,11 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 // Resolve the client authentication methods supported by the introspection endpoint, if available.
-                var methods = context.Response[Metadata.IntrospectionEndpointAuthMethodsSupported]?.GetUnnamedParameters();
-                if (methods is { Count: > 0 })
+                foreach (var method in (ImmutableArray<string?>?) context.Response[Metadata.IntrospectionEndpointAuthMethodsSupported] ?? [])
                 {
-                    for (var index = 0; index < methods.Count; index++)
+                    if (!string.IsNullOrEmpty(method))
                     {
-                        // Note: custom values are allowed in this case.
-                        var method = (string?) methods[index];
-                        if (!string.IsNullOrEmpty(method))
-                        {
-                            context.Configuration.IntrospectionEndpointAuthMethodsSupported.Add(method);
-                        }
+                        context.Configuration.IntrospectionEndpointAuthMethodsSupported.Add(method);
                     }
                 }
 
