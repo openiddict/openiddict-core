@@ -169,12 +169,12 @@ public static class OpenIddictClientModels
         /// Gets or sets the optional identity token hint that will
         /// be sent to the authorization server, if applicable.
         /// </summary>
-        public string? IdentityTokenHint { get; set; }
+        public string? IdentityTokenHint { get; init; }
 
         /// <summary>
         /// Gets or sets the optional login hint that will be sent to the authorization server, if applicable.
         /// </summary>
-        public string? LoginHint { get; set; }
+        public string? LoginHint { get; init; }
 
         /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
@@ -268,12 +268,12 @@ public static class OpenIddictClientModels
         /// Gets or sets the optional identity token hint that will
         /// be sent to the authorization server, if applicable.
         /// </summary>
-        public string? IdentityTokenHint { get; set; }
+        public string? IdentityTokenHint { get; init; }
 
         /// <summary>
         /// Gets or sets the optional login hint that will be sent to the authorization server, if applicable.
         /// </summary>
-        public string? LoginHint { get; set; }
+        public string? LoginHint { get; init; }
 
         /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
@@ -471,7 +471,7 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets a boolean indicating whether userinfo should be disabled.
         /// </summary>
-        public bool DisableUserInfo { get; set; }
+        public bool DisableUserInfo { get; init; }
 
         /// <summary>
         /// Gets or sets the custom grant type that will be used for the authentication request.
@@ -595,7 +595,7 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets a boolean indicating whether userinfo should be disabled.
         /// </summary>
-        public bool DisableUserInfo { get; set; }
+        public bool DisableUserInfo { get; init; }
 
         /// <summary>
         /// Gets or sets the maximum duration during which token requests will be sent
@@ -900,7 +900,7 @@ public static class OpenIddictClientModels
         /// <summary>
         /// Gets or sets a boolean indicating whether userinfo should be disabled.
         /// </summary>
-        public bool DisableUserInfo { get; set; }
+        public bool DisableUserInfo { get; init; }
 
         /// <summary>
         /// Gets or sets the password that will be sent to the authorization server.
@@ -1025,7 +1025,7 @@ public static class OpenIddictClientModels
         /// Gets or sets a boolean indicating whether userinfo should be disabled, which may be required
         /// when sending a refresh token that was acquired using a user-less flow (e.g client credentials).
         /// </summary>
-        public bool DisableUserInfo { get; set; }
+        public bool DisableUserInfo { get; init; }
 
         /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
