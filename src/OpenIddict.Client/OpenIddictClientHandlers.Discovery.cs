@@ -521,10 +521,13 @@ public static partial class OpenIddictClientHandlers
 
                 // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
                 // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
-                var endpoint = (string?) aliases[Metadata.DeviceAuthorizationEndpoint];
-                if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
+                if (aliases.ContainsKey(Metadata.DeviceAuthorizationEndpoint))
                 {
-                    context.Configuration.MtlsDeviceAuthorizationEndpoint = uri;
+                    var endpoint = (string?) aliases[Metadata.DeviceAuthorizationEndpoint];
+                    if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
+                    {
+                        context.Configuration.MtlsDeviceAuthorizationEndpoint = uri;
+                    }
                 }
 
                 return default;
