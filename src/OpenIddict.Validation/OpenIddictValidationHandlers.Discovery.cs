@@ -99,6 +99,12 @@ public static partial class OpenIddictValidationHandlers
                             element.ValueKind is JsonValueKind.Array &&
                             OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String),
 
+                    // The following parameters MUST be formatted as JSON objects and only contain string values:
+                    Metadata.MtlsEndpointAliases
+                        => ((JsonElement) value) is JsonElement element &&
+                            element.ValueKind is JsonValueKind.Object &&
+                            OpenIddictHelpers.ValidateObjectElements(element, JsonValueKind.String),
+
                     // Parameters that are not in the well-known list can be of any type.
                     _ => true
                 };
@@ -331,15 +337,9 @@ public static partial class OpenIddictValidationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var aliases = context.Response[Metadata.MtlsEndpointAliases]?.GetNamedParameters();
-                if (aliases is not { Count: > 0 })
-                {
-                    return default;
-                }
-
                 // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
                 // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
-                var endpoint = (string?) aliases[Metadata.IntrospectionEndpoint];
+                var endpoint = (string?) context.Response[Metadata.MtlsEndpointAliases]?[Metadata.IntrospectionEndpoint];
                 if (Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
                     context.Configuration.MtlsIntrospectionEndpoint = uri;

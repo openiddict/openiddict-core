@@ -1095,6 +1095,34 @@ internal static class OpenIddictHelpers
     }
 
     /// <summary>
+    /// Determines whether the items contained in <paramref name="element"/>
+    /// are of the specified <paramref name="kind"/>.
+    /// </summary>
+    /// <param name="element">The <see cref="JsonElement"/>.</param>
+    /// <param name="kind">The expected <see cref="JsonValueKind"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the object doesn't contain any value or if all the items
+    /// are of the specified <paramref name="kind"/>, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool ValidateObjectElements(JsonElement element, JsonValueKind kind)
+    {
+        if (element.ValueKind is not JsonValueKind.Object)
+        {
+            throw new ArgumentOutOfRangeException(nameof(element));
+        }
+
+        foreach (var property in element.EnumerateObject())
+        {
+            if (property.Value.ValueKind != kind)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Note: this implementation was taken from ASP.NET Core.
     /// </summary>
     private class FormReader
