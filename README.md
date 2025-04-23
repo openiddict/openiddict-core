@@ -136,7 +136,6 @@ Alternatively, you can also post your question on [Gitter](https://app.gitter.im
   | 6.x (current)     | Any                    | Currently supported |
 
 --------------
-Sure! Here's a cleaned-up and more polished version of that section for your README:
 
 ## Running locally
 
