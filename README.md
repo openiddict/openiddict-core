@@ -136,6 +136,25 @@ Alternatively, you can also post your question on [Gitter](https://app.gitter.im
   | 6.x (current)     | Any                    | Currently supported |
 
 --------------
+Sure! Here's a cleaned-up and more polished version of that section for your README:
+
+## Running locally
+
+This project uses the newer `.slnx` (Solution Filter) format instead of the traditional `.sln` file. You can open it using **Visual Studio 2019 (v16.5 or newer)** or **Visual Studio 2022**.
+
+If you encounter the following error when trying to open the `.slnx` file:
+
+> The selected file is not a valid solution file.
+
+It's likely that the **Solution File Persistence Model** feature needs to be enabled. To do this:
+
+1. Open **Visual Studio**.
+2. Go to **Tools > Options**.
+3. In the left-hand menu, select **Environment > Preview Features**.
+4. Enable the checkbox for **Use Solution File Persistence Model**.
+5. Click **OK** and restart Visual Studio.
+
+Once the solution filter opens, you can set the desired project as the **Startup Project** (right-click on the project > *Set as Startup Project*) and start debugging or running as usual.
 
 ## Nightly builds
 
