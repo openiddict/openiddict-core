@@ -139,7 +139,7 @@ Alternatively, you can also post your question on [Gitter](https://app.gitter.im
 
 ## Running locally
 
-This project uses the newer `.slnx` (Solution Filter) format instead of the traditional `.sln` file. You can open it using **Visual Studio 2019 (v16.5 or newer)** or **Visual Studio 2022**.
+This project uses the newer `.slnx` format instead of the traditional `.sln` file. You can open it using **Visual Studio 2019 (v16.5 or newer)** or **Visual Studio 2022**.
 
 > [!TIP]
 > If you encounter the following error when trying to open the `.slnx` file:
