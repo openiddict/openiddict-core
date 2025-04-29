@@ -178,7 +178,7 @@ public static partial class OpenIddictValidationHandlers
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
                 exception is not OperationCanceledException)
             {
-                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+                context.Logger.LogError(6219, exception, SR.GetResourceString(SR.ID6219));
 
                 context.Reject(
                     error: Errors.ServerError,
@@ -625,7 +625,7 @@ public static partial class OpenIddictValidationHandlers
 
             catch (ProtocolException exception)
             {
-                context.Logger.LogDebug(exception, SR.GetResourceString(SR.ID6155));
+                context.Logger.LogDebug(6155, exception, SR.GetResourceString(SR.ID6155));
 
                 context.Reject(
                     error: exception.Error,
@@ -635,7 +635,7 @@ public static partial class OpenIddictValidationHandlers
                 return;
             }
 
-            context.Logger.LogTrace(SR.GetResourceString(SR.ID6154), context.AccessToken, context.AccessTokenPrincipal.Claims);
+            context.Logger.LogTrace(6154, SR.GetResourceString(SR.ID6154), context.AccessToken, context.AccessTokenPrincipal.Claims);
         }
     }
 
@@ -731,7 +731,7 @@ public static partial class OpenIddictValidationHandlers
             var audiences = context.AccessTokenPrincipal.GetAudiences();
             if (audiences.IsDefaultOrEmpty)
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6157));
+                context.Logger.LogInformation(6157, SR.GetResourceString(SR.ID6157));
 
                 context.Reject(
                     error: Errors.InvalidToken,
@@ -744,7 +744,7 @@ public static partial class OpenIddictValidationHandlers
             // If the access token doesn't include any registered audience, return an error.
             if (!audiences.Intersect(context.Options.Audiences, StringComparer.Ordinal).Any())
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6158));
+                context.Logger.LogInformation(6158, SR.GetResourceString(SR.ID6158));
 
                 context.Reject(
                     error: Errors.InvalidToken,

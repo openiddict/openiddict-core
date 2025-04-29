@@ -249,7 +249,7 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                 // Swallow other exceptions to ensure the worker doesn't exit when encountering an exception.
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
-                    logger.LogWarning(exception, SR.GetResourceString(SR.ID6214));
+                    logger.LogWarning(6214, exception, SR.GetResourceString(SR.ID6214));
 
                     continue;
                 }

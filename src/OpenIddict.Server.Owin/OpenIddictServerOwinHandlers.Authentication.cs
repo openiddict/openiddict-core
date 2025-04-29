@@ -161,7 +161,7 @@ public static partial class OpenIddictServerOwinHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6147), context.RedirectUri, context.Response);
+                context.Logger.LogInformation(6147, SR.GetResourceString(SR.ID6147), context.RedirectUri, context.Response);
 
                 using var buffer = new MemoryStream();
                 using var writer = new StreamWriter(buffer);
@@ -247,7 +247,7 @@ public static partial class OpenIddictServerOwinHandlers
                     return default;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6148), context.RedirectUri, context.Response);
+                context.Logger.LogInformation(6148, SR.GetResourceString(SR.ID6148), context.RedirectUri, context.Response);
 
                 var location = context.RedirectUri;
 
@@ -308,7 +308,7 @@ public static partial class OpenIddictServerOwinHandlers
                     return default;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6149), context.RedirectUri, context.Response);
+                context.Logger.LogInformation(6149, SR.GetResourceString(SR.ID6149), context.RedirectUri, context.Response);
 
                 var builder = new StringBuilder(context.RedirectUri);
 

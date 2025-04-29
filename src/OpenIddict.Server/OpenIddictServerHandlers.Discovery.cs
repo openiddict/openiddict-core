@@ -120,7 +120,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0037));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6066), notification.Request);
+                context.Logger.LogInformation(6066, SR.GetResourceString(SR.ID6066), notification.Request);
             }
         }
 
@@ -177,7 +177,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6067));
+                context.Logger.LogInformation(6067, SR.GetResourceString(SR.ID6067));
             }
         }
 
@@ -911,7 +911,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0038));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6068), notification.Request);
+                context.Logger.LogInformation(6068, SR.GetResourceString(SR.ID6068), notification.Request);
             }
         }
 
@@ -968,7 +968,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6069));
+                context.Logger.LogInformation(6069, SR.GetResourceString(SR.ID6069));
             }
         }
 
@@ -1036,7 +1036,7 @@ public static partial class OpenIddictServerHandlers
                     // See https://tools.ietf.org/html/rfc7517#section-4.1
                     if (string.IsNullOrEmpty(key.Kty))
                     {
-                        context.Logger.LogWarning(SR.GetResourceString(SR.ID6070), JsonWebKeyParameterNames.Kty);
+                        context.Logger.LogWarning(6070, SR.GetResourceString(SR.ID6070), JsonWebKeyParameterNames.Kty);
 
                         continue;
                     }
@@ -1180,7 +1180,7 @@ public static partial class OpenIddictServerHandlers
                         !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
                         !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6071), credentials.Key.GetType().Name);
+                        context.Logger.LogInformation(6071, SR.GetResourceString(SR.ID6071), credentials.Key.GetType().Name);
 
                         continue;
                     }
@@ -1188,7 +1188,7 @@ public static partial class OpenIddictServerHandlers
                     if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
                         !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6072), credentials.Key.GetType().Name);
+                        context.Logger.LogInformation(6072, SR.GetResourceString(SR.ID6072), credentials.Key.GetType().Name);
 
                         continue;
                     }
@@ -1250,7 +1250,7 @@ public static partial class OpenIddictServerHandlers
 
                         if (parameters is null)
                         {
-                            context.Logger.LogWarning(SR.GetResourceString(SR.ID6073), credentials.Key.GetType().Name);
+                            context.Logger.LogWarning(6073, SR.GetResourceString(SR.ID6073), credentials.Key.GetType().Name);
 
                             continue;
                         }
@@ -1282,7 +1282,7 @@ public static partial class OpenIddictServerHandlers
 
                         if (parameters is null)
                         {
-                            context.Logger.LogWarning(SR.GetResourceString(SR.ID6074), credentials.Key.GetType().Name);
+                            context.Logger.LogWarning(6074, SR.GetResourceString(SR.ID6074), credentials.Key.GetType().Name);
 
                             continue;
                         }
@@ -1294,7 +1294,7 @@ public static partial class OpenIddictServerHandlers
 
                         if (string.IsNullOrEmpty(curve))
                         {
-                            context.Logger.LogWarning(SR.GetResourceString(SR.ID6167), credentials.Key.GetType().Name);
+                            context.Logger.LogWarning(6167, SR.GetResourceString(SR.ID6167), credentials.Key.GetType().Name);
 
                             continue;
                         }

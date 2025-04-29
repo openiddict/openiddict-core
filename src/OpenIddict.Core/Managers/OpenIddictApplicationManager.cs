@@ -1397,7 +1397,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
         if (await HasClientTypeAsync(application, ClientTypes.Public, cancellationToken))
         {
-            Logger.LogWarning(SR.GetResourceString(SR.ID6159));
+            Logger.LogWarning(6159, SR.GetResourceString(SR.ID6159));
 
             return false;
         }
@@ -1405,14 +1405,14 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         var value = await Store.GetClientSecretAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(value))
         {
-            Logger.LogInformation(SR.GetResourceString(SR.ID6160), await GetClientIdAsync(application, cancellationToken));
+            Logger.LogInformation(6160, SR.GetResourceString(SR.ID6160), await GetClientIdAsync(application, cancellationToken));
 
             return false;
         }
 
         if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
         {
-            Logger.LogInformation(SR.GetResourceString(SR.ID6161), await GetClientIdAsync(application, cancellationToken));
+            Logger.LogInformation(6161, SR.GetResourceString(SR.ID6161), await GetClientIdAsync(application, cancellationToken));
 
             return false;
         }
@@ -1487,7 +1487,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             }
         }
 
-        Logger.LogInformation(SR.GetResourceString(SR.ID6202), uri, await GetClientIdAsync(application, cancellationToken));
+        Logger.LogInformation(6202, SR.GetResourceString(SR.ID6202), uri, await GetClientIdAsync(application, cancellationToken));
 
         return false;
     }
@@ -1560,7 +1560,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             }
         }
 
-        Logger.LogInformation(SR.GetResourceString(SR.ID6162), uri, await GetClientIdAsync(application, cancellationToken));
+        Logger.LogInformation(6162, SR.GetResourceString(SR.ID6162), uri, await GetClientIdAsync(application, cancellationToken));
 
         return false;
     }
@@ -1658,7 +1658,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
         catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
-            Logger.LogWarning(exception, SR.GetResourceString(SR.ID6163));
+            Logger.LogWarning(6163, exception, SR.GetResourceString(SR.ID6163));
 
             return new(false);
         }

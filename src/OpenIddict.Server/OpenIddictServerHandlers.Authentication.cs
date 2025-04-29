@@ -170,7 +170,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0027));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6030), notification.Request);
+                context.Logger.LogInformation(6030, SR.GetResourceString(SR.ID6030), notification.Request);
             }
         }
 
@@ -236,7 +236,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0028));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6031));
+                context.Logger.LogInformation(6031, SR.GetResourceString(SR.ID6031));
             }
         }
 
@@ -452,7 +452,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject requests using the unsupported request parameter.
                 if (!string.IsNullOrEmpty(context.Request.Request))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6032), Parameters.Request);
+                    context.Logger.LogInformation(6032, SR.GetResourceString(SR.ID6032), Parameters.Request);
 
                     context.Reject(
                         error: Errors.RequestNotSupported,
@@ -512,7 +512,7 @@ public static partial class OpenIddictServerHandlers
                 // URN prefix for request tokens it generates, all the other values are automatically rejected.
                 if (!context.Request.RequestUri.StartsWith(RequestUris.Prefixes.Generic, StringComparison.Ordinal))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6032), Parameters.RequestUri);
+                    context.Logger.LogInformation(6032, SR.GetResourceString(SR.ID6032), Parameters.RequestUri);
 
                     context.Reject(
                         error: Errors.RequestUriNotSupported,
@@ -567,7 +567,7 @@ public static partial class OpenIddictServerHandlers
                 // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
                 if (string.IsNullOrEmpty(context.ClientId))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.ClientId);
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.ClientId);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -745,7 +745,7 @@ public static partial class OpenIddictServerHandlers
                 {
                     if (context.Request.HasScope(Scopes.OpenId))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
+                        context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -763,7 +763,7 @@ public static partial class OpenIddictServerHandlers
                 // and http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
                 if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6034), Parameters.RedirectUri, context.RedirectUri);
+                    context.Logger.LogInformation(6034, SR.GetResourceString(SR.ID6034), Parameters.RedirectUri, context.RedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -778,7 +778,7 @@ public static partial class OpenIddictServerHandlers
                 // and http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6035), Parameters.RedirectUri, context.RedirectUri);
+                    context.Logger.LogInformation(6035, SR.GetResourceString(SR.ID6035), Parameters.RedirectUri, context.RedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -798,7 +798,7 @@ public static partial class OpenIddictServerHandlers
                     var parameters = OpenIddictHelpers.ParseQuery(uri.Query);
                     if (parameters.ContainsKey(Parameters.Iss))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6181), Parameters.RedirectUri, Parameters.Iss);
+                        context.Logger.LogInformation(6181, SR.GetResourceString(SR.ID6181), Parameters.RedirectUri, Parameters.Iss);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -839,7 +839,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject requests missing the mandatory response_type parameter.
                 if (string.IsNullOrEmpty(context.Request.ResponseType))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.ResponseType);
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.ResponseType);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -852,7 +852,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject code flow requests if the server is not configured to allow the authorization code grant type.
                 if (context.Request.IsAuthorizationCodeFlow() && !context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+                    context.Logger.LogInformation(6036, SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnsupportedResponseType,
@@ -865,7 +865,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject implicit flow requests if the server is not configured to allow the implicit grant type.
                 if (context.Request.IsImplicitFlow() && !context.Options.GrantTypes.Contains(GrantTypes.Implicit))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+                    context.Logger.LogInformation(6036, SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnsupportedResponseType,
@@ -879,7 +879,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsHybridFlow() && (!context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
                                                        !context.Options.GrantTypes.Contains(GrantTypes.Implicit)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+                    context.Logger.LogInformation(6036, SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnsupportedResponseType,
@@ -894,7 +894,7 @@ public static partial class OpenIddictServerHandlers
                 var types = context.Request.GetResponseTypes().ToHashSet(StringComparer.Ordinal);
                 if (types.Count > 1 && types.Contains(ResponseTypes.None))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6212), context.Request.ResponseType);
+                    context.Logger.LogInformation(6212, SR.GetResourceString(SR.ID6212), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -908,7 +908,7 @@ public static partial class OpenIddictServerHandlers
                 if (!context.Options.ResponseTypes.Any(type => types.SetEquals(
                     type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+                    context.Logger.LogInformation(6036, SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnsupportedResponseType,
@@ -951,7 +951,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsQueryResponseMode() && (context.Request.HasResponseType(ResponseTypes.IdToken) ||
                                                               context.Request.HasResponseType(ResponseTypes.Token)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6037), context.Request.ResponseType, context.Request.ResponseMode);
+                    context.Logger.LogInformation(6037, SR.GetResourceString(SR.ID6037), context.Request.ResponseType, context.Request.ResponseMode);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -965,7 +965,7 @@ public static partial class OpenIddictServerHandlers
                 // if the default response_mode inferred from the response_type was explicitly disabled in the options.
                 if (!ValidateResponseMode(context.Request, context.Options))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6038), context.Request.ResponseMode);
+                    context.Logger.LogInformation(6038, SR.GetResourceString(SR.ID6038), context.Request.ResponseMode);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1030,7 +1030,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject authorization requests containing the id_token response_type if no openid scope has been received.
                 if (context.Request.HasResponseType(ResponseTypes.IdToken) && !context.Request.HasScope(Scopes.OpenId))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6039), Scopes.OpenId);
+                    context.Logger.LogInformation(6039, SR.GetResourceString(SR.ID6039), Scopes.OpenId);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1090,7 +1090,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (context.Request.IsImplicitFlow() || context.Request.IsHybridFlow())
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.Nonce);
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.Nonce);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1138,7 +1138,7 @@ public static partial class OpenIddictServerHandlers
                 {
                     if (!context.Options.PromptValues.Contains(value))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6233));
+                        context.Logger.LogInformation(6233, SR.GetResourceString(SR.ID6233));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1155,7 +1155,7 @@ public static partial class OpenIddictServerHandlers
                                                                           context.Request.HasPromptValue(PromptValues.Login) ||
                                                                           context.Request.HasPromptValue(PromptValues.SelectAccount)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6040));
+                    context.Logger.LogInformation(6040, SR.GetResourceString(SR.ID6040));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1198,7 +1198,7 @@ public static partial class OpenIddictServerHandlers
                     context.Request.HasResponseType(ResponseTypes.Code) &&
                     string.IsNullOrEmpty(context.Request.CodeChallenge))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1219,7 +1219,7 @@ public static partial class OpenIddictServerHandlers
                 // Ensure a code_challenge was specified if a code_challenge_method was used.
                 if (string.IsNullOrEmpty(context.Request.CodeChallenge))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1234,7 +1234,7 @@ public static partial class OpenIddictServerHandlers
                 if (string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
                     !context.Options.CodeChallengeMethods.Contains(CodeChallengeMethods.Plain))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.CodeChallengeMethod);
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.CodeChallengeMethod);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1248,7 +1248,7 @@ public static partial class OpenIddictServerHandlers
                 if (!string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
                     !context.Options.CodeChallengeMethods.Contains(context.Request.CodeChallengeMethod))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6041));
+                    context.Logger.LogInformation(6041, SR.GetResourceString(SR.ID6041));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1261,7 +1261,7 @@ public static partial class OpenIddictServerHandlers
                 // When code_challenge or code_challenge_method is specified, ensure the response_type includes "code".
                 if (!context.Request.HasResponseType(ResponseTypes.Code))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6042));
+                    context.Logger.LogInformation(6042, SR.GetResourceString(SR.ID6042));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1332,7 +1332,7 @@ public static partial class OpenIddictServerHandlers
                 if (!string.IsNullOrEmpty(context.Request.CodeChallenge) &&
                     context.Request.HasResponseType(ResponseTypes.Token))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6043));
+                    context.Logger.LogInformation(6043, SR.GetResourceString(SR.ID6043));
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1358,7 +1358,7 @@ public static partial class OpenIddictServerHandlers
                     if (context.Request.HasResponseType(ResponseTypes.Token) &&
                         await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6045), context.ClientId);
+                        context.Logger.LogInformation(6045, SR.GetResourceString(SR.ID6045), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
@@ -1415,7 +1415,7 @@ public static partial class OpenIddictServerHandlers
                     var uris = await _applicationManager.GetRedirectUrisAsync(application);
                     if (uris.Length is not 1)
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
+                        context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1433,7 +1433,7 @@ public static partial class OpenIddictServerHandlers
                 // Otherwise, ensure that the specified redirect_uri is valid and is associated with the client application.
                 if (!await _applicationManager.ValidateRedirectUriAsync(application, context.RedirectUri))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6046), context.RedirectUri);
+                    context.Logger.LogInformation(6046, SR.GetResourceString(SR.ID6046), context.RedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1512,7 +1512,7 @@ public static partial class OpenIddictServerHandlers
                 // If at least one scope was not recognized, return an error.
                 if (scopes.Count is not 0)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6047), scopes);
+                    context.Logger.LogInformation(6047, SR.GetResourceString(SR.ID6047), scopes);
 
                     context.Reject(
                         error: Errors.InvalidScope,
@@ -1565,7 +1565,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject the request if the application is not allowed to use the authorization endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Authorization))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6048), context.ClientId);
+                    context.Logger.LogInformation(6048, SR.GetResourceString(SR.ID6048), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1619,7 +1619,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsAuthorizationCodeFlow() &&
                     !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6049), context.ClientId);
+                    context.Logger.LogInformation(6049, SR.GetResourceString(SR.ID6049), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1633,7 +1633,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsImplicitFlow() &&
                     !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6050), context.ClientId);
+                    context.Logger.LogInformation(6050, SR.GetResourceString(SR.ID6050), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1648,7 +1648,7 @@ public static partial class OpenIddictServerHandlers
                    (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode) ||
                     !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6051), context.ClientId);
+                    context.Logger.LogInformation(6051, SR.GetResourceString(SR.ID6051), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1663,7 +1663,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.HasScope(Scopes.OfflineAccess) &&
                    !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6052), context.ClientId, Scopes.OfflineAccess);
+                    context.Logger.LogInformation(6052, SR.GetResourceString(SR.ID6052), context.ClientId, Scopes.OfflineAccess);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1716,7 +1716,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject requests that specify a response_type for which no permission was granted.
                 if (!await HasPermissionAsync(context.Request.GetResponseTypes()))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6177), context.ClientId, context.Request.ResponseType);
+                    context.Logger.LogInformation(6177, SR.GetResourceString(SR.ID6177), context.ClientId, context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1803,7 +1803,7 @@ public static partial class OpenIddictServerHandlers
                     // Reject the request if the application is not allowed to use the iterated scope.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6052), context.ClientId, scope);
+                        context.Logger.LogInformation(6052, SR.GetResourceString(SR.ID6052), context.ClientId, scope);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1866,7 +1866,7 @@ public static partial class OpenIddictServerHandlers
                 {
                     if (string.IsNullOrEmpty(context.Request.RequestUri))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.RequestUri);
+                        context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.RequestUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1933,7 +1933,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1981,7 +1981,7 @@ public static partial class OpenIddictServerHandlers
                 if (!context.IdentityTokenHintPrincipal.HasAudience(context.ClientId) &&
                     !context.IdentityTokenHintPrincipal.HasPresenter(context.ClientId))
                 {
-                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6197));
+                    context.Logger.LogWarning(6197, SR.GetResourceString(SR.ID6197));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2258,7 +2258,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0468));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6237), notification.Request);
+                context.Logger.LogInformation(6237, SR.GetResourceString(SR.ID6237), notification.Request);
             }
         }
 
@@ -2325,7 +2325,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0028));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6238));
+                context.Logger.LogInformation(6238, SR.GetResourceString(SR.ID6238));
             }
         }
 
@@ -2507,7 +2507,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject requests using the unsupported request parameter.
                 if (!string.IsNullOrEmpty(context.Request.Request))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6239), Parameters.Request);
+                    context.Logger.LogInformation(6239, SR.GetResourceString(SR.ID6239), Parameters.Request);
 
                     context.Reject(
                         error: Errors.RequestNotSupported,
@@ -2591,7 +2591,7 @@ public static partial class OpenIddictServerHandlers
                 // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
                 if (string.IsNullOrEmpty(context.ClientId))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.ClientId);
+                    context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.ClientId);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2638,7 +2638,7 @@ public static partial class OpenIddictServerHandlers
                 {
                     if (context.Request.HasScope(Scopes.OpenId))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.RedirectUri);
+                        context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -2656,7 +2656,7 @@ public static partial class OpenIddictServerHandlers
                 // and http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
                 if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6241), Parameters.RedirectUri, context.RedirectUri);
+                    context.Logger.LogInformation(6241, SR.GetResourceString(SR.ID6241), Parameters.RedirectUri, context.RedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2671,7 +2671,7 @@ public static partial class OpenIddictServerHandlers
                 // and http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6242), Parameters.RedirectUri, context.RedirectUri);
+                    context.Logger.LogInformation(6242, SR.GetResourceString(SR.ID6242), Parameters.RedirectUri, context.RedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2691,7 +2691,7 @@ public static partial class OpenIddictServerHandlers
                     var parameters = OpenIddictHelpers.ParseQuery(uri.Query);
                     if (parameters.ContainsKey(Parameters.Iss))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6259), Parameters.RedirectUri, Parameters.Iss);
+                        context.Logger.LogInformation(6259, SR.GetResourceString(SR.ID6259), Parameters.RedirectUri, Parameters.Iss);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -2733,7 +2733,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject requests missing the mandatory response_type parameter.
                 if (string.IsNullOrEmpty(context.Request.ResponseType))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.ResponseType);
+                    context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.ResponseType);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2746,7 +2746,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject code flow requests if the server is not configured to allow the authorization code grant type.
                 if (context.Request.IsAuthorizationCodeFlow() && !context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6243), context.Request.ResponseType);
+                    context.Logger.LogInformation(6243, SR.GetResourceString(SR.ID6243), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnsupportedResponseType,
@@ -2759,7 +2759,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject implicit flow requests if the server is not configured to allow the implicit grant type.
                 if (context.Request.IsImplicitFlow() && !context.Options.GrantTypes.Contains(GrantTypes.Implicit))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6243), context.Request.ResponseType);
+                    context.Logger.LogInformation(6243, SR.GetResourceString(SR.ID6243), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnsupportedResponseType,
@@ -2773,7 +2773,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsHybridFlow() && (!context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
                                                        !context.Options.GrantTypes.Contains(GrantTypes.Implicit)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6243), context.Request.ResponseType);
+                    context.Logger.LogInformation(6243, SR.GetResourceString(SR.ID6243), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnsupportedResponseType,
@@ -2788,7 +2788,7 @@ public static partial class OpenIddictServerHandlers
                 var types = context.Request.GetResponseTypes().ToHashSet(StringComparer.Ordinal);
                 if (types.Count > 1 && types.Contains(ResponseTypes.None))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6260), context.Request.ResponseType);
+                    context.Logger.LogInformation(6260, SR.GetResourceString(SR.ID6260), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2802,7 +2802,7 @@ public static partial class OpenIddictServerHandlers
                 if (!context.Options.ResponseTypes.Any(type => types.SetEquals(
                     type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6243), context.Request.ResponseType);
+                    context.Logger.LogInformation(6243, SR.GetResourceString(SR.ID6243), context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnsupportedResponseType,
@@ -2846,7 +2846,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsQueryResponseMode() && (context.Request.HasResponseType(ResponseTypes.IdToken) ||
                                                               context.Request.HasResponseType(ResponseTypes.Token)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6244), context.Request.ResponseType, context.Request.ResponseMode);
+                    context.Logger.LogInformation(6244, SR.GetResourceString(SR.ID6244), context.Request.ResponseType, context.Request.ResponseMode);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2860,7 +2860,7 @@ public static partial class OpenIddictServerHandlers
                 // if the default response_mode inferred from the response_type was explicitly disabled in the options.
                 if (!ValidatePushedResponseMode(context.Request, context.Options))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6245), context.Request.ResponseMode);
+                    context.Logger.LogInformation(6245, SR.GetResourceString(SR.ID6245), context.Request.ResponseMode);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2926,7 +2926,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject pushed authorization requests containing the id_token response_type if no openid scope has been received.
                 if (context.Request.HasResponseType(ResponseTypes.IdToken) && !context.Request.HasScope(Scopes.OpenId))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6246), Scopes.OpenId);
+                    context.Logger.LogInformation(6246, SR.GetResourceString(SR.ID6246), Scopes.OpenId);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2986,7 +2986,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (context.Request.IsImplicitFlow() || context.Request.IsHybridFlow())
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.Nonce);
+                    context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.Nonce);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3034,7 +3034,7 @@ public static partial class OpenIddictServerHandlers
                 {
                     if (!context.Options.PromptValues.Contains(value))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6261));
+                        context.Logger.LogInformation(6261, SR.GetResourceString(SR.ID6261));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -3051,7 +3051,7 @@ public static partial class OpenIddictServerHandlers
                                                                           context.Request.HasPromptValue(PromptValues.Login) ||
                                                                           context.Request.HasPromptValue(PromptValues.SelectAccount)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6247));
+                    context.Logger.LogInformation(6247, SR.GetResourceString(SR.ID6247));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3094,7 +3094,7 @@ public static partial class OpenIddictServerHandlers
                     context.Request.HasResponseType(ResponseTypes.Code) &&
                     string.IsNullOrEmpty(context.Request.CodeChallenge))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.CodeChallenge);
+                    context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.CodeChallenge);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3115,7 +3115,7 @@ public static partial class OpenIddictServerHandlers
                 // Ensure a code_challenge was specified if a code_challenge_method was used.
                 if (string.IsNullOrEmpty(context.Request.CodeChallenge))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.CodeChallenge);
+                    context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.CodeChallenge);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3130,7 +3130,7 @@ public static partial class OpenIddictServerHandlers
                 if (string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
                     !context.Options.CodeChallengeMethods.Contains(CodeChallengeMethods.Plain))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.CodeChallengeMethod);
+                    context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.CodeChallengeMethod);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3144,7 +3144,7 @@ public static partial class OpenIddictServerHandlers
                 if (!string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
                     !context.Options.CodeChallengeMethods.Contains(context.Request.CodeChallengeMethod))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6248));
+                    context.Logger.LogInformation(6248, SR.GetResourceString(SR.ID6248));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3157,7 +3157,7 @@ public static partial class OpenIddictServerHandlers
                 // When code_challenge or code_challenge_method is specified, ensure the response_type includes "code".
                 if (!context.Request.HasResponseType(ResponseTypes.Code))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6249));
+                    context.Logger.LogInformation(6249, SR.GetResourceString(SR.ID6249));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3289,7 +3289,7 @@ public static partial class OpenIddictServerHandlers
                 if (!string.IsNullOrEmpty(context.Request.CodeChallenge) &&
                     context.Request.HasResponseType(ResponseTypes.Token))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6250));
+                    context.Logger.LogInformation(6250, SR.GetResourceString(SR.ID6250));
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -3315,7 +3315,7 @@ public static partial class OpenIddictServerHandlers
                     if (context.Request.HasResponseType(ResponseTypes.Token) &&
                         await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6251), context.ClientId);
+                        context.Logger.LogInformation(6251, SR.GetResourceString(SR.ID6251), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
@@ -3372,7 +3372,7 @@ public static partial class OpenIddictServerHandlers
                     var uris = await _applicationManager.GetRedirectUrisAsync(application);
                     if (uris.Length is not 1)
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.RedirectUri);
+                        context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -3390,7 +3390,7 @@ public static partial class OpenIddictServerHandlers
                 // Otherwise, ensure that the specified redirect_uri is valid and is associated with the client application.
                 if (!await _applicationManager.ValidateRedirectUriAsync(application, context.RedirectUri))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6252), context.RedirectUri);
+                    context.Logger.LogInformation(6252, SR.GetResourceString(SR.ID6252), context.RedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3469,7 +3469,7 @@ public static partial class OpenIddictServerHandlers
                 // If at least one scope was not recognized, return an error.
                 if (scopes.Count is not 0)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6253), scopes);
+                    context.Logger.LogInformation(6253, SR.GetResourceString(SR.ID6253), scopes);
 
                     context.Reject(
                         error: Errors.InvalidScope,
@@ -3522,7 +3522,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject the request if the application is not allowed to use the pushed authorization endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.PushedAuthorization))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6254), context.ClientId);
+                    context.Logger.LogInformation(6254, SR.GetResourceString(SR.ID6254), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -3576,7 +3576,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsAuthorizationCodeFlow() &&
                     !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6255), context.ClientId);
+                    context.Logger.LogInformation(6255, SR.GetResourceString(SR.ID6255), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -3590,7 +3590,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsImplicitFlow() &&
                     !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6256), context.ClientId);
+                    context.Logger.LogInformation(6256, SR.GetResourceString(SR.ID6256), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -3605,7 +3605,7 @@ public static partial class OpenIddictServerHandlers
                    (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode) ||
                     !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6257), context.ClientId);
+                    context.Logger.LogInformation(6257, SR.GetResourceString(SR.ID6257), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -3620,7 +3620,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.HasScope(Scopes.OfflineAccess) &&
                    !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6258), context.ClientId, Scopes.OfflineAccess);
+                    context.Logger.LogInformation(6258, SR.GetResourceString(SR.ID6258), context.ClientId, Scopes.OfflineAccess);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3673,7 +3673,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject requests that specify a response_type for which no permission was granted.
                 if (!await HasPermissionAsync(context.Request.GetResponseTypes()))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6262), context.ClientId, context.Request.ResponseType);
+                    context.Logger.LogInformation(6262, SR.GetResourceString(SR.ID6262), context.ClientId, context.Request.ResponseType);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -3760,7 +3760,7 @@ public static partial class OpenIddictServerHandlers
                     // Reject the request if the application is not allowed to use the iterated scope.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6258), context.ClientId, scope);
+                        context.Logger.LogInformation(6258, SR.GetResourceString(SR.ID6258), context.ClientId, scope);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -3820,7 +3820,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6240), Parameters.CodeChallenge);
+                    context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.CodeChallenge);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3868,7 +3868,7 @@ public static partial class OpenIddictServerHandlers
                 if (!context.IdentityTokenHintPrincipal.HasAudience(context.ClientId) &&
                     !context.IdentityTokenHintPrincipal.HasPresenter(context.ClientId))
                 {
-                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6263));
+                    context.Logger.LogWarning(6263, SR.GetResourceString(SR.ID6263));
 
                     context.Reject(
                         error: Errors.InvalidRequest,

@@ -1111,7 +1111,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // In this case, log the error details and return a generic error to stop processing the event.
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6182));
+                context.Logger.LogError(6182, exception, SR.GetResourceString(SR.ID6182));
 
                 context.Reject(
                     error: Errors.ServerError,
@@ -1368,7 +1368,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // a server error occurs while the JSON response is being generated and returned to the client.
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6183),
+                context.Logger.LogError(6183, exception, SR.GetResourceString(SR.ID6183),
                     await response.Content.ReadAsStringAsync());
 
                 context.Reject(
@@ -1552,7 +1552,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // error could be extracted from the payload or from the WWW-Authenticate header.
             if (!response.IsSuccessStatusCode && string.IsNullOrEmpty(context.Transaction.Response?.Error))
             {
-                context.Logger.LogError(SR.GetResourceString(SR.ID6184), response.StatusCode,
+                context.Logger.LogError(6184, SR.GetResourceString(SR.ID6184), response.StatusCode,
                     await response.Content.ReadAsStringAsync());
 
                 context.Reject(
@@ -1576,7 +1576,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // (e.g because an unsupported content type was returned), return a generic error.
             if (context.Transaction.Response is null)
             {
-                context.Logger.LogError(SR.GetResourceString(SR.ID6185), response.StatusCode,
+                context.Logger.LogError(6185, SR.GetResourceString(SR.ID6185), response.StatusCode,
                     response.Content.Headers.ContentType, await response.Content.ReadAsStringAsync());
 
                 context.Reject(

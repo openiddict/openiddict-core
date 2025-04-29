@@ -1118,7 +1118,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6186), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6186, SR.GetResourceString(SR.ID6186), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -1144,7 +1144,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6187), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6187, SR.GetResourceString(SR.ID6187), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -1325,7 +1325,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6188), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6188, SR.GetResourceString(SR.ID6188), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -1351,7 +1351,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6189), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6189, SR.GetResourceString(SR.ID6189), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -1481,7 +1481,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6217), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6217, SR.GetResourceString(SR.ID6217), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -1508,7 +1508,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6218), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6218, SR.GetResourceString(SR.ID6218), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -1634,7 +1634,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6192, SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -1661,7 +1661,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6193, SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -1794,7 +1794,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6235), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6235, SR.GetResourceString(SR.ID6235), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -1821,7 +1821,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6236), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6236, SR.GetResourceString(SR.ID6236), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -1947,7 +1947,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6192, SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -1974,7 +1974,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6193, SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -2105,7 +2105,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6192, SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -2132,7 +2132,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6193, SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -2259,7 +2259,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6194), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6194, SR.GetResourceString(SR.ID6194), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -2286,7 +2286,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6195), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6195, SR.GetResourceString(SR.ID6195), context.RemoteUri, context.Response);
 
             return (context.Response, context.UserInfoToken);
         }

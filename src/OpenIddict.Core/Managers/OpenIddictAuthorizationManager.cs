@@ -914,21 +914,21 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         {
             await UpdateAsync(authorization, cancellationToken);
 
-            Logger.LogInformation(SR.GetResourceString(SR.ID6164), await Store.GetIdAsync(authorization, cancellationToken));
+            Logger.LogInformation(6164, SR.GetResourceString(SR.ID6164), await Store.GetIdAsync(authorization, cancellationToken));
 
             return true;
         }
 
         catch (ConcurrencyException exception)
         {
-            Logger.LogDebug(exception, SR.GetResourceString(SR.ID6165), await Store.GetIdAsync(authorization, cancellationToken));
+            Logger.LogDebug(6165, exception, SR.GetResourceString(SR.ID6165), await Store.GetIdAsync(authorization, cancellationToken));
 
             return false;
         }
 
         catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
-            Logger.LogWarning(exception, SR.GetResourceString(SR.ID6166), await Store.GetIdAsync(authorization, cancellationToken));
+            Logger.LogWarning(6166, exception, SR.GetResourceString(SR.ID6166), await Store.GetIdAsync(authorization, cancellationToken));
 
             return false;
         }

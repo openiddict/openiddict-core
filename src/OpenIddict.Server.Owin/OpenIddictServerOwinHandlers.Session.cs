@@ -134,7 +134,7 @@ public static partial class OpenIddictServerOwinHandlers
                     return default;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6151), context.PostLogoutRedirectUri, context.Response);
+                context.Logger.LogInformation(6151, SR.GetResourceString(SR.ID6151), context.PostLogoutRedirectUri, context.Response);
 
                 var location = context.PostLogoutRedirectUri;
 
@@ -202,7 +202,7 @@ public static partial class OpenIddictServerOwinHandlers
                 {
                     response.Redirect(properties.RedirectUri);
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6144));
+                    context.Logger.LogInformation(6144, SR.GetResourceString(SR.ID6144));
                     context.HandleRequest();
                 }
 

@@ -99,7 +99,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0053));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6129), notification.Request);
+                context.Logger.LogInformation(6129, SR.GetResourceString(SR.ID6129), notification.Request);
             }
         }
 
@@ -160,7 +160,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6130));
+                context.Logger.LogInformation(6130, SR.GetResourceString(SR.ID6130));
             }
         }
 
@@ -329,7 +329,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (string.IsNullOrEmpty(context.Request.AccessToken))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6131), Parameters.AccessToken);
+                    context.Logger.LogInformation(6131, SR.GetResourceString(SR.ID6131), Parameters.AccessToken);
 
                     context.Reject(
                         error: Errors.MissingToken,

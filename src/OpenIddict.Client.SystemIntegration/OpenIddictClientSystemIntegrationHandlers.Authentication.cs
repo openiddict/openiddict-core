@@ -182,7 +182,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 catch (NSErrorException exception)
                 {
-                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6231));
+                    context.Logger.LogError(6231, exception, SR.GetResourceString(SR.ID6231));
 
                     context.Reject(
                         error: Errors.ServerError,

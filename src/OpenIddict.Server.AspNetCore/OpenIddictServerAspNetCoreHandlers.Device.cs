@@ -97,7 +97,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             {
                 response.Redirect(properties.RedirectUri);
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6144));
+                context.Logger.LogInformation(6144, SR.GetResourceString(SR.ID6144));
                 context.HandleRequest();
             }
 

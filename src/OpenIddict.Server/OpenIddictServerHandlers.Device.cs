@@ -122,7 +122,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0031));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6054), notification.Request);
+                context.Logger.LogInformation(6054, SR.GetResourceString(SR.ID6054), notification.Request);
             }
         }
 
@@ -179,7 +179,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6055));
+                context.Logger.LogInformation(6055, SR.GetResourceString(SR.ID6055));
             }
         }
 
@@ -423,7 +423,7 @@ public static partial class OpenIddictServerHandlers
                 if (!string.IsNullOrEmpty(context.Request.ClientAssertion) &&
                     !string.IsNullOrEmpty(context.Request.ClientSecret))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6140));
+                    context.Logger.LogInformation(6140, SR.GetResourceString(SR.ID6140));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -516,7 +516,7 @@ public static partial class OpenIddictServerHandlers
                 // If at least one scope was not recognized, return an error.
                 if (scopes.Count is not 0)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6057), scopes);
+                    context.Logger.LogInformation(6057, SR.GetResourceString(SR.ID6057), scopes);
 
                     context.Reject(
                         error: Errors.InvalidScope,
@@ -632,7 +632,7 @@ public static partial class OpenIddictServerHandlers
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.DeviceAuthorization) &&
                     !await _applicationManager.HasPermissionAsync(application, "ept:device"))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6062), context.ClientId);
+                    context.Logger.LogInformation(6062, SR.GetResourceString(SR.ID6062), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -685,7 +685,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject the request if the application is not allowed to use the device code grant.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.DeviceCode))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6118), context.ClientId);
+                    context.Logger.LogInformation(6118, SR.GetResourceString(SR.ID6118), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -700,7 +700,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.HasScope(Scopes.OfflineAccess) &&
                    !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6120), context.ClientId, Scopes.OfflineAccess);
+                    context.Logger.LogInformation(6120, SR.GetResourceString(SR.ID6120), context.ClientId, Scopes.OfflineAccess);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -764,7 +764,7 @@ public static partial class OpenIddictServerHandlers
                     // Reject the request if the application is not allowed to use the iterated scope.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6063), context.ClientId, scope);
+                        context.Logger.LogInformation(6063, SR.GetResourceString(SR.ID6063), context.ClientId, scope);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -835,7 +835,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0034));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6064), notification.Request);
+                context.Logger.LogInformation(6064, SR.GetResourceString(SR.ID6064), notification.Request);
             }
         }
 
@@ -896,7 +896,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6065));
+                context.Logger.LogInformation(6065, SR.GetResourceString(SR.ID6065));
             }
         }
 

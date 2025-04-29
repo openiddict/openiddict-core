@@ -369,7 +369,7 @@ public static partial class OpenIddictClientHandlers
                         context.Registration.ConfigurationManager.RequestRefresh();
                     }
 
-                    context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
+                    context.Logger.LogTrace(6000, result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -470,7 +470,7 @@ public static partial class OpenIddictClientHandlers
                 // Store the resolved signing algorithm from the token and attach it to the principal.
                 context.Principal.SetClaim(Claims.Private.SigningAlgorithm, token.Alg);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(6001, SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
             }
         }
 
@@ -739,7 +739,7 @@ public static partial class OpenIddictClientHandlers
 
                 if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6002), context.TokenId);
+                    context.Logger.LogInformation(6002, SR.GetResourceString(SR.ID6002), context.TokenId);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -761,7 +761,7 @@ public static partial class OpenIddictClientHandlers
 
                 if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), context.TokenId);
+                    context.Logger.LogInformation(6005, SR.GetResourceString(SR.ID6005), context.TokenId);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -877,7 +877,7 @@ public static partial class OpenIddictClientHandlers
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 context.Principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6012), context.TokenType, identifier);
+                context.Logger.LogTrace(6012, SR.GetResourceString(SR.ID6012), context.TokenType, identifier);
             }
         }
 
@@ -1025,7 +1025,7 @@ public static partial class OpenIddictClientHandlers
 
                 context.Token = context.SecurityTokenHandler.CreateToken(context.SecurityTokenDescriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType,
+                context.Logger.LogTrace(6013, SR.GetResourceString(SR.ID6013), context.TokenType,
                     context.Token, context.SecurityTokenDescriptor.Subject?.Claims ?? []);
 
                 return default;
@@ -1088,13 +1088,13 @@ public static partial class OpenIddictClientHandlers
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6014), context.Token, identifier, context.TokenType);
+                context.Logger.LogTrace(6014, SR.GetResourceString(SR.ID6014), context.Token, identifier, context.TokenType);
 
                 // Replace the returned token by the reference identifier, if applicable.
                 if (context.IsReferenceToken)
                 {
                     context.Token = descriptor.ReferenceId;
-                    context.Logger.LogTrace(SR.GetResourceString(SR.ID6015), descriptor.ReferenceId, identifier, context.TokenType);
+                    context.Logger.LogTrace(6015, SR.GetResourceString(SR.ID6015), descriptor.ReferenceId, identifier, context.TokenType);
                 }
             }
         }

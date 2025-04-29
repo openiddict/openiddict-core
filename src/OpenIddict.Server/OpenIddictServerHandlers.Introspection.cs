@@ -113,7 +113,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0046));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6096), notification.Request);
+                context.Logger.LogInformation(6096, SR.GetResourceString(SR.ID6096), notification.Request);
             }
         }
 
@@ -174,7 +174,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6097));
+                context.Logger.LogInformation(6097, SR.GetResourceString(SR.ID6097));
             }
         }
 
@@ -355,7 +355,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject introspection requests missing the mandatory token parameter.
                 if (string.IsNullOrEmpty(context.Request.Token))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6098), Parameters.Token);
+                    context.Logger.LogInformation(6098, SR.GetResourceString(SR.ID6098), Parameters.Token);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -422,7 +422,7 @@ public static partial class OpenIddictServerHandlers
                 if (!string.IsNullOrEmpty(context.Request.ClientAssertion) &&
                     !string.IsNullOrEmpty(context.Request.ClientSecret))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6140));
+                    context.Logger.LogInformation(6140, SR.GetResourceString(SR.ID6140));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -552,7 +552,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject the request if the application is not allowed to use the introspection endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Introspection))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6103), context.ClientId);
+                    context.Logger.LogInformation(6103, SR.GetResourceString(SR.ID6103), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -592,7 +592,7 @@ public static partial class OpenIddictServerHandlers
                 if (!context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
                     !context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6104));
+                    context.Logger.LogInformation(6104, SR.GetResourceString(SR.ID6104));
 
                     context.Reject(
                         error: Errors.UnsupportedTokenType,
@@ -645,7 +645,7 @@ public static partial class OpenIddictServerHandlers
                     context.Principal.HasClaim(Claims.Private.Audience)  && !context.Principal.HasAudience(context.ClientId) &&
                     context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                 {
-                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6106));
+                    context.Logger.LogWarning(6106, SR.GetResourceString(SR.ID6106));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -662,7 +662,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken) &&
                     context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                 {
-                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6108));
+                    context.Logger.LogWarning(6108, SR.GetResourceString(SR.ID6108));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -820,7 +820,7 @@ public static partial class OpenIddictServerHandlers
                 // the sensitive application-specific claims contained in the introspected access token.
                 if (!context.Principal.HasAudience(context.Request.ClientId))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6105), context.Request.ClientId);
+                    context.Logger.LogInformation(6105, SR.GetResourceString(SR.ID6105), context.Request.ClientId);
 
                     return;
                 }
@@ -831,7 +831,7 @@ public static partial class OpenIddictServerHandlers
                 // Public clients are not allowed to access sensitive claims as authentication cannot be enforced.
                 if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6107), context.Request.ClientId);
+                    context.Logger.LogInformation(6107, SR.GetResourceString(SR.ID6107), context.Request.ClientId);
 
                     return;
                 }

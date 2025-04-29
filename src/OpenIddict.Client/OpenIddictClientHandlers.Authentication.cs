@@ -293,7 +293,7 @@ public static partial class OpenIddictClientHandlers
                 // For more information, see https://www.rfc-editor.org/rfc/rfc8628#section-3.2.
                 if (!string.IsNullOrEmpty(context.Response.Error))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6234), context.Response);
+                    context.Logger.LogInformation(6234, SR.GetResourceString(SR.ID6234), context.Response);
 
                     context.Reject(
                         error: context.Response.Error switch
@@ -464,7 +464,7 @@ public static partial class OpenIddictClientHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0302));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6178), notification.Request);
+                context.Logger.LogInformation(6178, SR.GetResourceString(SR.ID6178), notification.Request);
             }
         }
 
@@ -521,7 +521,7 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6179));
+                context.Logger.LogInformation(6179, SR.GetResourceString(SR.ID6179));
             }
         }
 

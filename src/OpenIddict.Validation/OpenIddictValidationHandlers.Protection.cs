@@ -311,7 +311,7 @@ public static partial class OpenIddictValidationHandlers
                         context.Options.ConfigurationManager.RequestRefresh();
                     }
 
-                    context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
+                    context.Logger.LogTrace(6000, result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -373,7 +373,7 @@ public static partial class OpenIddictValidationHandlers
                     string value => value
                 });
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(6001, SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
             }
         }
 
@@ -674,7 +674,7 @@ public static partial class OpenIddictValidationHandlers
                 if (context.Principal.GetExpirationDate() is DateTimeOffset date &&
                     date + context.TokenValidationParameters.ClockSkew < context.Options.TimeProvider.GetUtcNow())
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6156));
+                    context.Logger.LogInformation(6156, SR.GetResourceString(SR.ID6156));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -725,7 +725,7 @@ public static partial class OpenIddictValidationHandlers
                 var audiences = context.Principal.GetAudiences();
                 if (audiences.IsDefaultOrEmpty)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6157));
+                    context.Logger.LogInformation(6157, SR.GetResourceString(SR.ID6157));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -738,7 +738,7 @@ public static partial class OpenIddictValidationHandlers
                 // If the access token doesn't include any registered audience, return an error.
                 if (!audiences.Intersect(context.Options.Audiences, StringComparer.Ordinal).Any())
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6158));
+                    context.Logger.LogInformation(6158, SR.GetResourceString(SR.ID6158));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -794,7 +794,7 @@ public static partial class OpenIddictValidationHandlers
 
                 if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), context.TokenId);
+                    context.Logger.LogInformation(6005, SR.GetResourceString(SR.ID6005), context.TokenId);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -846,7 +846,7 @@ public static partial class OpenIddictValidationHandlers
                 var authorization = await _authorizationManager.FindByIdAsync(context.AuthorizationId);
                 if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6006), context.AuthorizationId);
+                    context.Logger.LogInformation(6006, SR.GetResourceString(SR.ID6006), context.AuthorizationId);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -1027,7 +1027,7 @@ public static partial class OpenIddictValidationHandlers
 
                 context.Token = context.SecurityTokenHandler.CreateToken(context.SecurityTokenDescriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType,
+                context.Logger.LogTrace(6013, SR.GetResourceString(SR.ID6013), context.TokenType,
                     context.Token, context.SecurityTokenDescriptor.Subject?.Claims ?? []);
 
                 return default;

@@ -122,7 +122,7 @@ public static partial class OpenIddictClientHandlers
                 // For more information, see https://www.rfc-editor.org/rfc/rfc8628#section-3.2.
                 if (!string.IsNullOrEmpty(context.Response.Error))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6216), context.Response);
+                    context.Logger.LogInformation(6216, SR.GetResourceString(SR.ID6216), context.Response);
 
                     context.Reject(
                         error: context.Response.Error switch

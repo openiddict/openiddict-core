@@ -184,7 +184,7 @@ public static partial class OpenIddictClientHandlers
                 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse.
                 if (!string.IsNullOrEmpty(context.Response.Error))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6203), context.Response);
+                    context.Logger.LogInformation(6203, SR.GetResourceString(SR.ID6203), context.Response);
 
                     context.Reject(
                         error: Errors.ServerError,
@@ -1434,7 +1434,7 @@ public static partial class OpenIddictClientHandlers
                 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse.
                 if (!string.IsNullOrEmpty(context.Response.Error))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6204), context.Response);
+                    context.Logger.LogInformation(6204, SR.GetResourceString(SR.ID6204), context.Response);
 
                     context.Reject(
                         error: Errors.ServerError,

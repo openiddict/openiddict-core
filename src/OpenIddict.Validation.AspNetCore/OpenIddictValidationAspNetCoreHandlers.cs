@@ -646,7 +646,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                 return default;
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6141), context.Transaction.Response);
+            context.Logger.LogInformation(6141, SR.GetResourceString(SR.ID6141), context.Transaction.Response);
             context.HandleRequest();
 
             return default;

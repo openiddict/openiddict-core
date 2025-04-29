@@ -114,7 +114,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0050));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6124), notification.Request);
+                context.Logger.LogInformation(6124, SR.GetResourceString(SR.ID6124), notification.Request);
             }
         }
 
@@ -175,7 +175,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6125));
+                context.Logger.LogInformation(6125, SR.GetResourceString(SR.ID6125));
             }
         }
 
@@ -443,7 +443,7 @@ public static partial class OpenIddictServerHandlers
                 // If an optional post_logout_redirect_uri was provided, validate it.
                 if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6126), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
+                    context.Logger.LogInformation(6126, SR.GetResourceString(SR.ID6126), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -455,7 +455,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6127), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
+                    context.Logger.LogInformation(6127, SR.GetResourceString(SR.ID6127), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -632,7 +632,7 @@ public static partial class OpenIddictServerHandlers
 
                     if (!await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, context.PostLogoutRedirectUri))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
+                        context.Logger.LogInformation(6128, SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -647,7 +647,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
+                    context.Logger.LogInformation(6128, SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -769,7 +769,7 @@ public static partial class OpenIddictServerHandlers
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
                     !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6048), context.ClientId);
+                    context.Logger.LogInformation(6048, SR.GetResourceString(SR.ID6048), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -845,7 +845,7 @@ public static partial class OpenIddictServerHandlers
                     if (!context.IdentityTokenHintPrincipal.HasAudience(context.ClientId) &&
                         !context.IdentityTokenHintPrincipal.HasPresenter(context.ClientId))
                     {
-                        context.Logger.LogWarning(SR.GetResourceString(SR.ID6198));
+                        context.Logger.LogWarning(6198, SR.GetResourceString(SR.ID6198));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -867,7 +867,7 @@ public static partial class OpenIddictServerHandlers
 
                     if (!await ValidateAuthorizedParty(context.IdentityTokenHintPrincipal, context.PostLogoutRedirectUri))
                     {
-                        context.Logger.LogWarning(SR.GetResourceString(SR.ID6198));
+                        context.Logger.LogWarning(6198, SR.GetResourceString(SR.ID6198));
 
                         context.Reject(
                             error: Errors.InvalidRequest,

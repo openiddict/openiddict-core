@@ -138,7 +138,7 @@ public static partial class OpenIddictValidationHandlers
                 // For more information, see https://datatracker.ietf.org/doc/html/rfc7662#section-2.3.
                 if (!string.IsNullOrEmpty(context.Response.Error))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6205), context.Response);
+                    context.Logger.LogInformation(6205, SR.GetResourceString(SR.ID6205), context.Response);
 
                     context.Reject(
                         error: context.Response.Error switch

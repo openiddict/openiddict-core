@@ -126,7 +126,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0040));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6075), notification.Request);
+                context.Logger.LogInformation(6075, SR.GetResourceString(SR.ID6075), notification.Request);
             }
         }
 
@@ -187,7 +187,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6076));
+                context.Logger.LogInformation(6076, SR.GetResourceString(SR.ID6076));
             }
         }
 
@@ -362,7 +362,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject token requests missing the mandatory grant_type parameter.
                 if (string.IsNullOrEmpty(context.Request.GrantType))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.GrantType);
+                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.GrantType);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -375,7 +375,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject token requests that don't specify a supported grant type.
                 if (!context.Options.GrantTypes.Contains(context.Request.GrantType))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6078), context.Request.GrantType);
+                    context.Logger.LogInformation(6078, SR.GetResourceString(SR.ID6078), context.Request.GrantType);
 
                     context.Reject(
                         error: Errors.UnsupportedGrantType,
@@ -433,7 +433,7 @@ public static partial class OpenIddictServerHandlers
                     string.IsNullOrEmpty(context.Request.ClientId) &&
                     string.IsNullOrEmpty(context.Request.ClientAssertion))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.ClientId);
+                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.ClientId);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -450,7 +450,7 @@ public static partial class OpenIddictServerHandlers
                     string.IsNullOrEmpty(context.Request.ClientId) &&
                     string.IsNullOrEmpty(context.Request.ClientAssertion))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.ClientId);
+                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.ClientId);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -492,7 +492,7 @@ public static partial class OpenIddictServerHandlers
                 // See https://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
                 if (context.Request.IsAuthorizationCodeGrantType() && string.IsNullOrEmpty(context.Request.Code))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.Code);
+                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.Code);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -559,7 +559,7 @@ public static partial class OpenIddictServerHandlers
                 if (!string.IsNullOrEmpty(context.Request.ClientAssertion) &&
                     !string.IsNullOrEmpty(context.Request.ClientSecret))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6140));
+                    context.Logger.LogInformation(6140, SR.GetResourceString(SR.ID6140));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -668,7 +668,7 @@ public static partial class OpenIddictServerHandlers
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                 if (context.Request.IsRefreshTokenGrantType() && string.IsNullOrEmpty(context.Request.RefreshToken))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.RefreshToken);
+                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.RefreshToken);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -711,7 +711,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.IsPasswordGrantType() && (string.IsNullOrEmpty(context.Request.Username) ||
                                                               string.IsNullOrEmpty(context.Request.Password)))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6079));
+                    context.Logger.LogInformation(6079, SR.GetResourceString(SR.ID6079));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -759,7 +759,7 @@ public static partial class OpenIddictServerHandlers
                 // If OpenIddict was configured to require PKCE, this can be potentially avoided by making an early check here.
                 if (context.Options.RequireProofKeyForCodeExchange && string.IsNullOrEmpty(context.Request.CodeVerifier))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.CodeVerifier);
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.CodeVerifier);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -806,7 +806,7 @@ public static partial class OpenIddictServerHandlers
                 if (!string.IsNullOrEmpty(context.Request.Scope) && (context.Request.IsAuthorizationCodeGrantType() ||
                                                                      context.Request.IsDeviceCodeGrantType()))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6094), Parameters.Scope);
+                    context.Logger.LogInformation(6094, SR.GetResourceString(SR.ID6094), Parameters.Scope);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -887,7 +887,7 @@ public static partial class OpenIddictServerHandlers
                 // If at least one scope was not recognized, return an error.
                 if (scopes.Count is not 0)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6080), scopes);
+                    context.Logger.LogInformation(6080, SR.GetResourceString(SR.ID6080), scopes);
 
                     context.Reject(
                         error: Errors.InvalidScope,
@@ -1005,7 +1005,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject the request if the application is not allowed to use the token endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Token))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6086), context.ClientId);
+                    context.Logger.LogInformation(6086, SR.GetResourceString(SR.ID6086), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1060,7 +1060,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject the request if the application is not allowed to use the specified grant type.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.GrantType + context.Request.GrantType))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6087), context.ClientId, context.Request.GrantType);
+                    context.Logger.LogInformation(6087, SR.GetResourceString(SR.ID6087), context.ClientId, context.Request.GrantType);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1075,7 +1075,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.Request.HasScope(Scopes.OfflineAccess) &&
                     !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6088), context.ClientId, Scopes.OfflineAccess);
+                    context.Logger.LogInformation(6088, SR.GetResourceString(SR.ID6088), context.ClientId, Scopes.OfflineAccess);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1139,7 +1139,7 @@ public static partial class OpenIddictServerHandlers
                     // Reject the request if the application is not allowed to use the iterated scope.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6089), context.ClientId, scope);
+                        context.Logger.LogInformation(6089, SR.GetResourceString(SR.ID6089), context.ClientId, scope);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1205,7 +1205,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.CodeVerifier);
+                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.CodeVerifier);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1272,7 +1272,7 @@ public static partial class OpenIddictServerHandlers
                 // reject the request if the client_id of the caller cannot be retrieved or inferred.
                 if (string.IsNullOrEmpty(context.ClientId))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6090));
+                    context.Logger.LogInformation(6090, SR.GetResourceString(SR.ID6090));
 
                     context.Reject(
                         error: Errors.InvalidGrant,
@@ -1292,7 +1292,7 @@ public static partial class OpenIddictServerHandlers
                 // and http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken.
                 if (!presenters.Contains(context.ClientId))
                 {
-                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6091));
+                    context.Logger.LogWarning(6091, SR.GetResourceString(SR.ID6091));
 
                     context.Reject(
                         error: Errors.InvalidGrant,
@@ -1355,7 +1355,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (string.IsNullOrEmpty(context.Request.RedirectUri))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.RedirectUri);
+                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.RedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1367,7 +1367,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (!string.Equals(uri, context.Request.RedirectUri, StringComparison.Ordinal))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6092), Parameters.RedirectUri);
+                    context.Logger.LogInformation(6092, SR.GetResourceString(SR.ID6092), Parameters.RedirectUri);
 
                     context.Reject(
                         error: Errors.InvalidGrant,
@@ -1424,7 +1424,7 @@ public static partial class OpenIddictServerHandlers
                     // when no code_challenge private claim was attached to the authorization code.
                     if (!string.IsNullOrEmpty(context.Request.CodeVerifier))
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6093), Parameters.CodeVerifier);
+                        context.Logger.LogInformation(6093, SR.GetResourceString(SR.ID6093), Parameters.CodeVerifier);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1440,7 +1440,7 @@ public static partial class OpenIddictServerHandlers
                 // Get the code verifier from the token request. If it cannot be found, return an invalid_grant error.
                 if (string.IsNullOrEmpty(context.Request.CodeVerifier))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.CodeVerifier);
+                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.CodeVerifier);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1470,7 +1470,7 @@ public static partial class OpenIddictServerHandlers
                     left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
                     right: MemoryMarshal.AsBytes(challenge.AsSpan())))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6092), Parameters.CodeVerifier);
+                    context.Logger.LogInformation(6092, SR.GetResourceString(SR.ID6092), Parameters.CodeVerifier);
 
                     context.Reject(
                         error: Errors.InvalidGrant,
@@ -1521,7 +1521,7 @@ public static partial class OpenIddictServerHandlers
                 var scopes = context.Principal.GetScopes().ToHashSet(StringComparer.Ordinal);
                 if (scopes.Count is 0)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6094), Parameters.Scope);
+                    context.Logger.LogInformation(6094, SR.GetResourceString(SR.ID6094), Parameters.Scope);
 
                     context.Reject(
                         error: Errors.InvalidGrant,
@@ -1537,7 +1537,7 @@ public static partial class OpenIddictServerHandlers
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                 else if (!scopes.IsSupersetOf(context.Request.GetScopes()))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6095), Parameters.Scope);
+                    context.Logger.LogInformation(6095, SR.GetResourceString(SR.ID6095), Parameters.Scope);
 
                     context.Reject(
                         error: Errors.InvalidGrant,

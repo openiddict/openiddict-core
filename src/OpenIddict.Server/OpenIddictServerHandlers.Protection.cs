@@ -452,7 +452,7 @@ public static partial class OpenIddictServerHandlers
                 var result = await context.SecurityTokenHandler.ValidateTokenAsync(context.Token, context.TokenValidationParameters);
                 if (!result.IsValid)
                 {
-                    context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
+                    context.Logger.LogTrace(6000, result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
 
                     context.Reject(
                         error: context.ValidTokenTypes.Count switch
@@ -570,7 +570,7 @@ public static partial class OpenIddictServerHandlers
                     context.Principal.SetDestinations(builder.ToImmutable());
                 }
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(6001, SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
             }
         }
 
@@ -1016,16 +1016,16 @@ public static partial class OpenIddictServerHandlers
 
                             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                             {
-                                context.Logger.LogWarning(exception, SR.GetResourceString(SR.ID6229), context.AuthorizationId);
+                                context.Logger.LogWarning(6229, exception, SR.GetResourceString(SR.ID6229), context.AuthorizationId);
                             }
 
                             if (count is not null)
                             {
-                                context.Logger.LogWarning(SR.GetResourceString(SR.ID6228), count, context.AuthorizationId);
+                                context.Logger.LogWarning(6228, SR.GetResourceString(SR.ID6228), count, context.AuthorizationId);
                             }
                         }
 
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6002), context.TokenId);
+                        context.Logger.LogInformation(6002, SR.GetResourceString(SR.ID6002), context.TokenId);
 
                         context.Reject(
                             error: context.Principal.GetTokenType() switch
@@ -1060,7 +1060,7 @@ public static partial class OpenIddictServerHandlers
                 // If the token is not marked as valid yet, return an authorization_pending error.
                 if (await _tokenManager.HasStatusAsync(token, Statuses.Inactive))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6003), context.TokenId);
+                    context.Logger.LogInformation(6003, SR.GetResourceString(SR.ID6003), context.TokenId);
 
                     context.Reject(
                         error: Errors.AuthorizationPending,
@@ -1073,7 +1073,7 @@ public static partial class OpenIddictServerHandlers
                 // If the token is marked as rejected, return an access_denied error.
                 if (await _tokenManager.HasStatusAsync(token, Statuses.Rejected))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6004), context.TokenId);
+                    context.Logger.LogInformation(6004, SR.GetResourceString(SR.ID6004), context.TokenId);
 
                     context.Reject(
                         error: Errors.AccessDenied,
@@ -1085,7 +1085,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), context.TokenId);
+                    context.Logger.LogInformation(6005, SR.GetResourceString(SR.ID6005), context.TokenId);
 
                     context.Reject(
                         error: context.Principal.GetTokenType() switch
@@ -1175,7 +1175,7 @@ public static partial class OpenIddictServerHandlers
                 var authorization = await _authorizationManager.FindByIdAsync(context.AuthorizationId);
                 if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6006), context.AuthorizationId);
+                    context.Logger.LogInformation(6006, SR.GetResourceString(SR.ID6006), context.AuthorizationId);
 
                     context.Reject(
                         error: context.Principal.GetTokenType() switch
@@ -1341,7 +1341,7 @@ public static partial class OpenIddictServerHandlers
                 // Attach the token identifier to the principal so that it can be stored in the token payload.
                 context.Principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6012), context.TokenType, identifier);
+                context.Logger.LogTrace(6012, SR.GetResourceString(SR.ID6012), context.TokenType, identifier);
             }
         }
 
@@ -1545,7 +1545,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.Token = context.SecurityTokenHandler.CreateToken(context.SecurityTokenDescriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType,
+                context.Logger.LogTrace(6013, SR.GetResourceString(SR.ID6013), context.TokenType,
                     context.Token, context.SecurityTokenDescriptor.Subject?.Claims ?? []);
 
                 return default;
@@ -1628,13 +1628,13 @@ public static partial class OpenIddictServerHandlers
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6014), context.Token, identifier, context.TokenType);
+                context.Logger.LogTrace(6014, SR.GetResourceString(SR.ID6014), context.Token, identifier, context.TokenType);
 
                 // Replace the returned token by the reference identifier, if applicable.
                 if (context.IsReferenceToken)
                 {
                     context.Token = descriptor.ReferenceId;
-                    context.Logger.LogTrace(SR.GetResourceString(SR.ID6015), descriptor.ReferenceId, identifier, context.TokenType);
+                    context.Logger.LogTrace(6015, SR.GetResourceString(SR.ID6015), descriptor.ReferenceId, identifier, context.TokenType);
                 }
             }
         }

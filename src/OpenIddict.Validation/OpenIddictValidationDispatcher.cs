@@ -51,14 +51,14 @@ public sealed class OpenIddictValidationDispatcher : IOpenIddictValidationDispat
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) && _logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.LogDebug(exception, SR.GetResourceString(SR.ID6132), handler.GetType().FullName, typeof(TContext).FullName);
+                _logger.LogDebug(6132, exception, SR.GetResourceString(SR.ID6132), handler.GetType().FullName, typeof(TContext).FullName);
 
                 throw;
             }
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.LogDebug(SR.GetResourceString(SR.ID6133), typeof(TContext).FullName, handler.GetType().FullName);
+                _logger.LogDebug(6133, SR.GetResourceString(SR.ID6133), typeof(TContext).FullName, handler.GetType().FullName);
             }
 
             switch (context)
@@ -66,21 +66,21 @@ public sealed class OpenIddictValidationDispatcher : IOpenIddictValidationDispat
                 case BaseRequestContext { IsRequestHandled: true }:
                     if (_logger.IsEnabled(LogLevel.Debug))
                     {
-                        _logger.LogDebug(SR.GetResourceString(SR.ID6134), typeof(TContext).FullName, handler.GetType().FullName);
+                        _logger.LogDebug(6134, SR.GetResourceString(SR.ID6134), typeof(TContext).FullName, handler.GetType().FullName);
                     }
                     return;
 
                 case BaseRequestContext { IsRequestSkipped: true }:
                     if (_logger.IsEnabled(LogLevel.Debug))
                     {
-                        _logger.LogDebug(SR.GetResourceString(SR.ID6135), typeof(TContext).FullName, handler.GetType().FullName);
+                        _logger.LogDebug(6135, SR.GetResourceString(SR.ID6135), typeof(TContext).FullName, handler.GetType().FullName);
                     }
                     return;
 
                 case BaseValidatingContext { IsRejected: true }:
                     if (_logger.IsEnabled(LogLevel.Debug))
                     {
-                        _logger.LogDebug(SR.GetResourceString(SR.ID6136), typeof(TContext).FullName, handler.GetType().FullName);
+                        _logger.LogDebug(6136, SR.GetResourceString(SR.ID6136), typeof(TContext).FullName, handler.GetType().FullName);
                     }
                     return;
 

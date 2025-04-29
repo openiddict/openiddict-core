@@ -114,7 +114,7 @@ public static partial class OpenIddictClientHandlers
                 // For more information, see https://datatracker.ietf.org/doc/html/rfc6749#section-5.2.
                 if (!string.IsNullOrEmpty(context.Response.Error))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6206), context.Response);
+                    context.Logger.LogInformation(6206, SR.GetResourceString(SR.ID6206), context.Response);
 
                     context.Reject(
                         error: context.Response.Error switch

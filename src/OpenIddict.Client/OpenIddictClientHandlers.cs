@@ -504,7 +504,7 @@ public static partial class OpenIddictClientHandlers
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
                     exception is not OperationCanceledException)
                 {
-                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+                    context.Logger.LogError(6219, exception, SR.GetResourceString(SR.ID6219));
 
                     context.Reject(
                         error: Errors.ServerError,
@@ -961,7 +961,7 @@ public static partial class OpenIddictClientHandlers
                 left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
                 right: MemoryMarshal.AsBytes(context.RequestForgeryProtection.AsSpan())))
             {
-                context.Logger.LogWarning(SR.GetResourceString(SR.ID6209));
+                context.Logger.LogWarning(6209, SR.GetResourceString(SR.ID6209));
 
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -1151,7 +1151,7 @@ public static partial class OpenIddictClientHandlers
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
                     exception is not OperationCanceledException)
                 {
-                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+                    context.Logger.LogError(6219, exception, SR.GetResourceString(SR.ID6219));
 
                     context.Reject(
                         error: Errors.ServerError,
@@ -1288,7 +1288,7 @@ public static partial class OpenIddictClientHandlers
             var error = (string?) context.Request[Parameters.Error];
             if (!string.IsNullOrEmpty(error))
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6208), context.Request);
+                context.Logger.LogInformation(6208, SR.GetResourceString(SR.ID6208), context.Request);
 
                 context.Reject(
                     error: error switch
@@ -1969,7 +1969,7 @@ public static partial class OpenIddictClientHandlers
                         left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
                         right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
                             OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan())):
-                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6210));
+                    context.Logger.LogWarning(6210, SR.GetResourceString(SR.ID6210));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -3405,7 +3405,7 @@ public static partial class OpenIddictClientHandlers
                         left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
                         right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
                             OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan())):
-                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6211));
+                    context.Logger.LogWarning(6211, SR.GetResourceString(SR.ID6211));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -4583,7 +4583,7 @@ public static partial class OpenIddictClientHandlers
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
                     exception is not OperationCanceledException)
                 {
-                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+                    context.Logger.LogError(6219, exception, SR.GetResourceString(SR.ID6219));
 
                     context.Reject(
                         error: Errors.ServerError,
@@ -6801,7 +6801,7 @@ public static partial class OpenIddictClientHandlers
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
                     exception is not OperationCanceledException)
                 {
-                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+                    context.Logger.LogError(6219, exception, SR.GetResourceString(SR.ID6219));
 
                     context.Reject(
                         error: Errors.ServerError,
@@ -7292,7 +7292,7 @@ public static partial class OpenIddictClientHandlers
                              .SetClaim(Claims.Private.RegistrationId, context.Registration.RegistrationId)
                              .SetClaim(Claims.Private.ProviderName,   context.Registration.ProviderName);
 
-            context.Logger.LogTrace(SR.GetResourceString(SR.ID6154), context.Token, context.Principal.Claims);
+            context.Logger.LogTrace(6154, SR.GetResourceString(SR.ID6154), context.Token, context.Principal.Claims);
         }
     }
 
@@ -7472,7 +7472,7 @@ public static partial class OpenIddictClientHandlers
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
                     exception is not OperationCanceledException)
                 {
-                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+                    context.Logger.LogError(6219, exception, SR.GetResourceString(SR.ID6219));
 
                     context.Reject(
                         error: Errors.ServerError,
@@ -8142,7 +8142,7 @@ public static partial class OpenIddictClientHandlers
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
                     exception is not OperationCanceledException)
                 {
-                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6219));
+                    context.Logger.LogError(6219, exception, SR.GetResourceString(SR.ID6219));
 
                     context.Reject(
                         error: Errors.ServerError,

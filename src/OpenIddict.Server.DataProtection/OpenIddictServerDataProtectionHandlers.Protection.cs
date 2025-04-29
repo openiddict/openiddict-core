@@ -182,7 +182,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
 
                 context.Principal = principal;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6152), context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(6152, SR.GetResourceString(SR.ID6152), context.Token, context.Principal.Claims);
 
                 return default;
 
@@ -239,7 +239,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
 
                     catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                     {
-                        context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), context.Token);
+                        context.Logger.LogTrace(6153, exception, SR.GetResourceString(SR.ID6153), context.Token);
 
                         return null;
                     }
@@ -390,7 +390,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
 
                 context.Token = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), context.TokenType,
+                context.Logger.LogTrace(6016, SR.GetResourceString(SR.ID6016), context.TokenType,
                     context.Token, context.Principal.Claims);
 
                 return default;

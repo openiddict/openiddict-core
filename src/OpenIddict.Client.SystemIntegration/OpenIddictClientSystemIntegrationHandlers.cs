@@ -391,7 +391,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // If the incoming request doesn't use GET, reject it.
             if (!string.Equals(request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.HttpMethod);
+                context.Logger.LogInformation(6137, SR.GetResourceString(SR.ID6137), request.HttpMethod);
 
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -456,7 +456,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 if (!MediaTypeHeaderValue.TryParse(request.ContentType, out MediaTypeHeaderValue? type) ||
                     StringSegment.IsNullOrEmpty(type.MediaType))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6138), "Content-Type");
+                    context.Logger.LogInformation(6138, SR.GetResourceString(SR.ID6138), "Content-Type");
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -468,7 +468,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 if (!StringSegment.Equals(type.MediaType, "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6139), "Content-Type", request.ContentType);
+                    context.Logger.LogInformation(6139, SR.GetResourceString(SR.ID6139), "Content-Type", request.ContentType);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -488,7 +488,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             else
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.HttpMethod);
+                context.Logger.LogInformation(6137, SR.GetResourceString(SR.ID6137), request.HttpMethod);
 
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -966,7 +966,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                context.Logger.LogWarning(SR.GetResourceString(SR.ID6215), identifier);
+                context.Logger.LogWarning(6215, SR.GetResourceString(SR.ID6215), identifier);
             }
 
             // Inform the host that the application should stop and mark the authentication context as handled

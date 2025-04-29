@@ -266,7 +266,7 @@ public static partial class OpenIddictClientOwinHandlers
                 // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization for more information.
                 if (string.IsNullOrEmpty(request.ContentType))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6138), Headers.ContentType);
+                    context.Logger.LogInformation(6138, SR.GetResourceString(SR.ID6138), Headers.ContentType);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -279,7 +279,7 @@ public static partial class OpenIddictClientOwinHandlers
                 // May have media/type; charset=utf-8, allow partial match.
                 if (!request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6139), Headers.ContentType, request.ContentType);
+                    context.Logger.LogInformation(6139, SR.GetResourceString(SR.ID6139), Headers.ContentType, request.ContentType);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -297,7 +297,7 @@ public static partial class OpenIddictClientOwinHandlers
 
             else
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.Method);
+                context.Logger.LogInformation(6137, SR.GetResourceString(SR.ID6137), request.Method);
 
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -1473,7 +1473,7 @@ public static partial class OpenIddictClientOwinHandlers
             // Don't return the state originally sent by the client application.
             context.Transaction.Response.State = null;
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6143), context.Transaction.Response);
+            context.Logger.LogInformation(6143, SR.GetResourceString(SR.ID6143), context.Transaction.Response);
 
             using var stream = new MemoryStream();
             using var writer = new StreamWriter(stream);
@@ -1532,7 +1532,7 @@ public static partial class OpenIddictClientOwinHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.Logger.LogInformation(SR.GetResourceString(SR.ID6145));
+            context.Logger.LogInformation(6145, SR.GetResourceString(SR.ID6145));
             context.HandleRequest();
 
             return default;

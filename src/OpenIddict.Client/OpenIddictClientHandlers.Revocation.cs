@@ -105,7 +105,7 @@ public static partial class OpenIddictClientHandlers
 
                 if (!string.IsNullOrEmpty(context.Response.Error))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6230), context.Response);
+                    context.Logger.LogInformation(6230, SR.GetResourceString(SR.ID6230), context.Response);
 
                     context.Reject(
                         error: context.Response.Error switch

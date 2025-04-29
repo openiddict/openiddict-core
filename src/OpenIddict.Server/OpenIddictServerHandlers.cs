@@ -174,7 +174,7 @@ public static partial class OpenIddictServerHandlers
 
             if (context.EndpointType is not OpenIddictServerEndpointType.Unknown)
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6053), context.EndpointType);
+                context.Logger.LogInformation(6053, SR.GetResourceString(SR.ID6053), context.EndpointType);
             }
 
             return default;
@@ -1061,7 +1061,7 @@ public static partial class OpenIddictServerHandlers
                         return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6220), Parameters.ClientId);
+                context.Logger.LogInformation(6220, SR.GetResourceString(SR.ID6220), Parameters.ClientId);
 
                 context.Reject(
                     error: Errors.InvalidClient,
@@ -1083,7 +1083,7 @@ public static partial class OpenIddictServerHandlers
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                 if (application is null)
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6221), context.ClientId);
+                    context.Logger.LogInformation(6221, SR.GetResourceString(SR.ID6221), context.ClientId);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -1159,7 +1159,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.EndpointType is OpenIddictServerEndpointType.Token &&
                     context.Request.IsClientCredentialsGrantType())
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6222), context.Request.ClientId);
+                    context.Logger.LogInformation(6222, SR.GetResourceString(SR.ID6222), context.Request.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1172,7 +1172,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject requests containing a client_assertion when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientAssertion))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6226), context.ClientId);
+                    context.Logger.LogInformation(6226, SR.GetResourceString(SR.ID6226), context.ClientId);
 
                     context.Reject(
                         error: Errors.InvalidClient,
@@ -1185,7 +1185,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject requests containing a client_secret when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientSecret))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6223), context.ClientId);
+                    context.Logger.LogInformation(6223, SR.GetResourceString(SR.ID6223), context.ClientId);
 
                     context.Reject(
                         error: Errors.InvalidClient,
@@ -1201,7 +1201,7 @@ public static partial class OpenIddictServerHandlers
             // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
             if (context.ClientAssertionPrincipal is null && string.IsNullOrEmpty(context.ClientSecret))
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6224), context.ClientId);
+                context.Logger.LogInformation(6224, SR.GetResourceString(SR.ID6224), context.ClientId);
 
                 context.Reject(
                     error: Errors.InvalidClient,
@@ -1271,7 +1271,7 @@ public static partial class OpenIddictServerHandlers
 
             if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6225), context.ClientId);
+                context.Logger.LogInformation(6225, SR.GetResourceString(SR.ID6225), context.ClientId);
 
                 context.Reject(
                     error: Errors.InvalidClient,
@@ -3034,12 +3034,12 @@ public static partial class OpenIddictServerHandlers
 
             if (string.IsNullOrEmpty(context.Request.ClientId))
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6007), identifier);
+                context.Logger.LogInformation(6007, SR.GetResourceString(SR.ID6007), identifier);
             }
 
             else
             {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6008), context.Request.ClientId, identifier);
+                context.Logger.LogInformation(6008, SR.GetResourceString(SR.ID6008), context.Request.ClientId, identifier);
             }
 
             // Attach the unique identifier of the ad hoc authorization to the authentication principal
@@ -3135,7 +3135,7 @@ public static partial class OpenIddictServerHandlers
                 // contain "access_token" are not included in the access token.
                 if (!claim.HasDestination(Destinations.AccessToken))
                 {
-                    context.Logger.LogDebug(SR.GetResourceString(SR.ID6009), claim.Type);
+                    context.Logger.LogDebug(6009, SR.GetResourceString(SR.ID6009), claim.Type);
 
                     return false;
                 }
@@ -3199,7 +3199,7 @@ public static partial class OpenIddictServerHandlers
                 var scopes = context.Request.GetScopes();
                 principal.SetScopes(scopes.Intersect(context.Principal.GetScopes()));
 
-                context.Logger.LogDebug(SR.GetResourceString(SR.ID6010), scopes);
+                context.Logger.LogDebug(6010, SR.GetResourceString(SR.ID6010), scopes);
             }
 
             context.AccessTokenPrincipal = principal;
@@ -3780,7 +3780,7 @@ public static partial class OpenIddictServerHandlers
                 // contain "id_token" are not included in the identity token.
                 if (!claim.HasDestination(Destinations.IdentityToken))
                 {
-                    context.Logger.LogDebug(SR.GetResourceString(SR.ID6011), claim.Type);
+                    context.Logger.LogDebug(6011, SR.GetResourceString(SR.ID6011), claim.Type);
 
                     return false;
                 }
@@ -4427,7 +4427,7 @@ public static partial class OpenIddictServerHandlers
 
             await _tokenManager.UpdateAsync(token, descriptor);
 
-            context.Logger.LogTrace(SR.GetResourceString(SR.ID6021), await _tokenManager.GetIdAsync(token));
+            context.Logger.LogTrace(6021, SR.GetResourceString(SR.ID6021), await _tokenManager.GetIdAsync(token));
         }
     }
 
