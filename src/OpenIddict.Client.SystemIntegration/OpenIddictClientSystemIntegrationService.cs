@@ -10,10 +10,10 @@ using System.Net;
 using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 
 #if SUPPORTS_ANDROID
 using Android.Content;
+using OpenIddict.Extensions;
 #endif
 
 namespace OpenIddict.Client.SystemIntegration;

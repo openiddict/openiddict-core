@@ -45,7 +45,7 @@ public sealed class OpenIddictServerBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerBuilder AddEventHandler<TContext>(
         Action<OpenIddictServerHandlerDescriptor.Builder<TContext>> configuration)
-        where TContext : OpenIddictServerEvents.BaseContext
+        where TContext : BaseContext
     {
         if (configuration is null)
         {

@@ -5,7 +5,6 @@
  */
 
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace OpenIddict.Server;

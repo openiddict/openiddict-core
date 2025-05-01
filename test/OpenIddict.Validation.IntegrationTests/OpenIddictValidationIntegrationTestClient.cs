@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Runtime.InteropServices;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;

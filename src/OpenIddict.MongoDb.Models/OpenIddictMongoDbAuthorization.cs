@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace OpenIddict.MongoDb.Models;

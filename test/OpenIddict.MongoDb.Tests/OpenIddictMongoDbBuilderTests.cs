@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Moq;
-using OpenIddict.Core;
 using OpenIddict.MongoDb.Models;
 using Xunit;
 

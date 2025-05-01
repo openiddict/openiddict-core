@@ -44,7 +44,7 @@ public sealed class OpenIddictValidationBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationBuilder AddEventHandler<TContext>(
         Action<OpenIddictValidationHandlerDescriptor.Builder<TContext>> configuration)
-        where TContext : OpenIddictValidationEvents.BaseContext
+        where TContext : BaseContext
     {
         if (configuration is null)
         {

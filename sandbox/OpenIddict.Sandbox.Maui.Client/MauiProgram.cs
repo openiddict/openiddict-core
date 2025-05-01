@@ -1,5 +1,4 @@
 ﻿#if IOS || MACCATALYST || WINDOWS
-using System.Net.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;

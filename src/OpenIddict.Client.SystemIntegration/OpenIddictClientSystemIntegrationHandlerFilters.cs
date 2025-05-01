@@ -5,7 +5,6 @@
  */
 
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationAuthenticationMode;
 

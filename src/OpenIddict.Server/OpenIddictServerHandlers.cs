@@ -1015,7 +1015,7 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseScopedHandler<ValidateClientId>(static provider =>
+                .UseScopedHandler(static provider =>
                 {
                     // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                     // invalid core configuration exceptions are not thrown even if the managers were registered.
@@ -3065,7 +3065,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAccessTokenGenerated>()
-                .UseScopedHandler<PrepareAccessTokenPrincipal>(static provider =>
+                .UseScopedHandler(static provider =>
                 {
                     // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                     // invalid core configuration exceptions are not thrown even if the managers were registered.
@@ -3223,7 +3223,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAuthorizationCodeGenerated>()
-                .UseScopedHandler<PrepareAuthorizationCodePrincipal>(static provider =>
+                .UseScopedHandler(static provider =>
                 {
                     // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                     // invalid core configuration exceptions are not thrown even if the managers were registered.
@@ -3349,7 +3349,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireDeviceCodeGenerated>()
-                .UseScopedHandler<PrepareDeviceCodePrincipal>(static provider =>
+                .UseScopedHandler(static provider =>
                 {
                     // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                     // invalid core configuration exceptions are not thrown even if the managers were registered.
@@ -3462,7 +3462,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireRequestTokenGenerated>()
-                .UseScopedHandler<PrepareRequestTokenPrincipal>(static provider =>
+                .UseScopedHandler(static provider =>
                 {
                     // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                     // invalid core configuration exceptions are not thrown even if the managers were registered.
@@ -3593,7 +3593,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireRefreshTokenGenerated>()
-                .UseScopedHandler<PrepareRefreshTokenPrincipal>(static provider =>
+                .UseScopedHandler(static provider =>
                 {
                     // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                     // invalid core configuration exceptions are not thrown even if the managers were registered.
@@ -3717,7 +3717,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireIdentityTokenGenerated>()
-                .UseScopedHandler<PrepareIdentityTokenPrincipal>(static provider =>
+                .UseScopedHandler(static provider =>
                 {
                     // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                     // invalid core configuration exceptions are not thrown even if the managers were registered.
@@ -3871,7 +3871,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireUserCodeGenerated>()
-                .UseScopedHandler<PrepareUserCodePrincipal>(static provider =>
+                .UseScopedHandler(static provider =>
                 {
                     // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                     // invalid core configuration exceptions are not thrown even if the managers were registered.

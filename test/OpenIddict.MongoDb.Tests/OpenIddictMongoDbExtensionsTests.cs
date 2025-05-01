@@ -5,8 +5,6 @@
  */
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using OpenIddict.Core;
 using OpenIddict.MongoDb.Models;
 using Xunit;
 

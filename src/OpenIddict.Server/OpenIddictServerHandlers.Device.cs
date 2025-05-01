@@ -466,7 +466,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceAuthorizationRequestContext>()
                     .AddFilter<RequireScopeValidationEnabled>()
-                    .UseScopedHandler<ValidateScopes>(static provider =>
+                    .UseScopedHandler(static provider =>
                     {
                         // Note: the scope manager is only resolved if the degraded mode was not enabled to ensure
                         // invalid core configuration exceptions are not thrown even if the managers were registered.

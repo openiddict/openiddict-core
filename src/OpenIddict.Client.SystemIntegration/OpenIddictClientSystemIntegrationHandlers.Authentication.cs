@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;
 
@@ -24,6 +23,7 @@ using AndroidX.Browser.CustomTabs;
 
 #if SUPPORTS_AUTHENTICATION_SERVICES
 using AuthenticationServices;
+using Microsoft.Extensions.Logging;
 #endif
 
 #if SUPPORTS_APPKIT

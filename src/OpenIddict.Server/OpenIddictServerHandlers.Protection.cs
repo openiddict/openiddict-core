@@ -64,7 +64,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                    .UseScopedHandler<ResolveTokenValidationParameters>(static provider =>
+                    .UseScopedHandler(static provider =>
                     {
                         // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
                         // invalid core configuration exceptions are not thrown even if the managers were registered.

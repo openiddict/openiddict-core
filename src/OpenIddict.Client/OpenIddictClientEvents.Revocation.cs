@@ -4,8 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Security.Claims;
-
 namespace OpenIddict.Client;
 
 public static partial class OpenIddictClientEvents
