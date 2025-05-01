@@ -432,6 +432,23 @@
   </Provider>
 
   <!--
+                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                ██ ▄▄▀██ ▄▄▄ ██ ▀██ █▄▄ ▄▄██ ▄▄▄██ ▀██ █▄▄ ▄▄██ ▄▄▄██ ██ ██ █████
+                                ██ █████ ███ ██ █ █ ███ ████ ▄▄▄██ █ █ ███ ████ ▄▄███ ██ ██ █████
+                                ██ ▀▀▄██ ▀▀▀ ██ ██▄ ███ ████ ▀▀▀██ ██▄ ███ ████ █████▄▀▀▄██ ▀▀ ██
+                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Contentful" DisplayName="Contentful" Id="3d820b1e-33c7-4934-a783-48745343d53b"
+            Documentation="https://www.contentful.com/developers/docs/extensibility/oauth/">
+    <Environment Issuer="https://be.contentful.com">
+      <Configuration AuthorizationEndpoint="https://be.contentful.com/oauth/authorize"
+                     TokenEndpoint="https://be.contentful.com/oauth/token"
+                     UserInfoEndpoint="https://api.contentful.com/users/me" />
+    </Environment>
+  </Provider>
+
+  <!--
                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                               ██ ▄▄▀█ ▄▄▀█▄ ▄██ █████ ███ ██ ▄▀▄ ██ ▄▄▄ █▄▄ ▄▄█▄ ▄██ ▄▄▄ ██ ▀██ ██
                               ██ ██ █ ▀▀ ██ ███ █████▄▀▀▀▄██ █ █ ██ ███ ███ ████ ███ ███ ██ █ █ ██
