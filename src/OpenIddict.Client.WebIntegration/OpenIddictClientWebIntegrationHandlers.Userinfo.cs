@@ -520,21 +520,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     }
                 }
                 
-                // Note: Contentful returns a nested "sys" object that contains the "id" and also
-                // uses non-standard names for given_name and family_name claims
-                else if (context.Registration.ProviderType is ProviderTypes.Contentful)
-                {
-                    context.Response[Claims.Name] = $"{context.Response["firstName"]} {context.Response["lastName"]}";
-                    context.Response[Claims.GivenName] = context.Response["firstName"];
-                    context.Response[Claims.FamilyName] = context.Response["lastName"];
-                    
-                    var sys = context.Response["sys"]?.GetNamedParameters();
-                    if (sys is not null)
-                    {
-                        context.Response[Claims.Subject] = sys["id"];
-                    }
-                }
-
                 return default;
             }
         }

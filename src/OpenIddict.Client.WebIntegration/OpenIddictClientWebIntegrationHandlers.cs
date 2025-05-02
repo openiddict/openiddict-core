@@ -1430,6 +1430,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                          context.UserInfoResponse?.HasParameter("last_name")  is true
                     => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
 
+                // These providers don't return a username so one is created using the "firstName" and "lastName" nodes:
+                ProviderTypes.Contentful or ProviderTypes.Smartsheet
+                    when context.UserInfoResponse?.HasParameter("firstName") is true &&
+                         context.UserInfoResponse?.HasParameter("lastName")  is true
+                    => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
+
                 // FitBit returns the username as a custom "displayName" node:
                 ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["displayName"],
 
@@ -1464,12 +1470,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     when context.TokenResponse?["associated_user"]?["first_name"] is not null &&
                          context.TokenResponse?["associated_user"]?["last_name"]  is not null
                     => $"{(string?) context.TokenResponse?["associated_user"]?["first_name"]} {(string?) context.TokenResponse?["associated_user"]?["last_name"]}",
-
-                // Smartsheet doesn't return a username so one is created using the "firstName" and "lastName" nodes:
-                ProviderTypes.Smartsheet
-                    when context.UserInfoResponse?.HasParameter("firstName") is true &&
-                         context.UserInfoResponse?.HasParameter("lastName")  is true
-                    => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
 
                 // These providers return the username as a custom "display_name" node:
                 ProviderTypes.Spotify or ProviderTypes.StackExchange or
@@ -1534,6 +1534,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Calendly returns the user identifier (formatted as a URI) as a custom "uri" node:
                 ProviderTypes.Calendly => (string?) context.UserInfoResponse?["uri"],
+
+                // Contentful returns the user identifier as a custom "sys/id" node:
+                ProviderTypes.Contentful => (string?) context.UserInfoResponse?["sys"]?["id"],
 
                 // DeviantArt returns the user identifier as a custom "userid" node:
                 ProviderTypes.DeviantArt => (string?) context.UserInfoResponse?["userid"],
