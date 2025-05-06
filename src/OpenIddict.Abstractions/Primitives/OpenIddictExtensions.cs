@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
@@ -15,6 +14,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Primitives;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Abstractions;
 
@@ -2261,7 +2261,7 @@ public static class OpenIddictExtensions
 
         identity.RemoveClaims(type);
 
-        if (!IsEmptyJsonElement(value))
+        if (!OpenIddictHelpers.IsNullOrEmpty(value))
         {
             identity.AddClaim(type, value, issuer);
         }
@@ -2291,7 +2291,7 @@ public static class OpenIddictExtensions
 
         principal.RemoveClaims(type);
 
-        if (!IsEmptyJsonElement(value))
+        if (!OpenIddictHelpers.IsNullOrEmpty(value))
         {
             principal.AddClaim(type, value, issuer);
         }
@@ -2341,7 +2341,7 @@ public static class OpenIddictExtensions
 
         identity.RemoveClaims(type);
 
-        if (!IsEmptyJsonNode(value))
+        if (!OpenIddictHelpers.IsNullOrEmpty(value))
         {
             identity.AddClaim(type, value, issuer);
         }
@@ -2371,7 +2371,7 @@ public static class OpenIddictExtensions
 
         principal.RemoveClaims(type);
 
-        if (!IsEmptyJsonNode(value))
+        if (!OpenIddictHelpers.IsNullOrEmpty(value))
         {
             principal.AddClaim(type, value, issuer);
         }
@@ -2591,7 +2591,7 @@ public static class OpenIddictExtensions
 
         identity.RemoveClaims(type);
 
-        if (!IsEmptyJsonElement(value))
+        if (!OpenIddictHelpers.IsNullOrEmpty(value))
         {
             identity.AddClaims(type, value, issuer);
         }
@@ -2621,7 +2621,7 @@ public static class OpenIddictExtensions
 
         principal.RemoveClaims(type);
 
-        if (!IsEmptyJsonElement(value))
+        if (!OpenIddictHelpers.IsNullOrEmpty(value))
         {
             principal.AddClaims(type, value, issuer);
         }
@@ -3932,6 +3932,8 @@ public static class OpenIddictExtensions
         JsonArray  => "JSON_ARRAY",
         JsonObject => "JSON",
 
+        JsonValue value when value.TryGetValue(out JsonElement element) => GetClaimValueType(element),
+
         // If the JSON node cannot be mapped to a primitive type, convert it to
         // a JsonElement instance and infer the corresponding claim value type.
         JsonNode value => GetClaimValueType(value.Deserialize(OpenIddictSerializer.Default.JsonElement))
@@ -3978,41 +3980,4 @@ public static class OpenIddictExtensions
 
         return null;
     }
-
-    private static bool IsEmptyJsonElement(JsonElement element)
-    {
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.Undefined or JsonValueKind.Null:
-                return true;
-
-            case JsonValueKind.String:
-                return string.IsNullOrEmpty(element.GetString());
-
-            case JsonValueKind.Array:
-                return element.GetArrayLength() is 0;
-
-            case JsonValueKind.Object:
-                using (var enumerator = element.EnumerateObject())
-                {
-                    return !enumerator.MoveNext();
-                }
-
-            default: return false;
-        }
-    }
-
-    private static bool IsEmptyJsonNode([NotNullWhen(false)] JsonNode? node) => node switch
-    {
-        null => true,
-
-        JsonArray  value => value.Count is 0,
-        JsonObject value => value.Count is 0,
-
-        JsonValue value when value.TryGetValue(out string? result) => string.IsNullOrEmpty(result),
-
-        // If the JSON node cannot be mapped to a primitive type, convert it to
-        // a JsonElement instance and infer the corresponding claim value type.
-        JsonNode value => IsEmptyJsonElement(value.Deserialize(OpenIddictSerializer.Default.JsonElement))
-    };
 }

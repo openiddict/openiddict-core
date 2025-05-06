@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Primitives;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Abstractions;
 
@@ -634,14 +635,13 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         JsonElement value => value.ToString(),
 
-        JsonValue value when value.TryGetValue(out JsonElement element)
-            => element.ValueKind switch
-            {
-                JsonValueKind.True  => "true",
-                JsonValueKind.False => "false",
+        JsonValue value when value.TryGetValue(out JsonElement element) => element.ValueKind switch
+        {
+            JsonValueKind.True  => "true",
+            JsonValueKind.False => "false",
 
-                _ => element.ToString()
-            },
+            _ => element.ToString()
+        },
         
         JsonValue value when value.TryGetValue(out bool result)
             => result ? "true" : "false",
@@ -1310,8 +1310,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonValue value when value.TryGetValue(out string? result) => [result],
 
             // When the parameter is a JsonValue wrapping a boolean, return an array with its string representation.
-            JsonValue value when value.TryGetValue(out bool result)
-                => [result ? "true" : "false"],
+            JsonValue value when value.TryGetValue(out bool result) => [result ? "true" : "false"],
 
             // When the parameter is a JsonValue wrapping an integer, return an array with its string representation.
             JsonValue value when value.TryGetValue(out int result)
@@ -1483,45 +1482,21 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             string value    => value.Length is 0,
             string?[] value => value.Length is 0,
 
-            JsonElement value => IsEmptyJsonElement(value),
+            JsonElement value => OpenIddictHelpers.IsNullOrEmpty(value),
 
             JsonArray  value => value.Count is 0,
             JsonObject value => value.Count is 0,
 
-            JsonValue value when value.TryGetValue(out JsonElement element)
-                => IsEmptyJsonElement(element),
+            JsonValue value when value.TryGetValue(out string? result) => string.IsNullOrEmpty(result),
 
-            JsonValue value when value.TryGetValue(out string? result)
-                => string.IsNullOrEmpty(result),
+            JsonValue value when value.TryGetValue(out JsonElement element)
+                => OpenIddictHelpers.IsNullOrEmpty(element),
 
             JsonNode value when JsonSerializer.SerializeToElement(value,
                 OpenIddictSerializer.Default.JsonNode) is JsonElement element
-                => IsEmptyJsonElement(element),
+                => OpenIddictHelpers.IsNullOrEmpty(element),
 
             _ => false
         };
-
-        static bool IsEmptyJsonElement(JsonElement element)
-        {
-            switch (element.ValueKind)
-            {
-                case JsonValueKind.String:
-                    return string.IsNullOrEmpty(element.GetString());
-
-                case JsonValueKind.Array:
-                    return element.GetArrayLength() is 0;
-
-                case JsonValueKind.Object:
-#if SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT
-                    return element.GetPropertyCount() is 0;
-#else
-                    using (var enumerator = element.EnumerateObject())
-                    {
-                        return !enumerator.MoveNext();
-                    }
-#endif
-                default: return false;
-            }
-        }
     }
 }

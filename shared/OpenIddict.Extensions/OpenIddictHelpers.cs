@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Primitives;
 
 namespace OpenIddict.Extensions;
@@ -1065,6 +1066,61 @@ internal static class OpenIddictHelpers
         return false;
     }
 #endif
+
+    /// <summary>
+    /// Determines whether the specified <paramref name="element"/> represents a null, undefined or empty JSON node.
+    /// </summary>
+    /// <param name="element">The <see cref="JsonElement"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the JSON node is null, undefined or empty <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsNullOrEmpty(JsonElement element)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Undefined or JsonValueKind.Null:
+                return true;
+
+            case JsonValueKind.String:
+                return string.IsNullOrEmpty(element.GetString());
+
+            case JsonValueKind.Array:
+                return element.GetArrayLength() is 0;
+
+            case JsonValueKind.Object:
+#if SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT
+                return element.GetPropertyCount() is 0;
+#else
+                using (var enumerator = element.EnumerateObject())
+                {
+                    return !enumerator.MoveNext();
+                }
+#endif
+            default: return false;
+        }
+    }
+
+    /// <summary>
+    /// Determines whether the specified <paramref name="node"/> represents a null or empty JSON node.
+    /// </summary>
+    /// <param name="node">The <see cref="JsonNode"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the JSON node is null or empty <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsNullOrEmpty([NotNullWhen(false)] JsonNode? node) => node switch
+    {
+        null => true,
+
+        JsonArray value  => value.Count is 0,
+        JsonObject value => value.Count is 0,
+
+        JsonValue value when value.TryGetValue(out string? result) => string.IsNullOrEmpty(result),
+        JsonValue value when value.TryGetValue(out JsonElement element) => IsNullOrEmpty(element),
+
+        // If the JSON node cannot be mapped to a primitive type, convert it to
+        // a JsonElement instance and infer the corresponding claim value type.
+        JsonNode value => IsNullOrEmpty(value.Deserialize(OpenIddictSerializer.Default.JsonElement))
+    };
 
     /// <summary>
     /// Determines whether the items contained in <paramref name="element"/>
