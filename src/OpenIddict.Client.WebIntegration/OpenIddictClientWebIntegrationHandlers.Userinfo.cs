@@ -519,7 +519,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         context.Response[Claims.GivenName] = name["first"];
                     }
                 }
-                
                 return default;
             }
         }
