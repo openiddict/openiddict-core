@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace OpenIddict.Abstractions.Tests.Primitives;
@@ -2078,6 +2079,151 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void ClaimsIdentity_AddClaimWithJsonNode_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaim(Claims.Name, (JsonNode) null!));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithJsonNode_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaim(Claims.Name, (JsonNode) null!));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithJsonNode_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, (JsonNode) null!));
+
+        Assert.Equal("principal", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_AddClaimWithJsonNode_ThrowsAnExceptionForNullOrEmptyType(string? type)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type!, (JsonNode) null!));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_AddClaimWithJsonNode_ThrowsAnExceptionForNullOrEmptyType(string? type)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type!, (JsonNode) null!));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimWithJsonNode_ThrowsAnExceptionForNullNode()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaim(Claims.Name, (JsonNode) null!));
+
+        Assert.Equal("value", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithJsonNode_ThrowsAnExceptionForNullNode()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaim(Claims.Name, (JsonNode) null!));
+
+        Assert.Equal("value", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimWithJsonNode_ThrowsAnExceptionForIncompatibleJsonNode()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim("type",
+            new JsonArray(["Fabrikam", "Contoso"])));
+
+        Assert.Equal("value", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithJsonNode_ThrowsAnExceptionForIncompatibleJsonNode()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim("type",
+            new JsonArray(["Fabrikam", "Contoso"])));
+
+        Assert.Equal("value", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimWithJsonNode_AddsExpectedClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.AddClaim("type", new JsonObject { ["parameter"] = "value" });
+
+        // Assert
+        Assert.Equal(@"{""parameter"":""value""}", identity.FindFirst("type")!.Value);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithJsonNode_AddsExpectedClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.AddClaim("type", new JsonObject { ["parameter"] = "value" });
+
+        // Assert
+        Assert.Equal(@"{""parameter"":""value""}", principal.FindFirst("type")!.Value);
+    }
+
+    [Fact]
     public void ClaimsIdentity_AddClaimsWithArray_ThrowsAnExceptionForNullIdentity()
     {
         // Arrange
@@ -2377,6 +2523,174 @@ public class OpenIddictExtensionsTests
 
         // Act
         principal.AddClaims("TYPE", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
+
+        // Assert
+        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimsWithJsonArray_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaims("type", (JsonArray) null!));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimsWithJsonArray_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaims("type", (JsonArray) null!));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimsWithJsonArray_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims("type", (JsonArray) null!));
+
+        Assert.Equal("principal", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_AddClaimsWithJsonArray_ThrowsAnExceptionForNullOrEmptyType(string? type)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaims(type!, (JsonArray) null!));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_AddClaimsWithJsonArray_ThrowsAnExceptionForNullOrEmptyType(string? type)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims(type!, (JsonArray) null!));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimsWithJsonArray_ThrowsAnExceptionForNullNode()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaims("type", (JsonArray) null!));
+
+        Assert.Equal("value", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimsWithJsonArray_ThrowsAnExceptionForNullNode()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaims("type", (JsonArray) null!));
+
+        Assert.Equal("value", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimsWithJsonArray_AddsExpectedClaims()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.AddClaims(
+            "type",
+            new JsonArray(["Fabrikam", "Contoso", new JsonObject { ["Foo"] = "Bar" }]),
+            "issuer");
+
+        // Assert
+        var claims = identity.FindAll("type").ToArray();
+        Assert.Equal("Fabrikam", claims[0].Value);
+        Assert.Equal(ClaimValueTypes.String, claims[0].ValueType);
+        Assert.Equal("issuer", claims[0].Issuer);
+        Assert.Equal("Contoso", claims[1].Value);
+        Assert.Equal(ClaimValueTypes.String, claims[1].ValueType);
+        Assert.Equal("issuer", claims[1].Issuer);
+        Assert.Equal("{\"Foo\":\"Bar\"}", claims[2].Value);
+        Assert.Equal("JSON", claims[2].ValueType);
+        Assert.Equal("issuer", claims[2].Issuer);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimsWithJsonArray_AddsExpectedClaims()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.AddClaims(
+            "type",
+            new JsonArray(["Fabrikam", "Contoso", new JsonObject { ["Foo"] = "Bar" }]),
+            "issuer");
+
+        // Assert
+        var claims = principal.FindAll("type").ToArray();
+        Assert.Equal(3, claims.Length);
+        Assert.Equal("Fabrikam", claims[0].Value);
+        Assert.Equal(ClaimValueTypes.String, claims[0].ValueType);
+        Assert.Equal("issuer", claims[0].Issuer);
+        Assert.Equal("Contoso", claims[1].Value);
+        Assert.Equal(ClaimValueTypes.String, claims[1].ValueType);
+        Assert.Equal("issuer", claims[1].Issuer);
+        Assert.Equal("{\"Foo\":\"Bar\"}", claims[2].Value);
+        Assert.Equal("JSON", claims[2].ValueType);
+        Assert.Equal("issuer", claims[2].Issuer);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimsWithJsonArray_IsCaseInsensitive()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.AddClaims("TYPE", new JsonArray(["Fabrikam", "Contoso"]));
+
+        // Assert
+        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimsWithJsonArray_IsCaseInsensitive()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.AddClaims("TYPE", new JsonArray(["Fabrikam", "Contoso"]));
 
         // Assert
         Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"));
@@ -3644,6 +3958,216 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void ClaimsIdentity_SetClaimWithJsonNode_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaim("type", (JsonNode) null!));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonNode_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", (JsonNode) null!));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonNode_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type",
+            new JsonObject { ["parameter"] = "value" }));
+
+        Assert.Equal("principal", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_SetClaimWithJsonNode_ThrowsAnExceptionForNullOrEmptyType(string? type)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type!, (JsonNode) null!));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_SetClaimWithJsonNode_ThrowsAnExceptionForNullOrEmptyType(string? type)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type!, (JsonNode) null!));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithJsonNode_AddsExpectedClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim("type", "value1");
+
+        // Act
+        identity.SetClaim("type", new JsonObject { ["parameter"] = "value" }, "issuer");
+
+        // Assert
+        var claim = Assert.Single(identity.FindAll("type"));
+        Assert.Equal(@"{""parameter"":""value""}", claim.Value);
+        Assert.Equal("JSON", claim.ValueType);
+        Assert.Equal("issuer", claim.Issuer);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonNode_AddsExpectedClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value1");
+
+        // Act
+        principal.SetClaim("type", new JsonObject { ["parameter"] = "value" }, "issuer");
+
+        // Assert
+        var claim = Assert.Single(principal.FindAll("type"));
+        Assert.Equal(@"{""parameter"":""value""}", claim.Value);
+        Assert.Equal("JSON", claim.ValueType);
+        Assert.Equal("issuer", claim.Issuer);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithJsonNode_IsCaseInsensitive()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaim("TYPE", new JsonObject { ["parameter"] = "value" });
+
+        // Assert
+        Assert.Equal(@"{""parameter"":""value""}", identity.FindFirst("type")!.Value);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonNode_IsCaseInsensitive()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.SetClaim("TYPE", new JsonObject { ["parameter"] = "value" });
+
+        // Assert
+        Assert.Equal(@"{""parameter"":""value""}", principal.FindFirst("type")!.Value);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithJsonNode_RemovesEmptyClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim("type", "value");
+
+        // Act
+        identity.SetClaim("type", new JsonObject());
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonNode_RemovesEmptyClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaim("type", new JsonObject());
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithJsonNode_Undefined()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaim("type", (JsonNode) null!);
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonNode_Undefined()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaim("type", (JsonNode) null!);
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithJsonNode_Null()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaim("type", JsonSerializer.Deserialize<JsonNode>("null"));
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonNode_Null()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaim("type", JsonSerializer.Deserialize<JsonNode>("null"));
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
     public void ClaimsIdentity_SetClaimsWithArray_ThrowsAnExceptionForNullIdentity()
     {
         // Arrange
@@ -4016,6 +4540,191 @@ public class OpenIddictExtensionsTests
 
         // Assert
         Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonArray_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaims("type", (JsonArray) null!));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonArray_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaims("type", (JsonArray) null!));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonArray_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims("type",
+            new JsonArray("Fabrikam", "Contoso")));
+
+        Assert.Equal("principal", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_SetClaimsWithJsonArray_ThrowsAnExceptionForNullOrEmptyType(string? type)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaims(type!, (JsonArray) null!));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_SetClaimsWithJsonArray_ThrowsAnExceptionForNullOrEmptyType(string? type)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims(type!, (JsonArray) null!));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonArray_ThrowsAnExceptionForNullNode()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaims("type", (JsonArray) null!));
+
+        Assert.Equal("value", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonArray_ThrowsAnExceptionForNullNode()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaims("type", (JsonArray) null!));
+
+        Assert.Equal("value", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonArray_AddsExpectedClaims()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaims("type", new JsonArray("Fabrikam", "Contoso"), "issuer");
+
+        // Assert
+        var claims = identity.FindAll("type").ToArray();
+        Assert.Equal("Fabrikam", claims[0].Value);
+        Assert.Equal(ClaimValueTypes.String, claims[0].ValueType);
+        Assert.Equal("issuer", claims[0].Issuer);
+        Assert.Equal("Contoso", claims[1].Value);
+        Assert.Equal(ClaimValueTypes.String, claims[1].ValueType);
+        Assert.Equal("issuer", claims[1].Issuer);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonArray_AddsExpectedClaims()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.SetClaims("type", new JsonArray("Fabrikam", "Contoso"), "issuer");
+
+        // Assert
+        var claims = principal.FindAll("type").ToArray();
+        Assert.Equal(2, claims.Length);
+        Assert.Equal("Fabrikam", claims[0].Value);
+        Assert.Equal(ClaimValueTypes.String, claims[0].ValueType);
+        Assert.Equal("issuer", claims[0].Issuer);
+        Assert.Equal("Contoso", claims[1].Value);
+        Assert.Equal(ClaimValueTypes.String, claims[1].ValueType);
+        Assert.Equal("issuer", claims[1].Issuer);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonArray_IsCaseInsensitive()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaims("TYPE", new JsonArray("Fabrikam", "Contoso"));
+
+        // Assert
+        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonArray_IsCaseInsensitive()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.SetClaims("TYPE", new JsonArray("Fabrikam", "Contoso"));
+
+        // Assert
+        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonArray_RemovesEmptyClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim("type", "value");
+
+        // Act
+        identity.SetClaims("type", new JsonArray());
+
+        // Assert
+        Assert.Empty(identity.GetClaims("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonArray_RemovesEmptyClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaims("type", new JsonArray());
+
+        // Assert
+        Assert.Empty(principal.GetClaims("type"));
     }
 
     [Fact]
@@ -4714,6 +5423,72 @@ public class OpenIddictExtensionsTests
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), principal.GetRefreshTokenLifetime());
+    }
+
+    [Fact]
+    public void ClaimsIdentity_GetRequestTokenLifetime_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.GetRequestTokenLifetime());
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_GetRequestTokenLifetime_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.GetRequestTokenLifetime());
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_GetRequestTokenLifetime_ReturnsNullForMissingClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        Assert.Null(identity.GetRequestTokenLifetime());
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_GetRequestTokenLifetime_ReturnsNullForMissingClaim()
+    {
+        // Arrange
+        var principal = new ClaimsIdentity(new ClaimsIdentity());
+
+        // Act and assert
+        Assert.Null(principal.GetRequestTokenLifetime());
+    }
+
+    [Fact]
+    public void ClaimsIdentity_GetRequestTokenLifetime_ReturnsExpectedResult()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.SetClaim(Claims.Private.RequestTokenLifetime, 2520);
+
+        // Act and assert
+        Assert.Equal(TimeSpan.FromMinutes(42), identity.GetRequestTokenLifetime());
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_GetRequestTokenLifetime_ReturnsExpectedResult()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.SetClaim(Claims.Private.RequestTokenLifetime, 2520);
+
+        // Act and assert
+        Assert.Equal(TimeSpan.FromMinutes(42), principal.GetRequestTokenLifetime());
     }
 
     [Fact]
@@ -6104,6 +6879,84 @@ public class OpenIddictExtensionsTests
 
         // Assert
         Assert.Equal("2520", principal.GetClaim(Claims.Private.RefreshTokenLifetime));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetRequestTokenLifetime_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetRequestTokenLifetime(null));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetRequestTokenLifetime_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetRequestTokenLifetime(null));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetRequestTokenLifetime_RemovesClaimForNullValue()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim(Claims.Private.RequestTokenLifetime, 2520);
+
+        // Act
+        identity.SetRequestTokenLifetime(null);
+
+        // Assert
+        Assert.Empty(identity.Claims);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetRequestTokenLifetime_RemovesClaimForNullValue()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim(Claims.Private.RequestTokenLifetime, 2520);
+
+        // Act
+        principal.SetRequestTokenLifetime(null);
+
+        // Assert
+        Assert.Empty(principal.Claims);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetRequestTokenLifetime_AddsClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetRequestTokenLifetime(TimeSpan.FromMinutes(42));
+
+        // Assert
+        Assert.Equal("2520", identity.GetClaim(Claims.Private.RequestTokenLifetime));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetRequestTokenLifetime_AddsClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.SetRequestTokenLifetime(TimeSpan.FromMinutes(42));
+
+        // Assert
+        Assert.Equal("2520", principal.GetClaim(Claims.Private.RequestTokenLifetime));
     }
 
     [Fact]

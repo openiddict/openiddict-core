@@ -6,12 +6,14 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Primitives;
 
 namespace OpenIddict.Abstractions;
@@ -1142,7 +1144,7 @@ public static class OpenIddictExtensions
 
         identity.AddClaim(new Claim(
             type          : type,
-            value         : value.ToString()!,
+            value         : value.ToString(),
             valueType     : GetClaimValueType(value),
             issuer        : issuer,
             originalIssuer: issuer,
@@ -1173,6 +1175,105 @@ public static class OpenIddictExtensions
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        identity.AddClaim(type, value, issuer);
+
+        return principal;
+    }
+
+    /// <summary>
+    /// Adds a claim to a given identity.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, JsonNode value)
+        => identity.AddClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Adds a claim to a given principal.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    public static ClaimsPrincipal AddClaim(this ClaimsPrincipal principal, string type, JsonNode value)
+        => principal.AddClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Adds a claim to a given identity.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, JsonNode value, string issuer)
+    {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        if (value is JsonArray)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0185), nameof(value));
+        }
+
+        identity.AddClaim(new Claim(
+            type          : type,
+            value         : value switch
+            {
+                // If the item can be directly retrieved as a string, store it as-is.
+                JsonValue instance when instance.TryGetValue(out string? result) => result,
+
+                // Otherwise, serialize it as a JSON string.
+                JsonNode instance => instance.ToJsonString()
+            },
+            valueType     : GetClaimValueType(value),
+            issuer        : issuer,
+            originalIssuer: issuer,
+            subject       : identity));
+
+        return identity;
+    }
+
+    /// <summary>
+    /// Adds a claim to a given principal.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    public static ClaimsPrincipal AddClaim(this ClaimsPrincipal principal, string type, JsonNode value, string issuer)
+    {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (principal.Identity is not ClaimsIdentity identity)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0286), nameof(principal));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
         }
 
         identity.AddClaim(type, value, issuer);
@@ -1290,6 +1391,7 @@ public static class OpenIddictExtensions
     /// <param name="identity">The identity.</param>
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="values">The values associated with the claims.</param>
+    [OverloadResolutionPriority(0)]
     public static ClaimsIdentity AddClaims(this ClaimsIdentity identity, string type, ImmutableArray<string> values)
         => identity.AddClaims(type, values, ClaimsIdentity.DefaultIssuer);
 
@@ -1299,6 +1401,7 @@ public static class OpenIddictExtensions
     /// <param name="principal">The principal.</param>
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="values">The values associated with the claims.</param>
+    [OverloadResolutionPriority(0)]
     public static ClaimsPrincipal AddClaims(this ClaimsPrincipal principal, string type, ImmutableArray<string> values)
         => principal.AddClaims(type, values, ClaimsIdentity.DefaultIssuer);
 
@@ -1309,6 +1412,7 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="values">The values associated with the claims.</param>
     /// <param name="issuer">The issuer associated with the claims.</param>
+    [OverloadResolutionPriority(0)]
     public static ClaimsIdentity AddClaims(this ClaimsIdentity identity, string type, ImmutableArray<string> values, string issuer)
     {
         if (identity is null)
@@ -1348,6 +1452,7 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="values">The values associated with the claims.</param>
     /// <param name="issuer">The issuer associated with the claims.</param>
+    [OverloadResolutionPriority(0)]
     public static ClaimsPrincipal AddClaims(this ClaimsPrincipal principal,
         string type, ImmutableArray<string> values, string issuer)
     {
@@ -1417,7 +1522,7 @@ public static class OpenIddictExtensions
 
         foreach (var element in value.EnumerateArray())
         {
-            var item = element.ToString()!;
+            var item = element.ToString();
             if (set.Add(item))
             {
                 identity.AddClaim(new Claim(
@@ -1460,6 +1565,112 @@ public static class OpenIddictExtensions
         if (value.ValueKind is not JsonValueKind.Array)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0185), nameof(value));
+        }
+
+        identity.AddClaims(type, value, issuer);
+
+        return principal;
+    }
+
+    /// <summary>
+    /// Adds claims to a given identity.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claims.</param>
+    /// <param name="value">The value associated with the claims.</param>
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsIdentity AddClaims(this ClaimsIdentity identity, string type, JsonArray value)
+        => identity.AddClaims(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Adds claims to a given principal.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claims.</param>
+    /// <param name="value">The value associated with the claims.</param>
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsPrincipal AddClaims(this ClaimsPrincipal principal, string type, JsonArray value)
+        => principal.AddClaims(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Adds claims to a given identity.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claims.</param>
+    /// <param name="value">The value associated with the claims.</param>
+    /// <param name="issuer">The issuer associated with the claims.</param>
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsIdentity AddClaims(this ClaimsIdentity identity, string type, JsonArray value, string issuer)
+    {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        var set = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var node in value)
+        {
+            var item = node switch
+            {
+                // If the item is null, store it as an empty string.
+                null => string.Empty,
+
+                // If the item can be directly retrieved as a string, store it as-is.
+                JsonValue instance when instance.TryGetValue(out string? result) => result,
+
+                // Otherwise, serialize it as a JSON string.
+                JsonNode instance => instance.ToJsonString()
+            };
+
+            if (set.Add(item))
+            {
+                identity.AddClaim(new Claim(
+                    type          : type,
+                    value         : item,
+                    valueType     : GetClaimValueType(node),
+                    issuer        : issuer,
+                    originalIssuer: issuer,
+                    subject       : identity));
+            }
+        }
+
+        return identity;
+    }
+
+    /// <summary>
+    /// Adds claims to a given principal.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claims.</param>
+    /// <param name="value">The value associated with the claims.</param>
+    /// <param name="issuer">The issuer associated with the claims.</param>
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsPrincipal AddClaims(this ClaimsPrincipal principal, string type, JsonArray value, string issuer)
+    {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (principal.Identity is not ClaimsIdentity identity)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0286), nameof(principal));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
         }
 
         identity.AddClaims(type, value, issuer);
@@ -2095,6 +2306,86 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claim.</param>
     /// <param name="value">The value associated with the claim.</param>
     /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetClaim(this ClaimsIdentity identity, string type, JsonNode? value)
+        => identity.SetClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal, string type, JsonNode? value)
+        => principal.SetClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetClaim(this ClaimsIdentity identity, string type, JsonNode? value, string issuer)
+    {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        identity.RemoveClaims(type);
+
+        if (!IsEmptyJsonNode(value))
+        {
+            identity.AddClaim(type, value, issuer);
+        }
+
+        return identity;
+    }
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal, string type, JsonNode? value, string issuer)
+    {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        principal.RemoveClaims(type);
+
+        if (!IsEmptyJsonNode(value))
+        {
+            principal.AddClaim(type, value, issuer);
+        }
+
+        return principal;
+    }
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
     public static ClaimsIdentity SetClaim(this ClaimsIdentity identity,
         string type, IDictionary<string, string?>? value)
         => identity.SetClaim(type, value, ClaimsIdentity.DefaultIssuer);
@@ -2179,6 +2470,7 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="values">The values associated with the claims.</param>
     /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsIdentity SetClaims(this ClaimsIdentity identity, string type, ImmutableArray<string> values)
         => identity.SetClaims(type, values, ClaimsIdentity.DefaultIssuer);
 
@@ -2189,6 +2481,7 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="values">The values associated with the claims.</param>
     /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsPrincipal SetClaims(this ClaimsPrincipal principal, string type, ImmutableArray<string> values)
         => principal.SetClaims(type, values, ClaimsIdentity.DefaultIssuer);
 
@@ -2200,6 +2493,7 @@ public static class OpenIddictExtensions
     /// <param name="values">The values associated with the claims.</param>
     /// <param name="issuer">The issuer associated with the claims.</param>
     /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsIdentity SetClaims(this ClaimsIdentity identity,
         string type, ImmutableArray<string> values, string issuer)
     {
@@ -2231,6 +2525,7 @@ public static class OpenIddictExtensions
     /// <param name="values">The values associated with the claims.</param>
     /// <param name="issuer">The issuer associated with the claims.</param>
     /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(0)]
     public static ClaimsPrincipal SetClaims(this ClaimsPrincipal principal,
         string type, ImmutableArray<string> values, string issuer)
     {
@@ -2327,6 +2622,100 @@ public static class OpenIddictExtensions
         principal.RemoveClaims(type);
 
         if (!IsEmptyJsonElement(value))
+        {
+            principal.AddClaims(type, value, issuer);
+        }
+
+        return principal;
+    }
+
+    /// <summary>
+    /// Sets the claim values corresponding to the given type.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claims.</param>
+    /// <param name="value">The JSON array from which claim values are extracted.</param>
+    /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsIdentity SetClaims(this ClaimsIdentity identity, string type, JsonArray value)
+        => identity.SetClaims(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Sets the claim values corresponding to the given type.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claims.</param>
+    /// <param name="value">The JSON array from which claim values are extracted.</param>
+    /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsPrincipal SetClaims(this ClaimsPrincipal principal, string type, JsonArray value)
+        => principal.SetClaims(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Sets the claim values corresponding to the given type.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claims.</param>
+    /// <param name="value">The JSON array from which claim values are extracted.</param>
+    /// <param name="issuer">The issuer associated with the claims.</param>
+    /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsIdentity SetClaims(this ClaimsIdentity identity, string type, JsonArray value, string issuer)
+    {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        identity.RemoveClaims(type);
+
+        if (value.Count is not 0)
+        {
+            identity.AddClaims(type, value, issuer);
+        }
+
+        return identity;
+    }
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claims.</param>
+    /// <param name="value">The JSON array from which claim values are extracted.</param>
+    /// <param name="issuer">The issuer associated with the claims.</param>
+    /// <returns>The claims identity.</returns>
+    [OverloadResolutionPriority(-1)]
+    public static ClaimsPrincipal SetClaims(this ClaimsPrincipal principal, string type, JsonArray value, string issuer)
+    {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        principal.RemoveClaims(type);
+
+        if (value.Count is not 0)
         {
             principal.AddClaims(type, value, issuer);
         }
@@ -3279,6 +3668,24 @@ public static class OpenIddictExtensions
         => principal.SetClaim(Claims.Private.RefreshTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
+    /// Sets the request token lifetime associated with the claims identity.
+    /// </summary>
+    /// <param name="identity">The claims identity.</param>
+    /// <param name="lifetime">The request token lifetime to store.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetRequestTokenLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
+        => identity.SetClaim(Claims.Private.RequestTokenLifetime, (long?) lifetime?.TotalSeconds);
+
+    /// <summary>
+    /// Sets the request token lifetime associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <param name="lifetime">The request token lifetime to store.</param>
+    /// <returns>The claims principal.</returns>
+    public static ClaimsPrincipal SetRequestTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
+        => principal.SetClaim(Claims.Private.RequestTokenLifetime, (long?) lifetime?.TotalSeconds);
+
+    /// <summary>
     /// Sets the state token lifetime associated with the claims identity.
     /// </summary>
     /// <param name="identity">The claims identity.</param>
@@ -3511,6 +3918,25 @@ public static class OpenIddictExtensions
         JsonValueKind.Object or _                     => "JSON"
     };
 
+    private static string GetClaimValueType(JsonNode? node) => node switch
+    {
+        JsonValue value when value.TryGetValue<string?>(out _) => ClaimValueTypes.String,
+        JsonValue value when value.TryGetValue<bool>(out _)    => ClaimValueTypes.Boolean,
+        JsonValue value when value.TryGetValue<int>(out _)     => ClaimValueTypes.Integer32,
+        JsonValue value when value.TryGetValue<long>(out _)    => ClaimValueTypes.Integer64,
+        JsonValue value when value.TryGetValue<uint>(out _)    => ClaimValueTypes.UInteger32,
+        JsonValue value when value.TryGetValue<ulong>(out _)   => ClaimValueTypes.UInteger64,
+        JsonValue value when value.TryGetValue<double>(out _)  => ClaimValueTypes.Double,
+
+        null       => "JSON_NULL",
+        JsonArray  => "JSON_ARRAY",
+        JsonObject => "JSON",
+
+        // If the JSON node cannot be mapped to a primitive type, convert it to
+        // a JsonElement instance and infer the corresponding claim value type.
+        JsonNode value => GetClaimValueType(value.Deserialize(OpenIddictSerializer.Default.JsonElement))
+    };
+
     private static TimeSpan? GetLifetime(ClaimsIdentity identity, string type)
     {
         if (identity is null)
@@ -3575,4 +4001,18 @@ public static class OpenIddictExtensions
             default: return false;
         }
     }
+
+    private static bool IsEmptyJsonNode([NotNullWhen(false)] JsonNode? node) => node switch
+    {
+        null => true,
+
+        JsonArray  value => value.Count is 0,
+        JsonObject value => value.Count is 0,
+
+        JsonValue value when value.TryGetValue(out string? result) => string.IsNullOrEmpty(result),
+
+        // If the JSON node cannot be mapped to a primitive type, convert it to
+        // a JsonElement instance and infer the corresponding claim value type.
+        JsonNode value => IsEmptyJsonElement(value.Deserialize(OpenIddictSerializer.Default.JsonElement))
+    };
 }
