@@ -63,8 +63,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // For more information about the special tenants supported by Microsoft Account/Entra ID, see
                     // https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc#find-your-apps-openid-configuration-document-uri.
                     ProviderTypes.Microsoft when context.Registration.GetMicrosoftSettings() is { Tenant: string tenant } =>
-                        string.Equals(tenant, "common",        StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/common/v2.0"        :
-                        string.Equals(tenant, "consumers",     StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/consumers/v2.0"     :
+                        string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/common/v2.0" :
+                        string.Equals(tenant, "consumers", StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/consumers/v2.0" :
                         string.Equals(tenant, "organizations", StringComparison.OrdinalIgnoreCase) ? "https://login.microsoftonline.com/organizations/v2.0" :
                         context.Response[Metadata.Issuer],
 
@@ -109,8 +109,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // types is amended to include the known supported types for the providers that require it.
 
                 if (context.Registration.ProviderType is
-                    ProviderTypes.AlibabaCloud or ProviderTypes.Apple    or
-                    ProviderTypes.FaceIt       or ProviderTypes.LinkedIn or
+                    ProviderTypes.AlibabaCloud or ProviderTypes.Apple or
+                    ProviderTypes.FaceIt or ProviderTypes.LinkedIn or
                     ProviderTypes.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
@@ -194,7 +194,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // are manually added to the list of supported code challenge methods by this handler.
 
                 if (context.Registration.ProviderType is
-                    ProviderTypes.Adobe  or ProviderTypes.Autodesk  or
+                    ProviderTypes.Adobe or ProviderTypes.Autodesk or
                     ProviderTypes.FaceIt or ProviderTypes.Microsoft or ProviderTypes.Zoho)
                 {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
@@ -256,6 +256,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.EpicGames or ProviderTypes.EveOnline or ProviderTypes.Xero)
                 {
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
+                }
+
+                // Genesys supports oAuth but doesn't format the "openid" scope using the standard casing.
+                // To ensure Genesys is not treated as an OAuth 2.0-only provider, the invalid "OpenId" scope is
+                // removed from the list and the "openid" value is added to indicate OpenID Connect is supported.
+                else if (context.Registration.ProviderType is ProviderTypes.Genesys)
+                {
+                    context.Configuration.ScopesSupported.Remove("OpenId");
+                    context.Configuration.ScopesSupported.Add("user-basic-info");
                 }
 
                 return default;
