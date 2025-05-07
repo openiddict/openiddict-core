@@ -2487,15 +2487,16 @@
     Documentation="https://developer.genesys.cloud/">
 
     <Environment Issuer="{settings.Issuer}">
-      <Configuration AuthorizationEndpoint="{settings.Issuer.Schema}://login.{settings.Issuer.Host}/oauth/authorize"
-                     TokenEndpoint="{settings.Issuer.Schema}://login.{settings.Issuer.Host}/oauth/token"
-                     UserInfoEndpoint="{settings.Issuer.Schema}://api.{settings.Issuer.Host}/api/v2/users/me">
+      <Configuration AuthorizationEndpoint="{settings.Issuer.Scheme}://login.{settings.Issuer.Host}/oauth/authorize"
+                     TokenEndpoint="{settings.Issuer.Scheme}://login.{settings.Issuer.Host}/oauth/token"
+                     UserInfoEndpoint="{settings.Issuer.Scheme}://api.{settings.Issuer.Host}/api/v2/users/me">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="client_credentials" />
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
+        <GrantType Value="implicit" />
       </Configuration>
     </Environment>
 
