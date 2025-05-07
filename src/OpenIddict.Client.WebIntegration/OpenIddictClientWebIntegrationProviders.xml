@@ -2472,6 +2472,13 @@
     </Environment>
   </Provider>
 
+  <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                ██░▄▄░█░▄▄█░▄▄▀█░▄▄█░▄▄█░██░█░▄▄
+                                                ██░█▀▀█░▄▄█░██░█░▄▄█▄▄▀█░▀▀░█▄▄▀
+                                                ██░▀▀▄█▄▄▄█▄██▄█▄▄▄█▄▄▄█▀▀▀▄█▄▄▄
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider
     Name="Genesys"
@@ -2479,10 +2486,10 @@
     Id="2e34b9d0-5c1f-4e23-9ac9-b4aefde213d2"
     Documentation="https://developer.genesys.cloud/">
 
-    <Environment Name="USEastOne" Issuer="https://mypurecloud.com">
-      <Configuration AuthorizationEndpoint="https://login.mypurecloud.com/oauth/authorize"
-                     TokenEndpoint="https://login.mypurecloud.com/oauth/token"
-                     UserInfoEndpoint="https://api.mypurecloud.com/api/v2/users/me">
+    <Environment Issuer="{settings.Issuer}">
+      <Configuration AuthorizationEndpoint="{settings.Issuer.Schema}://login.{settings.Issuer.Host}/oauth/authorize"
+                     TokenEndpoint="{settings.Issuer.Schema}://login.{settings.Issuer.Host}/oauth/token"
+                     UserInfoEndpoint="{settings.Issuer.Schema}://api.{settings.Issuer.Host}/api/v2/users/me">
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
@@ -2492,187 +2499,12 @@
       </Configuration>
     </Environment>
 
-    <Environment Name="USEastTwo" Issuer="https://use2.us-gov-pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.use2.us-gov-pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.use2.us-gov-pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.use2.us-gov-pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="USWestTwo" Issuer="https://usw2.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.usw2.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.usw2.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.usw2.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="EUWestOne" Issuer="https://mypurecloud.ie">
-      <Configuration AuthorizationEndpoint="https://login.mypurecloud.ie/oauth/authorize"
-                     TokenEndpoint="https://login.mypurecloud.ie/oauth/token"
-                     UserInfoEndpoint="https://api.mypurecloud.ie/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="EUCentralOne" Issuer="https://mypurecloud.de">
-      <Configuration AuthorizationEndpoint="https://login.mypurecloud.de/oauth/authorize"
-                     TokenEndpoint="https://login.mypurecloud.de/oauth/token"
-                     UserInfoEndpoint="https://api.mypurecloud.de/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="EUCentralTwo" Issuer="https://euc2.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.euc2.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.euc2.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.euc2.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="EUWestTwo" Issuer="https://euw2.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.euw2.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.euw2.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.euw2.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="APSouthOne" Issuer="https://aps1.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.aps1.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.aps1.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.aps1.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="APNorthEastOne" Issuer="https://mypurecloud.jp">
-      <Configuration AuthorizationEndpoint="https://login.mypurecloud.jp/oauth/authorize"
-                     TokenEndpoint="https://login.mypurecloud.jp/oauth/token"
-                     UserInfoEndpoint="https://api.mypurecloud.jp/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="APNorthEastTwo" Issuer="https://apne2.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.apne2.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.apne2.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.apne2.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="APNorthEastThree" Issuer="https://apne3.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.apne3.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.apne3.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.apne3.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="APSouthEastOne" Issuer="https://mypurecloud.com.au">
-      <Configuration AuthorizationEndpoint="https://login.mypurecloud.com.au/oauth/authorize"
-                     TokenEndpoint="https://login.mypurecloud.com.au/oauth/token"
-                     UserInfoEndpoint="https://api.mypurecloud.com.au/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="CACentralOne" Issuer="https://cac1.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.cac1.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.cac1.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.cac1.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="SAEastOne" Issuer="https://sae1.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.sae1.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.sae1.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.sae1.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
-
-    <Environment Name="MECentralOne" Issuer="https://mec1.pure.cloud">
-      <Configuration AuthorizationEndpoint="https://login.mec1.pure.cloud/oauth/authorize"
-                     TokenEndpoint="https://login.mec1.pure.cloud/oauth/token"
-                     UserInfoEndpoint="https://api.mec1.pure.cloud/api/v2/users/me">
-        <CodeChallengeMethod Value="plain" />
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="client_credentials" />
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-    </Environment>
+    <Setting
+      PropertyName="Issuer"
+      ParameterName="issuer"
+      Type="Uri"
+      Required="true"
+      Description="Specifies the base URI of the Genesys Cloud instance (e.g., https://use2.us-gov-pure.cloud); note that the issuer must NOT start with https://api.—to get the Issuer URL, visit https://developer.genesys.cloud/platform/api/, find the API Server value for your region, and remove the api. subdomain from the URL." />
 
   </Provider>
 
