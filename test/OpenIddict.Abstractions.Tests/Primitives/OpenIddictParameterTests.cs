@@ -2071,15 +2071,26 @@ public class OpenIddictParameterTests
     public void StringArrayConverter_ReturnsDefaultValueForUnsupportedJsonValues()
     {
         // Arrange, act and assert
+        Assert.Empty((ImmutableArray<string?>) new OpenIddictParameter(new JsonElement()));
         Assert.Null((ImmutableArray<string?>?) new OpenIddictParameter(new JsonElement()));
+
+        Assert.Empty((ImmutableArray<string?>) new OpenIddictParameter(
+            JsonSerializer.Deserialize<JsonElement>(@"[""value"",[]]")));
         Assert.Null((ImmutableArray<string?>?) new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"[""value"",[]]")));
 
+        Assert.Empty((ImmutableArray<string?>) new OpenIddictParameter(
+            JsonSerializer.Deserialize<JsonElement>(@"[""value"",{}]")));
         Assert.Null((ImmutableArray<string?>?) new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"[""value"",{}]")));
 
+        Assert.Empty((ImmutableArray<string?>) new OpenIddictParameter((JsonNode?) null));
         Assert.Null((ImmutableArray<string?>?) new OpenIddictParameter((JsonNode?) null));
+
+        Assert.Empty((ImmutableArray<string?>) new OpenIddictParameter(new JsonArray("value", new JsonArray())));
         Assert.Null((ImmutableArray<string?>?) new OpenIddictParameter(new JsonArray("value", new JsonArray())));
+
+        Assert.Empty((ImmutableArray<string?>) new OpenIddictParameter(new JsonArray("value", new JsonObject())));
         Assert.Null((ImmutableArray<string?>?) new OpenIddictParameter(new JsonArray("value", new JsonObject())));
     }
 

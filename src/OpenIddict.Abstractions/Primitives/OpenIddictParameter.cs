@@ -815,7 +815,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="parameter">The parameter to convert.</param>
     /// <returns>The converted value.</returns>
     public static explicit operator bool(OpenIddictParameter? parameter)
-        => ((bool?) parameter).GetValueOrDefault();
+        => ((bool?) parameter) ?? false;
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to a nullable boolean.
@@ -1015,7 +1015,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="parameter">The parameter to convert.</param>
     /// <returns>The converted value.</returns>
     public static explicit operator long(OpenIddictParameter? parameter)
-        => ((long?) parameter).GetValueOrDefault();
+        => ((long?) parameter) ?? 0;
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to a nullable long integer.
@@ -1150,7 +1150,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="parameter">The parameter to convert.</param>
     /// <returns>The converted value.</returns>
     public static explicit operator StringValues(OpenIddictParameter? parameter)
-        => ((StringValues?) parameter).GetValueOrDefault();
+        => ((StringValues?) parameter) ?? StringValues.Empty;
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to a <see cref="StringValues"/> instance.
@@ -1269,7 +1269,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="parameter">The parameter to convert.</param>
     /// <returns>The converted value.</returns>
     public static explicit operator ImmutableArray<string?>(OpenIddictParameter? parameter)
-        => ((ImmutableArray<string?>?) parameter).GetValueOrDefault();
+        => ((ImmutableArray<string?>?) parameter) ?? [];
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to an immutable array of strings.
