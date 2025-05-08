@@ -1,8 +1,8 @@
 ﻿/*
- * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/openiddict-core for more information concerning
- * the license and the contributors participating to this project.
- */
+* Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+* See https://github.com/openiddict/openiddict-core for more information concerning
+* the license and the contributors participating to this project.
+*/
 
 using System.Collections.Immutable;
 using System.ComponentModel;
@@ -1412,9 +1412,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Yandex returns the email address as a custom "default_email" node:
                 ProviderTypes.Yandex => (string?) context.UserInfoResponse?["default_email"],
 
-                // Genesys returns the email address as a custom "default_email" node:
-                ProviderTypes.Genesys => context.MergedPrincipal.GetClaim("email"),
-
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.Email)
             });
 
@@ -1496,9 +1493,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Zoho returns the username as a custom "Display_Name" node:
                 ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Display_Name"],
-
-                // Genesys returns the username as a custom "Display_Name" node:
-                ProviderTypes.Genesys => context.MergedPrincipal.GetClaim("name"),
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
             });
@@ -1593,9 +1587,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Zoho returns the user identifier as a custom "ZUID" node:
                 ProviderTypes.Zoho => (string?) context.UserInfoResponse?["ZUID"],
-
-                // Genesys returns the user identifier as a custom "ZUID" node:
-                ProviderTypes.Genesys => context.MergedPrincipal.GetClaim("id"),
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
             });

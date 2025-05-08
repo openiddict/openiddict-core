@@ -2473,20 +2473,32 @@
   </Provider>
 
   <!--
-                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                                                ██░▄▄░█░▄▄█░▄▄▀█░▄▄█░▄▄█░██░█░▄▄
-                                                ██░█▀▀█░▄▄█░██░█░▄▄█▄▄▀█░▀▀░█▄▄▀
-                                                ██░▀▀▄█▄▄▄█▄██▄█▄▄▄█▄▄▄█▀▀▀▄█▄▄▄
-                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                ██ ▄▄ ██ ▄▄▄██ ▀██ ██ ▄▄▄██ ▄▄▄ ██ ███ ██ ▄▄▄ 
+                                                ██ █▀▀██ ▄▄▄██ █ █ ██ ▄▄▄██▄▄▄▀▀██▄▀▀▀▄██▄▄▄▀▀
+                                                ██ ▀▀▄██ ▀▀▀██ ██▄ ██ ▀▀▀██ ▀▀▀ ████ ████ ▀▀▀ 
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider
-    Name="Genesys"
-    DisplayName="Genesys Cloud"
-    Id="2e34b9d0-5c1f-4e23-9ac9-b4aefde213d2"
-    Documentation="https://developer.genesys.cloud/">
+  <Provider Name="Genesys" DisplayName="Genesys Cloud" Id="2e34b9d0-5c1f-4e23-9ac9-b4aefde213d2" Documentation="https://developer.genesys.cloud/authorization/platform-auth/">
 
-    <Environment Issuer="{settings.Issuer}">
+    <Environment Issuer="{settings.Region?.ToUpperInvariant() switch {
+        'us-east-1' => 'https://mypurecloud.com',
+        'us-east-2' => 'https://use2.us-gov-pure.cloudh',
+        'us-west-2' => 'https://usw2.pure.cloud',
+        'ca-central-1' => 'https://cac1.pure.cloud',
+        'eu-west-1' => 'https://mypurecloud.ie',
+        'eu-west-2' => 'https://euw2.pure.cloud',
+        'eu-central-1' => 'https://mypurecloud.de',
+        'eu-central-2' => 'https://euc2.pure.cloud',
+        'ap-south-1' => 'https://aps1.pure.cloud',
+        'ap-northeast-1' => 'https://mypurecloud.jp',
+        'ap-northeast-2' => 'https://apne2.pure.cloud',
+        'ap-northeast-3' => 'https://apne3.pure.cloud',
+        'ap-southeast-2' => 'https://mypurecloud.com.au',
+        'sa-east-1' => 'https://sae1.pure.cloud',
+        'me-central-1' => 'https://mec1.pure.cloud',
+         _  => throw new InvalidArgumentException() }}">
       <Configuration AuthorizationEndpoint="{settings.Issuer.Scheme}://login.{settings.Issuer.Host}/oauth/authorize"
                      TokenEndpoint="{settings.Issuer.Scheme}://login.{settings.Issuer.Host}/oauth/token"
                      UserInfoEndpoint="{settings.Issuer.Scheme}://api.{settings.Issuer.Host}/api/v2/users/me">
@@ -2496,16 +2508,11 @@
         <GrantType Value="client_credentials" />
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
-        <GrantType Value="implicit" />
       </Configuration>
     </Environment>
 
-    <Setting
-      PropertyName="Issuer"
-      ParameterName="issuer"
-      Type="Uri"
-      Required="true"
-      Description="Specifies the base URI of the Genesys Cloud instance (e.g., https://use2.us-gov-pure.cloud); note that the issuer must NOT start with https://api.—to get the Issuer URL, visit https://developer.genesys.cloud/platform/api/, find the API Server value for your region, and remove the api. subdomain from the URL." />
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
+             Description="Specifies the AWS region name (e.g., us-east-1). To determine the correct region for your instance, visit https://developer.genesys.cloud/platform/api/" />
 
   </Provider>
 

@@ -258,15 +258,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
                 }
 
-                // Genesys supports oAuth but doesn't format the "openid" scope using the standard casing.
-                // To ensure Genesys is not treated as an OAuth 2.0-only provider, the invalid "OpenId" scope is
-                // removed from the list and the "openid" value is added to indicate OpenID Connect is supported.
-                else if (context.Registration.ProviderType is ProviderTypes.Genesys)
-                {
-                    context.Configuration.ScopesSupported.Remove("OpenId");
-                    context.Configuration.ScopesSupported.Add("user-basic-info");
-                }
-
                 return default;
             }
         }
