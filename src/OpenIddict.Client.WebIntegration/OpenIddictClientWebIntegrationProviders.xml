@@ -2496,7 +2496,7 @@
                           'Middle East (UAE)'         or 'me-central-1'   => 'https://mec1.pure.cloud',
                           'South America (São Paulo)' or 'sa-east-1'      => 'https://sae1.pure.cloud',
                           'US East (Virginia)'        or 'us-east-1'      => 'https://mypurecloud.com',
-                          'US East 2 (Ohio)'          or 'us-east-2'      => 'https://use2.us-gov-pure.cloudh',
+                          'US East 2 (Ohio)'          or 'us-east-2'      => 'https://use2.us-gov-pure.cloud',
                           'US West (Oregon)'          or 'us-west-2'      => 'https://usw2.pure.cloud',
                            _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}">
 
