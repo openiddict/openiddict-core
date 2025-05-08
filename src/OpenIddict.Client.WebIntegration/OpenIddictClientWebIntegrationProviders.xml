@@ -2552,8 +2552,6 @@
                           'US West (Oregon)'          or 'us-west-2'      => 'https://api.usw2.pure.cloud/api/v2/users/me',
                            _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}">
 
-        <CodeChallengeMethod Value="S256" />
-
         <GrantType Value="client_credentials" />
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
