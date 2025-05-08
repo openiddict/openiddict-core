@@ -1584,7 +1584,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // WordPress returns the user identifier as a custom "ID" node:
                 ProviderTypes.WordPress => (string?) context.UserInfoResponse?["ID"],
 
-                // WordPress returns the user identifier as a custom "ZUID" node:
+                // Zoho returns the user identifier as a custom "ZUID" node:
                 ProviderTypes.Zoho => (string?) context.UserInfoResponse?["ZUID"],
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
@@ -1935,7 +1935,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             else if (context.Registration.ProviderType is ProviderTypes.Linear)
             {
                 var settings = context.Registration.GetLinearSettings();
-                
+
                 context.Request.Prompt = settings.Prompt;
             }
 
