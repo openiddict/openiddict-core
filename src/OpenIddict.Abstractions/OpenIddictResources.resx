@@ -2208,6 +2208,71 @@ To use the MongoDB integration, reference the 'OpenIddict.MongoDb' package and c
   <data name="ID2183" xml:space="preserve">
     <value>This client application is not allowed to use the pushed authorization request endpoint.</value>
   </data>
+  <data name="ID2184" xml:space="preserve">
+    <value>The specified Alibaba Cloud/Aliyun region is not valid. Supported values are:
+'China' (or 'CN'),
+'Global' (or 'GLB').</value>
+  </data>
+  <data name="ID2185" xml:space="preserve">
+    <value>The specified Battle.net region is not valid. Supported values are:
+'Asia-Pacific' (or 'APAC'),
+'China' (or 'CN'),
+'European Union' (or 'EU'),
+'United States' (or 'US').</value>
+  </data>
+  <data name="ID2186" xml:space="preserve">
+    <value>The specified Amazon Cognito region is not valid. Supported values are:
+'US East (Ohio)' (or 'us-east-2'),
+'US East (N. Virginia)' (or 'us-east-1'),
+'US West (N. California)' (or 'us-west-1'),
+'US West (Oregon)' (or 'us-west-2'),
+'Africa (Cape Town)' (or 'af-south-1'),
+'Asia Pacific (Hong Kong)' (or 'ap-east-1'),
+'Asia Pacific (Hyderabad)' (or 'ap-south-2'),
+'Asia Pacific (Jakarta)' (or 'ap-southeast-3'),
+'Asia Pacific (Malaysia)' (or 'ap-southeast-5'),
+'Asia Pacific (Melbourne)' (or 'ap-southeast-4'),
+'Asia Pacific (Mumbai)' (or 'ap-south-1'),
+'Asia Pacific (Osaka)' (or 'ap-northeast-3'),
+'Asia Pacific (Seoul)' (or 'ap-northeast-2'),
+'Asia Pacific (Singapore)' (or 'ap-southeast-1'),
+'Asia Pacific (Sydney)' (or 'ap-southeast-2'),
+'Asia Pacific (Tokyo)' (or 'ap-northeast-1'),
+'Canada (Central)' (or 'ca-central-1'),
+'Canada West (Calgary)' (or 'ca-west-1'),
+'Europe (Frankfurt)' (or 'eu-central-1'),
+'Europe (Ireland)' (or 'eu-west-1'),
+'Europe (London)' (or 'eu-west-2'),
+'Europe (Milan)' (or 'eu-south-1'),
+'Europe (Paris)' (or 'eu-west-3'),
+'Europe (Spain)' (or 'eu-south-2'),
+'Europe (Stockholm)' (or 'eu-north-1'),
+'Europe (Zurich)' (or 'eu-central-2'),
+'Israel (Tel Aviv)' (or 'il-central-1'),
+'Middle East (Bahrain)' (or 'me-south-1'),
+'Middle East (UAE)' (or 'me-central-1'),
+'South America (São Paulo)' (or 'sa-east-1'),
+'AWS GovCloud (US-East)' (or 'us-gov-east-1'),
+'AWS GovCloud (US-West)' (or 'us-gov-west-1').
+
+Alternatively, any value respecting the '[region]-[subregion]-[identifier]' pattern can also be specified.</value>
+  </data>
+  <data name="ID2187" xml:space="preserve">
+    <value>The specified Lark/Feishu region is not valid. Supported values are:
+'China' (or 'CN'),
+'Global' (or 'GLB').</value>
+  </data>
+  <data name="ID2188" xml:space="preserve">
+    <value>The specified Zoho region is not valid. Supported values are:
+'Australia' (or 'AU'),
+'Canada' (or 'CA'),
+'European Union' (or 'EU'),
+'India' (or 'IN'),
+'Japan' (or 'JP'),
+'Saudi Arabia' (or 'SA'),
+'United Kingdom' (or 'UK'),
+'United States' (or 'US').</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>

@@ -1147,7 +1147,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.UserInfoRequest["fields"] = string.Join(",", settings.Fields);
             }
-            
+
             // Linear's userinfo endpoint is a GraphQL implementation that requires
             // sending a proper "query" parameter containing the requested user details.
             else if (context.Registration.ProviderType is ProviderTypes.Linear)
@@ -1585,7 +1585,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // WordPress returns the user identifier as a custom "ID" node:
                 ProviderTypes.WordPress => (string?) context.UserInfoResponse?["ID"],
 
-                // WordPress returns the user identifier as a custom "ZUID" node:
+                // Zoho returns the user identifier as a custom "ZUID" node:
                 ProviderTypes.Zoho => (string?) context.UserInfoResponse?["ZUID"],
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
@@ -1937,7 +1937,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             else if (context.Registration.ProviderType is ProviderTypes.Linear)
             {
                 var settings = context.Registration.GetLinearSettings();
-                
+
                 context.Request.Prompt = settings.Prompt;
             }
 

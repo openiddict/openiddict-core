@@ -934,6 +934,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
             var template = Template.Parse(@"#nullable enable
 #pragma warning disable CS0618
 
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
