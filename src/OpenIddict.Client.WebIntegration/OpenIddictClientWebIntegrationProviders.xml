@@ -2552,7 +2552,6 @@
                           'Middle East (UAE)'         or 'me-central-1'   => 'https://api.mec1.pure.cloud/api/v2/users/me',
                            _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}">
 
-        <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="client_credentials" />
