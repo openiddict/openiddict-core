@@ -808,6 +808,105 @@
   </Provider>
 
   <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ▄▄ ██ ▄▄▄██ ▀██ ██ ▄▄▄██ ▄▄▄ ██ ███ ██ ▄▄▄ ██
+                                      ██ █▀▀██ ▄▄▄██ █ █ ██ ▄▄▄██▄▄▄▀▀██▄▀▀▀▄██▄▄▄▀▀██
+                                      ██ ▀▀▄██ ▀▀▀██ ██▄ ██ ▀▀▀██ ▀▀▀ ████ ████ ▀▀▀ ██
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Genesys" DisplayName="Genesys Cloud" Id="2e34b9d0-5c1f-4e23-9ac9-b4aefde213d2"
+            Documentation="https://developer.genesys.cloud/authorization/platform-auth/">
+    <!--
+      Note: while Genesys Cloud supports OAuth 2.0 Proof Key for Code Exchange, it never returns
+      a refresh token when an authorization request was initially protected with PKCE. To avoid this
+      major limitation, OAuth 2.0 Proof Key for Code Exchange is deliberately not used for Genesys.
+    -->
+
+    <Environment Issuer="{settings.Region switch {
+      'Asia Pacific (Mumbai)'     or 'ap-south-1'     => 'https://login.aps1.pure.cloud/',
+      'Asia Pacific (Osaka)'      or 'ap-northeast-3' => 'https://login.apne3.pure.cloud/',
+      'Asia Pacific (Seoul)'      or 'ap-northeast-2' => 'https://login.apne2.pure.cloud/',
+      'Asia Pacific (Sydney)'     or 'ap-southeast-2' => 'https://login.mypurecloud.com.au/',
+      'Asia Pacific (Tokyo)'      or 'ap-northeast-1' => 'https://login.mypurecloud.jp/',
+      'Canada (Central)'          or 'ca-central-1'   => 'https://login.cac1.pure.cloud/',
+      'Europe (Frankfurt)'        or 'eu-central-1'   => 'https://login.mypurecloud.de/',
+      'Europe (Ireland)'          or 'eu-west-1'      => 'https://login.mypurecloud.ie/',
+      'Europe (London)'           or 'eu-west-2'      => 'https://login.euw2.pure.cloud/',
+      'Europe (Zurich)'           or 'eu-central-2'   => 'https://login.euc2.pure.cloud/',
+      'Middle East (UAE)'         or 'me-central-1'   => 'https://login.mec1.pure.cloud/',
+      'South America (São Paulo)' or 'sa-east-1'      => 'https://login.sae1.pure.cloud/',
+      'US East (Virginia)'        or 'us-east-1'      => 'https://login.mypurecloud.com/',
+      'US East 2 (Ohio)'          or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/',
+      'US West (Oregon)'          or 'us-west-2'      => 'https://login.usw2.pure.cloud/',
+
+      _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2189)) }}">
+      <Configuration AuthorizationEndpoint="{settings.Region switch {
+        'Asia Pacific (Mumbai)'     or 'ap-south-1'     => 'https://login.aps1.pure.cloud/oauth/authorize',
+        'Asia Pacific (Osaka)'      or 'ap-northeast-3' => 'https://login.apne3.pure.cloud/oauth/authorize',
+        'Asia Pacific (Seoul)'      or 'ap-northeast-2' => 'https://login.apne2.pure.cloud/oauth/authorize',
+        'Asia Pacific (Sydney)'     or 'ap-southeast-2' => 'https://login.mypurecloud.com.au/oauth/authorize',
+        'Asia Pacific (Tokyo)'      or 'ap-northeast-1' => 'https://login.mypurecloud.jp/oauth/authorize',
+        'Canada (Central)'          or 'ca-central-1'   => 'https://login.cac1.pure.cloud/oauth/authorize',
+        'Europe (Frankfurt)'        or 'eu-central-1'   => 'https://login.mypurecloud.de/oauth/authorize',
+        'Europe (Ireland)'          or 'eu-west-1'      => 'https://login.mypurecloud.ie/oauth/authorize',
+        'Europe (London)'           or 'eu-west-2'      => 'https://login.euw2.pure.cloud/oauth/authorize',
+        'Europe (Zurich)'           or 'eu-central-2'   => 'https://login.euc2.pure.cloud/oauth/authorize',
+        'Middle East (UAE)'         or 'me-central-1'   => 'https://login.mec1.pure.cloud/oauth/authorize',
+        'South America (São Paulo)' or 'sa-east-1'      => 'https://login.sae1.pure.cloud/oauth/authorize',
+        'US East (Virginia)'        or 'us-east-1'      => 'https://login.mypurecloud.com/oauth/authorize',
+        'US East 2 (Ohio)'          or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/oauth/authorize',
+        'US West (Oregon)'          or 'us-west-2'      => 'https://login.usw2.pure.cloud/oauth/authorize',
+
+        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2189)) }}"
+                     TokenEndpoint="{settings.Region switch {
+        'Asia Pacific (Mumbai)'     or 'ap-south-1'     => 'https://login.aps1.pure.cloud/oauth/token',
+        'Asia Pacific (Osaka)'      or 'ap-northeast-3' => 'https://login.apne3.pure.cloud/oauth/token',
+        'Asia Pacific (Seoul)'      or 'ap-northeast-2' => 'https://login.apne2.pure.cloud/oauth/token',
+        'Asia Pacific (Sydney)'     or 'ap-southeast-2' => 'https://login.mypurecloud.com.au/oauth/token',
+        'Asia Pacific (Tokyo)'      or 'ap-northeast-1' => 'https://login.mypurecloud.jp/oauth/token',
+        'Canada (Central)'          or 'ca-central-1'   => 'https://login.cac1.pure.cloud/oauth/token',
+        'Europe (Frankfurt)'        or 'eu-central-1'   => 'https://login.mypurecloud.de/oauth/token',
+        'Europe (Ireland)'          or 'eu-west-1'      => 'https://login.mypurecloud.ie/oauth/token',
+        'Europe (London)'           or 'eu-west-2'      => 'https://login.euw2.pure.cloud/oauth/token',
+        'Europe (Zurich)'           or 'eu-central-2'   => 'https://login.euc2.pure.cloud/oauth/token',
+        'Middle East (UAE)'         or 'me-central-1'   => 'https://login.mec1.pure.cloud/oauth/token',
+        'South America (São Paulo)' or 'sa-east-1'      => 'https://login.sae1.pure.cloud/oauth/token',
+        'US East (Virginia)'        or 'us-east-1'      => 'https://login.mypurecloud.com/oauth/token',
+        'US East 2 (Ohio)'          or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/oauth/token',
+        'US West (Oregon)'          or 'us-west-2'      => 'https://login.usw2.pure.cloud/oauth/token',
+
+        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2189)) }}"
+                     UserInfoEndpoint="{settings.Region switch {
+        'Asia Pacific (Mumbai)'     or 'ap-south-1'     => 'https://api.aps1.pure.cloud/api/v2/users/me',
+        'Asia Pacific (Osaka)'      or 'ap-northeast-3' => 'https://api.apne3.pure.cloud/api/v2/users/me',
+        'Asia Pacific (Seoul)'      or 'ap-northeast-2' => 'https://api.apne2.pure.cloud/api/v2/users/me',
+        'Asia Pacific (Sydney)'     or 'ap-southeast-2' => 'https://api.mypurecloud.com.au/api/v2/users/me',
+        'Asia Pacific (Tokyo)'      or 'ap-northeast-1' => 'https://api.mypurecloud.jp/api/v2/users/me',
+        'Canada (Central)'          or 'ca-central-1'   => 'https://api.cac1.pure.cloud/api/v2/users/me',
+        'Europe (Frankfurt)'        or 'eu-central-1'   => 'https://api.mypurecloud.de/api/v2/users/me',
+        'Europe (Ireland)'          or 'eu-west-1'      => 'https://api.mypurecloud.ie/api/v2/users/me',
+        'Europe (London)'           or 'eu-west-2'      => 'https://api.euw2.pure.cloud/api/v2/users/me',
+        'Europe (Zurich)'           or 'eu-central-2'   => 'https://api.euc2.pure.cloud/api/v2/users/me',
+        'Middle East (UAE)'         or 'me-central-1'   => 'https://api.mec1.pure.cloud/api/v2/users/me',
+        'South America (São Paulo)' or 'sa-east-1'      => 'https://api.sae1.pure.cloud/api/v2/users/me',
+        'US East (Virginia)'        or 'us-east-1'      => 'https://api.mypurecloud.com/api/v2/users/me',
+        'US East 2 (Ohio)'          or 'us-east-2'      => 'https://api.use2.us-gov-pure.cloud/api/v2/users/me',
+        'US West (Oregon)'          or 'us-west-2'      => 'https://api.usw2.pure.cloud/api/v2/users/me',
+
+        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2189)) }}">
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
+             Description="Specifies the region name (e.g., 'US East (Virginia)'). To determine the correct region for your instance, visit https://developer.genesys.cloud/platform/api/" />
+  </Provider>
+
+  <!--
                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                           ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ▄▄▀██ ▄▄▄ ██ ▄▄▀██ ▄▄▄██
                                           ██ █▀▀██ ████ ████ █████ ███ ██ ██ ██ ▄▄▄██
