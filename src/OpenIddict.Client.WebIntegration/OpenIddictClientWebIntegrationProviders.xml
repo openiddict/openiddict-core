@@ -88,11 +88,19 @@
       Note: Alibaba Cloud serves global users, but it is known as Aliyun in China, which has a separate issuer and domain.
     -->
 
-    <Environment Issuer="https://oauth.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'aliyun' : 'alibabacloud')}.com/"
-                 ConfigurationEndpoint="https://oauth.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'aliyun' : 'alibabacloud')}.com/.well-known/openid-configuration" />
+    <Environment Issuer="{settings.Region switch {
+      'China'  or 'CN'  => 'https://oauth.aliyun.com/',
+      'Global' or 'GLB' => 'https://oauth.alibabacloud.com/',
+
+      _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2184)) }}"
+                 ConfigurationEndpoint="{settings.Region switch {
+      'China'  or 'CN'  => 'https://oauth.aliyun.com/.well-known/openid-configuration',
+      'Global' or 'GLB' => 'https://oauth.alibabacloud.com/.well-known/openid-configuration',
+
+      _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2184)) }}" />
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="Global"
-             Description="The Alibaba Cloud (Aliyun) service region ('Global' for the global Alibaba Cloud by default, or can be set to 'CN' for Aliyun)" />
+             Description="The Alibaba Cloud (Aliyun) service region ('Global' for the global Alibaba Cloud by default, or can be set to 'China' for Aliyun)" />
 
     <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
              Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
@@ -296,10 +304,16 @@
       Note: most Battle.net regions use the same issuer URI but a different domain is required for China.
     -->
 
-    <Environment Issuer="https://oauth.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'battlenet.com.cn' : 'battle.net')}/" />
+    <Environment Issuer="{settings.Region switch {
+      'Asia-Pacific'   or 'APAC' => 'https://oauth.battle.net/',
+      'China'          or 'CN'   => 'https://oauth.battlenet.com.cn/',
+      'European Union' or 'EU'   => 'https://oauth.battle.net/',
+      'United States'  or 'US'   => 'https://oauth.battle.net/',
 
-    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="US"
-             Description="The preferred Battle.net region (by default, 'US')" />
+      _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2185)) }}" />
+
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="United States"
+             Description="The preferred Battle.net region (by default, 'United States')" />
   </Provider>
 
   <!--
@@ -393,7 +407,7 @@
                                       ██ ▀▀▄██ ▀▀ ██ ██ ██ ▀▀▀ ██ ▀▀▀ ██ ▀▀ █▀ ▀█ ██▄ ██ ██ ██
                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
-	
+
   <Provider Name="ClassLink" Id="4bdb0adc-5609-4750-8098-cf3ff5d782df"
             Documentation="https://help.classlink.com/s/topic/0TO1E0000009PVYWA2/api">
     <Environment Issuer="https://launchpad.classlink.com/" />
@@ -422,7 +436,43 @@
 
   <Provider Name="Cognito" DisplayName="Amazon Cognito" Id="37931265-19ea-41e9-8a8c-06bb7deb9a1d"
             Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
-    <Environment Issuer="https://cognito-idp.{settings.Region}.amazonaws.com/{settings.UserPoolId}" />
+    <Environment Issuer="{settings.Region switch {
+      'US East (Ohio)'            or 'us-east-2'      => $'https://cognito-idp.us-east-2.amazonaws.com/{settings.UserPoolId}',
+      'US East (N. Virginia)'     or 'us-east-1'      => $'https://cognito-idp.us-east-1.amazonaws.com/{settings.UserPoolId}',
+      'US West (N. California)'   or 'us-west-1'      => $'https://cognito-idp.us-west-1.amazonaws.com/{settings.UserPoolId}',
+      'US West (Oregon)'          or 'us-west-2'      => $'https://cognito-idp.us-west-2.amazonaws.com/{settings.UserPoolId}',
+      'Africa (Cape Town)'        or 'af-south-1'     => $'https://cognito-idp.af-south-1.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Hong Kong)'  or 'ap-east-1'      => $'https://cognito-idp.ap-east-1.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Hyderabad)'  or 'ap-south-2'     => $'https://cognito-idp.ap-south-2.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Jakarta)'    or 'ap-southeast-3' => $'https://cognito-idp.ap-southeast-3.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Malaysia)'   or 'ap-southeast-5' => $'https://cognito-idp.ap-southeast-5.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Melbourne)'  or 'ap-southeast-4' => $'https://cognito-idp.ap-southeast-4.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Mumbai)'     or 'ap-south-1'     => $'https://cognito-idp.ap-south-1.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Osaka)'      or 'ap-northeast-3' => $'https://cognito-idp.ap-northeast-3.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Seoul)'      or 'ap-northeast-2' => $'https://cognito-idp.ap-northeast-2.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Singapore)'  or 'ap-southeast-1' => $'https://cognito-idp.ap-southeast-1.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Sydney)'     or 'ap-southeast-2' => $'https://cognito-idp.ap-southeast-2.amazonaws.com/{settings.UserPoolId}',
+      'Asia Pacific (Tokyo)'      or 'ap-northeast-1' => $'https://cognito-idp.ap-northeast-1.amazonaws.com/{settings.UserPoolId}',
+      'Canada (Central)'          or 'ca-central-1'   => $'https://cognito-idp.ca-central-1.amazonaws.com/{settings.UserPoolId}',
+      'Canada West (Calgary)'     or 'ca-west-1'      => $'https://cognito-idp.ca-west-1.amazonaws.com/{settings.UserPoolId}',
+      'Europe (Frankfurt)'        or 'eu-central-1'   => $'https://cognito-idp.eu-central-1.amazonaws.com/{settings.UserPoolId}',
+      'Europe (Ireland)'          or 'eu-west-1'      => $'https://cognito-idp.eu-west-1.amazonaws.com/{settings.UserPoolId}',
+      'Europe (London)'           or 'eu-west-2'      => $'https://cognito-idp.eu-west-2.amazonaws.com/{settings.UserPoolId}',
+      'Europe (Milan)'            or 'eu-south-1'     => $'https://cognito-idp.eu-south-1.amazonaws.com/{settings.UserPoolId}',
+      'Europe (Paris)'            or 'eu-west-3'      => $'https://cognito-idp.eu-west-3.amazonaws.com/{settings.UserPoolId}',
+      'Europe (Spain)'            or 'eu-south-2'     => $'https://cognito-idp.eu-south-2.amazonaws.com/{settings.UserPoolId}',
+      'Europe (Stockholm)'        or 'eu-north-1'     => $'https://cognito-idp.eu-north-1.amazonaws.com/{settings.UserPoolId}',
+      'Europe (Zurich)'           or 'eu-central-2'   => $'https://cognito-idp.eu-central-2.amazonaws.com/{settings.UserPoolId}',
+      'Israel (Tel Aviv)'         or 'il-central-1'   => $'https://cognito-idp.il-central-1.amazonaws.com/{settings.UserPoolId}',
+      'Middle East (Bahrain)'     or 'me-south-1'     => $'https://cognito-idp.me-south-1.amazonaws.com/{settings.UserPoolId}',
+      'Middle East (UAE)'         or 'me-central-1'   => $'https://cognito-idp.me-central-1.amazonaws.com/{settings.UserPoolId}',
+      'South America (São Paulo)' or 'sa-east-1'      => $'https://cognito-idp.sa-east-1.amazonaws.com/{settings.UserPoolId}',
+      'AWS GovCloud (US-East)'    or 'us-gov-east-1'  => $'https://cognito-idp.us-gov-east-1.amazonaws.com/{settings.UserPoolId}',
+      'AWS GovCloud (US-West)'    or 'us-gov-west-1'  => $'https://cognito-idp.us-gov-west-1.amazonaws.com/{settings.UserPoolId}',
+
+      string value when Regex.IsMatch(value, @'^[a-z]{2,}(-[a-z]+-)?[a-z]+-\d+$') => $'https://cognito-idp.{value}.amazonaws.com/{settings.UserPoolId}',
+
+      _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2186)) }}" />
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
              Description="The AWS region" />
@@ -1055,17 +1105,33 @@
       Note: Lark serves global users, but it is known as Feishu in China, which has a separate issuer and domain.
     -->
 
-    <Environment Issuer="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/">
-      <Configuration AuthorizationEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/authorize"
-                     TokenEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/token"
-                     UserInfoEndpoint="https://passport.{(settings.Region?.ToUpperInvariant() is 'CN' ? 'feishu.cn' : 'larksuite.com')}/suite/passport/oauth/userinfo">
+    <Environment Issuer="{settings.Region switch {
+      'China'  or 'CN'  => 'https://passport.feishu.cn/',
+      'Global' or 'GLB' => 'https://passport.larksuite.com/',
+
+      _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2187)) }}">
+      <Configuration AuthorizationEndpoint="{settings.Region switch {
+        'China'  or 'CN'  => 'https://passport.feishu.cn/suite/passport/oauth/authorize',
+        'Global' or 'GLB' => 'https://passport.larksuite.com/suite/passport/oauth/authorize',
+
+        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2187)) }}"
+                     TokenEndpoint="{settings.Region switch {
+        'China'  or 'CN'  => 'https://passport.feishu.cn/suite/passport/oauth/token',
+        'Global' or 'GLB' => 'https://passport.larksuite.com/suite/passport/oauth/token',
+
+        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2187)) }}"
+                     UserInfoEndpoint="{settings.Region switch {
+        'China'  or 'CN'  => 'https://passport.feishu.cn/suite/passport/oauth/userinfo',
+        'Global' or 'GLB' => 'https://passport.larksuite.com/suite/passport/oauth/userinfo',
+
+        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2187)) }}">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
     </Environment>
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="Global"
-             Description="The Lark (Feishu) service region ('Global' for the global Lark by default, or can be set to 'CN' for Feishu)" />
+             Description="The Lark (Feishu) service region ('Global' for the global Lark by default, or can be set to 'China' for Feishu)" />
   </Provider>
 
   <!--
@@ -1378,7 +1444,7 @@
              Description="The URI used to access the Okta instance (e.g https://fabrikam.okta.com/)" />
   </Provider>
 
-<!--
+  <!--
                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                       ██ ▄▄▄ ██ ▄▄ ██ ▄▄▄██ ▀██ ██ ▄▄▄ █▄▄ ▄▄██ ▄▄▀██ ▄▄▄██ ▄▄▄█▄▄ ▄▄██ ▄▀▄ █ ▄▄▀██ ▄▄ ██
                       ██ ███ ██ ▀▀ ██ ▄▄▄██ █ █ ██▄▄▄▀▀███ ████ ▀▀▄██ ▄▄▄██ ▄▄▄███ ████ █ █ █ ▀▀ ██ ▀▀ ██
@@ -2164,7 +2230,7 @@
                                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="VkId" DisplayName="VK ID" Id="9bf89c19-401b-4076-893e-a4136e719432" 
+  <Provider Name="VkId" DisplayName="VK ID" Id="9bf89c19-401b-4076-893e-a4136e719432"
             Documentation="https://id.vk.com/about/business/go/docs/en/vkid/latest/oauth-vk">
     <Environment Issuer="https://id.vk.com/">
       <Configuration AuthorizationEndpoint="https://id.vk.com/authorize"
@@ -2332,7 +2398,7 @@
   <Provider Name="Yahoo" Id="874d78ec-3d79-4492-ab79-76a7dd7fa0b5"
             Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
     <Environment Issuer="https://api.login.yahoo.com/" />
-  </Provider>  
+  </Provider>
 
   <!--
                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
@@ -2403,22 +2469,28 @@
   <Provider Name="Zoho" Id="269dc1c7-388e-4f65-9c29-c7791914532b"
             Documentation="https://www.zoho.com/accounts/protocol/oauth.html">
     <Environment Issuer="https://accounts.zoho.com/">
-      <Configuration AuthorizationEndpoint="{settings.Region?.ToUpperInvariant() switch {
-        'AU' => 'https://accounts.zoho.com.au/oauth/v2/auth',
-        'CA' => 'https://accounts.zohocloud.ca/oauth/v2/auth',
-        'EU' => 'https://accounts.zoho.eu/oauth/v2/auth',
-        'IN' => 'https://accounts.zoho.in/oauth/v2/auth',
-        'JP' => 'https://accounts.zoho.jp/oauth/v2/auth',
-        'SA' => 'https://accounts.zoho.sa/oauth/v2/auth',
-         _   => 'https://accounts.zoho.com/oauth/v2/auth' }}"
-                     TokenEndpoint="{settings.Region?.ToUpperInvariant() switch {
-        'AU' => 'https://accounts.zoho.com.au/oauth/v2/token',
-        'CA' => 'https://accounts.zohocloud.ca/oauth/v2/token',
-        'EU' => 'https://accounts.zoho.eu/oauth/v2/token',
-        'IN' => 'https://accounts.zoho.in/oauth/v2/token',
-        'JP' => 'https://accounts.zoho.jp/oauth/v2/token',
-        'SA' => 'https://accounts.zoho.sa/oauth/v2/token',
-         _   => 'https://accounts.zoho.com/oauth/v2/token' }}">
+      <Configuration AuthorizationEndpoint="{settings.Region switch {
+        'Australia'      or 'AU' => 'https://accounts.zoho.com.au/oauth/v2/auth',
+        'Canada'         or 'CA' => 'https://accounts.zohocloud.ca/oauth/v2/auth',
+        'European Union' or 'EU' => 'https://accounts.zoho.eu/oauth/v2/auth',
+        'India'          or 'IN' => 'https://accounts.zoho.in/oauth/v2/auth',
+        'Japan'          or 'JP' => 'https://accounts.zoho.jp/oauth/v2/auth',
+        'Saudi Arabia'   or 'SA' => 'https://accounts.zoho.sa/oauth/v2/auth',
+        'United Kingdom' or 'UK' => 'https://accounts.zoho.uk/oauth/v2/auth',
+        'United States'  or 'US' => 'https://accounts.zoho.com/oauth/v2/auth',
+
+        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2188)) }}"
+                     TokenEndpoint="{settings.Region switch {
+        'Australia'      or 'AU' => 'https://accounts.zoho.com.au/oauth/v2/token',
+        'Canada'         or 'CA' => 'https://accounts.zohocloud.ca/oauth/v2/token',
+        'European Union' or 'EU' => 'https://accounts.zoho.eu/oauth/v2/token',
+        'India'          or 'IN' => 'https://accounts.zoho.in/oauth/v2/token',
+        'Japan'          or 'JP' => 'https://accounts.zoho.jp/oauth/v2/token',
+        'Saudi Arabia'   or 'SA' => 'https://accounts.zoho.sa/oauth/v2/token',
+        'United Kingdom' or 'UK' => 'https://accounts.zoho.uk/oauth/v2/token',
+        'United States'  or 'US' => 'https://accounts.zoho.com/oauth/v2/token',
+
+        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2188)) }}">
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="authorization_code" />
@@ -2440,8 +2512,8 @@
     <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="false"
              Description="The value used as the 'prompt' parameter (can be set to 'consent' to display the consent form for each authorization demand)" />
 
-    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="US"
-             Description="The preferred Zoho region (by default, 'US')" />
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="United States"
+             Description="The preferred Zoho region (by default, 'United States')" />
   </Provider>
 
   <!--
