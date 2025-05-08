@@ -151,9 +151,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 try
                 {
                     if (!OpenIddictHelpers.FixedTimeEquals(
-                        left: OpenIddictHelpers.ConvertFromHexadecimalString(signature),
+                        left : OpenIddictHelpers.ConvertFromHexadecimalString(signature),
                         right: OpenIddictHelpers.ComputeSha256MessageAuthenticationCode(
-                            key: Encoding.UTF8.GetBytes(context.Registration.ClientSecret),
+                            key : Encoding.UTF8.GetBytes(context.Registration.ClientSecret),
                             data: Encoding.UTF8.GetBytes(builder.ToString()))))
                     {
                         context.Reject(
@@ -223,17 +223,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     error: error switch
                     {
                         "deny" => Errors.AccessDenied,
-                        _ => Errors.ServerError
+                           _   => Errors.ServerError
                     },
                     description: error switch
                     {
                         "deny" => SR.GetResourceString(SR.ID2149),
-                        _ => SR.GetResourceString(SR.ID2152)
+                           _   => SR.GetResourceString(SR.ID2152)
                     },
                     uri: error switch
                     {
                         "deny" => SR.FormatID8000(SR.ID2149),
-                        _ => SR.FormatID8000(SR.ID2152)
+                           _   => SR.FormatID8000(SR.ID2152)
                     });
 
                 return default;
@@ -252,17 +252,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         error: error switch
                         {
                             "user_denied" => Errors.AccessDenied,
-                            _ => Errors.ServerError
+                                  _       => Errors.ServerError
                         },
                         description: error switch
                         {
                             "user_denied" => SR.GetResourceString(SR.ID2149),
-                            _ => SR.GetResourceString(SR.ID2152)
+                                  _       => SR.GetResourceString(SR.ID2152)
                         },
                         uri: error switch
                         {
                             "user_denied" => SR.FormatID8000(SR.ID2149),
-                            _ => SR.FormatID8000(SR.ID2152)
+                                  _       => SR.FormatID8000(SR.ID2152)
                         });
 
                     return default;
@@ -278,17 +278,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         error: error switch
                         {
                             1107 => Errors.AccessDenied,
-                            _ => Errors.ServerError
+                              _  => Errors.ServerError
                         },
                         description: error switch
                         {
                             1107 => SR.GetResourceString(SR.ID2149),
-                            _ => SR.GetResourceString(SR.ID2152)
+                              _  => SR.GetResourceString(SR.ID2152)
                         },
                         uri: error switch
                         {
                             1107 => SR.FormatID8000(SR.ID2149),
-                            _ => SR.FormatID8000(SR.ID2152)
+                              _  => SR.FormatID8000(SR.ID2152)
                         });
 
                     return default;
@@ -546,7 +546,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         "IN" => new Uri("https://accounts.zoho.in/oauth/v2/token", UriKind.Absolute),
                         "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/token", UriKind.Absolute),
                         "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/token", UriKind.Absolute),
-                        _ => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute)
+                         _   => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute)
                     },
 
                 ProviderTypes.Zoho when context.GrantType is GrantTypes.RefreshToken
@@ -560,7 +560,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                             "IN" => new Uri("https://accounts.zoho.in/oauth/v2/token", UriKind.Absolute),
                             "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/token", UriKind.Absolute),
                             "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/token", UriKind.Absolute),
-                            _ => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute)
+                             _   => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute)
                         },
 
                 _ => context.TokenEndpoint
@@ -774,8 +774,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Deezer or
                 ProviderTypes.Huawei or
                 ProviderTypes.Mixcloud => OpenIddictHelpers.AddQueryStringParameter(
-                    uri: new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
-                    name: Parameters.State,
+                    uri  : new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
+                    name : Parameters.State,
                     value: context.StateToken).AbsoluteUri,
 
                 _ => context.TokenRequest.RedirectUri
@@ -864,8 +864,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.DisableBackchannelIdentityTokenNonceValidation = context.Registration.ProviderType switch
             {
                 // These providers don't include the nonce in their identity tokens:
-                ProviderTypes.Asana or ProviderTypes.DocuSign or
-                ProviderTypes.Dropbox or ProviderTypes.FaceIt or
+                ProviderTypes.Asana    or ProviderTypes.DocuSign         or
+                ProviderTypes.Dropbox  or ProviderTypes.FaceIt           or
                 ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline or
                 ProviderTypes.WorldId => true,
 
@@ -915,12 +915,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Dailymotion or ProviderTypes.HubSpot or
                 ProviderTypes.SuperOffice or ProviderTypes.Zoho
                     when context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or
-                                              GrantTypes.Implicit or GrantTypes.Password or
-                                              GrantTypes.RefreshToken or
+                                              GrantTypes.Implicit          or GrantTypes.Password   or
+                                              GrantTypes.RefreshToken      or
                            // Apply the same logic for custom grant types.
                            (not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
-                                              GrantTypes.DeviceCode or GrantTypes.Implicit or
-                                              GrantTypes.Password or GrantTypes.RefreshToken)) &&
+                                              GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+                                              GrantTypes.Password          or GrantTypes.RefreshToken)) &&
                         !context.DisableUserInfoRetrieval && (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
                                                               !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
 
@@ -1037,7 +1037,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Dailymotion's userinfo endpoint requires sending the user identifier in the URI path.
                 ProviderTypes.Dailymotion when (string?) context.TokenResponse?["uid"] is string identifier
                     => OpenIddictHelpers.CreateAbsoluteUri(
-                        left: new Uri("https://api.dailymotion.com/user", UriKind.Absolute),
+                        left : new Uri("https://api.dailymotion.com/user", UriKind.Absolute),
                         right: new Uri(identifier, UriKind.Relative)),
 
                 // HubSpot doesn't have a static userinfo endpoint but allows retrieving basic information
@@ -1045,7 +1045,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.HubSpot when
                     (context.BackchannelAccessToken ?? context.FrontchannelAccessToken) is { Length: > 0 } token
                     => OpenIddictHelpers.CreateAbsoluteUri(
-                        left: new Uri("https://api.hubapi.com/oauth/v1/access-tokens", UriKind.Absolute),
+                        left : new Uri("https://api.hubapi.com/oauth/v1/access-tokens", UriKind.Absolute),
                         right: new Uri(token, UriKind.Relative)),
 
                 // SuperOffice doesn't expose a static OpenID Connect userinfo endpoint but offers an API whose
@@ -1070,7 +1070,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         "IN" => new Uri("https://accounts.zoho.in/oauth/user/info", UriKind.Absolute),
                         "JP" => new Uri("https://accounts.zoho.jp/oauth/user/info", UriKind.Absolute),
                         "SA" => new Uri("https://accounts.zoho.sa/oauth/user/info", UriKind.Absolute),
-                        _ => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
+                         _   => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
                     },
 
                 ProviderTypes.Zoho when context.GrantType is GrantTypes.RefreshToken
@@ -1084,7 +1084,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                             "IN" => new Uri("https://accounts.zoho.in/oauth/user/info", UriKind.Absolute),
                             "JP" => new Uri("https://accounts.zoho.jp/oauth/user/info", UriKind.Absolute),
                             "SA" => new Uri("https://accounts.zoho.sa/oauth/user/info", UriKind.Absolute),
-                            _ => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
+                             _   => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
                         },
 
                 _ => context.UserInfoEndpoint
@@ -1419,21 +1419,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // These providers return the username as a custom "username" node:
                 ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.DeviantArt or
-                ProviderTypes.Discord or ProviderTypes.Disqus or ProviderTypes.Kook or
-                ProviderTypes.Lichess or ProviderTypes.Mastodon or ProviderTypes.Mixcloud or
-                ProviderTypes.Trakt or ProviderTypes.WordPress
+                ProviderTypes.Discord      or ProviderTypes.Disqus      or ProviderTypes.Kook       or
+                ProviderTypes.Lichess      or ProviderTypes.Mastodon    or ProviderTypes.Mixcloud   or
+                ProviderTypes.Trakt        or ProviderTypes.WordPress
                     => (string?) context.UserInfoResponse?["username"],
 
                 // These providers don't return a username so one is created using the "first_name" and "last_name" nodes:
                 ProviderTypes.Basecamp or ProviderTypes.Harvest or ProviderTypes.VkId
                     when context.UserInfoResponse?.HasParameter("first_name") is true &&
-                         context.UserInfoResponse?.HasParameter("last_name") is true
+                         context.UserInfoResponse?.HasParameter("last_name")  is true
                     => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
 
                 // These providers don't return a username so one is created using the "firstName" and "lastName" nodes:
                 ProviderTypes.Contentful or ProviderTypes.Smartsheet
                     when context.UserInfoResponse?.HasParameter("firstName") is true &&
-                         context.UserInfoResponse?.HasParameter("lastName") is true
+                         context.UserInfoResponse?.HasParameter("lastName")  is true
                     => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
 
                 // FitBit returns the username as a custom "displayName" node:
@@ -1468,12 +1468,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Shopify doesn't return a username so one is created using the "first_name" and "last_name" nodes:
                 ProviderTypes.Shopify
                     when context.TokenResponse?["associated_user"]?["first_name"] is not null &&
-                         context.TokenResponse?["associated_user"]?["last_name"] is not null
+                         context.TokenResponse?["associated_user"]?["last_name"]  is not null
                     => $"{(string?) context.TokenResponse?["associated_user"]?["first_name"]} {(string?) context.TokenResponse?["associated_user"]?["last_name"]}",
 
                 // These providers return the username as a custom "display_name" node:
                 ProviderTypes.Spotify or ProviderTypes.StackExchange or
-                ProviderTypes.Yandex or ProviderTypes.Zoom
+                ProviderTypes.Yandex  or ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["display_name"],
 
                 // Strava returns the username as a custom "athlete/username" node in token responses:
@@ -1500,7 +1500,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
             {
                 // These providers return the user identifier as a custom "user_id" node:
-                ProviderTypes.Amazon or ProviderTypes.HubSpot or
+                ProviderTypes.Amazon        or ProviderTypes.HubSpot or
                 ProviderTypes.StackExchange or ProviderTypes.Typeform or
                 ProviderTypes.VkId
                     => (string?) context.UserInfoResponse?["user_id"],
@@ -1513,16 +1513,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Airtable or ProviderTypes.Basecamp or ProviderTypes.Box or
-                ProviderTypes.Dailymotion or ProviderTypes.Deezer or ProviderTypes.Discord or
-                ProviderTypes.Disqus or ProviderTypes.Facebook or ProviderTypes.Gitee or
-                ProviderTypes.GitHub or ProviderTypes.Harvest or ProviderTypes.Kook or
-                ProviderTypes.Kroger or ProviderTypes.Lichess or ProviderTypes.Linear or
-                ProviderTypes.Mastodon or ProviderTypes.Meetup or ProviderTypes.Miro or
-                ProviderTypes.Nextcloud or ProviderTypes.Patreon or ProviderTypes.Pipedrive or
-                ProviderTypes.Reddit or ProviderTypes.Smartsheet or ProviderTypes.Spotify or
-                ProviderTypes.SubscribeStar or ProviderTypes.Todoist or ProviderTypes.Twitter or
-                ProviderTypes.Webflow or ProviderTypes.Weibo or ProviderTypes.Yandex or
+                ProviderTypes.Airtable      or ProviderTypes.Basecamp   or ProviderTypes.Box       or
+                ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or ProviderTypes.Discord   or
+                ProviderTypes.Disqus        or ProviderTypes.Facebook   or ProviderTypes.Gitee     or
+                ProviderTypes.GitHub        or ProviderTypes.Harvest    or ProviderTypes.Kook      or
+                ProviderTypes.Kroger        or ProviderTypes.Lichess    or ProviderTypes.Linear    or 
+                ProviderTypes.Mastodon      or ProviderTypes.Meetup     or ProviderTypes.Miro      or 
+                ProviderTypes.Nextcloud     or ProviderTypes.Patreon    or ProviderTypes.Pipedrive or 
+                ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify   or 
+                ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter   or
+                ProviderTypes.Webflow       or ProviderTypes.Weibo      or ProviderTypes.Yandex    or 
                 ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["id"],
 
@@ -1697,7 +1697,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         "IN" => new Uri("https://accounts.zoho.in/oauth/v2/auth", UriKind.Absolute),
                         "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/auth", UriKind.Absolute),
                         "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/auth", UriKind.Absolute),
-                        _ => new Uri("https://accounts.zoho.com/oauth/v2/auth", UriKind.Absolute)
+                         _   => new Uri("https://accounts.zoho.com/oauth/v2/auth", UriKind.Absolute)
                     },
 
                 _ => context.AuthorizationEndpoint
@@ -1773,7 +1773,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                ProviderTypes.Deezer or ProviderTypes.Disqus or ProviderTypes.Shopify or
+                ProviderTypes.Deezer or ProviderTypes.Disqus  or ProviderTypes.Shopify or
                 ProviderTypes.Strava or ProviderTypes.Todoist or ProviderTypes.Weibo
                     => string.Join(",", context.Scopes),
 
@@ -1831,8 +1831,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             if (context.Registration.ProviderType is ProviderTypes.Deezer or ProviderTypes.Huawei or ProviderTypes.Mixcloud)
             {
                 context.Request.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
-                    uri: new Uri(context.RedirectUri, UriKind.Absolute),
-                    name: Parameters.State,
+                    uri  : new Uri(context.RedirectUri, UriKind.Absolute),
+                    name : Parameters.State,
                     value: context.Request.State).AbsoluteUri;
 
                 context.Request.State = null;
