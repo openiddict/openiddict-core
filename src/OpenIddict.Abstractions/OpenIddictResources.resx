@@ -2368,6 +2368,24 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
 'United Kingdom' (or 'UK'),
 'United States' (or 'US').</value>
   </data>
+  <data name="ID2189" xml:space="preserve">
+    <value>The specified Genesys Cloud region is not valid. Supported values are:
+'Asia Pacific (Mumbai)' (or 'ap-south-1'),
+'Asia Pacific (Osaka)' (or 'ap-northeast-3'),
+'Asia Pacific (Seoul)' (or 'ap-northeast-2'),
+'Asia Pacific (Sydney)' (or 'ap-southeast-2'),
+'Asia Pacific (Tokyo)' (or 'ap-northeast-1'),
+'Canada (Central)' (or 'ca-central-1'),
+'Europe (Frankfurt)' (or 'eu-central-1'),
+'Europe (Ireland)' (or 'eu-west-1'),
+'Europe (London)' (or 'eu-west-2'),
+'Europe (Zurich)' (or 'eu-central-2'),
+'Middle East (UAE)' (or 'me-central-1'),
+'South America (São Paulo)' (or 'sa-east-1'),
+'US East (Virginia)' (or 'us-east-1'),
+'US East 2 (Ohio)' (or 'us-east-2'),
+'US West (Oregon)' (or 'us-west-2').</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
