@@ -2482,7 +2482,7 @@
 
   <Provider Name="Genesys" DisplayName="Genesys Cloud" Id="2e34b9d0-5c1f-4e23-9ac9-b4aefde213d2" Documentation="https://developer.genesys.cloud/authorization/platform-auth/">
 
-    <Environment Issuer="{settings.Region?.ToUpperInvariant() switch {
+    <Environment Issuer="{settings.Region switch {
                           'us-east-1' => 'https://mypurecloud.com',
                           'us-east-2' => 'https://use2.us-gov-pure.cloudh',
                           'us-west-2' => 'https://usw2.pure.cloud',
@@ -2500,7 +2500,7 @@
                           'me-central-1' => 'https://mec1.pure.cloud',
                            _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}">
 
-      <Configuration AuthorizationEndpoint="{settings.Region?.ToUpperInvariant() switch {
+      <Configuration AuthorizationEndpoint="{settings.Region switch {
                           'us-east-1' => 'https://login.mypurecloud.com/oauth/authorize',
                           'us-east-2' => 'https://login.use2.us-gov-pure.cloud/oauth/authorize',
                           'us-west-2' => 'https://login.usw2.pure.cloud/oauth/authorize',
@@ -2517,7 +2517,7 @@
                           'sa-east-1' => 'https://login.sae1.pure.cloud/oauth/authorize',
                           'me-central-1' => 'https://login.mec1.pure.cloud/oauth/authorize',
                            _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}"
-               TokenEndpoint="{settings.Region?.ToUpperInvariant() switch {
+               TokenEndpoint="{settings.Region switch {
                           'us-east-1' => 'https://login.mypurecloud.com/oauth/token',
                           'us-east-2' => 'https://login.use2.us-gov-pure.cloud/oauth/token',
                           'us-west-2' => 'https://login.usw2.pure.cloud/oauth/token',
@@ -2534,7 +2534,7 @@
                           'sa-east-1' => 'https://login.sae1.pure.cloud/oauth/token',
                           'me-central-1' => 'https://login.mec1.pure.cloud/oauth/token',
                            _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}"
-               UserInfoEndpoint="{settings.Region?.ToUpperInvariant() switch {
+               UserInfoEndpoint="{settings.Region switch {
                           'us-east-1' => 'https://api.mypurecloud.com/api/v2/users/me',
                           'us-east-2' => 'https://api.use2.us-gov-pure.cloud/api/v2/users/me',
                           'us-west-2' => 'https://api.usw2.pure.cloud/api/v2/users/me',
