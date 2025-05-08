@@ -2498,7 +2498,7 @@
                           'ap-southeast-2' => 'https://mypurecloud.com.au',
                           'sa-east-1' => 'https://sae1.pure.cloud',
                           'me-central-1' => 'https://mec1.pure.cloud',
-                           _  => throw new InvalidArgumentException() }}">
+                           _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}">
 
       <Configuration AuthorizationEndpoint="{settings.Region?.ToUpperInvariant() switch {
                           'us-east-1' => 'https://login.mypurecloud.com/oauth/authorize',
@@ -2516,7 +2516,7 @@
                           'ap-southeast-2' => 'https://login.mypurecloud.com.au/oauth/authorize',
                           'sa-east-1' => 'https://login.sae1.pure.cloud/oauth/authorize',
                           'me-central-1' => 'https://login.mec1.pure.cloud/oauth/authorize',
-                           _  => throw new InvalidArgumentException() }}"
+                           _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}"
                TokenEndpoint="{settings.Region?.ToUpperInvariant() switch {
                           'us-east-1' => 'https://login.mypurecloud.com/oauth/token',
                           'us-east-2' => 'https://login.use2.us-gov-pure.cloud/oauth/token',
@@ -2533,7 +2533,7 @@
                           'ap-southeast-2' => 'https://login.mypurecloud.com.au/oauth/token',
                           'sa-east-1' => 'https://login.sae1.pure.cloud/oauth/token',
                           'me-central-1' => 'https://login.mec1.pure.cloud/oauth/token',
-                           _  => throw new InvalidArgumentException() }}"
+                           _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}"
                UserInfoEndpoint="{settings.Region?.ToUpperInvariant() switch {
                           'us-east-1' => 'https://api.mypurecloud.com/api/v2/users/me',
                           'us-east-2' => 'https://api.use2.us-gov-pure.cloud/api/v2/users/me',
@@ -2550,7 +2550,7 @@
                           'ap-southeast-2' => 'https://api.mypurecloud.com.au/api/v2/users/me',
                           'sa-east-1' => 'https://api.sae1.pure.cloud/api/v2/users/me',
                           'me-central-1' => 'https://api.mec1.pure.cloud/api/v2/users/me',
-                           _  => throw new InvalidArgumentException() }}">
+                           _  => throw new NotSupportedException('The specified region is not supported. Please provide a valid region name.') }}">
 
         <CodeChallengeMethod Value="plain" />
         <CodeChallengeMethod Value="S256" />
