@@ -659,7 +659,7 @@
       <Configuration AuthorizationEndpoint="https://discord.com/oauth2/authorize"
                      RevocationEndpoint="https://discord.com/api/oauth2/token/revoke"
                      TokenEndpoint="https://discord.com/api/oauth2/token"
-                     UserInfoEndpoint="https://discord.com/api/oauth2/@me">
+                     UserInfoEndpoint="https://discord.com/api/users/@me">
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="authorization_code" />
