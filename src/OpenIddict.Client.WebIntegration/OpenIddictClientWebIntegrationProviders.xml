@@ -99,6 +99,9 @@
 
       _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2184)) }}" />
 
+    <Constant Class="Regions" Value="China"  Name="China"  />
+    <Constant Class="Regions" Value="Global" Name="Global" />
+
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="Global"
              Description="The Alibaba Cloud (Aliyun) service region ('Global' for the global Alibaba Cloud by default, or can be set to 'China' for Aliyun)" />
 
@@ -312,6 +315,11 @@
 
       _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2185)) }}" />
 
+    <Constant Class="Regions" Value="Asia-Pacific"   Name="AsiaPacific"   />
+    <Constant Class="Regions" Value="China"          Name="China"         />
+    <Constant Class="Regions" Value="European Union" Name="EuropeanUnion" />
+    <Constant Class="Regions" Value="United States"  Name="UnitedStates"  />
+
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="United States"
              Description="The preferred Battle.net region (by default, 'United States')" />
   </Provider>
@@ -473,6 +481,44 @@
       string value when Regex.IsMatch(value, @'^[a-z]{2,}(-[a-z]+-)?[a-z]+-\d+$') => $'https://cognito-idp.{value}.amazonaws.com/{settings.UserPoolId}',
 
       _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2186)) }}" />
+
+    <!--
+      Note: to make the region constants easier to read, only the name of
+      the state or the city is included in the name when it is unambiguous.
+    -->
+
+    <Constant Class="Regions" Value="US East (Ohio)"            Name="Ohio"                     />
+    <Constant Class="Regions" Value="US East (N. Virginia)"     Name="NorthVirginia"            />
+    <Constant Class="Regions" Value="US West (N. California)"   Name="NorthCalifornia"          />
+    <Constant Class="Regions" Value="US West (Oregon)"          Name="Oregon"                   />
+    <Constant Class="Regions" Value="Africa (Cape Town)"        Name="CapeTown"                 />
+    <Constant Class="Regions" Value="Asia Pacific (Hong Kong)"  Name="HongKong"                 />
+    <Constant Class="Regions" Value="Asia Pacific (Hyderabad)"  Name="Hyderabad"                />
+    <Constant Class="Regions" Value="Asia Pacific (Jakarta)"    Name="Jakarta"                  />
+    <Constant Class="Regions" Value="Asia Pacific (Malaysia)"   Name="Malaysia"                 />
+    <Constant Class="Regions" Value="Asia Pacific (Melbourne)"  Name="Melbourne"                />
+    <Constant Class="Regions" Value="Asia Pacific (Mumbai)"     Name="Mumbai"                   />
+    <Constant Class="Regions" Value="Asia Pacific (Osaka)"      Name="Osaka"                    />
+    <Constant Class="Regions" Value="Asia Pacific (Seoul)"      Name="Seoul"                    />
+    <Constant Class="Regions" Value="Asia Pacific (Singapore)"  Name="Singapore"                />
+    <Constant Class="Regions" Value="Asia Pacific (Sydney)"     Name="Sydney"                   />
+    <Constant Class="Regions" Value="Asia Pacific (Tokyo)"      Name="Tokyo"                    />
+    <Constant Class="Regions" Value="Canada (Central)"          Name="CentralCanada"            />
+    <Constant Class="Regions" Value="Canada West (Calgary)"     Name="Calgary"                  />
+    <Constant Class="Regions" Value="Europe (Frankfurt)"        Name="Frankfurt"                />
+    <Constant Class="Regions" Value="Europe (Ireland)"          Name="Ireland"                  />
+    <Constant Class="Regions" Value="Europe (London)"           Name="London"                   />
+    <Constant Class="Regions" Value="Europe (Milan)"            Name="Milan"                    />
+    <Constant Class="Regions" Value="Europe (Paris)"            Name="Paris"                    />
+    <Constant Class="Regions" Value="Europe (Spain)"            Name="Spain"                    />
+    <Constant Class="Regions" Value="Europe (Stockholm)"        Name="Stockholm"                />
+    <Constant Class="Regions" Value="Europe (Zurich)"           Name="Zurich"                   />
+    <Constant Class="Regions" Value="Israel (Tel Aviv)"         Name="TelAviv"                  />
+    <Constant Class="Regions" Value="Middle East (Bahrain)"     Name="Bahrain"                  />
+    <Constant Class="Regions" Value="Middle East (UAE)"         Name="UnitedArabEmirates"       />
+    <Constant Class="Regions" Value="South America (São Paulo)" Name="SaoPaulo"                 />
+    <Constant Class="Regions" Value="AWS GovCloud (US-East)"    Name="GovCloudUnitedStatesEast" />
+    <Constant Class="Regions" Value="AWS GovCloud (US-West)"    Name="GovCloudUnitedStatesWest" />
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
              Description="The AWS region" />
@@ -837,7 +883,7 @@
       'Middle East (UAE)'         or 'me-central-1'   => 'https://login.mec1.pure.cloud/',
       'South America (São Paulo)' or 'sa-east-1'      => 'https://login.sae1.pure.cloud/',
       'US East (Virginia)'        or 'us-east-1'      => 'https://login.mypurecloud.com/',
-      'US East 2 (Ohio)'          or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/',
+      'US East (Ohio)'            or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/',
       'US West (Oregon)'          or 'us-west-2'      => 'https://login.usw2.pure.cloud/',
 
       _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2189)) }}">
@@ -855,7 +901,7 @@
         'Middle East (UAE)'         or 'me-central-1'   => 'https://login.mec1.pure.cloud/oauth/authorize',
         'South America (São Paulo)' or 'sa-east-1'      => 'https://login.sae1.pure.cloud/oauth/authorize',
         'US East (Virginia)'        or 'us-east-1'      => 'https://login.mypurecloud.com/oauth/authorize',
-        'US East 2 (Ohio)'          or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/oauth/authorize',
+        'US East (Ohio)'            or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/oauth/authorize',
         'US West (Oregon)'          or 'us-west-2'      => 'https://login.usw2.pure.cloud/oauth/authorize',
 
         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2189)) }}"
@@ -873,7 +919,7 @@
         'Middle East (UAE)'         or 'me-central-1'   => 'https://login.mec1.pure.cloud/oauth/token',
         'South America (São Paulo)' or 'sa-east-1'      => 'https://login.sae1.pure.cloud/oauth/token',
         'US East (Virginia)'        or 'us-east-1'      => 'https://login.mypurecloud.com/oauth/token',
-        'US East 2 (Ohio)'          or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/oauth/token',
+        'US East (Ohio)'            or 'us-east-2'      => 'https://login.use2.us-gov-pure.cloud/oauth/token',
         'US West (Oregon)'          or 'us-west-2'      => 'https://login.usw2.pure.cloud/oauth/token',
 
         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2189)) }}"
@@ -891,7 +937,7 @@
         'Middle East (UAE)'         or 'me-central-1'   => 'https://api.mec1.pure.cloud/api/v2/users/me',
         'South America (São Paulo)' or 'sa-east-1'      => 'https://api.sae1.pure.cloud/api/v2/users/me',
         'US East (Virginia)'        or 'us-east-1'      => 'https://api.mypurecloud.com/api/v2/users/me',
-        'US East 2 (Ohio)'          or 'us-east-2'      => 'https://api.use2.us-gov-pure.cloud/api/v2/users/me',
+        'US East (Ohio)'            or 'us-east-2'      => 'https://api.use2.us-gov-pure.cloud/api/v2/users/me',
         'US West (Oregon)'          or 'us-west-2'      => 'https://api.usw2.pure.cloud/api/v2/users/me',
 
         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2189)) }}">
@@ -901,6 +947,27 @@
         <GrantType Value="refresh_token" />
       </Configuration>
     </Environment>
+
+    <!--
+      Note: to make the region constants easier to read, only the name of
+      the state or the city is included in the name when it is unambiguous.
+    -->
+
+    <Constant Class="Regions" Value="Asia Pacific (Mumbai)"     Name="Mumbai"             />
+    <Constant Class="Regions" Value="Asia Pacific (Osaka)"      Name="Osaka"              />
+    <Constant Class="Regions" Value="Asia Pacific (Seoul)"      Name="Seoul"              />
+    <Constant Class="Regions" Value="Asia Pacific (Sydney)"     Name="Sydney"             />
+    <Constant Class="Regions" Value="Asia Pacific (Tokyo)"      Name="Tokyo"              />
+    <Constant Class="Regions" Value="Canada (Central)"          Name="CentralCanada"      />
+    <Constant Class="Regions" Value="Europe (Frankfurt)"        Name="Frankfurt"          />
+    <Constant Class="Regions" Value="Europe (Ireland)"          Name="Ireland"            />
+    <Constant Class="Regions" Value="Europe (London)"           Name="London"             />
+    <Constant Class="Regions" Value="Europe (Zurich)"           Name="Zurich"             />
+    <Constant Class="Regions" Value="Middle East (UAE)"         Name="UnitedArabEmirates" />
+    <Constant Class="Regions" Value="South America (São Paulo)" Name="SaoPaulo"           />
+    <Constant Class="Regions" Value="US East (Ohio)"            Name="Ohio"               />
+    <Constant Class="Regions" Value="US East (Virginia)"        Name="Virginia"           />
+    <Constant Class="Regions" Value="US West (Oregon)"          Name="Oregon"             />
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
              Description="Specifies the region name (e.g., 'US East (Virginia)'). To determine the correct region for your instance, visit https://developer.genesys.cloud/platform/api/" />
@@ -1228,6 +1295,9 @@
         <GrantType Value="refresh_token" />
       </Configuration>
     </Environment>
+
+    <Constant Class="Regions" Value="China"  Name="China"  />
+    <Constant Class="Regions" Value="Global" Name="Global" />
 
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="false" DefaultValue="Global"
              Description="The Lark (Feishu) service region ('Global' for the global Lark by default, or can be set to 'China' for Feishu)" />
@@ -1835,6 +1905,9 @@
       <Scope Name="read_products" Default="true" Required="false" />
     </Environment>
 
+    <Constant Class="AccessModes" Value="offline" Name="Offline" />
+    <Constant Class="AccessModes" Value="online"  Name="Online"  />
+
     <Property Name="ShopName" DictionaryKey=".shopify_shop_name" />
 
     <Setting PropertyName="AccessMode" ParameterName="mode" Type="String" Required="false"
@@ -1967,8 +2040,8 @@
       -->
 
       <Configuration AuthorizationEndpoint="{settings.AccountType switch {
-          'Express'  => 'https://connect.stripe.com/express/oauth/authorize',
-          'Standard' => 'https://connect.stripe.com/oauth/authorize',
+          'express'  => 'https://connect.stripe.com/express/oauth/authorize',
+          'standard' => 'https://connect.stripe.com/oauth/authorize',
 
           _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2190)) }}"
                      TokenEndpoint="https://connect.stripe.com/oauth/token" />
@@ -1983,10 +2056,13 @@
       <Scope Name="read_write" Default="true" Required="false" />
     </Environment>
 
+    <Constant Class="AccountTypes" Value="express"  Name="Express"  />
+    <Constant Class="AccountTypes" Value="standard" Name="Standard" />
+
     <Property Name="AccountType" DictionaryKey=".stripe_account_type" />
 
     <Setting PropertyName="AccountType" ParameterName="type" Type="String" Required="true" DefaultValue="standard"
-             Description="The type of the Stripe account (by default, 'Standard', but can also be set to 'Express'). Note: the account type can also be set dynamically via the authentication properties" />
+             Description="The type of the Stripe account (by default, 'standard', but can also be set to 'express'). Note: the account type can also be set dynamically via the authentication properties" />
   </Provider>
 
   <!--
@@ -2607,6 +2683,15 @@
 
       <Scope Name="AaaServer.profile.READ" Default="true" Required="true" />
     </Environment>
+
+    <Constant Class="Regions" Value="Australia"      Name="Australia"     />
+    <Constant Class="Regions" Value="Canada"         Name="Canada"        />
+    <Constant Class="Regions" Value="European Union" Name="EuropeanUnion" />
+    <Constant Class="Regions" Value="India"          Name="India"         />
+    <Constant Class="Regions" Value="Japan"          Name="Japan"         />
+    <Constant Class="Regions" Value="Saudi Arabia"   Name="SaudiArabia"   />
+    <Constant Class="Regions" Value="United Kingdom" Name="UnitedKingdom" />
+    <Constant Class="Regions" Value="United States"  Name="UnitedStates"  />
 
     <Property Name="Location" DictionaryKey=".location" />
 
