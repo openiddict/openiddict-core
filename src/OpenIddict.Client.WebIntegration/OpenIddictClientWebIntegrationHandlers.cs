@@ -427,7 +427,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 // Ensure the specified location corresponds to well-known region.
-                if (location.ToUpperInvariant() is not ("AU" or "CA" or "EU" or "IN" or "JP" or "SA" or "US"))
+                if (location.ToUpperInvariant() is not ("AU" or "CA" or "EU" or "IN" or "JP" or "SA" or "UK" or "US"))
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -546,7 +546,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         "IN" => new Uri("https://accounts.zoho.in/oauth/v2/token", UriKind.Absolute),
                         "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/token", UriKind.Absolute),
                         "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/token", UriKind.Absolute),
-                         _   => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute)
+                        "UK" => new Uri("https://accounts.zoho.uk/oauth/v2/token", UriKind.Absolute),
+                        "US" => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute),
+
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2188))
                     },
 
                 ProviderTypes.Zoho when context.GrantType is GrantTypes.RefreshToken
@@ -560,7 +563,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                             "IN" => new Uri("https://accounts.zoho.in/oauth/v2/token", UriKind.Absolute),
                             "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/token", UriKind.Absolute),
                             "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/token", UriKind.Absolute),
-                             _   => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute)
+                            "UK" => new Uri("https://accounts.zoho.uk/oauth/v2/token", UriKind.Absolute),
+                            "US" => new Uri("https://accounts.zoho.com/oauth/v2/token", UriKind.Absolute),
+
+                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2188))
                         },
 
                 _ => context.TokenEndpoint
@@ -1070,7 +1076,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         "IN" => new Uri("https://accounts.zoho.in/oauth/user/info", UriKind.Absolute),
                         "JP" => new Uri("https://accounts.zoho.jp/oauth/user/info", UriKind.Absolute),
                         "SA" => new Uri("https://accounts.zoho.sa/oauth/user/info", UriKind.Absolute),
-                         _   => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
+                        "UK" => new Uri("https://accounts.zoho.uk/oauth/user/info", UriKind.Absolute),
+                        "US" => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute),
+
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2188))
                     },
 
                 ProviderTypes.Zoho when context.GrantType is GrantTypes.RefreshToken
@@ -1084,7 +1093,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                             "IN" => new Uri("https://accounts.zoho.in/oauth/user/info", UriKind.Absolute),
                             "JP" => new Uri("https://accounts.zoho.jp/oauth/user/info", UriKind.Absolute),
                             "SA" => new Uri("https://accounts.zoho.sa/oauth/user/info", UriKind.Absolute),
-                             _   => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute)
+                            "UK" => new Uri("https://accounts.zoho.uk/oauth/user/info", UriKind.Absolute),
+                            "US" => new Uri("https://accounts.zoho.com/oauth/user/info", UriKind.Absolute),
+
+                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2188))
                         },
 
                 _ => context.UserInfoEndpoint
@@ -1679,10 +1691,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // For more information, see
                 // https://stripe.com/docs/connect/oauth-reference?locale=en-us#get-authorize.
                 ProviderTypes.StripeConnect when context.Properties.TryGetValue(
-                    StripeConnect.Properties.AccountType, out string? type) =>
-                    string.Equals(type, "express", StringComparison.OrdinalIgnoreCase) ?
-                        new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute) :
-                        new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
+                    StripeConnect.Properties.AccountType, out string? type) => type switch
+                    {
+                        "Express"  => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
+                        "Standard" => new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
+
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2190))
+                    },
 
                 // Zoho requires using a region-specific authorization endpoint.
                 //
@@ -1697,7 +1712,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         "IN" => new Uri("https://accounts.zoho.in/oauth/v2/auth", UriKind.Absolute),
                         "JP" => new Uri("https://accounts.zoho.jp/oauth/v2/auth", UriKind.Absolute),
                         "SA" => new Uri("https://accounts.zoho.sa/oauth/v2/auth", UriKind.Absolute),
-                         _   => new Uri("https://accounts.zoho.com/oauth/v2/auth", UriKind.Absolute)
+                        "UK" => new Uri("https://accounts.zoho.uk/oauth/v2/auth", UriKind.Absolute),
+                        "US" => new Uri("https://accounts.zoho.com/oauth/v2/auth", UriKind.Absolute),
+
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2188))
                     },
 
                 _ => context.AuthorizationEndpoint

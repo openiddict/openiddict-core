@@ -1967,10 +1967,10 @@
       -->
 
       <Configuration AuthorizationEndpoint="{settings.AccountType switch {
-          string type when string.Equals(type, 'express', StringComparison.OrdinalIgnoreCase)
-              => 'https://connect.stripe.com/express/oauth/authorize',
+          'Express'  => 'https://connect.stripe.com/express/oauth/authorize',
+          'Standard' => 'https://connect.stripe.com/oauth/authorize',
 
-          _ => 'https://connect.stripe.com/oauth/authorize' }}"
+          _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2190)) }}"
                      TokenEndpoint="https://connect.stripe.com/oauth/token" />
 
       <!--
@@ -1986,7 +1986,7 @@
     <Property Name="AccountType" DictionaryKey=".stripe_account_type" />
 
     <Setting PropertyName="AccountType" ParameterName="type" Type="String" Required="true" DefaultValue="standard"
-             Description="The type of the Stripe account (by default, 'standard', but can also be set to 'express'). Note: the account type can also be set dynamically via the authentication properties" />
+             Description="The type of the Stripe account (by default, 'Standard', but can also be set to 'Express'). Note: the account type can also be set dynamically via the authentication properties" />
   </Provider>
 
   <!--
@@ -2568,6 +2568,11 @@
   <Provider Name="Zoho" Id="269dc1c7-388e-4f65-9c29-c7791914532b"
             Documentation="https://www.zoho.com/accounts/protocol/oauth.html">
     <Environment Issuer="https://accounts.zoho.com/">
+      <!--
+        Note: the endpoint URIs defined here MUST be kept in sync with the values used in the event handlers to
+        determine the token/userinfo endpoint URIs to use based on the "location" parameter returned by Zoho.
+      -->
+
       <Configuration AuthorizationEndpoint="{settings.Region switch {
         'Australia'      or 'AU' => 'https://accounts.zoho.com.au/oauth/v2/auth',
         'Canada'         or 'CA' => 'https://accounts.zohocloud.ca/oauth/v2/auth',

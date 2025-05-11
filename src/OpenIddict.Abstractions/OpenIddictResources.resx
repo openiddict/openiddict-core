@@ -2291,6 +2291,9 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
 'US East 2 (Ohio)' (or 'us-east-2'),
 'US West (Oregon)' (or 'us-west-2').</value>
   </data>
+  <data name="ID2190" xml:space="preserve">
+    <value>The specified Stripe Connect account type is not valid. Supported values are 'Standard' and 'Express'.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
