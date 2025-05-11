@@ -1693,8 +1693,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.StripeConnect when context.Properties.TryGetValue(
                     StripeConnect.Properties.AccountType, out string? type) => type switch
                     {
-                        "Express"  => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
-                        "Standard" => new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
+                        "express"  => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
+                        "standard" => new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID2190))
                     },

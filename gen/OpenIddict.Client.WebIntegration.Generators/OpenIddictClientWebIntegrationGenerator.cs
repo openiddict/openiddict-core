@@ -805,7 +805,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             return template.Render(new
             {
                 Providers = document.Root.Elements("Provider")
-                    .Select(provider => new
+                    .Select(static provider => new
                     {
                         Name = (string) provider.Attribute("Name"),
                         DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
@@ -813,13 +813,13 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
                         Obsolete = (bool?) provider.Attribute("Obsolete") ?? false,
 
-                        Environments = provider.Elements("Environment").Select(environment => new
+                        Environments = provider.Elements("Environment").Select(static environment => new
                         {
                             Name = (string?) environment.Attribute("Name") ?? "Production"
                         })
                         .ToList(),
 
-                        Settings = provider.Elements("Setting").Select(setting => new
+                        Settings = provider.Elements("Setting").Select(static setting => new
                         {
                             PropertyName = (string) setting.Attribute("PropertyName"),
                             ParameterName = (string) setting.Attribute("ParameterName"),
@@ -886,6 +886,15 @@ public static partial class OpenIddictClientWebIntegrationConstants
             public const string {{ property.name }} = ""{{ property.dictionary_key }}"";
             {{~ end ~}}
         }
+
+        {{~ for group in provider.constants ~}}
+        public static class {{ group.key }}
+        {
+            {{~ for constant in group ~}}
+            public const string {{ constant.name }} = ""{{ constant.value }}"";
+            {{~ end ~}}
+        }
+        {{~ end ~}}
     }
     {{~ end ~}}
 
@@ -907,23 +916,33 @@ public static partial class OpenIddictClientWebIntegrationConstants
             return template.Render(new
             {
                 Providers = document.Root.Elements("Provider")
-                    .Select(provider => new
+                    .Select(static provider => new
                     {
                         Name = (string) provider.Attribute("Name"),
                         Id = (string) provider.Attribute("Id"),
 
-                        Environments = provider.Elements("Environment").Select(environment => new
+                        Environments = provider.Elements("Environment").Select(static environment => new
                         {
                             Name = (string?) environment.Attribute("Name") ?? "Production"
                         })
                         .ToList(),
 
-                        Properties = provider.Elements("Property").Select(property => new
+                        Properties = provider.Elements("Property").Select(static property => new
                         {
                             Name = (string) property.Attribute("Name"),
                             DictionaryKey = (string) property.Attribute("DictionaryKey")
                         })
                         .ToList(),
+
+                        Constants = provider.Elements("Constant")
+                            .Select(static constant => new
+                            {
+                                Class = (string) constant.Attribute("Class"),
+                                Name = (string) constant.Attribute("Name"),
+                                Value = (string) constant.Attribute("Value")
+                            })
+                            .GroupBy(static constant => constant.Class)
+                            .ToList(),
                     })
                     .ToList()
             });
@@ -1289,12 +1308,12 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             return template.Render(new
             {
                 Providers = document.Root.Elements("Provider")
-                    .Select(provider => new
+                    .Select(static provider => new
                     {
                         Name = (string) provider.Attribute("Name"),
                         DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
 
-                        Environments = provider.Elements("Environment").Select(environment => new
+                        Environments = provider.Elements("Environment").Select(static environment => new
                         {
                             Name = (string?) environment.Attribute("Name") ?? "Production",
 
@@ -1314,14 +1333,14 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                     CodeChallengeMethodsSupported = configuration.Elements("CodeChallengeMethod").ToList() switch
                                     {
-                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } methods => methods.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         _ => []
                                     },
 
                                     GrantTypesSupported = configuration.Elements("GrantType").ToList() switch
                                     {
-                                        { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } types => types.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit grant type was set, assume the provider only supports the code flow.
                                         _ => [GrantTypes.AuthorizationCode]
@@ -1329,7 +1348,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                     ResponseModesSupported = configuration.Elements("ResponseMode").ToList() switch
                                     {
-                                        { Count: > 0 } modes => modes.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } modes => modes.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit response mode was set, assume the provider only supports the query response mode.
                                         _ => [ResponseModes.Query]
@@ -1337,7 +1356,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                     ResponseTypesSupported = configuration.Elements("ResponseType").ToList() switch
                                     {
-                                        { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } types => types.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit response type was set, assume the provider only supports the code flow.
                                         _ => [ResponseTypes.Code]
@@ -1345,14 +1364,14 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                     ScopesSupported = configuration.Elements("Scope").ToList() switch
                                     {
-                                        { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } types => types.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         _ => []
                                     },
 
                                     DeviceAuthorizationEndpointAuthMethodsSupported = configuration.Elements("DeviceAuthorizationEndpointAuthMethod").ToList() switch
                                     {
-                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } methods => methods.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit client authentication method was set, assume the provider only supports
                                         // flowing the client credentials as part of the device authorization request payload.
@@ -1361,7 +1380,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                     IntrospectionEndpointAuthMethodsSupported = configuration.Elements("IntrospectionEndpointAuthMethod").ToList() switch
                                     {
-                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } methods => methods.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit client authentication method was set, assume the provider only
                                         // supports flowing the client credentials as part of the introspection request payload.
@@ -1370,7 +1389,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                     RevocationEndpointAuthMethodsSupported = configuration.Elements("RevocationEndpointAuthMethod").ToList() switch
                                     {
-                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } methods => methods.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit client authentication method was set, assume the provider only
                                         // supports flowing the client credentials as part of the revocation request payload.
@@ -1379,7 +1398,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                     TokenEndpointAuthMethodsSupported = configuration.Elements("TokenEndpointAuthMethod").ToList() switch
                                     {
-                                        { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+                                        { Count: > 0 } methods => methods.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit client authentication method was set, assume the provider only
                                         // supports flowing the client credentials as part of the token request payload.
@@ -1390,7 +1409,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                 _ => null
                             },
 
-                            Scopes = environment.Elements("Scope").Select(setting => new
+                            Scopes = environment.Elements("Scope").Select(static setting => new
                             {
                                 Name = (string) setting.Attribute("Name"),
                                 Default = (bool?) setting.Attribute("Default") ?? false,
@@ -1399,7 +1418,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                         })
                         .ToList(),
 
-                        Settings = provider.Elements("Setting").Select(setting => new
+                        Settings = provider.Elements("Setting").Select(static setting => new
                         {
                             PropertyName = (string) setting.Attribute("PropertyName"),
 
@@ -1412,7 +1431,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                             DefaultValue = (string?) setting.Attribute("DefaultValue"),
 
-                            Items = setting.Elements("Item").Select(item => new
+                            Items = setting.Elements("Item").Select(static item => new
                             {
                                 Value = (string) item.Attribute("Value"),
                                 Default = (bool?) item.Attribute("Default") ?? false,
@@ -1456,7 +1475,7 @@ public static partial class OpenIddictClientWebIntegrationHelpers
             return template.Render(new
             {
                 Providers = document.Root.Elements("Provider")
-                    .Select(provider => new
+                    .Select(static provider => new
                     {
                         Name = (string) provider.Attribute("Name"),
                         DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name")
@@ -1508,12 +1527,12 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
             return template.Render(new
             {
                 Providers = document.Root.Elements("Provider")
-                    .Select(provider => new
+                    .Select(static provider => new
                     {
                         Name = (string) provider.Attribute("Name"),
                         DisplayName = (string?) provider.Attribute("DisplayName") ?? (string) provider.Attribute("Name"),
 
-                        Settings = provider.Elements("Setting").Select(setting => new
+                        Settings = provider.Elements("Setting").Select(static setting => new
                         {
                             PropertyName = (string) setting.Attribute("PropertyName"),
 
@@ -1554,9 +1573,5 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                     .ToList()
             });
         }
-    }
-
-    public void Initialize(GeneratorInitializationContext context)
-    {
     }
 }
