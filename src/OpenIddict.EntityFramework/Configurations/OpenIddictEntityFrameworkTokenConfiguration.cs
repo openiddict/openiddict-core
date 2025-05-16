@@ -45,7 +45,7 @@ public sealed class OpenIddictEntityFrameworkTokenConfiguration<
 
         // Warning: the index on the ReferenceId property MUST NOT be declared as
         // a unique index, as Entity Framework 6.x doesn't support creating indexes
-        // with null-friendly WHERE conditions, unlike Entity Framework Core 1.x/2.x.
+        // with null-friendly WHERE conditions, unlike Entity Framework Core.
         Property(token => token.ReferenceId)
             .HasMaxLength(100)
             .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
@@ -57,7 +57,7 @@ public sealed class OpenIddictEntityFrameworkTokenConfiguration<
             .HasMaxLength(400);
 
         Property(token => token.Type)
-            .HasMaxLength(50);
+            .HasMaxLength(150);
 
         ToTable("OpenIddictTokens");
     }

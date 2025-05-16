@@ -71,7 +71,7 @@ public sealed class OpenIddictEntityFrameworkCoreTokenConfiguration<
                .HasMaxLength(400);
 
         builder.Property(token => token.Type)
-               .HasMaxLength(50);
+               .HasMaxLength(150);
 
         builder.ToTable("OpenIddictTokens");
     }
