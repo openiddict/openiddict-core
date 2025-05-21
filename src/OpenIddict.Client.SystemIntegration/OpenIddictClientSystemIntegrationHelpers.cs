@@ -110,7 +110,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatformGuard("maccatalyst13.1")]
     [SupportedOSPlatformGuard("macos10.15")]
     internal static bool IsASWebAuthenticationSessionSupported()
-#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
         => OperatingSystem.IsIOSVersionAtLeast(12)         ||
            OperatingSystem.IsMacCatalystVersionAtLeast(13) ||
            OperatingSystem.IsMacOSVersionAtLeast(10, 15);
@@ -125,7 +125,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SupportedOSPlatformGuard("android21.0")]
     internal static bool IsCustomTabsIntentSupported()
-#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+#if SUPPORTS_ANDROIDX_BROWSER && SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
         => OperatingSystem.IsAndroidVersionAtLeast(21);
 #else
         => false;
@@ -143,7 +143,12 @@ public static class OpenIddictClientSystemIntegrationHelpers
     // guard that will prevent the WinRT projections from being loaded by the runtime on
     // platforms that don't support it. Since OpenIddict declares Windows 10 1809 as the
     // oldest supported version in the package, it is also used for the runtime check.
-    internal static bool IsWindowsRuntimeSupported() => IsWindowsVersionAtLeast(10, 0, 17763);
+    internal static bool IsWindowsRuntimeSupported()
+#if SUPPORTS_WINDOWS_RUNTIME
+        => IsWindowsVersionAtLeast(10, 0, 17763);
+#else
+        => false;
+#endif
 
     /// <summary>
     /// Determines whether WinRT app instance activation is supported on this platform.

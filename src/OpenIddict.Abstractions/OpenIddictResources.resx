@@ -1560,7 +1560,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>An explicit grant type must be attached when specifying a specific response type (except when using the special response_type=none value).</value>
   </data>
   <data name="ID0446" xml:space="preserve">
-    <value>AS web authentication sessions are only supported on iOS 12.0 and higher.</value>
+    <value>AS web authentication sessions are only supported on iOS 12.0+/macOS 10.15+/Mac Catalyst 12.0+ and require using an OS-specific target framework moniker (e.g on macOS, 'net8.0-macos15.0').</value>
   </data>
   <data name="ID0447" xml:space="preserve">
     <value>The current UI window cannot be resolved.</value>
@@ -1570,6 +1570,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID0449" xml:space="preserve">
     <value>The generic version of the OpenIddict.Client.SystemIntegration package cannot be used on this platform. Make sure your application is referencing the correct version by using the appropriate OS-specific TFM (e.g on macOS, 'net8.0-macos10.15').</value>
+    <comment>This resource is no longer used and will be removed in a future version.</comment>
   </data>
   <data name="ID0450" xml:space="preserve">
     <value>An HTTP redirect_uri or post_logout_redirect_uri cannot be used when using AS web authentication sessions. Make sure you're using a custom protocol scheme for all the callback URIs attached to the client registration. Alternatively, you can register an associated domain and use an HTTPS redirect_uri or post_logout_redirect_uri pointing to that domain (supported only on iOS 17.4+, Mac Catalyst 17.4+ and macOS 14.4+).</value>
@@ -1578,7 +1579,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The Zoho integration requires sending the region of the server when using the client credentials or refresh token grants. For that, attach a ".location" authentication property containing the region to use.</value>
   </data>
   <data name="ID0452" xml:space="preserve">
-    <value>Custom tabs intents are only supported on Android.</value>
+    <value>Custom tabs intents are only supported on Android and require using an OS-specific target framework moniker (e.g 'net8.0-android34.0').</value>
   </data>
   <data name="ID0453" xml:space="preserve">
     <value>The specified intent doesn't contain a valid data URI.</value>
