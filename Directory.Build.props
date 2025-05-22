@@ -33,52 +33,50 @@
     <PublicKeyToken>35a561290d20de2f</PublicKeyToken>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(DotNetRoot)' == '' ">
+    <DotNetRoot Condition=" '$(DOTNET_HOST_PATH)' != '' ">$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))</DotNetRoot>
+    <DotNetRoot Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(ProgramFiles)\dotnet</DotNetRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(DotNetRoot)' != '' ">
+    <AndroidPackFolders     Include="$(DotNetRoot)\packs\Microsoft.Android.Ref*" />
+    <IOSPackFolders         Include="$(DotNetRoot)\packs\Microsoft.iOS.Ref*" />
+    <MacCatalystPackFolders Include="$(DotNetRoot)\packs\Microsoft.MacCatalyst.Ref*" />
+    <MacOSPackFolders       Include="$(DotNetRoot)\packs\Microsoft.macOS.Ref*" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <AndroidPackPaths>@(AndroidPackFolders->'%(FullPath)')</AndroidPackPaths>
+    <IOSPackPaths>@(IOSPackFolders->'%(FullPath)')</IOSPackPaths>
+    <MacCatalystPackPaths>@(MacCatalystPackFolders->'%(FullPath)')</MacCatalystPackPaths>
+    <MacOSPackPaths>@(MacOSPackFolders->'%(FullPath)')</MacOSPackPaths>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!--
-      Note: targeting Android requires installing the .NET Android workload. To ensure the solution can
-      be built on machines that don't have the Android workload installed, a directory check is used to
-      ensure the Android reference assemblies pack is present on the machine before targeting Android.
+      Note: targeting Android, iOS, Mac Catalyst or macOS requires installing the corresponding .NET workload.
+      To ensure the solution can be built on machines that don't have the appropriate workloads installed,
+      the platform-specific target framework monikers are only used if the corresponding .NET pack is present.
     -->
     <SupportsAndroidTargeting
       Condition=" '$(SupportsAndroidTargeting)' == '' And
                   ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
-                 ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.Android.Ref.34')) Or
-                                                   ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.Android.Ref.34')) Or
-                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.Android.Ref.34'))) ">true</SupportsAndroidTargeting>
+                 ('$(GITHUB_ACTIONS)' == 'true' Or '$(AndroidPackPaths)' != '') ">true</SupportsAndroidTargeting>
 
-    <!--
-      Note: targeting iOS requires installing the .NET iOS workload. To ensure the solution can be
-      built on machines that don't have the iOS workload installed, a directory check is used to
-      ensure the iOS reference assemblies pack is present on the machine before targeting iOS.
-    -->
     <SupportsIOSTargeting
       Condition=" '$(SupportsIOSTargeting)' == '' And
                   ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
-                 ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.iOS.Ref')) Or
-                                                   ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.iOS.Ref')) Or
-                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.iOS.Ref'))) ">true</SupportsIOSTargeting>
-    <!--
-      Note: targeting Mac Catalyst requires installing the .NET Mac Catalyst workload. To ensure the solution
-      can be built on machines that don't have the Mac Catalyst workload installed, a directory check is used to
-      ensure the Mac Catalyst reference assemblies pack is present on the machine before targeting Mac Catalyst.
-    -->
+                 ('$(GITHUB_ACTIONS)' == 'true' Or '$(IOSPackPaths)' != '') ">true</SupportsIOSTargeting>
+
     <SupportsMacCatalystTargeting
       Condition=" '$(SupportsMacCatalystTargeting)' == '' And
                   ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
-                 ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.MacCatalyst.Ref')) Or
-                                                   ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.MacCatalyst.Ref')) Or
-                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.MacCatalyst.Ref'))) ">true</SupportsMacCatalystTargeting>
-    <!--
-      Note: targeting macOS requires installing the .NET macOS workload. To ensure the solution can be
-      built on machines that don't have the macOS workload installed, a directory check is used to
-      ensure the macOS reference assemblies pack is present on the machine before targeting macOS.
-    -->
+                 ('$(GITHUB_ACTIONS)' == 'true' Or '$(MacCatalystPackPaths)' != '') ">true</SupportsMacCatalystTargeting>
+
     <SupportsMacOSTargeting
       Condition=" '$(SupportsMacOSTargeting)' == '' And
                   ($([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows())) And
-                 ('$(GITHUB_ACTIONS)' == 'true' Or ('$(DotNetRoot)'         != ''     And Exists('$(DotNetRoot)packs\Microsoft.macOS.Ref')) Or
-                                                   ('$(DOTNET_HOST_PATH)'   != ''     And Exists('$([System.IO.Path]::GetDirectoryName($(DOTNET_HOST_PATH)))\packs\Microsoft.macOS.Ref')) Or
-                                                   ('$(MSBuildRuntimeType)' != 'Core' And Exists('$(ProgramFiles)\dotnet\packs\Microsoft.macOS.Ref'))) ">true</SupportsMacOSTargeting>
+                 ('$(GITHUB_ACTIONS)' == 'true' Or '$(MacOSPackPaths)' != '') ">true</SupportsMacOSTargeting>
 
     <!--
       Note: while <EnableWindowsTargeting>true</EnableWindowsTargeting> can be used to force targeting
