@@ -116,7 +116,7 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
 
             Stack<Exception>? exceptions = null;
 
-            for (var port = IPEndPoint.MinPort; port <= IPEndPoint.MaxPort; port++)
+            for (var port = IPEndPoint.MinPort; port is <= IPEndPoint.MaxPort; port++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 

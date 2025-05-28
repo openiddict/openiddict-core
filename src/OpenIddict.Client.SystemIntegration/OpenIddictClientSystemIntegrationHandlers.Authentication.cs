@@ -5,7 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -105,8 +104,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
-
-                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
 #if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
@@ -239,7 +236,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                     NSUrl CreateUrl() => new(OpenIddictHelpers.AddQueryStringParameters(
                         uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
-                        parameters: context.Transaction.Request.GetParameters().ToDictionary(
+                        parameters: context.Request.GetParameters().ToDictionary(
                             static parameter => parameter.Key,
                             static parameter => (StringValues) parameter.Value)).AbsoluteUri);
 
@@ -331,8 +328,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
-
 #if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
                 if (string.IsNullOrEmpty(context.RedirectUri))
                 {
@@ -359,7 +354,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // custom activity responsible for handling callback URIs pointing to a custom scheme.
                 intent.LaunchUrl(Application.Context, NativeUri.Parse(OpenIddictHelpers.AddQueryStringParameters(
                     uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
-                    parameters: context.Transaction.Request.GetParameters().ToDictionary(
+                    parameters: context.Request.GetParameters().ToDictionary(
                         static parameter => parameter.Key,
                         static parameter => (StringValues) parameter.Value)).AbsoluteUri)!);
 
@@ -404,8 +399,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
-
 #if SUPPORTS_WINDOWS_RUNTIME
                 if (string.IsNullOrEmpty(context.RedirectUri))
                 {
@@ -444,7 +437,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     options    : WebAuthenticationOptions.None,
                     requestUri : OpenIddictHelpers.AddQueryStringParameters(
                         uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
-                        parameters: context.Transaction.Request.GetParameters().ToDictionary(
+                        parameters: context.Request.GetParameters().ToDictionary(
                             static parameter => parameter.Key,
                             static parameter => (StringValues) parameter.Value)),
                     callbackUri: new Uri(context.RedirectUri, UriKind.Absolute)))
@@ -551,11 +544,9 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
-
                 var uri = OpenIddictHelpers.AddQueryStringParameters(
                     uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
-                    parameters: context.Transaction.Request.GetParameters().ToDictionary(
+                    parameters: context.Request.GetParameters().ToDictionary(
                         static parameter => parameter.Key,
                         static parameter => (StringValues) parameter.Value));
 
@@ -594,6 +585,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     }
                 }
 
+                // On Android, iOS and Mac Catalyst, Process.Start() is not supported and
+                // OS-specific/non-portable APIs must be used to launch the system browser.
 #if SUPPORTS_ANDROID
                 if (OperatingSystem.IsAndroid() && TryLaunchBrowserWithGenericIntent(uri))
                 {
@@ -601,20 +594,26 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     return;
                 }
 #endif
-
 #if SUPPORTS_UIKIT
                 if ((OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst()) && await TryLaunchBrowserWithUIApplicationAsync(uri))
                 {
                     context.HandleRequest();
                     return;
                 }
-#elif SUPPORTS_APPKIT
+#endif
+#if SUPPORTS_APPKIT
                 if (OperatingSystem.IsMacOS() && TryLaunchBrowserWithNSWorkspace(uri))
                 {
                     context.HandleRequest();
                     return;
                 }
 #endif
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && await TryLaunchBrowserWithOpenAsync(uri))
+                {
+                    context.HandleRequest();
+                    return;
+                }
+
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && await TryLaunchBrowserWithXdgOpenAsync(uri))
                 {
                     context.HandleRequest();
@@ -650,8 +649,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
-
                 // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpListenerContext()?.Response ??
@@ -663,7 +660,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 // Return a message indicating whether the authentication process
                 // succeeded or failed and that will be visible by the user.
-                var buffer = Encoding.UTF8.GetBytes(context.Transaction.Response.Error switch
+                var buffer = Encoding.UTF8.GetBytes(context.Response.Error switch
                 {
                     null or { Length: 0 } => "Login completed. Please return to the application.",
                     Errors.AccessDenied   => "Authorization denied. Please return to the application.",

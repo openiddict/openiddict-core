@@ -27,7 +27,7 @@ public class Worker : IHostedService
         // in HKEY_CLASSES_ROOT (in this case, it should be added by a dedicated installer).
         //
         // Alternatively, the application can be packaged and use windows.protocol to
-        // register the protocol handler/custom URI scheme with the operation system.
+        // register the protocol handler/custom URI scheme with the operating system.
         using var root = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Classes\\com.openiddict.sandbox.wpf.client");
         root.SetValue(string.Empty, "URL:com.openiddict.sandbox.wpf.client");
         root.SetValue("URL Protocol", string.Empty);
