@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Owin;
 
 namespace OpenIddict.Client.Owin;
 
@@ -45,6 +46,19 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
         {
             throw new ArgumentNullException(nameof(options));
         }
+
+        // If no cookie manager was explicitly configured but the OWIN application builder was registered as a service
+        // (which is required when using Autofac with the built-in Katana authentication middleware, as they require
+        // injecting IAppBuilder in their constructor), try to resolve the default cookie manager provided by the
+        // host. If it can't be resolved, use the generic implementation that directly operates on OWIN responses.
+        options.CookieManager ??= _provider.GetService<IAppBuilder>() switch
+        {
+            // See https://github.com/aspnet/AspNetKatana/pull/486 for more information.
+            IAppBuilder builder when builder.Properties.TryGetValue("infrastructure.CookieManager",
+                out object? property) && property is ICookieManager manager => manager,
+
+            _ => new CookieManager()
+        };
 
         if (options.AuthenticationMode is AuthenticationMode.Active)
         {

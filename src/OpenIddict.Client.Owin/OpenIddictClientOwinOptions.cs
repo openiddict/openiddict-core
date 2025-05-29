@@ -72,7 +72,13 @@ public sealed class OpenIddictClientOwinOptions : AuthenticationOptions
     /// <summary>
     /// Gets or sets the cookie manager used to read and write the cookies produced by the OWIN host.
     /// </summary>
-    public ICookieManager CookieManager { get; set; } = new CookieManager();
+    /// <remarks>
+    /// If the manager isn't explicitly set, OpenIddict will try to resolve the default instance
+    /// provided by the OWIN host (only if <see cref="IAppBuilder"/> was registered as a service
+    /// in the dependency injection container). If no instance can be resolved, the generic
+    /// <see cref="Microsoft.Owin.Infrastructure.CookieManager"/> implementation will be used.
+    /// </remarks>
+    public ICookieManager CookieManager { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the name of the correlation cookie used to bind authorization

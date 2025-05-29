@@ -1115,7 +1115,7 @@ Note: when using a dependency injection container supporting middleware resoluti
   </data>
   <data name="ID0317" xml:space="preserve">
     <value>The OpenIddict client services cannot be resolved from the DI container.
-To register the server services, use 'services.AddOpenIddict().AddClient()'.</value>
+To register the client services, use 'services.AddOpenIddict().AddClient()'.</value>
   </data>
   <data name="ID0318" xml:space="preserve">
     <value>The core services must be registered when enabling the OpenIddict client feature.
