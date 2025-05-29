@@ -130,6 +130,12 @@ public sealed class OpenIddictClientOwinBuilder
     /// <summary>
     /// Sets the cookie manager used to read and write the cookies produced by the OWIN host.
     /// </summary>
+    /// <remarks>
+    /// If the manager isn't explicitly set, OpenIddict will try to resolve the default instance
+    /// provided by the OWIN host (only if <see cref="IAppBuilder"/> was registered as a service
+    /// in the dependency injection container). If no instance can be resolved, the generic
+    /// <see cref="CookieManager"/> implementation will be used.
+    /// </remarks>
     /// <param name="manager">The cookie manager to use.</param>
     /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
     public OpenIddictClientOwinBuilder SetCookieManager(ICookieManager manager)
