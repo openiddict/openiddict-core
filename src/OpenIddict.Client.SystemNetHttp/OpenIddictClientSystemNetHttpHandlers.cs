@@ -230,13 +230,13 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             if (context.TokenEndpointClientAuthenticationMethod is ClientAuthenticationMethods.TlsClientAuth &&
                 _options.CurrentValue.TlsClientAuthenticationCertificateSelector(context.Registration) is not null)
             {
-                context.UserInfoEndpointTokenBindingMethods.Add(TokenBindingMethods.TlsClientCertificate);
+                context.UserInfoEndpointTokenBindingMethods.Add(TokenBindingMethods.Private.TlsClientCertificate);
             }
 
             else if (context.TokenEndpointClientAuthenticationMethod is ClientAuthenticationMethods.SelfSignedTlsClientAuth &&
                      _options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector(context.Registration) is not null)
             {
-                context.UserInfoEndpointTokenBindingMethods.Add(TokenBindingMethods.SelfSignedTlsClientCertificate);
+                context.UserInfoEndpointTokenBindingMethods.Add(TokenBindingMethods.Private.SelfSignedTlsClientCertificate);
             }
 
             return default;
@@ -661,16 +661,16 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // If both a client authentication method and one or multiple token binding methods were negotiated,
             // make sure they are compatible (e.g that they all use a CA-issued or self-signed X.509 certificate).
             if ((context.ClientAuthenticationMethod is ClientAuthenticationMethods.TlsClientAuth &&
-                 context.TokenBindingMethods.Contains(TokenBindingMethods.SelfSignedTlsClientCertificate)) ||
+                 context.TokenBindingMethods.Contains(TokenBindingMethods.Private.SelfSignedTlsClientCertificate)) ||
                 (context.ClientAuthenticationMethod is ClientAuthenticationMethods.SelfSignedTlsClientAuth &&
-                 context.TokenBindingMethods.Contains(TokenBindingMethods.TlsClientCertificate)))
+                 context.TokenBindingMethods.Contains(TokenBindingMethods.Private.TlsClientCertificate)))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0456));
             }
 
             // Attach a flag indicating that a client certificate should be used in the TLS handshake.
             if (context.ClientAuthenticationMethod is ClientAuthenticationMethods.TlsClientAuth ||
-                context.TokenBindingMethods.Contains(TokenBindingMethods.TlsClientCertificate))
+                context.TokenBindingMethods.Contains(TokenBindingMethods.Private.TlsClientCertificate))
             {
                 builder.Append('\u001f');
 
@@ -681,7 +681,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
             // Attach a flag indicating that a self-signed client certificate should be used in the TLS handshake.
             else if (context.ClientAuthenticationMethod is ClientAuthenticationMethods.SelfSignedTlsClientAuth ||
-                     context.TokenBindingMethods.Contains(TokenBindingMethods.SelfSignedTlsClientCertificate))
+                     context.TokenBindingMethods.Contains(TokenBindingMethods.Private.SelfSignedTlsClientCertificate))
             {
                 builder.Append('\u001f');
 

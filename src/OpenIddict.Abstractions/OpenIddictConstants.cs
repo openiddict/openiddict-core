@@ -566,8 +566,11 @@ public static class OpenIddictConstants
 
     public static class TokenBindingMethods
     {
-        public const string SelfSignedTlsClientCertificate = "self_signed_tls_client_certificate";
-        public const string TlsClientCertificate = "tls_client_certificate";
+        public static class Private
+        {
+            public const string SelfSignedTlsClientCertificate = "urn:openiddict:params:oauth:token-binding-method:self_signed_tls_client_certificate";
+            public const string TlsClientCertificate = "urn:openiddict:params:oauth:token-binding-method:tls_client_certificate";
+        }
     }
 
     public static class TokenFormats
