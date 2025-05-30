@@ -80,10 +80,12 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireSlidingRefreshTokenExpirationEnabled>();
         builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();
         builder.Services.TryAddSingleton<RequireScopeValidationEnabled>();
+        builder.Services.TryAddSingleton<RequireTokenAudienceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenEntryCreated>();
         builder.Services.TryAddSingleton<RequireTokenIdResolved>();
         builder.Services.TryAddSingleton<RequireTokenLifetimeValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenPayloadPersisted>();
+        builder.Services.TryAddSingleton<RequireTokenPresenterValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenRequest>();
         builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
         builder.Services.TryAddSingleton<RequireUserCodeGenerated>();

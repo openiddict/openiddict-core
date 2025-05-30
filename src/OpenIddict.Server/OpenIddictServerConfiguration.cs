@@ -118,7 +118,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         }
 
         // Ensure the device grant is allowed when the device authorization endpoint is enabled.
-        if (options.DeviceAuthorizationEndpointUris.Count > 0 && !options.GrantTypes.Contains(GrantTypes.DeviceCode))
+        if (options.DeviceAuthorizationEndpointUris.Count is > 0 && !options.GrantTypes.Contains(GrantTypes.DeviceCode))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0084));
         }

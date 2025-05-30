@@ -692,6 +692,23 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if token audience validation was disabled.
+    /// </summary>
+    public sealed class RequireTokenAudienceValidationEnabled : IOpenIddictServerHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.DisableAudienceValidation);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no token identifier is resolved from the token.
     /// </summary>
     public sealed class RequireTokenIdResolved : IOpenIddictServerHandlerFilter<ValidateTokenContext>
@@ -756,6 +773,23 @@ public static class OpenIddictServerHandlerFilters
             }
 
             return new(context.PersistTokenPayload);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if token presenter validation was disabled.
+    /// </summary>
+    public sealed class RequireTokenPresenterValidationEnabled : IOpenIddictServerHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.DisablePresenterValidation);
         }
     }
 

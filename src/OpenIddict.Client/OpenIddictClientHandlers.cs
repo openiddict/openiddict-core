@@ -683,6 +683,8 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.StateToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.Private.StateToken }
             };
@@ -1625,6 +1627,9 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                // Note: for identity tokens, audience validation is enforced by a specialized handler.
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.FrontchannelIdentityToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.IdentityToken }
             };
@@ -2458,7 +2463,7 @@ public static partial class OpenIddictClientHandlers
                 string value => value
             };
 
-            if (context.Scopes.Count > 0 &&
+            if (context.Scopes.Count is > 0 &&
                 context.TokenRequest.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.DeviceCode))
             {
                 // Note: the final OAuth 2.0 specification requires using a space as the scope separator.
@@ -3061,6 +3066,9 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                // Note: for identity tokens, audience validation is enforced by a specialized handler.
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.BackchannelIdentityToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.IdentityToken }
             };
@@ -5019,7 +5027,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             // If an explicit set of scopes was specified, don't overwrite it.
-            if (context.Scopes.Count > 0)
+            if (context.Scopes.Count is > 0)
             {
                 return default;
             }
@@ -5497,7 +5505,7 @@ public static partial class OpenIddictClientHandlers
             context.Request.ResponseType = context.ResponseType;
             context.Request.ResponseMode = context.ResponseMode;
 
-            if (context.Scopes.Count > 0)
+            if (context.Scopes.Count is > 0)
             {
                 // Note: the final OAuth 2.0 specification requires using a space as the scope separator.
                 // Clients that need to deal with older or non-compliant implementations can register
@@ -5558,7 +5566,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {
@@ -5734,7 +5742,7 @@ public static partial class OpenIddictClientHandlers
             // Attach a new request instance if necessary.
             context.DeviceAuthorizationRequest ??= new OpenIddictRequest();
 
-            if (context.Scopes.Count > 0)
+            if (context.Scopes.Count is > 0)
             {
                 // Note: the final OAuth 2.0 specification requires using a space as the scope separator.
                 // Clients that need to deal with older or non-compliant implementations can register
@@ -8586,7 +8594,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {
@@ -8653,7 +8661,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {

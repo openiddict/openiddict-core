@@ -491,6 +491,23 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if token audience validation was disabled.
+    /// </summary>
+    public sealed class RequireTokenAudienceValidationEnabled : IOpenIddictClientHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.DisableAudienceValidation);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no token entry is created in the database.
     /// </summary>
     public sealed class RequireTokenEntryCreated : IOpenIddictClientHandlerFilter<GenerateTokenContext>
@@ -525,6 +542,23 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if token lifetime validation was disabled.
+    /// </summary>
+    public sealed class RequireTokenLifetimeValidationEnabled : IOpenIddictClientHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.DisableLifetimeValidation);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the token payload is not persisted in the database.
     /// </summary>
     public sealed class RequireTokenPayloadPersisted : IOpenIddictClientHandlerFilter<GenerateTokenContext>
@@ -538,6 +572,23 @@ public static class OpenIddictClientHandlerFilters
             }
 
             return new(context.PersistTokenPayload);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if token presenter validation was disabled.
+    /// </summary>
+    public sealed class RequireTokenPresenterValidationEnabled : IOpenIddictClientHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.DisablePresenterValidation);
         }
     }
 

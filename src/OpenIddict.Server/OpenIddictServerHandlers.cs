@@ -601,6 +601,9 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                // Note: for client authentication assertions, audience validation is enforced by a specialized handler.
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.ClientAssertion,
                 TokenFormat = context.ClientAssertionType switch
                 {
@@ -1319,6 +1322,8 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.RequestToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.Private.RequestToken }
             };
@@ -1443,6 +1448,10 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                // Audience validation is deliberately disabled for the userinfo endpoint to allow any access token to
+                // be used even if the authorization server isn't explicitly listed as a valid audience in the token.
+                DisableAudienceValidation = context.EndpointType is OpenIddictServerEndpointType.UserInfo,
+                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.UserInfo,
                 Token = context.AccessToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
@@ -1515,9 +1524,18 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                // Presenter validation is disabled for the token endpoint as this endpoint
+                // implements a specialized event handler that uses more complex rules.
+                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Token,
                 Token = context.AuthorizationCode,
                 ValidTokenTypes = { TokenTypeIdentifiers.Private.AuthorizationCode }
             };
+
+            if (!string.IsNullOrEmpty(context.ClientId))
+            {
+                notification.ValidPresenters.Add(context.ClientId);
+            }
 
             await _dispatcher.DispatchAsync(notification);
 
@@ -1587,9 +1605,18 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                // Presenter validation is disabled for the token endpoint as this endpoint
+                // implements a specialized event handler that uses more complex rules.
+                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Token,
                 Token = context.DeviceCode,
                 ValidTokenTypes = { TokenTypeIdentifiers.Private.DeviceCode }
             };
+
+            if (!string.IsNullOrEmpty(context.ClientId))
+            {
+                notification.ValidPresenters.Add(context.ClientId);
+            }
 
             await _dispatcher.DispatchAsync(notification);
 
@@ -1659,6 +1686,12 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                // Audience and presenter validation is disabled for the introspection and revocation endpoints
+                // as these endpoints implement specialized event handlers that use more complex rules.
+                DisableAudienceValidation = context.EndpointType is OpenIddictServerEndpointType.Introspection or
+                                                                    OpenIddictServerEndpointType.Revocation,
+                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Introspection or
+                                                                     OpenIddictServerEndpointType.Revocation,
                 Token = context.GenericToken,
                 TokenTypeHint = context.GenericTokenTypeHint,
 
@@ -1749,13 +1782,26 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                // Don't validate the lifetime of id_tokens used as id_token_hints.
+                // Audience and presenter validation is disabled for the authorization and end session endpoints
+                // as these endpoints implement specialized event handlers that use more complex rules.
+                DisableAudienceValidation = context.EndpointType is OpenIddictServerEndpointType.Authorization or
+                                                                    OpenIddictServerEndpointType.EndSession    or
+                                                                    OpenIddictServerEndpointType.PushedAuthorization,
+                // Don't validate the lifetime of identity token used as hints.
                 DisableLifetimeValidation = context.EndpointType is OpenIddictServerEndpointType.Authorization or
                                                                     OpenIddictServerEndpointType.EndSession    or
                                                                     OpenIddictServerEndpointType.PushedAuthorization,
+                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Authorization or
+                                                                     OpenIddictServerEndpointType.EndSession    or
+                                                                     OpenIddictServerEndpointType.PushedAuthorization,
                 Token = context.IdentityToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.IdentityToken }
             };
+
+            if (!string.IsNullOrEmpty(context.ClientId))
+            {
+                notification.ValidPresenters.Add(context.ClientId);
+            }
 
             await _dispatcher.DispatchAsync(notification);
 
@@ -1825,9 +1871,18 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                // Presenter validation is disabled for the token endpoint as this endpoint
+                // implements a specialized event handler that uses more complex rules.
+                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Token,
                 Token = context.RefreshToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.RefreshToken }
             };
+
+            if (!string.IsNullOrEmpty(context.ClientId))
+            {
+                notification.ValidPresenters.Add(context.ClientId);
+            }
 
             await _dispatcher.DispatchAsync(notification);
 
@@ -1897,9 +1952,16 @@ public static partial class OpenIddictServerHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.EndUserVerification,
                 Token = context.UserCode,
                 ValidTokenTypes = { TokenTypeIdentifiers.Private.UserCode }
             };
+
+            if (!string.IsNullOrEmpty(context.ClientId))
+            {
+                notification.ValidPresenters.Add(context.ClientId);
+            }
 
             // Note: restrict the allowed characters to the user code charset set in the options.
             notification.AllowedCharset.UnionWith(context.Options.UserCodeCharset);
@@ -2304,7 +2366,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {
@@ -2801,14 +2863,13 @@ public static partial class OpenIddictServerHandlers
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // When a "resources" property cannot be found in the ticket, infer it from the "audiences" property.
-            if (context.Principal.HasClaim(Claims.Private.Audience) &&
-               !context.Principal.HasClaim(Claims.Private.Resource))
+            if (context.Principal.HasClaim(Claims.Private.Audience) && !context.Principal.HasClaim(Claims.Private.Resource))
             {
                 context.Principal.SetResources(context.Principal.GetAudiences());
             }
 
             // Reset the audiences collection, as it's later set, based on the token type.
-            context.Principal.SetAudiences(ImmutableArray<string>.Empty);
+            context.Principal.SetAudiences([]);
 
             return default;
         }
@@ -4879,7 +4940,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {
@@ -5014,7 +5075,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {
@@ -5081,7 +5142,7 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {

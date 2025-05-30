@@ -49,8 +49,11 @@ public static class OpenIddictValidationExtensions
         builder.Services.TryAddSingleton<RequireIntrospectionRequest>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenFormat>();
         builder.Services.TryAddSingleton<RequireLocalValidation>();
+        builder.Services.TryAddSingleton<RequireTokenAudienceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenEntryValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenIdResolved>();
+        builder.Services.TryAddSingleton<RequireTokenLifetimeValidationEnabled>();
+        builder.Services.TryAddSingleton<RequireTokenPresenterValidationEnabled>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

@@ -18,7 +18,7 @@ public static partial class OpenIddictServerHandlers
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
         [
             /*
-             * UserInfo request top-level processing:
+             * Userinfo request top-level processing:
              */
             ExtractUserInfoRequest.Descriptor,
             ValidateUserInfoRequest.Descriptor,
@@ -28,13 +28,13 @@ public static partial class OpenIddictServerHandlers
             ApplyUserInfoResponse<ProcessRequestContext>.Descriptor,
 
             /*
-             * UserInfo request validation:
+             * Userinfo request validation:
              */
             ValidateAccessTokenParameter.Descriptor,
             ValidateAuthentication.Descriptor,
 
             /*
-             * UserInfo request handling:
+             * Userinfo request handling:
              */
             AttachPrincipal.Descriptor,
             AttachAudiences.Descriptor,

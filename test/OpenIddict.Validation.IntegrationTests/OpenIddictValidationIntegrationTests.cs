@@ -178,6 +178,125 @@ public abstract partial class OpenIddictValidationIntegrationTests
     }
 
     [Fact]
+    public async Task ProcessAuthentication_RejectsDemandWhenAccessTokenAudienceIsMissing()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddAudiences("Fabrikam");
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("access_token", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetAudiences([])
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+        {
+            AccessToken = "access_token"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidToken, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2093), response.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_RejectsDemandWhenAccessTokenAudienceIsInvalid()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddAudiences("Fabrikam");
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("access_token", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetAudiences("Contoso")
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+        {
+            AccessToken = "access_token"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidToken, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2094), response.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_ReturnsExpectedIdentityWhenAccessTokenAudienceIsValid()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddAudiences("Fabrikam");
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("access_token", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetAudiences("Fabrikam")
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+        {
+            AccessToken = "access_token"
+        });
+
+        // Assert
+        Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+    }
+
+    [Fact]
     public async Task ProcessChallenge_ReturnsDefaultErrorWhenNoneIsSpecified()
     {
         // Arrange

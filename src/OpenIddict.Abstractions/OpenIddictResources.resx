@@ -2029,7 +2029,7 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
     <value>The specified token doesn't contain any audience.</value>
   </data>
   <data name="ID2094" xml:space="preserve">
-    <value>The specified token cannot be used with this resource server.</value>
+    <value>The specified token doesn't contain any valid audience, which may indicate that it was issued to be used with another application.</value>
   </data>
   <data name="ID2095" xml:space="preserve">
     <value>The user represented by the token is not allowed to perform the requested action.</value>
@@ -2294,6 +2294,12 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
   </data>
   <data name="ID2183" xml:space="preserve">
     <value>This client application is not allowed to use the pushed authorization request endpoint.</value>
+  </data>
+  <data name="ID2184" xml:space="preserve">
+    <value>The specified token doesn't contain any presenter.</value>
+  </data>
+  <data name="ID2185" xml:space="preserve">
+    <value>The specified token doesn't contain any valid presenter, which may indicate that it was issued to a different client.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2736,10 +2742,10 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The authentication demand was rejected because the token was expired.</value>
   </data>
   <data name="ID6157" xml:space="preserve">
-    <value>The authentication demand was rejected because the token had no audience attached.</value>
+    <value>The authentication demand was rejected because the token validated via introspection had no audience attached.</value>
   </data>
   <data name="ID6158" xml:space="preserve">
-    <value>The authentication demand was rejected because the token had no valid audience.</value>
+    <value>The authentication demand was rejected because the token validated via introspection had no valid audience.</value>
   </data>
   <data name="ID6159" xml:space="preserve">
     <value>Client authentication cannot be enforced for public applications.</value>
@@ -3047,6 +3053,18 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6263" xml:space="preserve">
     <value>The pushed authorization request was rejected because the identity token used as a hint was issued to a different client.</value>
+  </data>
+  <data name="ID6264" xml:space="preserve">
+    <value>The token was rejected because it had no presenter attached and at least one explicit presenter was expected.</value>
+  </data>
+  <data name="ID6265" xml:space="preserve">
+    <value>The token was rejected because it had no valid presenter.</value>
+  </data>
+  <data name="ID6266" xml:space="preserve">
+    <value>The token was rejected because it had no audience attached and at least one explicit audience was expected.</value>
+  </data>
+  <data name="ID6267" xml:space="preserve">
+    <value>The token was rejected because it had no valid audience.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

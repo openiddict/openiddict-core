@@ -742,7 +742,7 @@ public static partial class OpenIddictValidationHandlers
             }
 
             // If the access token doesn't include any registered audience, return an error.
-            if (!audiences.Intersect(context.Options.Audiences, StringComparer.Ordinal).Any())
+            if (!OpenIddictHelpers.IncludesAnyFromSet(audiences, context.Options.Audiences))
             {
                 context.Logger.LogInformation(6158, SR.GetResourceString(SR.ID6158));
 
@@ -797,6 +797,10 @@ public static partial class OpenIddictValidationHandlers
                 Token = context.AccessToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
+
+            // Note: by default, access tokens are not constrainted to specific presenters but must contain
+            // at least one audience matching one of the values configured in the options, if applicable.
+            notification.ValidAudiences.UnionWith(context.Options.Audiences);
 
             await _dispatcher.DispatchAsync(notification);
 
@@ -895,7 +899,7 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {
@@ -962,7 +966,7 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Parameters.Count > 0)
+            if (context.Parameters.Count is > 0)
             {
                 foreach (var parameter in context.Parameters)
                 {

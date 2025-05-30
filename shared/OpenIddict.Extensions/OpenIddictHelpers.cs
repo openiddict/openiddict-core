@@ -53,6 +53,35 @@ internal static class OpenIddictHelpers
         }
     }
 
+    /// <summary>
+    /// Determines whether the specified array contains at least one value present in the specified set.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements.</typeparam>
+    /// <param name="array">The array.</param>
+    /// <param name="set">The set.</param>
+    /// <returns>
+    /// <see langword="true"/> if the specified array contains at least one
+    /// value present in the specified set, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IncludesAnyFromSet<T>(IReadOnlyList<T> array, ISet<T> set)
+    {
+        if (set is null)
+        {
+            throw new ArgumentNullException(nameof(set));
+        }
+
+        for (var index = 0; index < array.Count; index++)
+        {
+            var value = array[index];
+            if (set.Contains(value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 #if !SUPPORTS_TASK_WAIT_ASYNC
     /// <summary>
     /// Waits until the specified task returns a result or the cancellation token is signaled.

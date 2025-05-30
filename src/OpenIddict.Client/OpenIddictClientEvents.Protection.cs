@@ -124,9 +124,19 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether audience validation is disabled.
+        /// </summary>
+        public bool DisableAudienceValidation { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether lifetime validation is disabled.
         /// </summary>
         public bool DisableLifetimeValidation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether presenter validation is disabled.
+        /// </summary>
+        public bool DisablePresenterValidation { get; set; }
 
         /// <summary>
         /// Gets or sets the security token handler used to validate the token.
@@ -172,6 +182,18 @@ public static partial class OpenIddictClientEvents
         /// when validating a self-contained token or making a database lookup.
         /// </remarks>
         public HashSet<string> AllowedCharset { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the audiences that are considered valid. If no value
+        /// is explicitly specified, all audiences are considered valid.
+        /// </summary>
+        public HashSet<string> ValidAudiences { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the presenters that are considered valid. If no value
+        /// is explicitly specified, all presenters are considered valid.
+        /// </summary>
+        public HashSet<string> ValidPresenters { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the token types that are considered valid. If no value is

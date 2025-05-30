@@ -35,6 +35,8 @@ public static partial class OpenIddictServerHandlers
             RestoreTokenEntryProperties.Descriptor,
             ValidatePrincipal.Descriptor,
             ValidateExpirationDate.Descriptor,
+            ValidatePresenters.Descriptor,
+            ValidateAudiences.Descriptor,
             ValidateTokenEntry.Descriptor,
             ValidateAuthorizationEntry.Descriptor,
 
@@ -122,8 +124,8 @@ public static partial class OpenIddictServerHandlers
 
                     // Only provide a signing key resolver if the degraded mode was not enabled.
                     //
-                    // Applications that opt for the degraded mode and need client assertions support
-                    // need to implement a custom event handler thats a issuer signing key resolver.
+                    // Applications that opt for the degraded mode and need client assertions support have
+                    // to implement a custom event handler that attaches an issuer signing key resolver.
                     if (!context.Options.EnableDegradedMode)
                     {
                         if (_applicationManager is null)
@@ -813,7 +815,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting authentication demands for which no valid principal was resolved.
+        /// Contains the logic responsible for rejecting tokens for which no valid principal could be resolved.
         /// </summary>
         public sealed class ValidatePrincipal : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -886,7 +888,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0004));
                 }
 
-                if (context.ValidTokenTypes.Count > 0 && !context.ValidTokenTypes.Contains(type))
+                if (context.ValidTokenTypes.Count is > 0 && !context.ValidTokenTypes.Contains(type))
                 {
                     throw new InvalidOperationException(SR.FormatID0005(type, string.Join(", ", context.ValidTokenTypes)));
                 }
@@ -896,7 +898,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting authentication demands that use an expired token.
+        /// Contains the logic responsible for rejecting expired tokens.
         /// </summary>
         public sealed class ValidateExpirationDate : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -956,8 +958,134 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting authentication demands that
-        /// use a token whose entry is no longer valid (e.g was revoked).
+        /// Contains the logic responsible for rejecting tokens that can't be used by the caller.
+        /// </summary>
+        public sealed class ValidatePresenters : IOpenIddictServerHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .AddFilter<RequireTokenPresenterValidationEnabled>()
+                    .UseSingletonHandler<ValidatePresenters>()
+                    .SetOrder(ValidateExpirationDate.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                // If no specific value is expected, skip the default presenter validation.
+                if (context.ValidPresenters.Count is 0)
+                {
+                    return default;
+                }
+
+                // If the token doesn't have any presenter attached, return an error.
+                var presenters = context.Principal.GetPresenters();
+                if (presenters.IsDefaultOrEmpty)
+                {
+                    context.Logger.LogInformation(6264, SR.GetResourceString(SR.ID6264));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2184),
+                        uri: SR.FormatID8000(SR.ID2184));
+
+                    return default;
+                }
+
+                // If the token doesn't include any registered presenter, return an error.
+                if (!OpenIddictHelpers.IncludesAnyFromSet(presenters, context.ValidPresenters))
+                {
+                    context.Logger.LogInformation(6265, SR.GetResourceString(SR.ID6265));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2185),
+                        uri: SR.FormatID8000(SR.ID2185));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting tokens issued for different recipients.
+        /// </summary>
+        public sealed class ValidateAudiences : IOpenIddictServerHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .AddFilter<RequireTokenAudienceValidationEnabled>()
+                    .UseSingletonHandler<ValidateAudiences>()
+                    .SetOrder(ValidatePresenters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                // If no specific value is expected, skip the default audience validation.
+                if (context.ValidAudiences.Count is 0)
+                {
+                    return default;
+                }
+
+                // If the token doesn't have any audience attached, return an error.
+                var audiences = context.Principal.GetAudiences();
+                if (audiences.IsDefaultOrEmpty)
+                {
+                    context.Logger.LogInformation(6266, SR.GetResourceString(SR.ID6266));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2093),
+                        uri: SR.FormatID8000(SR.ID2093));
+
+                    return default;
+                }
+
+                // If the token doesn't include any registered audience, return an error.
+                if (!OpenIddictHelpers.IncludesAnyFromSet(audiences, context.ValidAudiences))
+                {
+                    context.Logger.LogInformation(6267, SR.GetResourceString(SR.ID6267));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2094),
+                        uri: SR.FormatID8000(SR.ID2094));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting tokens whose
+        /// associated token entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public sealed class ValidateTokenEntry : IOpenIddictServerHandler<ValidateTokenContext>
@@ -1136,7 +1264,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for authentication demands a token whose
+        /// Contains the logic responsible for rejecting tokens whose
         /// associated authorization entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>

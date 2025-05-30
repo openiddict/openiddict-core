@@ -301,7 +301,7 @@ public static partial class OpenIddictServerHandlers
                         Response = new OpenIddictResponse()
                     };
 
-                    if (notification.Parameters.Count > 0)
+                    if (notification.Parameters.Count is > 0)
                     {
                         foreach (var parameter in notification.Parameters)
                         {
@@ -342,7 +342,7 @@ public static partial class OpenIddictServerHandlers
                         Response = new OpenIddictResponse()
                     };
 
-                    if (notification.Parameters.Count > 0)
+                    if (notification.Parameters.Count is > 0)
                     {
                         foreach (var parameter in notification.Parameters)
                         {
@@ -2398,7 +2398,7 @@ public static partial class OpenIddictServerHandlers
                     Response = new OpenIddictResponse()
                 };
 
-                if (notification.Parameters.Count > 0)
+                if (notification.Parameters.Count is > 0)
                 {
                     foreach (var parameter in notification.Parameters)
                     {
