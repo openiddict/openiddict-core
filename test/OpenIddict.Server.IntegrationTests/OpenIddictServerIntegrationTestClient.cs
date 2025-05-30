@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;
@@ -267,44 +268,90 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     {
         if (message.Headers.WwwAuthenticate.Count is not 0)
         {
-            var parameters = new Dictionary<string, StringValues>(message.Headers.WwwAuthenticate.Count);
+            return new OpenIddictResponse(message.Headers.WwwAuthenticate
+                .Where(static header => !string.IsNullOrEmpty(header.Parameter))
+                .SelectMany(static header => ParseParameters(header.Parameter!)));
 
-            foreach (var header in message.Headers.WwwAuthenticate)
+            static IEnumerable<KeyValuePair<string, string?>> ParseParameters(string parameter)
             {
-                if (string.IsNullOrEmpty(header.Parameter))
-                {
-                    continue;
-                }
+                var index = 0;
 
-                // Note: while initially not allowed by the core OAuth 2.0 specification, multiple
-                // parameters with the same name are used by derived drafts like the OAuth 2.0
-                // token exchange specification. For consistency, multiple parameters with the
-                // same name are also supported when returned as part of WWW-Authentication headers.
-
-                foreach (var parameter in header.Parameter.Split(Separators.Comma, StringSplitOptions.RemoveEmptyEntries))
+                while (index < parameter.Length)
                 {
-                    var values = parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries);
-                    if (values.Length is not 2)
+                    // Skip leading whitespaces and commas.
+                    while (index < parameter.Length && (char.IsWhiteSpace(parameter[index]) || parameter[index] is ','))
                     {
-                        continue;
+                        index++;
                     }
 
-                    var (name, value) = (
-                        values[0]?.Trim(Separators.Space[0]),
-                        values[1]?.Trim(Separators.Space[0], Separators.DoubleQuote[0]));
-
-                    if (string.IsNullOrEmpty(name))
+                    // Parse the parameter key.
+                    var start = index;
+                    while (index < parameter.Length && parameter[index] is not ('=' or ','))
                     {
-                        continue;
+                        index++;
                     }
 
-                    parameters[name] = parameters.ContainsKey(name) ?
-                        StringValues.Concat(parameters[name], value?.Replace("\\\"", "\"")) :
-                        new StringValues(value?.Replace("\\\"", "\""));
+                    if (index >= parameter.Length || parameter[index] is ',')
+                    {
+                        break;
+                    }
+
+                    var key = parameter[start..index].Trim();
+
+                    // Skip the equals sign.
+                    index++;
+                    while (index < parameter.Length && char.IsWhiteSpace(parameter[index]))
+                    {
+                        index++;
+                    }
+
+                    // Parse the parameter value.
+                    string value;
+                    if (index < parameter.Length && parameter[index] is '"')
+                    {
+                        // Skip the opening quote.
+                        index++;
+
+                        var builder = new StringBuilder();
+
+                        while (index < parameter.Length)
+                        {
+                            if (parameter[index] is '\\' && index + 1 < parameter.Length)
+                            {
+                                builder.Append(parameter[index + 1]);
+                                index += 2;
+                            }
+
+                            else if (parameter[index] is '"')
+                            {
+                                // Skip the closing quote.
+                                index++;
+                                break;
+                            }
+
+                            else
+                            {
+                                builder.Append(parameter[index++]);
+                            }
+                        }
+
+                        value = builder.ToString();
+                    }
+
+                    else
+                    {
+                        start = index;
+                        while (index < parameter.Length && parameter[index] is not ',' && !char.IsWhiteSpace(parameter[index]))
+                        {
+                            index++;
+                        }
+
+                        value = parameter[start..index].Trim();
+                    }
+
+                    yield return new KeyValuePair<string, string?>(key, value);
                 }
             }
-
-            return new OpenIddictResponse(parameters);
         }
 
         else if (message.Headers.Location is not null)

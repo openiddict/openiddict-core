@@ -954,46 +954,92 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 return default;
             }
 
-            var parameters = new Dictionary<string, StringValues>(response.Headers.WwwAuthenticate.Count);
-
-            foreach (var header in response.Headers.WwwAuthenticate)
-            {
-                if (string.IsNullOrEmpty(header.Parameter))
-                {
-                    continue;
-                }
-
-                // Note: while initially not allowed by the core OAuth 2.0 specification, multiple
-                // parameters with the same name are used by derived drafts like the OAuth 2.0
-                // token exchange specification. For consistency, multiple parameters with the
-                // same name are also supported when returned as part of WWW-Authentication headers.
-
-                foreach (var parameter in header.Parameter.Split(Separators.Comma, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    var values = parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries);
-                    if (values.Length is not 2)
-                    {
-                        continue;
-                    }
-
-                    var (name, value) = (
-                        values[0]?.Trim(Separators.Space[0]),
-                        values[1]?.Trim(Separators.Space[0], Separators.DoubleQuote[0]));
-
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        continue;
-                    }
-
-                    parameters[name] = parameters.ContainsKey(name) ?
-                        StringValues.Concat(parameters[name], value?.Replace("\\\"", "\"")) :
-                        new StringValues(value?.Replace("\\\"", "\""));
-                }
-            }
-
-            context.Transaction.Response = new OpenIddictResponse(parameters);
+            context.Transaction.Response = new OpenIddictResponse(response.Headers.WwwAuthenticate
+                .Where(static header => !string.IsNullOrEmpty(header.Parameter))
+                .SelectMany(static header => ParseParameters(header.Parameter!)));
 
             return default;
+
+            static IEnumerable<KeyValuePair<string, string?>> ParseParameters(string parameter)
+            {
+                var index = 0;
+
+                while (index < parameter.Length)
+                {
+                    // Skip leading whitespaces and commas.
+                    while (index < parameter.Length && (char.IsWhiteSpace(parameter[index]) || parameter[index] is ','))
+                    {
+                        index++;
+                    }
+
+                    // Parse the parameter key.
+                    var start = index;
+                    while (index < parameter.Length && parameter[index] is not ('=' or ','))
+                    {
+                        index++;
+                    }
+
+                    if (index >= parameter.Length || parameter[index] is ',')
+                    {
+                        break;
+                    }
+
+                    var key = parameter[start..index].Trim();
+
+                    // Skip the equals sign.
+                    index++;
+                    while (index < parameter.Length && char.IsWhiteSpace(parameter[index]))
+                    {
+                        index++;
+                    }
+
+                    // Parse the parameter value.
+                    string value;
+                    if (index < parameter.Length && parameter[index] is '"')
+                    {
+                        // Skip the opening quote.
+                        index++;
+
+                        var builder = new StringBuilder();
+
+                        while (index < parameter.Length)
+                        {
+                            if (parameter[index] is '\\' && index + 1 < parameter.Length)
+                            {
+                                builder.Append(parameter[index + 1]);
+                                index += 2;
+                            }
+
+                            else if (parameter[index] is '"')
+                            {
+                                // Skip the closing quote.
+                                index++;
+                                break;
+                            }
+
+                            else
+                            {
+                                builder.Append(parameter[index++]);
+                            }
+                        }
+
+                        value = builder.ToString();
+                    }
+
+                    else
+                    {
+                        start = index;
+                        while (index < parameter.Length && parameter[index] is not ',' && !char.IsWhiteSpace(parameter[index]))
+                        {
+                            index++;
+                        }
+
+                        value = parameter[start..index].Trim();
+                    }
+
+                    yield return new KeyValuePair<string, string?>(key, value);
+                }
+            }
         }
     }
 
