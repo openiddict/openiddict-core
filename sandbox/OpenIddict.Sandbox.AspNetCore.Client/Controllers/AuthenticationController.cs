@@ -24,7 +24,7 @@ public class AuthenticationController : Controller
         // the user is directly redirected to GitHub (in this case, no login page is shown).
         if (string.Equals(provider, "Local+GitHub", StringComparison.Ordinal))
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>
             {
                 // Note: when only one client is registered in the client options,
                 // specifying the issuer URI or the provider name is not required.
@@ -54,7 +54,7 @@ public class AuthenticationController : Controller
                 return BadRequest();
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>
             {
                 // Note: when only one client is registered in the client options,
                 // specifying the issuer URI or the provider name is not required.
@@ -96,14 +96,14 @@ public class AuthenticationController : Controller
         if (identity.FindFirst(Claims.Private.RegistrationId)?.Value is string identifier &&
             await _service.GetServerConfigurationByRegistrationIdAsync(identifier) is { EndSessionEndpoint: Uri })
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>
             {
                 [OpenIddictClientAspNetCoreConstants.Properties.RegistrationId] = identifier,
 
                 // While not required, the specification encourages sending an id_token_hint
                 // parameter containing an identity token returned by the server for this user.
                 [OpenIddictClientAspNetCoreConstants.Properties.IdentityTokenHint] =
-                    result.Properties.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken)
+                    result.Properties?.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken)
             })
             {
                 // Only allow local return URLs to prevent open redirect attacks.
@@ -154,7 +154,7 @@ public class AuthenticationController : Controller
         // Such identities cannot be used as-is to build an authentication cookie in ASP.NET Core (as the
         // antiforgery stack requires at least a name claim to bind CSRF cookies to the user's identity) but
         // the access/refresh tokens can be retrieved using result.Properties.GetTokens() to make API calls.
-        if (result.Principal is not ClaimsPrincipal { Identity.IsAuthenticated: true })
+        if (result is not { Succeeded: true, Principal: ClaimsPrincipal { Identity.IsAuthenticated: true } })
         {
             throw new InvalidOperationException("The external authorization data cannot be used for authentication.");
         }

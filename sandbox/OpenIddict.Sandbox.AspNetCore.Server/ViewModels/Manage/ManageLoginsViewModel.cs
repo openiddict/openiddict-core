@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿#nullable disable
+
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Manage;

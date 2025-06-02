@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#nullable disable
+
+using System.ComponentModel.DataAnnotations;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Manage;
 

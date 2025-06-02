@@ -1,4 +1,6 @@
-﻿namespace OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Manage;
+﻿#nullable disable
+
+namespace OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Manage;
 
 public class FactorViewModel
 {

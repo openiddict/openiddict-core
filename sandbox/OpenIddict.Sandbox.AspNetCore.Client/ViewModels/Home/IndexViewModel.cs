@@ -6,8 +6,8 @@ namespace OpenIddict.Sandbox.AspNetCore.Client.ViewModels.Home;
 public class IndexViewModel
 {
     [BindNever]
-    public string Message { get; set; }
+    public string? Message { get; set; }
 
     [BindNever]
-    public IEnumerable<OpenIddictClientRegistration> Providers { get; set; }
+    public IEnumerable<OpenIddictClientRegistration> Providers { get; set; } = [];
 }

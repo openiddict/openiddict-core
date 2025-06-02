@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿#nullable disable
+
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Account;
 

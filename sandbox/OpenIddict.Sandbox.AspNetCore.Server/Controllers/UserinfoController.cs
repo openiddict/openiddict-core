@@ -21,12 +21,12 @@ public class UserInfoController : Controller
     [IgnoreAntiforgeryToken, Produces("application/json")]
     public async Task<IActionResult> UserInfo()
     {
-        var user = await _userManager.FindByIdAsync(User.GetClaim(Claims.Subject));
+        var user = await _userManager.FindByIdAsync(User.GetClaim(Claims.Subject)!);
         if (user is null)
         {
             return Challenge(
                 authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties(new Dictionary<string, string>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidToken,
                     [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
@@ -34,7 +34,7 @@ public class UserInfoController : Controller
                 }));
         }
 
-        var claims = new Dictionary<string, object>(StringComparer.Ordinal)
+        var claims = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             // Note: the "sub" claim is a mandatory claim and must be included in the JSON response.
             [Claims.Subject] = await _userManager.GetUserIdAsync(user)

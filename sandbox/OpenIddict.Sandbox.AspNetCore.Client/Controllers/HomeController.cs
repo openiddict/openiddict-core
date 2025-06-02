@@ -63,7 +63,12 @@ public class HomeController : Controller
         // For scenarios where the default authentication handler configured in the ASP.NET Core
         // authentication options shouldn't be used, a specific scheme can be specified here.
         var ticket = await HttpContext.AuthenticateAsync();
-        var token = ticket?.Properties.GetTokenValue(Tokens.RefreshToken);
+        if (ticket is not { Succeeded: true })
+        {
+            return BadRequest();
+        }
+
+        var token = ticket.Properties.GetTokenValue(Tokens.RefreshToken);
         if (string.IsNullOrEmpty(token))
         {
             return BadRequest();
