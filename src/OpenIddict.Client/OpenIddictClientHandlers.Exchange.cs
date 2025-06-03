@@ -75,7 +75,8 @@ public static partial class OpenIddictClientHandlers
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as unique strings:
-                    Parameters.AccessToken or Parameters.IdToken or Parameters.RefreshToken
+                    Parameters.AccessToken     or Parameters.IdToken or
+                    Parameters.IssuedTokenType or Parameters.RefreshToken
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as numeric dates:

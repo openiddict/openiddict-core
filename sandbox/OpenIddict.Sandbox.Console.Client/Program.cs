@@ -40,7 +40,8 @@ builder.Services.AddOpenIddict()
                .AllowImplicitFlow()
                .AllowNoneFlow()
                .AllowPasswordFlow()
-               .AllowRefreshTokenFlow();
+               .AllowRefreshTokenFlow()
+               .AllowTokenExchangeFlow();
 
         // Register the signing and encryption credentials used to protect
         // sensitive data like the state tokens produced by OpenIddict.

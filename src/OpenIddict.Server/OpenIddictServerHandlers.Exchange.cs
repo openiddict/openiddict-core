@@ -43,6 +43,7 @@ public static partial class OpenIddictServerHandlers
             ValidateClientCredentialsParameters.Descriptor,
             ValidateDeviceCodeParameter.Descriptor,
             ValidateRefreshTokenParameter.Descriptor,
+            ValidateTokenExchangeParameters.Descriptor,
             ValidateResourceOwnerCredentialsParameters.Descriptor,
             ValidateProofKeyForCodeExchangeParameters.Descriptor,
             ValidateScopeParameter.Descriptor,
@@ -52,7 +53,7 @@ public static partial class OpenIddictServerHandlers
             ValidateGrantTypePermissions.Descriptor,
             ValidateScopePermissions.Descriptor,
             ValidateProofKeyForCodeExchangeRequirement.Descriptor,
-            ValidatePresenters.Descriptor,
+            ValidateAuthorizedParty.Descriptor,
             ValidateRedirectUri.Descriptor,
             ValidateCodeVerifier.Descriptor,
             ValidateGrantedScopes.Descriptor,
@@ -683,6 +684,130 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting token requests that
+        /// specify invalid parameters for the token exchange grant type.
+        /// </summary>
+        public sealed class ValidateTokenExchangeParameters : IOpenIddictServerHandler<ValidateTokenRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                    .UseSingletonHandler<ValidateTokenExchangeParameters>()
+                    .SetOrder(ValidateRefreshTokenParameter.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (!context.Request.IsTokenExchangeGrantType())
+                {
+                    return default;
+                }
+
+                // Reject token exchange requests missing the mandatory subject token.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc8693#section-2.1 for more information.
+                if (string.IsNullOrEmpty(context.Request.SubjectToken))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.SubjectToken);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029(Parameters.SubjectToken),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return default;
+                }
+
+                // Reject token exchange requests missing the mandatory subject token type.
+                if (string.IsNullOrEmpty(context.Request.SubjectTokenType))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.SubjectTokenType);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029(Parameters.SubjectTokenType),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return default;
+                }
+
+                // Reject token exchange requests that specify an actor token but don't include an actor token type.
+                if (!string.IsNullOrEmpty(context.Request.ActorToken) &&
+                     string.IsNullOrEmpty(context.Request.ActorTokenType))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.ActorTokenType);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2037(Parameters.ActorToken, Parameters.ActorTokenType),
+                        uri: SR.FormatID8000(SR.ID2037));
+
+                    return default;
+                }
+
+                // Reject token exchange requests that specify an actor token type but don't include an actor token.
+                if (string.IsNullOrEmpty(context.Request.ActorToken) &&
+                   !string.IsNullOrEmpty(context.Request.ActorTokenType))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6077), Parameters.ActorToken);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2037(Parameters.ActorTokenType, Parameters.ActorToken),
+                        uri: SR.FormatID8000(SR.ID2037));
+
+                    return default;
+                }
+
+                // Reject token exchange requests that specify an unsupported subject token type.
+                if (!context.Options.SubjectTokenTypes.Contains(context.Request.SubjectTokenType))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2032(Parameters.SubjectTokenType),
+                        uri: SR.FormatID8000(SR.ID2032));
+
+                    return default;
+                }
+
+                // Reject token exchange requests that specify an unsupported actor token type.
+                if (!string.IsNullOrEmpty(context.Request.ActorTokenType) &&
+                    !context.Options.ActorTokenTypes.Contains(context.Request.ActorTokenType))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2032(Parameters.ActorTokenType),
+                        uri: SR.FormatID8000(SR.ID2032));
+
+                    return default;
+                }
+
+                // Reject token exchange requests that specify an unsupported requested token type.
+                if (!string.IsNullOrEmpty(context.Request.RequestedTokenType) &&
+                    !context.Options.RequestedTokenTypes.Contains(context.Request.RequestedTokenType))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2032(Parameters.RequestedTokenType),
+                        uri: SR.FormatID8000(SR.ID2032));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting token requests
         /// that specify invalid parameters for the password grant type.
         /// </summary>
@@ -694,7 +819,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                     .UseSingletonHandler<ValidateResourceOwnerCredentialsParameters>()
-                    .SetOrder(ValidateRefreshTokenParameter.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateTokenExchangeParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -955,10 +1080,12 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                // Attach the security principal extracted from the token to the validation context.
-                context.Principal = context.Request.IsAuthorizationCodeGrantType() ? notification.AuthorizationCodePrincipal :
-                                    context.Request.IsDeviceCodeGrantType()        ? notification.DeviceCodePrincipal :
-                                    context.Request.IsRefreshTokenGrantType()      ? notification.RefreshTokenPrincipal : null;
+                // Attach the security principals extracted from the tokens to the validation context.
+                context.ActorTokenPrincipal = notification.ActorTokenPrincipal;
+                context.AuthorizationCodePrincipal = notification.AuthorizationCodePrincipal;
+                context.DeviceCodePrincipal = notification.DeviceCodePrincipal;
+                context.RefreshTokenPrincipal = notification.RefreshTokenPrincipal;
+                context.SubjectTokenPrincipal = notification.SubjectTokenPrincipal;
             }
         }
 
@@ -1218,17 +1345,17 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting token requests that use an authorization code,
-        /// a device code or a refresh token that was issued for a different client application.
+        /// Contains the logic responsible for rejecting token requests that specify a token
+        /// that cannot be used by the client application sending the token request.
         /// </summary>
-        public sealed class ValidatePresenters : IOpenIddictServerHandler<ValidateTokenRequestContext>
+        public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                    .UseSingletonHandler<ValidatePresenters>()
+                    .UseSingletonHandler<ValidateAuthorizedParty>()
                     .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -1241,69 +1368,263 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (!context.Request.IsAuthorizationCodeGrantType() &&
-                    !context.Request.IsDeviceCodeGrantType() &&
-                    !context.Request.IsRefreshTokenGrantType())
+                if (context.Request.IsAuthorizationCodeGrantType() ||
+                    context.Request.IsDeviceCodeGrantType() ||
+                    context.Request.IsRefreshTokenGrantType())
                 {
-                    return default;
-                }
-
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-                var presenters = context.Principal.GetPresenters();
-                if (presenters.IsDefaultOrEmpty)
-                {
-                    // Note: presenters may be empty during a grant_type=refresh_token request if the refresh token
-                    // was issued to a public client but cannot be null for an authorization or device code grant request.
-                    if (context.Request.IsAuthorizationCodeGrantType())
+                    var principal = context.Request.GrantType switch
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0043));
+                        GrantTypes.AuthorizationCode => context.AuthorizationCodePrincipal,
+                        GrantTypes.DeviceCode        => context.DeviceCodePrincipal,
+                        GrantTypes.RefreshToken      => context.RefreshTokenPrincipal,
+
+                        _ => null
+                    };
+
+                    Debug.Assert(principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                    if (!principal.HasClaim(Claims.Private.Presenter))
+                    {
+                        // Note: presenters may be missing during a grant_type=refresh_token request if the refresh token was
+                        // issued to a public client but cannot be missing for an authorization or device code grant request.
+                        if (context.Request.IsAuthorizationCodeGrantType())
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0043));
+                        }
+
+                        if (context.Request.IsDeviceCodeGrantType())
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0044));
+                        }
+
+                        // Note: when using the refresh token grant, client_id is optional but MUST be validated if present.
+                        //
+                        // See https://tools.ietf.org/html/rfc6749#section-6
+                        // and http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken for more information.
+                        return default;
                     }
 
-                    if (context.Request.IsDeviceCodeGrantType())
+                    // If at least one presenter was associated to the authorization code/device code/refresh token,
+                    // reject the request if the client_id of the caller cannot be retrieved or inferred.
+                    if (string.IsNullOrEmpty(context.ClientId))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0044));
+                        context.Logger.LogInformation(6090, SR.GetResourceString(SR.ID6090));
+
+                        context.Reject(
+                            error: Errors.InvalidGrant,
+                            description: context.Request.GrantType switch
+                            {
+                                GrantTypes.AuthorizationCode => SR.GetResourceString(SR.ID2066),
+                                GrantTypes.DeviceCode        => SR.GetResourceString(SR.ID2067),
+                                             _               => SR.GetResourceString(SR.ID2068)
+                            },
+                            uri: context.Request.GrantType switch
+                            {
+                                GrantTypes.AuthorizationCode => SR.FormatID8000(SR.ID2066),
+                                GrantTypes.DeviceCode        => SR.FormatID8000(SR.ID2067),
+                                             _               => SR.FormatID8000(SR.ID2068)
+                            });
+
+                        return default;
                     }
 
-                    return default;
+                    // Ensure the authorization code/device code/refresh token was issued to the client making the token request.
+                    if (!principal.HasPresenter(context.ClientId))
+                    {
+                        context.Logger.LogWarning(6091, SR.GetResourceString(SR.ID6091));
+
+                        context.Reject(
+                            error: Errors.InvalidGrant,
+                            description: context.Request.GrantType switch
+                            {
+                                GrantTypes.AuthorizationCode => SR.GetResourceString(SR.ID2069),
+                                GrantTypes.DeviceCode        => SR.GetResourceString(SR.ID2070),
+                                             _               => SR.GetResourceString(SR.ID2071)
+                            },
+                            uri: context.Request.GrantType switch
+                            {
+                                GrantTypes.AuthorizationCode => SR.FormatID8000(SR.ID2069),
+                                GrantTypes.DeviceCode        => SR.FormatID8000(SR.ID2070),
+                                             _               => SR.FormatID8000(SR.ID2071)
+                            });
+
+                        return default;
+                    }
                 }
 
-                // If at least one presenter was associated to the authorization code/device code/refresh token,
-                // reject the request if the client_id of the caller cannot be retrieved or inferred.
-                if (string.IsNullOrEmpty(context.ClientId))
+                else if (context.Request.IsTokenExchangeGrantType())
                 {
-                    context.Logger.LogInformation(6090, SR.GetResourceString(SR.ID6090));
+                    switch (context.SubjectTokenPrincipal?.GetTokenType())
+                    {
+                        case TokenTypeIdentifiers.AccessToken:
+                        case TokenTypeIdentifiers.IdentityToken:
+                        {
+                            // If the token can be used with any audience and/or presenter, allow any caller to use it.
+                            if (!context.SubjectTokenPrincipal.HasClaim(Claims.Private.Audience) ||
+                                !context.SubjectTokenPrincipal.HasClaim(Claims.Private.Presenter))
+                            {
+                                break;
+                            }
 
-                    context.Reject(
-                        error: Errors.InvalidGrant,
-                        description: context.Request.IsAuthorizationCodeGrantType() ? SR.GetResourceString(SR.ID2066) :
-                                     context.Request.IsDeviceCodeGrantType()        ? SR.GetResourceString(SR.ID2067) :
-                                                                                      SR.GetResourceString(SR.ID2068),
-                        uri: context.Request.IsAuthorizationCodeGrantType() ? SR.FormatID8000(SR.ID2066) :
-                             context.Request.IsDeviceCodeGrantType()        ? SR.FormatID8000(SR.ID2067) :
-                                                                              SR.FormatID8000(SR.ID2068));
+                            // When the token is both presenter/sender-constrained and audience/receiver-constrained,
+                            // reject the request if the client identifier of the caller cannot be retrieved or inferred.
+                            if (string.IsNullOrEmpty(context.ClientId))
+                            {
+                                context.Logger.LogInformation(6268, SR.GetResourceString(SR.ID6268));
 
-                    return default;
-                }
+                                context.Reject(
+                                    error: Errors.InvalidGrant,
+                                    description: SR.GetResourceString(SR.ID2186),
+                                    uri: SR.FormatID8000(SR.ID2186));
 
-                // Ensure the authorization code/device code/refresh token was issued to the client making the token request.
-                // Note: when using the refresh token grant, client_id is optional but MUST be validated if present.
-                // See https://tools.ietf.org/html/rfc6749#section-6
-                // and http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken.
-                if (!presenters.Contains(context.ClientId))
-                {
-                    context.Logger.LogWarning(6091, SR.GetResourceString(SR.ID6091));
+                                return default;
+                            }
 
-                    context.Reject(
-                        error: Errors.InvalidGrant,
-                        description: context.Request.IsAuthorizationCodeGrantType() ? SR.GetResourceString(SR.ID2069) :
-                                     context.Request.IsDeviceCodeGrantType()        ? SR.GetResourceString(SR.ID2070) :
-                                                                                      SR.GetResourceString(SR.ID2071),
-                        uri: context.Request.IsAuthorizationCodeGrantType() ? SR.FormatID8000(SR.ID2069) :
-                             context.Request.IsDeviceCodeGrantType()        ? SR.FormatID8000(SR.ID2070) :
-                                                                              SR.FormatID8000(SR.ID2071));
+                            // Reject the request if the caller is neither a valid audience nor a valid presenter.
+                            if (!context.SubjectTokenPrincipal.HasAudience(context.ClientId) &&
+                                !context.SubjectTokenPrincipal.HasPresenter(context.ClientId))
+                            {
+                                context.Logger.LogWarning(6269, SR.GetResourceString(SR.ID6269));
 
-                    return default;
+                                context.Reject(
+                                    error: Errors.InvalidGrant,
+                                    description: SR.GetResourceString(SR.ID2187),
+                                    uri: SR.FormatID8000(SR.ID2187));
+
+                                return default;
+                            }
+
+                            break;
+                        }
+
+                        case TokenTypeIdentifiers.RefreshToken:
+                        {
+                            // If the token can be used with any presenter, allow any caller to use it.
+                            if (!context.SubjectTokenPrincipal.HasClaim(Claims.Private.Presenter))
+                            {
+                                break;
+                            }
+
+                            // When the token is presenter/sender-constrained, reject the request
+                            // if the client identifier of the caller cannot be retrieved or inferred.
+                            if (string.IsNullOrEmpty(context.ClientId))
+                            {
+                                context.Logger.LogInformation(6268, SR.GetResourceString(SR.ID6268));
+
+                                context.Reject(
+                                    error: Errors.InvalidGrant,
+                                    description: SR.GetResourceString(SR.ID2186),
+                                    uri: SR.FormatID8000(SR.ID2186));
+
+                                return default;
+                            }
+
+                            // Reject the request if the caller is not a valid presenter.
+                            if (!context.SubjectTokenPrincipal.HasPresenter(context.ClientId))
+                            {
+                                context.Logger.LogWarning(6269, SR.GetResourceString(SR.ID6269));
+
+                                context.Reject(
+                                    error: Errors.InvalidGrant,
+                                    description: SR.GetResourceString(SR.ID2187),
+                                    uri: SR.FormatID8000(SR.ID2187));
+
+                                return default;
+                            }
+
+                            break;
+                        }
+
+                        // Other types of tokens (e.g generic JWT assertions) are not supported by this event
+                        // handler and are expected to be validated using the regular token validation routine.
+                        // Alternatively, a custom event handler can also be implemented to use a different logic.
+                    }
+
+                    switch (context.ActorTokenPrincipal?.GetTokenType())
+                    {
+                        case TokenTypeIdentifiers.AccessToken:
+                        case TokenTypeIdentifiers.IdentityToken:
+                        {
+                            // If the token can be used with any audience and/or presenter, allow any caller to use it.
+                            if (!context.ActorTokenPrincipal.HasClaim(Claims.Private.Audience) ||
+                                !context.ActorTokenPrincipal.HasClaim(Claims.Private.Presenter))
+                            {
+                                break;
+                            }
+
+                            // When the token is both presenter/sender-constrained and audience/receiver-constrained,
+                            // reject the request if the client identifier of the caller cannot be retrieved or inferred.
+                            if (string.IsNullOrEmpty(context.ClientId))
+                            {
+                                context.Logger.LogInformation(6270, SR.GetResourceString(SR.ID6270));
+
+                                context.Reject(
+                                    error: Errors.InvalidGrant,
+                                    description: SR.GetResourceString(SR.ID2188),
+                                    uri: SR.FormatID8000(SR.ID2188));
+
+                                return default;
+                            }
+
+                            // Reject the request if the caller is neither a valid audience nor a valid presenter.
+                            if (!context.ActorTokenPrincipal.HasAudience(context.ClientId) &&
+                                !context.ActorTokenPrincipal.HasPresenter(context.ClientId))
+                            {
+                                context.Logger.LogWarning(6271, SR.GetResourceString(SR.ID6271));
+
+                                context.Reject(
+                                    error: Errors.InvalidGrant,
+                                    description: SR.GetResourceString(SR.ID2189),
+                                    uri: SR.FormatID8000(SR.ID2189));
+
+                                return default;
+                            }
+
+                            break;
+                        }
+
+                        case TokenTypeIdentifiers.RefreshToken:
+                        {
+                            // If the token can be used with any presenter, allow any caller to use it.
+                            if (!context.ActorTokenPrincipal.HasClaim(Claims.Private.Presenter))
+                            {
+                                break;
+                            }
+
+                            // When the token is presenter/sender-constrained, reject the request
+                            // if the client identifier of the caller cannot be retrieved or inferred.
+                            if (string.IsNullOrEmpty(context.ClientId))
+                            {
+                                context.Logger.LogInformation(6270, SR.GetResourceString(SR.ID6270));
+
+                                context.Reject(
+                                    error: Errors.InvalidGrant,
+                                    description: SR.GetResourceString(SR.ID2188),
+                                    uri: SR.FormatID8000(SR.ID2188));
+
+                                return default;
+                            }
+
+                            // Reject the request if the caller is not a valid presenter.
+                            if (!context.ActorTokenPrincipal.HasPresenter(context.ClientId))
+                            {
+                                context.Logger.LogWarning(6271, SR.GetResourceString(SR.ID6271));
+
+                                context.Reject(
+                                    error: Errors.InvalidGrant,
+                                    description: SR.GetResourceString(SR.ID2189),
+                                    uri: SR.FormatID8000(SR.ID2189));
+
+                                return default;
+                            }
+
+                            break;
+                        }
+
+                        // Other types of tokens (e.g generic JWT assertions) are not supported by this event
+                        // handler and are expected to be validated using the regular token validation routine.
+                        // Alternatively, a custom event handler can also be implemented to use a different logic.
+                    }
                 }
 
                 return default;
@@ -1321,7 +1642,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                     .UseSingletonHandler<ValidateRedirectUri>()
-                    .SetOrder(ValidatePresenters.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateAuthorizedParty.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1338,7 +1659,7 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.AuthorizationCodePrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Validate the redirect_uri sent by the client application as part of this token request.
                 // Note: for pure OAuth 2.0 requests, redirect_uri is only mandatory if the authorization request
@@ -1347,7 +1668,7 @@ public static partial class OpenIddictServerHandlers
                 // if the authorization request didn't contain an explicit redirect_uri.
                 // See https://tools.ietf.org/html/rfc6749#section-4.1.3
                 // and http://openid.net/specs/openid-connect-core-1_0.html#TokenRequestValidation.
-                var uri = context.Principal.GetClaim(Claims.Private.RedirectUri);
+                var uri = context.AuthorizationCodePrincipal.GetClaim(Claims.Private.RedirectUri);
                 if (string.IsNullOrEmpty(uri))
                 {
                     return default;
@@ -1409,7 +1730,7 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.AuthorizationCodePrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Note: the ValidateProofKeyForCodeExchangeRequirement handler (invoked earlier) ensures
                 // a code_verifier is specified if the proof key for code exchange requirement was enforced
@@ -1417,7 +1738,7 @@ public static partial class OpenIddictServerHandlers
                 // is active even if the degraded mode is enabled and ensures that a code_verifier is sent if a
                 // code_challenge was stored in the authorization code when the authorization request was handled.
 
-                var challenge = context.Principal.GetClaim(Claims.Private.CodeChallenge);
+                var challenge = context.AuthorizationCodePrincipal.GetClaim(Claims.Private.CodeChallenge);
                 if (string.IsNullOrEmpty(challenge))
                 {
                     // Validate that the token request does not include a code_verifier parameter
@@ -1450,7 +1771,7 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                var comparand = context.Principal.GetClaim(Claims.Private.CodeChallengeMethod) switch
+                var comparand = context.AuthorizationCodePrincipal.GetClaim(Claims.Private.CodeChallengeMethod) switch
                 {
                     // Note: when using the "plain" code challenge method, no hashing is actually performed.
                     // In this case, the raw bytes of the verifier are directly compared to the challenge.
@@ -1513,12 +1834,12 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.RefreshTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // When an explicit scope parameter has been included in the token request
                 // but was missing from the initial request, the request MUST be rejected.
                 // See http://tools.ietf.org/html/rfc6749#section-6 for more information.
-                var scopes = context.Principal.GetScopes().ToHashSet(StringComparer.Ordinal);
+                var scopes = context.RefreshTokenPrincipal.GetScopes().ToHashSet(StringComparer.Ordinal);
                 if (scopes.Count is 0)
                 {
                     context.Logger.LogInformation(6094, SR.GetResourceString(SR.ID6094), Parameters.Scope);
@@ -1575,7 +1896,10 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
+                if (!context.Request.IsAuthorizationCodeGrantType() &&
+                    !context.Request.IsDeviceCodeGrantType() &&
+                    !context.Request.IsRefreshTokenGrantType() &&
+                    !context.Request.IsTokenExchangeGrantType())
                 {
                     return default;
                 }
@@ -1584,7 +1908,30 @@ public static partial class OpenIddictServerHandlers
                     typeof(ValidateTokenRequestContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                context.Principal ??= notification.Principal;
+                context.ActorTokenPrincipal = notification.ActorTokenPrincipal;
+                context.AuthorizationCodePrincipal = notification.AuthorizationCodePrincipal;
+                context.DeviceCodePrincipal = notification.DeviceCodePrincipal;
+                context.RefreshTokenPrincipal = notification.RefreshTokenPrincipal;
+                context.SubjectTokenPrincipal = notification.SubjectTokenPrincipal;
+
+                // By default, use the principal extracted from the authorization code/device code/
+                // refresh token/subject token as the principal that will be used in the response.
+                context.Principal ??= context.Request.GrantType switch
+                {
+                    GrantTypes.AuthorizationCode => notification.AuthorizationCodePrincipal,
+                    GrantTypes.DeviceCode        => notification.DeviceCodePrincipal,
+                    GrantTypes.RefreshToken      => notification.RefreshTokenPrincipal,
+
+                    // Do not flow the internal claims when using the OAuth 2.0 Token Exchange grant to
+                    // avoid binding the resulting issued token to the token used as the subject token.
+                    // This means that, by default, the scopes present in the subject tokens won't be
+                    // reused as-is and that a new ad-hoc authorization, separate from the one attached
+                    // to the subject token will be created and attached to the issued token by OpenIddict.
+                    GrantTypes.TokenExchange => notification.SubjectTokenPrincipal
+                        ?.Clone(claim => !claim.Type.StartsWith(Claims.Prefixes.Private)),
+
+                    _ => null
+                };
 
                 return default;
             }
@@ -1618,12 +1965,12 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                // If the error indicates an invalid token caused by an invalid authorization,
-                // device code or refresh token, return a standard invalid_grant.
+                // If the error indicates an invalid token, return a standard invalid_grant.
 
                 if (context.Request is null || !(context.Request.IsAuthorizationCodeGrantType() ||
                                                  context.Request.IsDeviceCodeGrantType() ||
-                                                 context.Request.IsRefreshTokenGrantType()))
+                                                 context.Request.IsRefreshTokenGrantType() ||
+                                                 context.Request.IsTokenExchangeGrantType()))
                 {
                     return default;
                 }

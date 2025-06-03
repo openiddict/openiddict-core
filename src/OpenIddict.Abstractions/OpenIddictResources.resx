@@ -1746,6 +1746,54 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
   <data name="ID0479" xml:space="preserve">
     <value>The specified Stripe Connect account type is not valid. Supported values are 'Standard' and 'Express'.</value>
   </data>
+  <data name="ID0480" xml:space="preserve">
+    <value>A subject token must be specified when using the token exchange grant.</value>
+  </data>
+  <data name="ID0481" xml:space="preserve">
+    <value>A subject token type must be specified when using the token exchange grant.</value>
+  </data>
+  <data name="ID0482" xml:space="preserve">
+    <value>An actor token type must be specified when using an actor token with the token exchange grant.</value>
+  </data>
+  <data name="ID0483" xml:space="preserve">
+    <value>An actor token must be specified when using an actor token type with the token exchange grant.</value>
+  </data>
+  <data name="ID0484" xml:space="preserve">
+    <value>An access token cannot be included in the response when using the token exchange grant.</value>
+  </data>
+  <data name="ID0485" xml:space="preserve">
+    <value>An error occurred while performing a token exchange.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0486" xml:space="preserve">
+    <value>The list of allowed subject token types cannot be empty when enabling the token exchange grant.</value>
+  </data>
+  <data name="ID0487" xml:space="preserve">
+    <value>An incompatible token type was configured as an allowed subject token type.</value>
+  </data>
+  <data name="ID0488" xml:space="preserve">
+    <value>An incompatible token type was configured as an allowed actor token type.</value>
+  </data>
+  <data name="ID0489" xml:space="preserve">
+    <value>An incompatible token type was configured as an allowed requested token type.</value>
+  </data>
+  <data name="ID0490" xml:space="preserve">
+    <value>A default requested token type must be set in the server options.</value>
+  </data>
+  <data name="ID0491" xml:space="preserve">
+    <value>An incompatible token type was configured as the default requested token type.</value>
+  </data>
+  <data name="ID0492" xml:space="preserve">
+    <value>The default requested token type must be present in the list of allowed requested token types.</value>
+  </data>
+  <data name="ID0493" xml:space="preserve">
+    <value>The type of the subject token cannot be resolved from the authentication context.</value>
+  </data>
+  <data name="ID0494" xml:space="preserve">
+    <value>The type of the actor token cannot be resolved from the authentication context.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2300,6 +2348,18 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
   </data>
   <data name="ID2185" xml:space="preserve">
     <value>The specified token doesn't contain any valid presenter, which may indicate that it was issued to a different client.</value>
+  </data>
+  <data name="ID2186" xml:space="preserve">
+    <value>The specified subject token cannot be used without sending a client identifier.</value>
+  </data>
+  <data name="ID2187" xml:space="preserve">
+    <value>The specified subject token cannot be used by this client application.</value>
+  </data>
+  <data name="ID2188" xml:space="preserve">
+    <value>The specified actor token cannot be used without sending a client identifier.</value>
+  </data>
+  <data name="ID2189" xml:space="preserve">
+    <value>The specified actor token cannot be used by this client application.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3065,6 +3125,18 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6267" xml:space="preserve">
     <value>The token was rejected because it had no valid audience.</value>
+  </data>
+  <data name="ID6268" xml:space="preserve">
+    <value>The token request was rejected because the client identifier of the application was not available and could not be compared to the audiences and presenters lists stored in the subject token.</value>
+  </data>
+  <data name="ID6269" xml:space="preserve">
+    <value>The token request was rejected because the subject token was issued to a different client or for another resource server.</value>
+  </data>
+  <data name="ID6270" xml:space="preserve">
+    <value>The token request was rejected because the client identifier of the application was not available and could not be compared to the audiences and presenters lists stored in the actor token.</value>
+  </data>
+  <data name="ID6271" xml:space="preserve">
+    <value>The token request was rejected because the actor token was issued to a different client or for another resource server.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

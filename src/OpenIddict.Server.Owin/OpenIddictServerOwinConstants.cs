@@ -24,16 +24,10 @@ public static class OpenIddictServerOwinConstants
 
     public static class Properties
     {
-        public const string AccessTokenPrincipal = ".access_token_principal";
-        public const string AuthorizationCodePrincipal = ".authorization_code_principal";
-        public const string DeviceCodePrincipal = ".device_code_principal";
         public const string Error = ".error";
         public const string ErrorDescription = ".error_description";
         public const string ErrorUri = ".error_uri";
-        public const string IdentityTokenPrincipal = ".identity_token_principal";
-        public const string RefreshTokenPrincipal = ".refresh_token_principal";
         public const string Scope = ".scope";
-        public const string UserCodePrincipal = ".user_code_principal";
     }
 
     public static class PropertyTypes
@@ -47,12 +41,14 @@ public static class OpenIddictServerOwinConstants
     public static class Tokens
     {
         public const string AccessToken = "access_token";
+        public const string ActorToken = "actor_token";
         public const string AuthorizationCode = "authorization_code";
         public const string ClientAssertion = "client_assertion";
         public const string DeviceCode = "device_code";
         public const string IdentityToken = "id_token";
         public const string RefreshToken = "refresh_token";
         public const string RequestToken = "request_token";
+        public const string SubjectToken = "subject_token";
         public const string UserCode = "user_code";
     }
 }

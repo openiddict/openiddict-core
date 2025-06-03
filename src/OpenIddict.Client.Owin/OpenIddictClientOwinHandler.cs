@@ -230,6 +230,22 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                 properties.Dictionary[Tokens.FrontchannelIdentityToken] = context.FrontchannelIdentityToken;
             }
 
+            if (!string.IsNullOrEmpty(context.IssuedToken))
+            {
+                properties.Dictionary[Tokens.IssuedToken] = context.IssuedToken;
+            }
+
+            if (context.IssuedTokenExpirationDate is not null)
+            {
+                properties.Dictionary[Tokens.IssuedTokenExpirationDate] =
+                    context.IssuedTokenExpirationDate.Value.ToString("o", CultureInfo.InvariantCulture);
+            }
+
+            if (!string.IsNullOrEmpty(context.IssuedTokenType))
+            {
+                properties.Dictionary[Tokens.IssuedTokenType] = context.IssuedTokenType;
+            }
+
             if (!string.IsNullOrEmpty(context.RefreshToken))
             {
                 properties.Dictionary[Tokens.RefreshToken] = context.RefreshToken;

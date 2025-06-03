@@ -16,7 +16,8 @@ OpenIddict aims at providing a **versatile solution** to implement **OpenID Conn
 > to integrate with OpenIddict-based identity providers or any other OAuth 2.0/OpenID Connect-compliant implementation.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**,
-the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628).
+the **[client credentials/resource owner password grants](https://datatracker.ietf.org/doc/html/rfc6749)**,
+the [device authorization flow](https://datatracker.ietf.org/doc/html/rfc8628) and the **[token exchange grant](https://datatracker.ietf.org/doc/html/rfc8693)**.
 
 OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/packages/OpenIddict.EntityFrameworkCore)**,
 **[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)**

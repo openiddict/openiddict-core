@@ -328,6 +328,15 @@ public static partial class OpenIddictServerEvents
         public bool ExtractAccessToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an actor
+        /// token should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractActorToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
         /// code should be extracted from the current context.
         /// </summary>
@@ -391,6 +400,15 @@ public static partial class OpenIddictServerEvents
         public bool ExtractRequestToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a subject
+        /// token should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractSubjectToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a user
         /// code should be extracted from the current context.
         /// </summary>
@@ -407,6 +425,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RequireAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an actor token
+        /// must be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireActorToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization code
@@ -472,6 +499,15 @@ public static partial class OpenIddictServerEvents
         public bool RequireRequestToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a subject token
+        /// must be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireSubjectToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a user code
         /// must be resolved for the authentication to be considered valid.
         /// </summary>
@@ -488,6 +524,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool ValidateAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the actor
+        /// token extracted from the current request should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateActorToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the authorization
@@ -553,6 +598,15 @@ public static partial class OpenIddictServerEvents
         public bool ValidateRequestToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the subject
+        /// token extracted from the current request should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateSubjectToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether the user
         /// code extracted from the current request should be validated.
         /// </summary>
@@ -569,6 +623,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RejectAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid actor token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectActorToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid authorization code
@@ -634,6 +697,15 @@ public static partial class OpenIddictServerEvents
         public bool RejectRequestToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid subject token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectSubjectToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an invalid user code
         /// will cause the authentication demand to be rejected or will be ignored.
         /// </summary>
@@ -651,6 +723,21 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the principal extracted from the access token, if applicable.
         /// </summary>
         public ClaimsPrincipal? AccessTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the actor token to validate, if applicable.
+        /// </summary>
+        public string? ActorToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the actor token, if applicable.
+        /// </summary>
+        public string? ActorTokenType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the actor token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? ActorTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the authorization code to validate, if applicable.
@@ -731,6 +818,21 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the principal extracted from the request token, if applicable.
         /// </summary>
         public ClaimsPrincipal? RequestTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subject token to validate, if applicable.
+        /// </summary>
+        public string? SubjectToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the subject token, if applicable.
+        /// </summary>
+        public string? SubjectTokenType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the subject token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? SubjectTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the user code to validate, if applicable.
@@ -854,6 +956,15 @@ public static partial class OpenIddictServerEvents
         public bool GenerateDeviceCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an issued token
+        /// should be generated (and optionally returned to the client).
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool GenerateIssuedToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an identity token
         /// should be generated (and optionally returned to the client).
         /// </summary>
@@ -915,6 +1026,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool IncludeDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the generated issued token
+        /// should be returned to the client application as part of the response.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool IncludeIssuedToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated identity token
@@ -990,6 +1110,24 @@ public static partial class OpenIddictServerEvents
         /// will be used to create the device code, if applicable.
         /// </summary>
         public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generated issued token, if applicable.
+        /// The issued token will only be returned if
+        /// <see cref="IncludeAccessToken"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? IssuedToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the issued token requested by the client, if applicable.
+        /// </summary>
+        public string? IssuedTokenType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal containing the claims that
+        /// will be used to create the issued token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? IssuedTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the generated identity token, if applicable.

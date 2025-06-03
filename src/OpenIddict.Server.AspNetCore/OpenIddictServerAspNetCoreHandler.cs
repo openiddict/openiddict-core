@@ -186,6 +186,8 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                     => context.DeviceCodePrincipal,
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
                     => context.RefreshTokenPrincipal,
+                OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType()
+                    => context.SubjectTokenPrincipal,
 
                 OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
 
@@ -224,6 +226,26 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 {
                     Name = Tokens.AccessToken,
                     Value = context.AccessToken
+                });
+            }
+
+            if (!string.IsNullOrEmpty(context.ActorToken))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.ActorToken,
+                    Value = context.ActorToken
+                });
+            }
+
+            if (!string.IsNullOrEmpty(context.ActorTokenType))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.ActorTokenType,
+                    Value = context.ActorTokenType
                 });
             }
 
@@ -287,6 +309,26 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 });
             }
 
+            if (!string.IsNullOrEmpty(context.SubjectToken))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.SubjectToken,
+                    Value = context.SubjectToken
+                });
+            }
+
+            if (!string.IsNullOrEmpty(context.SubjectTokenType))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.SubjectTokenType,
+                    Value = context.SubjectTokenType
+                });
+            }
+
             if (!string.IsNullOrEmpty(context.UserCode))
             {
                 tokens ??= new(capacity: 1);
@@ -300,6 +342,11 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
             if (context.AccessTokenPrincipal is not null)
             {
                 properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
+            }
+
+            if (context.ActorTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.ActorTokenPrincipal, context.ActorTokenPrincipal);
             }
 
             if (context.AuthorizationCodePrincipal is not null)
@@ -330,6 +377,11 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
             if (context.RequestTokenPrincipal is not null)
             {
                 properties.SetParameter(Properties.RequestTokenPrincipal, context.RequestTokenPrincipal);
+            }
+
+            if (context.SubjectTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.SubjectTokenPrincipal, context.SubjectTokenPrincipal);
             }
 
             if (context.UserCodePrincipal is not null)

@@ -1122,6 +1122,15 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.GrantTypes.Add(GrantTypes.RefreshToken));
 
     /// <summary>
+    /// Enables token exchange flow support. For more information about this
+    /// specific OAuth 2.0 flow, visit https://datatracker.ietf.org/doc/html/rfc8693.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientBuilder AllowTokenExchangeFlow()
+        => Configure(options => options.GrantTypes.Add(GrantTypes.TokenExchange));
+
+    /// <summary>
     /// Sets the relative or absolute URIs associated to the post-logout redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// </summary>

@@ -300,6 +300,90 @@ public class InteractiveService : BackgroundService
 
                         AnsiConsole.MarkupLine("[green]Client credentials authentication successful.[/]");
                     }
+
+                    else if (type is GrantTypes.TokenExchange)
+                    {
+                        var (identifier, subject, actor) = (
+                            await GetRequestedTokenTypeAsync(stoppingToken),
+                            await GetSubjectTokenAsync(stoppingToken),
+                            await GetActorTokenAsync(stoppingToken));
+
+                        AnsiConsole.MarkupLine("[cyan]Sending the token request.[/]");
+
+                        // Ask OpenIddict to send the specified subject token (and actor token, if available).
+                        var response = await _service.AuthenticateWithTokenExchangeAsync(new()
+                        {
+                            ActorToken = actor.Token,
+                            ActorTokenType = actor.TokenType,
+                            CancellationToken = stoppingToken,
+                            ProviderName = provider,
+                            RequestedTokenType = identifier,
+                            SubjectToken = subject.Token,
+                            SubjectTokenType = subject.TokenType
+                        });
+
+                        AnsiConsole.MarkupLine("[green]Token exchange authentication successful:[/]");
+                        AnsiConsole.Write(CreateClaimTable(response.Principal));
+
+                        // If introspection is supported by the server, ask the user if the issued token should be introspected.
+                        if (configuration.IntrospectionEndpoint is not null &&
+                            response.IssuedTokenType is TokenTypeIdentifiers.AccessToken &&
+                            await IntrospectAccessTokenAsync(stoppingToken))
+                        {
+                            AnsiConsole.MarkupLine("[steelblue]Claims extracted from the token introspection response:[/]");
+                            AnsiConsole.Write(CreateClaimTable((await _service.IntrospectTokenAsync(new()
+                            {
+                                CancellationToken = stoppingToken,
+                                ProviderName = provider,
+                                Token = response.IssuedToken,
+                                TokenTypeHint = TokenTypeHints.AccessToken
+                            })).Principal));
+                        }
+
+                        // If revocation is supported by the server, ask the user if the issued token should be revoked.
+                        if (configuration.RevocationEndpoint is not null &&
+                            response.IssuedTokenType is TokenTypeIdentifiers.AccessToken &&
+                            await RevokeAccessTokenAsync(stoppingToken))
+                        {
+                            await _service.RevokeTokenAsync(new()
+                            {
+                                CancellationToken = stoppingToken,
+                                ProviderName = provider,
+                                Token = response.IssuedToken,
+                                TokenTypeHint = response.IssuedTokenType is TokenTypeIdentifiers.AccessToken ?
+                                    TokenTypeHints.AccessToken : TokenTypeHints.RefreshToken
+                            });
+
+                            AnsiConsole.MarkupLine("[steelblue]Access token revoked.[/]");
+                        }
+
+                        // If a refresh token was returned by the authorization server, ask the user
+                        // if the access token should be refreshed using the refresh_token grant.
+                        if (response.IssuedTokenType is TokenTypeIdentifiers.RefreshToken &&
+                            await RefreshTokenAsync(stoppingToken))
+                        {
+                            AnsiConsole.MarkupLine("[steelblue]Claims extracted from the refreshed identity (issued refresh token):[/]");
+                            AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
+                            {
+                                CancellationToken = stoppingToken,
+                                ProviderName = provider,
+                                RefreshToken = response.IssuedToken
+                            })).Principal));
+                        }
+
+                        // If a refresh token was returned by the authorization server, ask the user
+                        // if the access token should be refreshed using the refresh_token grant.
+                        if (!string.IsNullOrEmpty(response.RefreshToken) && await RefreshTokenAsync(stoppingToken))
+                        {
+                            AnsiConsole.MarkupLine("[steelblue]Claims extracted from the refreshed identity (classic refresh token):[/]");
+                            AnsiConsole.Write(CreateClaimTable((await _service.AuthenticateWithRefreshTokenAsync(new()
+                            {
+                                CancellationToken = stoppingToken,
+                                ProviderName = provider,
+                                RefreshToken = response.RefreshToken
+                            })).Principal));
+                        }
+                    }
                 }
             }
 
@@ -462,6 +546,12 @@ public class InteractiveService : BackgroundService
                     choices.Add((GrantTypes.Password, "Resource owner password credentials grant"));
                 }
 
+                if (configuration.GrantTypesSupported.Contains(GrantTypes.TokenExchange) &&
+                    configuration.TokenEndpoint is not null)
+                {
+                    choices.Add((GrantTypes.TokenExchange, "Token exchange"));
+                }
+
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.ClientCredentials) &&
                     configuration.TokenEndpoint is not null)
                 {
@@ -533,6 +623,78 @@ public class InteractiveService : BackgroundService
                 DefaultValue = false,
                 ShowDefaultValue = true
             });
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        Task<string?> GetRequestedTokenTypeAsync(CancellationToken cancellationToken)
+        {
+            static string? Prompt() => AnsiConsole.Prompt(new SelectionPrompt<(string? TokenType, string DisplayName)>()
+                .Title("Select the type of the requested token (optional):")
+                .AddChoices<(string? TokenType, string DisplayName)>(
+                [
+                    (null, "No value"),
+                    (TokenTypeIdentifiers.AccessToken, "Access token"),
+                    (TokenTypeIdentifiers.IdentityToken, "Identity token"),
+                    (TokenTypeIdentifiers.RefreshToken, "Refresh token")
+                ])
+                .UseConverter(choice => choice.DisplayName)).TokenType;
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        Task<(string TokenType, string Token)> GetSubjectTokenAsync(CancellationToken cancellationToken)
+        {
+            static (string TokenType, string Token) Prompt()
+            {
+                var type = AnsiConsole.Prompt(new SelectionPrompt<(string TokenType, string DisplayName)>()
+                    .Title("Select the type of the subject type:")
+                    .AddChoices<(string TokenType, string DisplayName)>(
+                    [
+                        (TokenTypeIdentifiers.AccessToken, "Access token"),
+                        (TokenTypeIdentifiers.IdentityToken, "Identity token"),
+                        (TokenTypeIdentifiers.RefreshToken, "Refresh token")
+                    ])
+                    .UseConverter(choice => choice.DisplayName)).TokenType;
+
+                var token = AnsiConsole.Prompt(new TextPrompt<string>("Please enter the subject token:")
+                {
+                    AllowEmpty = false,
+                    IsSecret = false
+                });
+
+                return (type, token);
+            }
+
+            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+        }
+
+        Task<(string? TokenType, string? Token)> GetActorTokenAsync(CancellationToken cancellationToken)
+        {
+            static (string? TokenType, string? Token) Prompt()
+            {
+                var type = AnsiConsole.Prompt(new SelectionPrompt<(string? TokenType, string DisplayName)>()
+                    .Title("Select the type of the actor type (optional):")
+                    .AddChoices<(string? TokenType, string DisplayName)>(
+                    [
+                        (null, "No actor token"),
+                        (TokenTypeIdentifiers.AccessToken, "Access token"),
+                        (TokenTypeIdentifiers.IdentityToken, "Identity token"),
+                        (TokenTypeIdentifiers.RefreshToken, "Refresh token")
+                    ])
+                    .UseConverter(choice => choice.DisplayName)).TokenType;
+
+                if (string.IsNullOrEmpty(type))
+                {
+                    return (null, null);
+                }
+
+                return (type, AnsiConsole.Prompt(new TextPrompt<string>("Please enter the actor token:")
+                {
+                    AllowEmpty = true,
+                    IsSecret = false
+                }));
+            }
 
             return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
         }

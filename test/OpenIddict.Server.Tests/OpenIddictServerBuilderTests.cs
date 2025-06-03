@@ -639,6 +639,22 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void AllowTokenExchangeFlow_TokenExchangeFlowIsAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.AllowTokenExchangeFlow();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Contains(GrantTypes.TokenExchange, options.GrantTypes);
+    }
+
+    [Fact]
     public void DisableAccessTokenEncryption_AccessTokenEncryptionIsDisabled()
     {
         // Arrange
@@ -1700,6 +1716,38 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.Null(options.IdentityTokenLifetime);
+    }
+
+    [Fact]
+    public void SetIssuedTokenLifetime_DefaultIssuedTokenLifetimeIsReplaced()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetIssuedTokenLifetime(TimeSpan.FromMinutes(42));
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(TimeSpan.FromMinutes(42), options.IssuedTokenLifetime);
+    }
+
+    [Fact]
+    public void SetIssuedTokenLifetime_IssuedTokenLifetimeCanBeSetToNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetIssuedTokenLifetime(null);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Null(options.IssuedTokenLifetime);
     }
 
     [Fact]

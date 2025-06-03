@@ -400,7 +400,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // Attach the security principal extracted from the token to the validation context.
-                context.Principal = notification.AccessTokenPrincipal;
+                context.AccessTokenPrincipal = notification.AccessTokenPrincipal;
             }
         }
 
@@ -432,9 +432,9 @@ public static partial class OpenIddictServerHandlers
                     typeof(ValidateUserInfoRequestContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                Debug.Assert(notification.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(notification.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                context.Principal ??= notification.Principal;
+                context.AccessTokenPrincipal ??= notification.AccessTokenPrincipal;
 
                 return default;
             }
@@ -463,12 +463,12 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Note: when receiving an access token, its audiences list cannot be used for the "aud" claim
                 // as the client application is not the intented audience but only an authorized presenter.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
-                context.Audiences.UnionWith(context.Principal.GetPresenters());
+                context.Audiences.UnionWith(context.AccessTokenPrincipal.GetPresenters());
 
                 return default;
             }
@@ -497,29 +497,29 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 context.Issuer = context.Options.Issuer ?? context.BaseUri;
-                context.Subject = context.Principal.GetClaim(Claims.Subject);
+                context.Subject = context.AccessTokenPrincipal.GetClaim(Claims.Subject);
 
                 // The following claims are all optional and should be excluded when
                 // no corresponding value has been found in the authentication principal:
 
-                if (context.Principal.HasScope(Scopes.Profile))
+                if (context.AccessTokenPrincipal.HasScope(Scopes.Profile))
                 {
-                    context.FamilyName = context.Principal.GetClaim(Claims.FamilyName);
-                    context.GivenName = context.Principal.GetClaim(Claims.GivenName);
-                    context.BirthDate = context.Principal.GetClaim(Claims.Birthdate);
+                    context.FamilyName = context.AccessTokenPrincipal.GetClaim(Claims.FamilyName);
+                    context.GivenName = context.AccessTokenPrincipal.GetClaim(Claims.GivenName);
+                    context.BirthDate = context.AccessTokenPrincipal.GetClaim(Claims.Birthdate);
                 }
 
-                if (context.Principal.HasScope(Scopes.Email))
+                if (context.AccessTokenPrincipal.HasScope(Scopes.Email))
                 {
-                    context.Email = context.Principal.GetClaim(Claims.Email);
+                    context.Email = context.AccessTokenPrincipal.GetClaim(Claims.Email);
                 }
 
-                if (context.Principal.HasScope(Scopes.Phone))
+                if (context.AccessTokenPrincipal.HasScope(Scopes.Phone))
                 {
-                    context.PhoneNumber = context.Principal.GetClaim(Claims.PhoneNumber);
+                    context.PhoneNumber = context.AccessTokenPrincipal.GetClaim(Claims.PhoneNumber);
                 }
 
                 return default;

@@ -211,6 +211,17 @@ public sealed class OpenIddictServerOptions
     public TimeSpan? IdentityTokenLifetime { get; set; } = TimeSpan.FromMinutes(20);
 
     /// <summary>
+    /// Gets or sets the period of time issued tokens remain valid after being issued. The default value is 1 hour.
+    /// The client application is expected to refresh or acquire a new issued token after the token has expired.
+    /// While not recommended, this property can be set to <see langword="null"/> to issue issued tokens that never expire.
+    /// </summary>
+    /// <remarks>
+    /// Note: this property is not used when the requested token type is recognized and matches a token type internally
+    /// supported (e.g access token): in that case, the dedicated lifetime option is used instead of this value.
+    /// </remarks>
+    public TimeSpan? IssuedTokenLifetime { get; set; } = TimeSpan.FromHours(1);
+
+    /// <summary>
     /// Gets or sets the period of time request tokens remain valid after being issued. The default value is 1 hour.
     /// The client application is expected to start a whole new authentication flow after the request token has expired.
     /// While not recommended, this property can be set to <see langword="null"/> to issue request tokens that never expire.
@@ -281,7 +292,7 @@ public sealed class OpenIddictServerOptions
     /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
     /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
     /// </summary>
-    public List<OpenIddictServerHandlerDescriptor> Handlers { get; } = new(OpenIddictServerHandlers.DefaultHandlers);
+    public List<OpenIddictServerHandlerDescriptor> Handlers { get; } = [.. OpenIddictServerHandlers.DefaultHandlers];
 
     /// <summary>
     /// Gets or sets a boolean determining whether client identification is optional.
@@ -365,6 +376,17 @@ public sealed class OpenIddictServerOptions
     public bool EnableEndSessionRequestCaching { get; set; }
 
     /// <summary>
+    /// Gets the OAuth 2.0 token exchange actor token types enabled for this application.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public HashSet<string> ActorTokenTypes { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.TokenTypeIdentifiers.AccessToken,
+        OpenIddictConstants.TokenTypeIdentifiers.IdentityToken,
+        OpenIddictConstants.TokenTypeIdentifiers.RefreshToken
+    };
+
+    /// <summary>
     /// Gets the OAuth 2.0 client assertion types enabled for this application.
     /// </summary>
     public HashSet<string> ClientAssertionTypes { get; } = new(StringComparer.Ordinal)
@@ -415,6 +437,15 @@ public sealed class OpenIddictServerOptions
     };
 
     /// <summary>
+    /// Gets the OAuth 2.0 token exchange requested token types enabled for this application.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public HashSet<string> RequestedTokenTypes { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.TokenTypeIdentifiers.AccessToken
+    };
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether PKCE must be used by client applications
     /// when requesting an authorization code (e.g when using the code or hybrid flows).
     /// If this property is set to <see langword="true"/>, authorization requests that
@@ -448,6 +479,17 @@ public sealed class OpenIddictServerOptions
     };
 
     /// <summary>
+    /// Gets the OAuth 2.0 token exchange subject token types enabled for this application.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public HashSet<string> SubjectTokenTypes { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.TokenTypeIdentifiers.AccessToken,
+        OpenIddictConstants.TokenTypeIdentifiers.IdentityToken,
+        OpenIddictConstants.TokenTypeIdentifiers.RefreshToken
+    };
+
+    /// <summary>
     /// Gets the OpenID Connect subject types enabled for this application.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
@@ -455,6 +497,16 @@ public sealed class OpenIddictServerOptions
     {
         OpenIddictConstants.SubjectTypes.Public
     };
+
+    /// <summary>
+    /// Gets or sets the default token type that is used as the requested token type when no
+    /// explicit value is requested by the client during an OAuth 2.0 token exchange flow.
+    /// </summary>
+    /// <remarks>
+    /// By default, an access token is always returned when no explicit value is requested.
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public string DefaultRequestedTokenType { get; set; } = TokenTypeIdentifiers.AccessToken;
 
     /// <summary>
     /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.

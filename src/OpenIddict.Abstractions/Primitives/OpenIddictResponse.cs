@@ -186,6 +186,15 @@ public class OpenIddictResponse : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "issued_token_type" parameter.
+    /// </summary>
+    public string? IssuedTokenType
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.IssuedTokenType);
+        set => SetParameter(OpenIddictConstants.Parameters.IssuedTokenType, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "refresh_token" parameter.
     /// </summary>
     public string? RefreshToken

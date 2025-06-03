@@ -280,7 +280,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -353,7 +353,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -378,6 +378,16 @@ public class OpenIddictClientService
             ResponseMode = request.ResponseMode,
             ResponseType = request.ResponseType
         };
+
+        if (request.Audiences is { Count: > 0 })
+        {
+            context.Audiences.UnionWith(request.Audiences);
+        }
+
+        if (request.Resources is { Count: > 0 })
+        {
+            context.Resources.UnionWith(request.Resources);
+        }
 
         if (request.Scopes is { Count: > 0 })
         {
@@ -429,7 +439,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -445,8 +455,18 @@ public class OpenIddictClientService
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
             TokenRequest = request.AdditionalTokenRequestParameters
-                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
+
+        if (request.Audiences is { Count: > 0 })
+        {
+            context.Audiences.UnionWith(request.Audiences);
+        }
+
+        if (request.Resources is { Count: > 0 })
+        {
+            context.Resources.UnionWith(request.Resources);
+        }
 
         if (request.Scopes is { Count: > 0 })
         {
@@ -512,7 +532,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -531,6 +551,16 @@ public class OpenIddictClientService
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
+
+        if (request.Audiences is { Count: > 0 })
+        {
+            context.Audiences.UnionWith(request.Audiences);
+        }
+
+        if (request.Resources is { Count: > 0 })
+        {
+            context.Resources.UnionWith(request.Resources);
+        }
 
         if (request.Scopes is { Count: > 0 })
         {
@@ -596,7 +626,7 @@ public class OpenIddictClientService
             try
             {
                 // Note: this service is registered as a singleton service. As such, it cannot
-                // directly depend on scoped services like the validation provider. To work around
+                // directly depend on scoped services like the event dispatcher. To work around
                 // this limitation, a scope is manually created for each method to this service.
                 await using var scope = _provider.CreateAsyncScope();
 
@@ -616,8 +646,18 @@ public class OpenIddictClientService
                     ProviderName = request.ProviderName,
                     RegistrationId = request.RegistrationId,
                     TokenRequest = request.AdditionalTokenRequestParameters
-                        is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                        is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
                 };
+
+                if (request.Audiences is { Count: > 0 })
+                {
+                    context.Audiences.UnionWith(request.Audiences);
+                }
+
+                if (request.Resources is { Count: > 0 })
+                {
+                    context.Resources.UnionWith(request.Resources);
+                }
 
                 if (request.Scopes is { Count: > 0 })
                 {
@@ -694,7 +734,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -715,6 +755,16 @@ public class OpenIddictClientService
             RegistrationId = request.RegistrationId,
             Request = new()
         };
+
+        if (request.Audiences is { Count: > 0 })
+        {
+            context.Audiences.UnionWith(request.Audiences);
+        }
+
+        if (request.Resources is { Count: > 0 })
+        {
+            context.Resources.UnionWith(request.Resources);
+        }
 
         if (request.Scopes is { Count: > 0 })
         {
@@ -767,7 +817,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -789,6 +839,16 @@ public class OpenIddictClientService
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
             Username = request.Username
         };
+
+        if (request.Audiences is { Count: > 0 })
+        {
+            context.Audiences.UnionWith(request.Audiences);
+        }
+
+        if (request.Resources is { Count: > 0 })
+        {
+            context.Resources.UnionWith(request.Resources);
+        }
 
         if (request.Scopes is { Count: > 0 })
         {
@@ -831,6 +891,95 @@ public class OpenIddictClientService
     }
 
     /// <summary>
+    /// Authenticates using token exchange.
+    /// </summary>
+    /// <param name="request">The token exchange authentication request.</param>
+    /// <returns>The token exchange authentication result.</returns>
+    public async ValueTask<TokenExchangeAuthenticationResult> AuthenticateWithTokenExchangeAsync(
+        TokenExchangeAuthenticationRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the event dispatcher. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        await using var scope = _provider.CreateAsyncScope();
+
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var transaction = await factory.CreateTransactionAsync();
+
+        var context = new ProcessAuthenticationContext(transaction)
+        {
+            ActorToken = request.ActorToken,
+            ActorTokenType = request.ActorTokenType,
+            CancellationToken = request.CancellationToken,
+            DisableUserInfoRetrieval = request.DisableUserInfo,
+            DisableUserInfoValidation = request.DisableUserInfo,
+            GrantType = GrantTypes.TokenExchange,
+            Issuer = request.Issuer,
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            RequestedTokenType = request.RequestedTokenType,
+            SubjectToken = request.SubjectToken,
+            SubjectTokenType = request.SubjectTokenType,
+            TokenRequest = request.AdditionalTokenRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
+        };
+
+        if (request.Audiences is { Count: > 0 })
+        {
+            context.Audiences.UnionWith(request.Audiences);
+        }
+
+        if (request.Resources is { Count: > 0 })
+        {
+            context.Resources.UnionWith(request.Resources);
+        }
+
+        if (request.Scopes is { Count: > 0 })
+        {
+            context.Scopes.UnionWith(request.Scopes);
+        }
+
+        if (request.Properties is { Count: > 0 })
+        {
+            foreach (var property in request.Properties)
+            {
+                context.Properties[property.Key] = property.Value;
+            }
+        }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0485(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+        Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+        return new()
+        {
+            IssuedToken = context.IssuedToken!,
+            IssuedTokenExpirationDate = context.IssuedTokenExpirationDate,
+            IssuedTokenType = context.IssuedTokenType!,
+            Principal = context.MergedPrincipal,
+            Properties = context.Properties,
+            RefreshToken = context.RefreshToken,
+            TokenResponse = context.TokenResponse
+        };
+    }
+
+    /// <summary>
     /// Authenticates using the specified refresh token.
     /// </summary>
     /// <param name="request">The refresh token authentication request.</param>
@@ -846,7 +995,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -865,8 +1014,18 @@ public class OpenIddictClientService
             RefreshToken = request.RefreshToken,
             RegistrationId = request.RegistrationId,
             TokenRequest = request.AdditionalTokenRequestParameters
-                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
+
+        if (request.Audiences is { Count: > 0 })
+        {
+            context.Audiences.UnionWith(request.Audiences);
+        }
+
+        if (request.Resources is { Count: > 0 })
+        {
+            context.Resources.UnionWith(request.Resources);
+        }
 
         if (request.Scopes is { Count: > 0 })
         {
@@ -923,7 +1082,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -986,7 +1145,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -1061,7 +1220,7 @@ public class OpenIddictClientService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -1188,7 +1347,7 @@ public class OpenIddictClientService
         request.CancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -1207,7 +1366,7 @@ public class OpenIddictClientService
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
             Request = request.AdditionalEndSessionRequestParameters
-                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
 
         if (request.Properties is { Count: > 0 })
@@ -1267,7 +1426,7 @@ public class OpenIddictClientService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -1422,7 +1581,7 @@ public class OpenIddictClientService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -1575,7 +1734,7 @@ public class OpenIddictClientService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -1735,7 +1894,7 @@ public class OpenIddictClientService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -1888,7 +2047,7 @@ public class OpenIddictClientService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -2046,7 +2205,7 @@ public class OpenIddictClientService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -2199,7 +2358,7 @@ public class OpenIddictClientService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 

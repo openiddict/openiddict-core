@@ -194,7 +194,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the security principal extracted from the user code, if applicable.
         /// </summary>
-        public ClaimsPrincipal? Principal { get; set; }
+        public ClaimsPrincipal? UserCodePrincipal { get; set; }
     }
 
     /// <summary>

@@ -234,6 +234,161 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
     }
 
+    [Fact]
+    public async Task ValidateTokenRequest_MissingSubjectTokenCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = null
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2029(Parameters.SubjectToken), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_MissingSubjectTokenTypeCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = null
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2029(Parameters.SubjectTokenType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_MissingActorTokenCausesAnErrorWhenActorTokenTypeIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = null,
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2037(Parameters.ActorTokenType, Parameters.ActorToken), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_MissingActorTokenTypeCausesAnErrorWhenActorTokenIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = null,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2037(Parameters.ActorToken, Parameters.ActorTokenType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_UnsupportedSubjectTokenTypeCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = "custom_token_type"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2032(Parameters.SubjectTokenType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_UnsupportedActorTokenTypeCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = "custom_token_type",
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2032(Parameters.ActorTokenType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_UnsupportedRequestedTokenTypeCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            RequestedTokenType = "custom_token_type",
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2032(Parameters.RequestedTokenType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
+    }
+
     [Theory]
     [InlineData(null, null)]
     [InlineData("username", null)]
@@ -434,6 +589,75 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateTokenRequest_InvalidSubjectTokenCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2004), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2004), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_InvalidActorTokenCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (!string.Equals(context.Token, "8xLOxBtZp8", StringComparison.Ordinal))
+                    {
+                        return default;
+                    }
+
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2004), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2004), response.ErrorUri);
+    }
+
+    [Fact]
     public async Task ValidateTokenRequest_ExpiredAuthorizationCodeCausesAnError()
     {
         // Arrange
@@ -516,6 +740,104 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(Errors.InvalidGrant, response.Error);
         Assert.Equal(SR.GetResourceString(SR.ID2018), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2018), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_ExpiredSubjectTokenCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetExpirationDate(TimeProvider.System.GetUtcNow() - TimeSpan.FromDays(1))
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2018), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2018), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_ExpiredActorTokenCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetExpirationDate(TimeProvider.System.GetUtcNow() - TimeSpan.FromDays(1))
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2019), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2019), response.ErrorUri);
     }
 
     [Fact]
@@ -722,6 +1044,404 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateTokenRequest_SubjectTokenCausesAnErrorWhenCallerIsNotIdentifiedAndAudiencesAndPresentersAreAttached()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetAudiences("Litware")
+                        .SetPresenters("Contoso")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2186), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2186), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_TokenRequestSucceedsWhenSubjectTokenIsNotSenderConstrained()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetAudiences("Litware")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_TokenRequestSucceedsWhenSubjectTokenIsNotReceiverConstrained()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetPresenters("Contoso")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_SubjectTokenCausesAnErrorWhenCallerIsNotAnAudienceOrPresenter()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetAudiences("Litware")
+                        .SetPresenters("Contoso")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            SubjectTokenType = TokenTypeIdentifiers.AccessToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2187), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2187), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_ActorTokenCausesAnErrorWhenCallerIsNotIdentifiedAndAudiencesAndPresentersAreAttached()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetAudiences("Litware")
+                            .SetPresenters("Contoso")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2188), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2188), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_TokenRequestSucceedsWhenActorTokenIsNotSenderConstrained()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetAudiences("Litware")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_TokenRequestSucceedsWhenActorTokenIsNotReceiverConstrained()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetPresenters("Contoso")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_ActorTokenCausesAnErrorWhenCallerIsNotAnAudienceOrPresenter()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetAudiences("Litware")
+                            .SetPresenters("Contoso")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2189), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2189), response.ErrorUri);
+    }
+
+    [Fact]
     public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenRedirectUriIsMissing()
     {
         // Arrange
@@ -902,7 +1622,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeChallengeMethodIsMIssing()
+    public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeChallengeMethodIsMissing()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -1186,29 +1906,69 @@ public abstract partial class OpenIddictServerIntegrationTests
     [Theory]
     [InlineData(GrantTypes.AuthorizationCode)]
     [InlineData(GrantTypes.ClientCredentials)]
+    [InlineData(GrantTypes.DeviceCode)]
     [InlineData(GrantTypes.Password)]
     [InlineData(GrantTypes.RefreshToken)]
-    public async Task ValidateTokenRequest_RequestIsRejectedWhenFlowIsNotEnabled(string flow)
+    [InlineData(GrantTypes.TokenExchange)]
+    public async Task ValidateTokenRequest_RequestIsRejectedWhenFlowIsNotEnabled(string type)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
 
-            options.Configure(options => options.GrantTypes.Remove(flow));
+            options.Configure(options => options.GrantTypes.Remove(type));
             options.Configure(options => options.ResponseTypes.Clear());
+
+            if (type is GrantTypes.DeviceCode)
+            {
+                options.Configure(options => options.DeviceAuthorizationEndpointUris.Clear());
+            }
         });
 
         await using var client = await server.CreateClientAsync();
 
         // Act
-        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        var response = await client.PostAsync("/connect/token", type switch
         {
-            Code = "SplxlOBeZQQYbYS6WxSbIA",
-            GrantType = flow,
-            Username = "johndoe",
-            Password = "A3ddj3w",
-            RefreshToken = "8xLOxBtZp8"
+            GrantTypes.AuthorizationCode => new OpenIddictRequest
+            {
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                GrantType = GrantTypes.AuthorizationCode
+            },
+
+            GrantTypes.ClientCredentials => new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.ClientCredentials
+            },
+
+            GrantTypes.DeviceCode => new OpenIddictRequest
+            {
+                DeviceCode = "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+                GrantType = GrantTypes.DeviceCode
+            },
+
+            GrantTypes.Password => new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            },
+
+            GrantTypes.RefreshToken => new OpenIddictRequest
+            {
+                GrantType = GrantTypes.RefreshToken,
+                RefreshToken = "8xLOxBtZp8"
+            },
+
+            _ => new OpenIddictRequest
+            {
+                GrantType = GrantTypes.TokenExchange,
+                SubjectToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+                SubjectTokenType = TokenTypeIdentifiers.AccessToken
+            }
         });
 
         // Assert
@@ -2333,15 +3093,6 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
-            options.AddEventHandler<HandleTokenRequestContext>(builder =>
-                builder.UseInlineHandler(context =>
-                {
-                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetClaim(Claims.Subject, "Bob le Magnifique");
-
-                    return default;
-                }));
-
             options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
@@ -2356,6 +3107,109 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             GrantType = GrantTypes.RefreshToken,
             RefreshToken = "8xLOxBtZp8"
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_SubjectTokenRevocationIsIgnoredWhenTokenStorageIsDisabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
+            options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
+            options.DisableTokenStorage();
+            options.DisableSlidingRefreshTokenExpiration();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_ActorTokenRevocationIsIgnoredWhenTokenStorageIsDisabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetTokenId("E2894547-277E-4E09-A0C0-0A0631B54052")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
+            options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
+            options.DisableTokenStorage();
+            options.DisableSlidingRefreshTokenExpiration();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
         });
 
         // Assert
@@ -2455,7 +3309,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeIdentifiers.RefreshToken)
-                        .SetPresenters("Fabrikam")
                         .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -2484,6 +3337,121 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             GrantType = GrantTypes.RefreshToken,
             RefreshToken = "8xLOxBtZp8"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2003), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2003), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenSubjectTokenIsUnknown()
+    {
+        // Arrange
+        var manager = CreateTokenManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2003), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2003), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenActorTokenIsUnknown()
+    {
+        // Arrange
+        var manager = CreateTokenManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetTokenId("E2894547-277E-4E09-A0C0-0A0631B54052")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
         });
 
         // Assert
@@ -3322,7 +4290,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetTokenType(TokenTypeIdentifiers.RefreshToken)
-                        .SetPresenters("Fabrikam")
                         .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                         .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -3361,6 +4328,168 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         Mock.Get(manager).Verify(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenSubjectTokenIsInvalid()
+    {
+        // Arrange
+        var token = new OpenIddictToken();
+
+        var manager = CreateTokenManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(token);
+
+            mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+            mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeIdentifiers.RefreshToken);
+
+            mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2018), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2018), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenActorTokenIsInvalid()
+    {
+        // Arrange
+        ImmutableArray<OpenIddictToken> tokens = [new(), new()];
+
+        var manager = CreateTokenManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tokens[0]);
+
+            mock.Setup(manager => manager.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
+                .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+            mock.Setup(manager => manager.GetTypeAsync(tokens[0], It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeIdentifiers.RefreshToken);
+
+            mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.FindByIdAsync("E2894547-277E-4E09-A0C0-0A0631B54052", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tokens[1]);
+
+            mock.Setup(manager => manager.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                .ReturnsAsync("E2894547-277E-4E09-A0C0-0A0631B54052");
+
+            mock.Setup(manager => manager.GetTypeAsync(tokens[1], It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
+
+            mock.Setup(manager => manager.HasStatusAsync(tokens[1], Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.HasStatusAsync(tokens[1], Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetTokenId("E2894547-277E-4E09-A0C0-0A0631B54052")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2019), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2019), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("E2894547-277E-4E09-A0C0-0A0631B54052", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasStatusAsync(tokens[1], Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -3551,6 +4680,201 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             GrantType = GrantTypes.RefreshToken,
             RefreshToken = "8xLOxBtZp8"
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_AuthorizationAssociatedWithSubjectTokenIsIgnoredWhenAuthorizationStorageIsDisabled()
+    {
+        // Arrange
+        var authorization = new OpenIddictAuthorization();
+
+        var manager = CreateAuthorizationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new OpenIddictAuthorization());
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.DisableRollingRefreshTokens();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                var token = new OpenIddictToken();
+
+                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.RefreshToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
+            }));
+
+            options.Services.AddSingleton(manager);
+
+            options.DisableAuthorizationStorage();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_AuthorizationAssociatedWithActorTokenIsIgnoredWhenAuthorizationStorageIsDisabled()
+    {
+        // Arrange
+        var authorization = new OpenIddictAuthorization();
+
+        var manager = CreateAuthorizationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new OpenIddictAuthorization());
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.DisableRollingRefreshTokens();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetTokenId("E2894547-277E-4E09-A0C0-0A0631B54052")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                ImmutableArray<OpenIddictToken> tokens = [new(), new()];
+
+                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(tokens[0]);
+
+                mock.Setup(manager => manager.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                mock.Setup(manager => manager.GetTypeAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.RefreshToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
+
+                mock.Setup(manager => manager.FindByIdAsync("E2894547-277E-4E09-A0C0-0A0631B54052", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(tokens[1]);
+
+                mock.Setup(manager => manager.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("E2894547-277E-4E09-A0C0-0A0631B54052");
+
+                mock.Setup(manager => manager.GetTypeAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[1], Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[1], Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
+            }));
+
+            options.Services.AddSingleton(manager);
+
+            options.DisableAuthorizationStorage();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
         });
 
         // Assert
@@ -3932,6 +5256,398 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenAuthorizationAssociatedWithSubjectTokenCannotBeFound()
+    {
+        // Arrange
+        var manager = CreateAuthorizationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                var token = new OpenIddictToken();
+
+                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.RefreshToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
+            }));
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2022), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2022), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenAuthorizationAssociatedWithSubjectTokenIsInvalid()
+    {
+        // Arrange
+        var authorization = new OpenIddictAuthorization();
+
+        var manager = CreateAuthorizationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(authorization);
+
+            mock.Setup(manager => manager.HasStatusAsync(authorization, Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("8xLOxBtZp8", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                var token = new OpenIddictToken();
+
+                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.RefreshToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
+            }));
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2022), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2022), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.HasStatusAsync(authorization, Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenAuthorizationAssociatedWithActorTokenCannotBeFound()
+    {
+        // Arrange
+        var authorization = new OpenIddictAuthorization();
+
+        var manager = CreateAuthorizationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(authorization);
+
+            mock.Setup(manager => manager.HasStatusAsync(authorization, Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.FindByIdAsync("224E3451-A3D4-48C3-A189-2D95B97C212A", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetTokenId("E2894547-277E-4E09-A0C0-0A0631B54052")
+                            .SetAuthorizationId("224E3451-A3D4-48C3-A189-2D95B97C212A")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                ImmutableArray<OpenIddictToken> tokens = [new(), new()];
+
+                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(tokens[0]);
+
+                mock.Setup(manager => manager.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                mock.Setup(manager => manager.GetTypeAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.RefreshToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
+
+                mock.Setup(manager => manager.FindByIdAsync("E2894547-277E-4E09-A0C0-0A0631B54052", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(tokens[1]);
+
+                mock.Setup(manager => manager.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("E2894547-277E-4E09-A0C0-0A0631B54052");
+
+                mock.Setup(manager => manager.GetTypeAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[1], Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[1], Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("224E3451-A3D4-48C3-A189-2D95B97C212A");
+            }));
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2023), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2023), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("224E3451-A3D4-48C3-A189-2D95B97C212A", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenAuthorizationAssociatedWithActorTokenIsInvalid()
+    {
+        // Arrange
+        ImmutableArray<OpenIddictAuthorization> authorizations = [new(), new()];
+
+        var manager = CreateAuthorizationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(authorizations[0]);
+
+            mock.Setup(manager => manager.HasStatusAsync(authorizations[0], Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.FindByIdAsync("224E3451-A3D4-48C3-A189-2D95B97C212A", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(authorizations[1]);
+
+            mock.Setup(manager => manager.HasStatusAsync(authorizations[1], Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (string.Equals(context.Token, "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC", StringComparison.Ordinal))
+                    {
+                        Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                            .SetTokenId("E2894547-277E-4E09-A0C0-0A0631B54052")
+                            .SetAuthorizationId("224E3451-A3D4-48C3-A189-2D95B97C212A")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    }
+
+                    Assert.Equal([TokenTypeIdentifiers.RefreshToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                        .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                ImmutableArray<OpenIddictToken> tokens = [new(), new()];
+
+                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(tokens[0]);
+
+                mock.Setup(manager => manager.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                mock.Setup(manager => manager.GetTypeAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.RefreshToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(tokens[0], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
+
+                mock.Setup(manager => manager.FindByIdAsync("E2894547-277E-4E09-A0C0-0A0631B54052", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(tokens[1]);
+
+                mock.Setup(manager => manager.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("E2894547-277E-4E09-A0C0-0A0631B54052");
+
+                mock.Setup(manager => manager.GetTypeAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[1], Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.HasStatusAsync(tokens[1], Statuses.Valid, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetAuthorizationIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("224E3451-A3D4-48C3-A189-2D95B97C212A");
+            }));
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ActorToken = "accVkjcJyb4BWCxGsndESCJQbdFMogUC5PbRDqceLTC",
+            ActorTokenType = TokenTypeIdentifiers.AccessToken,
+            GrantType = GrantTypes.TokenExchange,
+            SubjectToken = "8xLOxBtZp8",
+            SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2023), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2023), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByIdAsync("224E3451-A3D4-48C3-A189-2D95B97C212A", It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.HasStatusAsync(authorizations[1], Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
     public async Task HandleTokenRequest_RequestIsRejectedWhenAuthorizationCodeCannotBeRedeemed()
     {
         // Arrange
@@ -4029,10 +5745,12 @@ public abstract partial class OpenIddictServerIntegrationTests
     [Theory]
     [InlineData(GrantTypes.AuthorizationCode)]
     [InlineData(GrantTypes.ClientCredentials)]
+    [InlineData(GrantTypes.DeviceCode)]
     [InlineData(GrantTypes.Password)]
     [InlineData(GrantTypes.RefreshToken)]
+    [InlineData(GrantTypes.TokenExchange)]
     [InlineData("urn:ietf:params:oauth:grant-type:custom_grant")]
-    public async Task HandleTokenRequest_RequestsAreSuccessfullyHandled(string flow)
+    public async Task HandleTokenRequest_RequestsAreSuccessfullyHandled(string type)
     {
         // Arrange
         var manager = CreateTokenManager(mock =>
@@ -4046,9 +5764,15 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync("0270F515-C5B1-4FBF-B673-D7CAF7CCDABC");
 
             mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(flow is GrantTypes.AuthorizationCode ?
-                    TokenTypeIdentifiers.Private.AuthorizationCode :
-                    TokenTypeIdentifiers.RefreshToken);
+                .ReturnsAsync(type switch
+                {
+                    GrantTypes.AuthorizationCode => TokenTypeIdentifiers.Private.AuthorizationCode,
+                    GrantTypes.DeviceCode        => TokenTypeIdentifiers.Private.DeviceCode,
+                    GrantTypes.RefreshToken      => TokenTypeIdentifiers.RefreshToken,
+                    GrantTypes.TokenExchange     => TokenTypeIdentifiers.RefreshToken,
+
+                    _ => null
+                });
 
             mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -4072,9 +5796,15 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.UseInlineHandler(context =>
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(context.Request!.IsAuthorizationCodeGrantType() ?
-                            TokenTypeIdentifiers.Private.AuthorizationCode :
-                            TokenTypeIdentifiers.RefreshToken)
+                        .SetTokenType(type switch
+                        {
+                            GrantTypes.AuthorizationCode => TokenTypeIdentifiers.Private.AuthorizationCode,
+                            GrantTypes.DeviceCode        => TokenTypeIdentifiers.Private.DeviceCode,
+                            GrantTypes.RefreshToken      => TokenTypeIdentifiers.RefreshToken,
+                            GrantTypes.TokenExchange     => TokenTypeIdentifiers.RefreshToken,
+
+                            _ => null
+                        })
                         .SetPresenters("Fabrikam")
                         .SetTokenId("0270F515-C5B1-4FBF-B673-D7CAF7CCDABC")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -4120,16 +5850,63 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var client = await server.CreateClientAsync();
 
         // Act
-        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        var response = await client.PostAsync("/connect/token", type switch
         {
-            ClientId = "Fabrikam",
-            ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-            Code = "8xLOxBtZp8",
-            GrantType = flow,
-            RedirectUri = "http://www.fabrikam.com/path",
-            RefreshToken = "8xLOxBtZp8",
-            Username = "johndoe",
-            Password = "A3ddj3w"
+            GrantTypes.AuthorizationCode => new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                GrantType = GrantTypes.AuthorizationCode
+            },
+
+            GrantTypes.ClientCredentials => new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.ClientCredentials
+            },
+
+            GrantTypes.DeviceCode => new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                DeviceCode = "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+                GrantType = GrantTypes.DeviceCode
+            },
+
+            GrantTypes.Password => new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            },
+
+            GrantTypes.RefreshToken => new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.RefreshToken,
+                RefreshToken = "8xLOxBtZp8"
+            },
+
+            GrantTypes.TokenExchange => new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.TokenExchange,
+                SubjectToken = "8xLOxBtZp8",
+                SubjectTokenType = TokenTypeIdentifiers.RefreshToken
+            },
+
+            _ => new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = "urn:ietf:params:oauth:grant-type:custom_grant"
+            }
         });
 
         // Assert

@@ -4116,7 +4116,8 @@ public abstract partial class OpenIddictServerIntegrationTests
                        .AllowImplicitFlow()
                        .AllowNoneFlow()
                        .AllowPasswordFlow()
-                       .AllowRefreshTokenFlow();
+                       .AllowRefreshTokenFlow()
+                       .AllowTokenExchangeFlow();
 
                 // Accept anonymous clients by default.
                 options.AcceptAnonymousClients();

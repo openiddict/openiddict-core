@@ -265,7 +265,7 @@ public static class OpenIddictExtensions
         }
 
         // Return true if the response_type parameter contains "id_token" or "token".
-        return (flags & /* id_token: */ 0x01) == 0x01 || (flags & /* token: */ 0x02) == 0x02;
+        return (flags & /* id_token: */ 0x01) is 0x01 || (flags & /* token: */ 0x02) is 0x02;
     }
 
     /// <summary>
@@ -324,13 +324,13 @@ public static class OpenIddictExtensions
         }
 
         // Return false if the response_type parameter doesn't contain "code".
-        if ((flags & /* code: */ 0x01) != 0x01)
+        if ((flags & /* code: */ 0x01) is not 0x01)
         {
             return false;
         }
 
         // Return true if the response_type parameter contains "id_token" or "token".
-        return (flags & /* id_token: */ 0x02) == 0x02 || (flags & /* token: */ 0x04) == 0x04;
+        return (flags & /* id_token: */ 0x02) is 0x02 || (flags & /* token: */ 0x04) is 0x04;
     }
 
     /// <summary>
@@ -495,6 +495,22 @@ public static class OpenIddictExtensions
         }
 
         return string.Equals(request.GrantType, GrantTypes.RefreshToken, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Determines whether the "grant_type" parameter corresponds to the token exchange grant.
+    /// See https://datatracker.ietf.org/doc/html/rfc8693#section-2.1 for more information.
+    /// </summary>
+    /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+    /// <returns><see langword="true"/> if the request is a token exchange grant request, <see langword="false"/> otherwise.</returns>
+    public static bool IsTokenExchangeGrantType(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return string.Equals(request.GrantType, GrantTypes.TokenExchange, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -2956,6 +2972,22 @@ public static class OpenIddictExtensions
         => GetLifetime(principal, Claims.Private.IdentityTokenLifetime);
 
     /// <summary>
+    /// Gets the issued token lifetime associated with the claims identity.
+    /// </summary>
+    /// <param name="identity">The claims identity.</param>
+    /// <returns>The issued token lifetime or <see langword="null"/> if the claim cannot be found.</returns>
+    public static TimeSpan? GetIssuedTokenLifetime(this ClaimsIdentity identity)
+        => GetLifetime(identity, Claims.Private.IssuedTokenLifetime);
+
+    /// <summary>
+    /// Gets the issued token lifetime associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <returns>The issued token lifetime or <see langword="null"/> if the claim cannot be found.</returns>
+    public static TimeSpan? GetIssuedTokenLifetime(this ClaimsPrincipal principal)
+        => GetLifetime(principal, Claims.Private.IssuedTokenLifetime);
+
+    /// <summary>
     /// Gets the request token lifetime associated with the claims identity.
     /// </summary>
     /// <param name="identity">The claims identity.</param>
@@ -3648,6 +3680,24 @@ public static class OpenIddictExtensions
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetIdentityTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
         => principal.SetClaim(Claims.Private.IdentityTokenLifetime, (long?) lifetime?.TotalSeconds);
+
+    /// <summary>
+    /// Sets the issued token lifetime associated with the claims identity.
+    /// </summary>
+    /// <param name="identity">The claims identity.</param>
+    /// <param name="lifetime">The issued token lifetime to store.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetIssuedTokenLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
+        => identity.SetClaim(Claims.Private.IssuedTokenLifetime, (long?) lifetime?.TotalSeconds);
+
+    /// <summary>
+    /// Sets the issued token lifetime associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <param name="lifetime">The issued token lifetime to store.</param>
+    /// <returns>The claims principal.</returns>
+    public static ClaimsPrincipal SetIssuedTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
+        => principal.SetClaim(Claims.Private.IssuedTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the refresh token lifetime associated with the claims identity.

@@ -11,12 +11,6 @@ namespace OpenIddict.Validation.Owin;
 /// </summary>
 public static class OpenIddictValidationOwinConstants
 {
-    public static class Cache
-    {
-        public const string AuthorizationRequest = "openiddict-authorization-request:";
-        public const string EndSessionRequest = "openiddict-logout-request:";
-    }
-
     public static class Headers
     {
         public const string Authorization = "Authorization";
@@ -30,7 +24,6 @@ public static class OpenIddictValidationOwinConstants
 
     public static class Properties
     {
-        public const string AccessTokenPrincipal = ".access_token_principal";
         public const string Error = ".error";
         public const string ErrorDescription = ".error_description";
         public const string ErrorUri = ".error_uri";

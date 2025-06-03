@@ -24,6 +24,7 @@ public static class OpenIddictClientAspNetCoreConstants
         public const string FrontchannelIdentityTokenPrincipal = ".frontchannel_identity_token_principal";
         public const string GrantType = ".grant_type";
         public const string IdentityTokenHint = ".identity_token_hint";
+        public const string IssuedTokenPrincipal = ".issued_token_principal";
         public const string Issuer = ".issuer";
         public const string LoginHint = ".login_hint";
         public const string ProviderName = ".provider_name";
@@ -45,6 +46,9 @@ public static class OpenIddictClientAspNetCoreConstants
         public const string FrontchannelAccessToken = "frontchannel_access_token";
         public const string FrontchannelAccessTokenExpirationDate = "frontchannel_access_token_expiration_date";
         public const string FrontchannelIdentityToken = "frontchannel_id_token";
+        public const string IssuedToken = "issued_token";
+        public const string IssuedTokenExpirationDate = "issued_token_expiration_date";
+        public const string IssuedTokenType = "issued_token_type";
         public const string RefreshToken = "refresh_token";
         public const string StateToken = "state_token";
         public const string UserInfoToken = "userinfo_token";

@@ -42,6 +42,7 @@ public static class OpenIddictServerExtensions
         // Register the built-in filters used by the default OpenIddict server event handlers.
         builder.Services.TryAddSingleton<RequireAccessTokenGenerated>();
         builder.Services.TryAddSingleton<RequireAccessTokenValidated>();
+        builder.Services.TryAddSingleton<RequireActorTokenValidated>();
         builder.Services.TryAddSingleton<RequireAuthorizationCodeGenerated>();
         builder.Services.TryAddSingleton<RequireAuthorizationCodeValidated>();
         builder.Services.TryAddSingleton<RequireAuthorizationIdResolved>();
@@ -64,6 +65,7 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireIdentityTokenGenerated>();
         builder.Services.TryAddSingleton<RequireIdentityTokenValidated>();
         builder.Services.TryAddSingleton<RequireIntrospectionRequest>();
+        builder.Services.TryAddSingleton<RequireIssuedTokenGenerated>();
         builder.Services.TryAddSingleton<RequireJsonWebKeySetRequest>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenFormat>();
         builder.Services.TryAddSingleton<RequirePostLogoutRedirectUriParameter>();
@@ -77,9 +79,10 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireRequestTokenValidated>();
         builder.Services.TryAddSingleton<RequireResponseTypePermissionsEnabled>();
         builder.Services.TryAddSingleton<RequireRevocationRequest>();
-        builder.Services.TryAddSingleton<RequireSlidingRefreshTokenExpirationEnabled>();
         builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();
         builder.Services.TryAddSingleton<RequireScopeValidationEnabled>();
+        builder.Services.TryAddSingleton<RequireSlidingRefreshTokenExpirationEnabled>();
+        builder.Services.TryAddSingleton<RequireSubjectTokenValidated>();
         builder.Services.TryAddSingleton<RequireTokenAudienceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenEntryCreated>();
         builder.Services.TryAddSingleton<RequireTokenIdResolved>();

@@ -505,7 +505,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // Attach the security principal extracted from the token to the validation context.
-                context.Principal = notification.GenericTokenPrincipal;
+                context.GenericTokenPrincipal = notification.GenericTokenPrincipal;
             }
         }
 
@@ -587,10 +587,10 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                if (!context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
-                    !context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken))
+                if (!context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
+                    !context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.RefreshToken))
                 {
                     context.Logger.LogInformation(6104, SR.GetResourceString(SR.ID6104));
 
@@ -608,7 +608,7 @@ public static partial class OpenIddictServerHandlers
 
         /// <summary>
         /// Contains the logic responsible for rejecting introspection requests that specify a token
-        /// that cannot be introspected by the client application sending the introspection requests.
+        /// that cannot be introspected by the client application sending the introspection request.
         /// </summary>
         public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
@@ -635,15 +635,15 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // When the introspected token is an access token, the caller must be listed either as a presenter
                 // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
                 // If the access token doesn't contain any explicit presenter/audience, the token is assumed
                 // to be not specific to any resource server/client application and the check is bypassed.
-                if (context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
-                    context.Principal.HasClaim(Claims.Private.Audience)  && !context.Principal.HasAudience(context.ClientId) &&
-                    context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
+                if (context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
+                    context.GenericTokenPrincipal.HasClaim(Claims.Private.Audience)  && !context.GenericTokenPrincipal.HasAudience(context.ClientId) &&
+                    context.GenericTokenPrincipal.HasClaim(Claims.Private.Presenter) && !context.GenericTokenPrincipal.HasPresenter(context.ClientId))
                 {
                     context.Logger.LogWarning(6106, SR.GetResourceString(SR.ID6106));
 
@@ -659,8 +659,8 @@ public static partial class OpenIddictServerHandlers
                 // listed as a presenter (i.e the party the token was issued to).
                 // If the refresh token doesn't contain any explicit presenter, the token is
                 // assumed to be not specific to any client application and the check is bypassed.
-                if (context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken) &&
-                    context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
+                if (context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.RefreshToken) &&
+                    context.GenericTokenPrincipal.HasClaim(Claims.Private.Presenter) && !context.GenericTokenPrincipal.HasPresenter(context.ClientId))
                 {
                     context.Logger.LogWarning(6108, SR.GetResourceString(SR.ID6108));
 
@@ -704,9 +704,9 @@ public static partial class OpenIddictServerHandlers
                     typeof(ValidateIntrospectionRequestContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                Debug.Assert(notification.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(notification.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                context.Principal ??= notification.Principal;
+                context.GenericTokenPrincipal ??= notification.GenericTokenPrincipal;
 
                 return default;
             }
@@ -735,14 +735,14 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 context.Issuer = context.Options.Issuer ?? context.BaseUri;
 
-                context.TokenId = context.Principal.GetClaim(Claims.JwtId);
-                context.Subject = context.Principal.GetClaim(Claims.Subject);
+                context.TokenId = context.GenericTokenPrincipal.GetClaim(Claims.JwtId);
+                context.Subject = context.GenericTokenPrincipal.GetClaim(Claims.Subject);
 
-                context.TokenUsage = context.Principal.GetTokenType() switch
+                context.TokenUsage = context.GenericTokenPrincipal.GetTokenType() switch
                 {
                     TokenTypeIdentifiers.AccessToken               => "access_token",
                     TokenTypeIdentifiers.Private.AuthorizationCode => "authorization_code",
@@ -754,18 +754,18 @@ public static partial class OpenIddictServerHandlers
                     _ => null
                 };
 
-                context.IssuedAt = context.NotBefore = context.Principal.GetCreationDate();
-                context.ExpiresAt = context.Principal.GetExpirationDate();
+                context.IssuedAt = context.NotBefore = context.GenericTokenPrincipal.GetCreationDate();
+                context.ExpiresAt = context.GenericTokenPrincipal.GetExpirationDate();
 
                 // Infer the audiences/client_id from the claims stored in the security principal.
-                context.Audiences.UnionWith(context.Principal.GetAudiences());
-                context.ClientId = context.Principal.GetClaim(Claims.ClientId) ??
-                                   context.Principal.GetPresenters().FirstOrDefault();
+                context.Audiences.UnionWith(context.GenericTokenPrincipal.GetAudiences());
+                context.ClientId = context.GenericTokenPrincipal.GetClaim(Claims.ClientId) ??
+                                   context.GenericTokenPrincipal.FindFirst(Claims.Private.Presenter)?.Value;
 
                 // Note: only set "token_type" when the received token is an access token.
                 // See https://tools.ietf.org/html/rfc7662#section-2.2
                 // and https://tools.ietf.org/html/rfc6749#section-5.1 for more information.
-                if (context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken))
+                if (context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.AccessToken))
                 {
                     context.TokenType = TokenTypes.Bearer;
                 }
@@ -808,17 +808,17 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), SR.FormatID4000(Parameters.ClientId));
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Don't return application-specific claims if the token is not an access token.
-                if (!context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken))
+                if (!context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.AccessToken))
                 {
                     return;
                 }
 
                 // Only specified audiences (that were explicitly defined as allowed resources) can access
                 // the sensitive application-specific claims contained in the introspected access token.
-                if (!context.Principal.HasAudience(context.Request.ClientId))
+                if (!context.GenericTokenPrincipal.HasAudience(context.Request.ClientId))
                 {
                     context.Logger.LogInformation(6105, SR.GetResourceString(SR.ID6105), context.Request.ClientId);
 
@@ -836,10 +836,10 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                context.Username = context.Principal.Identity.Name;
-                context.Scopes.UnionWith(context.Principal.GetScopes());
+                context.Username = context.GenericTokenPrincipal.Identity.Name;
+                context.Scopes.UnionWith(context.GenericTokenPrincipal.GetScopes());
 
-                foreach (var group in context.Principal.Claims.GroupBy(claim => claim.Type))
+                foreach (var group in context.GenericTokenPrincipal.Claims.GroupBy(claim => claim.Type))
                 {
                     // Exclude standard claims, that are already handled via strongly-typed properties.
                     // Make sure to always update this list when adding new built-in claim properties.

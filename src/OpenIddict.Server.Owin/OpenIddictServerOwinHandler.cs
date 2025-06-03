@@ -179,6 +179,8 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
                     => context.DeviceCodePrincipal,
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
                     => context.RefreshTokenPrincipal,
+                OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType()
+                    => context.SubjectTokenPrincipal,
 
                 OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
 
@@ -211,6 +213,11 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
                 properties.Dictionary[Tokens.AccessToken] = context.AccessToken;
             }
 
+            if (!string.IsNullOrEmpty(context.ActorToken))
+            {
+                properties.Dictionary[Tokens.ActorToken] = context.ActorToken;
+            }
+
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
                 properties.Dictionary[Tokens.AuthorizationCode] = context.AuthorizationCode;
@@ -239,6 +246,11 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddi
             if (!string.IsNullOrEmpty(context.RequestToken))
             {
                 properties.Dictionary[Tokens.RequestToken] = context.RequestToken;
+            }
+
+            if (!string.IsNullOrEmpty(context.SubjectToken))
+            {
+                properties.Dictionary[Tokens.SubjectToken] = context.SubjectToken;
             }
 
             if (!string.IsNullOrEmpty(context.UserCode))

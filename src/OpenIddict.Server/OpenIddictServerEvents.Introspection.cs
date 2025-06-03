@@ -66,7 +66,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the security principal extracted from the introspected token, if available.
         /// </summary>
-        public ClaimsPrincipal? Principal { get; set; }
+        public ClaimsPrincipal? GenericTokenPrincipal { get; set; }
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the security principal extracted from the introspected token.
         /// </summary>
-        public ClaimsPrincipal Principal { get; set; } = default!;
+        public ClaimsPrincipal GenericTokenPrincipal { get; set; } = default!;
 
         /// <summary>
         /// Gets the additional claims returned to the client application.

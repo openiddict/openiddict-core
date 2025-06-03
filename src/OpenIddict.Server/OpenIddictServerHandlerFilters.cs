@@ -46,6 +46,23 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no actor token is validated.
+    /// </summary>
+    public sealed class RequireActorTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.ValidateActorToken);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no authorization code is generated.
     /// </summary>
     public sealed class RequireAuthorizationCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
@@ -420,6 +437,23 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no issued token is generated.
+    /// </summary>
+    public sealed class RequireIssuedTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateIssuedToken);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a JSON Web Key Set request.
     /// </summary>
     public sealed class RequireJsonWebKeySetRequest : IOpenIddictServerHandlerFilter<BaseContext>
@@ -688,6 +722,23 @@ public static class OpenIddictServerHandlerFilters
             }
 
             return new(!context.Options.DisableSlidingRefreshTokenExpiration);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no subject token is validated.
+    /// </summary>
+    public sealed class RequireSubjectTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.ValidateSubjectToken);
         }
     }
 

@@ -304,6 +304,23 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no issued token is validated.
+    /// </summary>
+    public sealed class RequireIssuedTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.ValidateIssuedToken);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the selected token format is not JSON Web Token.
     /// </summary>
     public sealed class RequireJsonWebTokenFormat : IOpenIddictClientHandlerFilter<GenerateTokenContext>

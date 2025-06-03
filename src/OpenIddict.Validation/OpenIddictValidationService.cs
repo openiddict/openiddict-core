@@ -44,7 +44,7 @@ public class OpenIddictValidationService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -92,7 +92,7 @@ public class OpenIddictValidationService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -217,7 +217,7 @@ public class OpenIddictValidationService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
@@ -357,7 +357,7 @@ public class OpenIddictValidationService
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
+        // directly depend on scoped services like the event dispatcher. To work around
         // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 

@@ -58,10 +58,29 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets or sets the security principal extracted from the authorization
-        /// code or the refresh token, if applicable to the current token request.
+        /// Gets or sets the security principal extracted from the actor token, if applicable.
         /// </summary>
-        public ClaimsPrincipal? Principal { get; set; }
+        public ClaimsPrincipal? ActorTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the authorization code, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? AuthorizationCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the device code, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the refresh token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the subject token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? SubjectTokenPrincipal { get; set; }
     }
 
     /// <summary>
@@ -86,6 +105,31 @@ public static partial class OpenIddictServerEvents
             get => Transaction.Request!;
             set => Transaction.Request = value;
         }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the actor token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? ActorTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the authorization code, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? AuthorizationCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the device code, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the refresh token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the subject token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? SubjectTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets the additional parameters returned to the client application.

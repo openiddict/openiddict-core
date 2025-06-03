@@ -69,6 +69,7 @@ public class Worker : IHostedService
                         Permissions.GrantTypes.Implicit,
                         Permissions.GrantTypes.Password,
                         Permissions.GrantTypes.RefreshToken,
+                        Permissions.GrantTypes.TokenExchange,
                         Permissions.ResponseTypes.Code,
                         Permissions.ResponseTypes.CodeIdToken,
                         Permissions.ResponseTypes.CodeIdTokenToken,

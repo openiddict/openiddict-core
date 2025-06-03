@@ -268,6 +268,36 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 });
             }
 
+            if (!string.IsNullOrEmpty(context.IssuedToken))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.IssuedToken,
+                    Value = context.IssuedToken
+                });
+            }
+
+            if (context.IssuedTokenExpirationDate is not null)
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.IssuedTokenExpirationDate,
+                    Value = context.IssuedTokenExpirationDate.Value.ToString("o", CultureInfo.InvariantCulture)
+                });
+            }
+
+            if (!string.IsNullOrEmpty(context.IssuedTokenType))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.IssuedTokenType,
+                    Value = context.IssuedTokenType
+                });
+            }
+
             if (!string.IsNullOrEmpty(context.RefreshToken))
             {
                 tokens ??= new(capacity: 1);
@@ -326,6 +356,11 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
             if (context.FrontchannelIdentityTokenPrincipal is not null)
             {
                 properties.SetParameter(Properties.FrontchannelIdentityTokenPrincipal, context.FrontchannelIdentityTokenPrincipal);
+            }
+
+            if (context.IssuedTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.IssuedTokenPrincipal, context.IssuedTokenPrincipal);
             }
 
             if (context.RefreshTokenPrincipal is not null)

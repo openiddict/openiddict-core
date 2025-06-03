@@ -5,6 +5,7 @@
  */
 
 using System.Security.Claims;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -77,7 +78,7 @@ public class AuthorizationController : Controller
         var result = await HttpContext.AuthenticateAsync();
         if (result is not { Succeeded: true } ||
             ((request.HasPromptValue(PromptValues.Login) || request.MaxAge is 0 ||
-             (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
+             (request.MaxAge is not null && result.Properties?.IssuedUtc is not null &&
               TimeProvider.System.GetUtcNow() - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value))) &&
             TempData["IgnoreAuthenticationChallenge"] is null or false))
         {
@@ -450,7 +451,7 @@ public class AuthorizationController : Controller
     }
     #endregion
 
-    #region Password, authorization code, device and refresh token flows
+    #region Password, authorization code, device, refresh token and token exchange flows
     // Note: to support non-interactive flows like password,
     // you must provide your own token endpoint action:
 
@@ -554,6 +555,87 @@ public class AuthorizationController : Controller
                     .SetClaim(Claims.PreferredUsername, await _userManager.GetUserNameAsync(user))
                     .SetClaims(Claims.Role, [.. await _userManager.GetRolesAsync(user)]);
 
+            identity.SetDestinations(GetDestinations);
+
+            // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
+            return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+
+        else if (request.IsTokenExchangeGrantType())
+        {
+            // Retrieve the claims principal stored in the subject token.
+            //
+            // Note: the principal may not represent a user (e.g if the token was issued during a client credentials token
+            // request and represents a client application): developers are strongly encouraged to ensure that the user
+            // and client identifiers are randomly generated so that a malicious client cannot impersonate a legit user.
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9068#SecurityConsiderations for more information.
+            var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+            // If available, retrieve the claims principal stored in the actor token.
+            var actor = result.Properties?.GetParameter<ClaimsPrincipal>(OpenIddictServerAspNetCoreConstants.Properties.ActorTokenPrincipal);
+
+            // Retrieve the user profile corresponding to the subject token.
+            var user = await _userManager.FindByIdAsync(result.Principal!.GetClaim(Claims.Subject)!);
+            if (user is null)
+            {
+                return Forbid(
+                    authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    {
+                        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+                        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The token is no longer valid."
+                    }));
+            }
+
+            // Ensure the user is still allowed to sign in.
+            if (!await _signInManager.CanSignInAsync(user))
+            {
+                return Forbid(
+                    authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    {
+                        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+                        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The user is no longer allowed to sign in."
+                    }));
+            }
+
+            // Note: whether the identity represents a delegated or impersonated access (or any other
+            // model) is entirely up to the implementer: to support all scenarios, OpenIddict doesn't
+            // enforce any specific constraint on the identity used for the sign-in operation and only
+            // requires that the standard "act" and "may_act" claims be valid JSON objects if present.
+
+            var identity = new ClaimsIdentity(
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role);
+
+            // Add the claims that will be persisted in the issued token.
+            identity.SetClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
+                    .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))
+                    .SetClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
+                    .SetClaim(Claims.PreferredUsername, await _userManager.GetUserNameAsync(user))
+                    .SetClaims(Claims.Role, [.. await _userManager.GetRolesAsync(user)]);
+
+            // Note: IdentityModel doesn't support serializing ClaimsIdentity.Actor to the
+            // standard "act" claim yet, which requires adding the "act" claim manually.
+            //
+            // For more information, see
+            // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/pull/3219.
+            if (!string.IsNullOrEmpty(actor?.GetClaim(Claims.Subject)) &&
+                !string.Equals(identity.GetClaim(Claims.Subject), actor.GetClaim(Claims.Subject), StringComparison.Ordinal))
+            {
+                identity.SetClaim(Claims.Actor, new JsonObject
+                {
+                    [Claims.Subject] = actor.GetClaim(Claims.Subject)
+                });
+            }
+
+            // Note: in this sample, the granted scopes match the requested scope
+            // but you may want to allow the user to uncheck specific scopes.
+            // For that, simply restrict the list of scopes before calling SetScopes.
+            identity.SetScopes(request.GetScopes());
+            identity.SetResources(await _scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
             identity.SetDestinations(GetDestinations);
 
             // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.

@@ -1090,6 +1090,15 @@ public sealed class OpenIddictServerBuilder
         });
 
     /// <summary>
+    /// Enables token exchange flow support. For more information about this
+    /// specific OAuth 2.0 flow, visit https://datatracker.ietf.org/doc/html/rfc8693.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictServerBuilder AllowTokenExchangeFlow()
+        => Configure(options => options.GrantTypes.Add(GrantTypes.TokenExchange));
+
+    /// <summary>
     /// Sets the relative or absolute URIs associated to the authorization endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
@@ -1850,6 +1859,16 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetIdentityTokenLifetime(TimeSpan? lifetime)
         => Configure(options => options.IdentityTokenLifetime = lifetime);
+
+    /// <summary>
+    /// Sets the issued token lifetime, which is used as a fallback value when the
+    /// issued token type isn't natively supported by OpenIddict (e.g an access token).
+    /// While discouraged, <see langword="null"/> can be specified to issue tokens that never expire.
+    /// </summary>
+    /// <param name="lifetime">The issued token lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetIssuedTokenLifetime(TimeSpan? lifetime)
+        => Configure(options => options.IssuedTokenLifetime = lifetime);
 
     /// <summary>
     /// Sets the refresh token lifetime, after which client applications must get

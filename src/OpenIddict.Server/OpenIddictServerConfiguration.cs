@@ -193,6 +193,50 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0367));
         }
 
+        // Ensure at least one subject token type is configured when the token exchange grant is enabled.
+        if (options.SubjectTokenTypes.Count is 0 && options.GrantTypes.Contains(GrantTypes.TokenExchange))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0486));
+        }
+
+        // Prevent internal token types from being used as subject, actor or requested token types.
+        if (options.SubjectTokenTypes.Any(static type => type.StartsWith(
+            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0487));
+        }
+
+        if (options.ActorTokenTypes.Any(static type => type.StartsWith(
+            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0488));
+        }
+
+        if (options.RequestedTokenTypes.Any(static type => type.StartsWith(
+            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0489));
+        }
+
+        // Ensure that the default requested token type (used when the caller doesn't specify a
+        // requested_token_type parameter during an OAuth 2.0 token exchange flow) was configured
+        // and that the configured value is also present in the list of allowed token types.
+        if (string.IsNullOrEmpty(options.DefaultRequestedTokenType))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0490));
+        }
+
+        if (options.DefaultRequestedTokenType.StartsWith(
+            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0491));
+        }
+
+        if (!options.RequestedTokenTypes.Contains(options.DefaultRequestedTokenType))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0492));
+        }
+
         if (options.EncryptionCredentials.Count is 0)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0085));

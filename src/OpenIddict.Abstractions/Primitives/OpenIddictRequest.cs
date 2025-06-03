@@ -124,6 +124,24 @@ public class OpenIddictRequest : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "actor_token" parameter.
+    /// </summary>
+    public string? ActorToken
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.ActorToken);
+        set => SetParameter(OpenIddictConstants.Parameters.ActorToken, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "actor_token_type" parameter.
+    /// </summary>
+    public string? ActorTokenType
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.ActorTokenType);
+        set => SetParameter(OpenIddictConstants.Parameters.ActorTokenType, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "assertion" parameter.
     /// </summary>
     public string? Assertion
@@ -369,6 +387,15 @@ public class OpenIddictRequest : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "requested_token_type" parameter.
+    /// </summary>
+    public string? RequestedTokenType
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.RequestedTokenType);
+        set => SetParameter(OpenIddictConstants.Parameters.RequestedTokenType, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "request_uri" parameter.
     /// </summary>
     public string? RequestUri
@@ -420,6 +447,24 @@ public class OpenIddictRequest : OpenIddictMessage
     {
         get => (string?) GetParameter(OpenIddictConstants.Parameters.State);
         set => SetParameter(OpenIddictConstants.Parameters.State, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "subject_token" parameter.
+    /// </summary>
+    public string? SubjectToken
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.SubjectToken);
+        set => SetParameter(OpenIddictConstants.Parameters.SubjectToken, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "subject_token_type" parameter.
+    /// </summary>
+    public string? SubjectTokenType
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.SubjectTokenType);
+        set => SetParameter(OpenIddictConstants.Parameters.SubjectTokenType, value);
     }
 
     /// <summary>

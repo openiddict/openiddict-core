@@ -1102,7 +1102,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // Attach the security principal extracted from the token to the validation context.
-                context.Principal = notification.UserCodePrincipal;
+                context.UserCodePrincipal = notification.UserCodePrincipal;
             }
         }
 
@@ -1133,7 +1133,7 @@ public static partial class OpenIddictServerHandlers
                     typeof(ValidateEndUserVerificationRequestContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                context.UserCodePrincipal ??= notification.Principal;
+                context.UserCodePrincipal ??= notification.UserCodePrincipal;
 
                 return default;
             }

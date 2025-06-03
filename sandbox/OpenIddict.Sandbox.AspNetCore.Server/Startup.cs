@@ -117,7 +117,8 @@ public class Startup
                        .AllowImplicitFlow()
                        .AllowNoneFlow()
                        .AllowPasswordFlow()
-                       .AllowRefreshTokenFlow();
+                       .AllowRefreshTokenFlow()
+                       .AllowTokenExchangeFlow();
 
                 // Register the public scopes that will be exposed by the configuration endpoint.
                 options.RegisterScopes(Scopes.Email, Scopes.Profile, Scopes.Roles, "demo_api");

@@ -452,7 +452,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // Attach the security principal extracted from the token to the validation context.
-                context.Principal = notification.GenericTokenPrincipal;
+                context.GenericTokenPrincipal = notification.GenericTokenPrincipal;
             }
         }
 
@@ -534,10 +534,10 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                if (!context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
-                    !context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken))
+                if (!context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
+                    !context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.RefreshToken))
                 {
                     context.Logger.LogInformation(6117, SR.GetResourceString(SR.ID6117));
 
@@ -555,7 +555,7 @@ public static partial class OpenIddictServerHandlers
 
         /// <summary>
         /// Contains the logic responsible for rejecting revocation requests that specify a token
-        /// that cannot be revoked by the client application sending the revocation requests.
+        /// that cannot be revoked by the client application sending the revocation request.
         /// </summary>
         public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
@@ -582,15 +582,15 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // When the revoked token is an access token, the caller must be listed either as a presenter
                 // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
                 // If the access token doesn't contain any explicit presenter/audience, the token is assumed
                 // to be not specific to any resource server/client application and the check is bypassed.
-                if (context.Principal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
-                    context.Principal.HasClaim(Claims.Private.Audience) && !context.Principal.HasAudience(context.ClientId) &&
-                    context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
+                if (context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.AccessToken) &&
+                    context.GenericTokenPrincipal.HasClaim(Claims.Private.Audience)  && !context.GenericTokenPrincipal.HasAudience(context.ClientId) &&
+                    context.GenericTokenPrincipal.HasClaim(Claims.Private.Presenter) && !context.GenericTokenPrincipal.HasPresenter(context.ClientId))
                 {
                     context.Logger.LogWarning(6119, SR.GetResourceString(SR.ID6119));
 
@@ -606,8 +606,8 @@ public static partial class OpenIddictServerHandlers
                 // listed as a presenter (i.e the party the token was issued to).
                 // If the refresh token doesn't contain any explicit presenter, the token is
                 // assumed to be not specific to any client application and the check is bypassed.
-                if (context.Principal.HasTokenType(TokenTypeIdentifiers.RefreshToken) &&
-                    context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
+                if (context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.RefreshToken) &&
+                    context.GenericTokenPrincipal.HasClaim(Claims.Private.Presenter) && !context.GenericTokenPrincipal.HasPresenter(context.ClientId))
                 {
                     context.Logger.LogWarning(6121, SR.GetResourceString(SR.ID6121));
 
@@ -651,9 +651,9 @@ public static partial class OpenIddictServerHandlers
                     typeof(ValidateRevocationRequestContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                Debug.Assert(notification.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(notification.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                context.Principal ??= notification.Principal;
+                context.GenericTokenPrincipal ??= notification.GenericTokenPrincipal;
 
                 return default;
             }
@@ -691,10 +691,10 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Extract the token identifier from the authentication principal.
-                var identifier = context.Principal.GetTokenId();
+                var identifier = context.GenericTokenPrincipal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
                     context.Logger.LogInformation(6122, SR.GetResourceString(SR.ID6122));

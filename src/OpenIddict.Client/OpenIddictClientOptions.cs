@@ -27,7 +27,7 @@ public sealed class OpenIddictClientOptions
     /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
     /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
     /// </summary>
-    public List<OpenIddictClientHandlerDescriptor> Handlers { get; } = new(DefaultHandlers);
+    public List<OpenIddictClientHandlerDescriptor> Handlers { get; } = [.. DefaultHandlers];
 
     /// <summary>
     /// Gets the list of encryption credentials used by the OpenIddict client services.

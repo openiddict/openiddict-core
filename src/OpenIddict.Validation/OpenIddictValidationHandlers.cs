@@ -672,7 +672,8 @@ public static partial class OpenIddictValidationHandlers
             // If a "token_usage" claim can be extracted from the principal, use it to determine whether
             // the token details returned by the authorization server correspond to an access token.
             var usage = context.AccessTokenPrincipal.GetClaim(Claims.TokenUsage);
-            if (!string.IsNullOrEmpty(usage) && usage is not "access_token")
+            if (!string.IsNullOrEmpty(usage) &&
+                !string.Equals(usage, "access_token", StringComparison.OrdinalIgnoreCase))
             {
                 context.Reject(
                     error: Errors.InvalidToken,
@@ -682,8 +683,7 @@ public static partial class OpenIddictValidationHandlers
                 return default;
             }
 
-            // Note: if no token usage could be resolved, the token is assumed to be an access token.
-            context.AccessTokenPrincipal = context.AccessTokenPrincipal.SetTokenType(usage ?? TokenTypeIdentifiers.AccessToken);
+            context.AccessTokenPrincipal.SetTokenType(TokenTypeIdentifiers.AccessToken);
 
             return default;
         }

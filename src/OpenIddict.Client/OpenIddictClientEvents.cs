@@ -372,6 +372,16 @@ public static partial class OpenIddictClientEvents
         public string? RequestForgeryProtection { get; set; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server, if applicable.
+        /// </summary>
+        public HashSet<string> Audiences { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server, if applicable.
+        /// </summary>
+        public HashSet<string> Resources { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the scopes that will be sent to the authorization server, if applicable.
         /// </summary>
         public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
@@ -454,6 +464,15 @@ public static partial class OpenIddictClientEvents
         public bool ExtractFrontchannelIdentityToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an issued
+        /// token should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractIssuedToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a refresh
         /// token should be extracted from the current context.
         /// </summary>
@@ -524,6 +543,15 @@ public static partial class OpenIddictClientEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RequireFrontchannelIdentityToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an issued token
+        /// must be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireIssuedToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a refresh token
@@ -598,6 +626,15 @@ public static partial class OpenIddictClientEvents
         public bool ValidateFrontchannelIdentityToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the issued token
+        /// extracted from the current context should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateIssuedToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether the refresh token
         /// extracted from the current context should be validated.
         /// </summary>
@@ -670,6 +707,15 @@ public static partial class OpenIddictClientEvents
         public bool RejectFrontchannelIdentityToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid issued token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectIssuedToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an invalid refresh token
         /// will cause the authentication demand to be rejected or will be ignored.
         /// </summary>
@@ -695,6 +741,16 @@ public static partial class OpenIddictClientEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RejectUserInfoToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the actor token to send to the server, if applicable.
+        /// </summary>
+        public string? ActorToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the actor token, if applicable.
+        /// </summary>
+        public string? ActorTokenType { get; set; }
 
         /// <summary>
         /// Gets or sets the authorization code to validate, if applicable.
@@ -737,6 +793,21 @@ public static partial class OpenIddictClientEvents
         public string? FrontchannelIdentityToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the issued token to validate, if applicable.
+        /// </summary>
+        public string? IssuedToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expiration date of the issued token, if applicable.
+        /// </summary>
+        public DateTimeOffset? IssuedTokenExpirationDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the issued token, if applicable.
+        /// </summary>
+        public string? IssuedTokenType { get; set; }
+
+        /// <summary>
         /// Gets or sets the refresh token to validate, if applicable.
         /// </summary>
         public string? RefreshToken { get; set; }
@@ -752,9 +823,24 @@ public static partial class OpenIddictClientEvents
         public string? Password { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the requested token to send to the server, if applicable.
+        /// </summary>
+        public string? RequestedTokenType { get; set; }
+
+        /// <summary>
         /// Gets or sets the frontchannel state token to validate, if applicable.
         /// </summary>
         public string? StateToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subject token to send to the server, if applicable.
+        /// </summary>
+        public string? SubjectToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the subject token, if applicable.
+        /// </summary>
+        public string? SubjectTokenType { get; set; }
 
         /// <summary>
         /// Gets or sets the userinfo token to validate, if applicable.
@@ -785,6 +871,11 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the principal extracted from the frontchannel identity token, if applicable.
         /// </summary>
         public ClaimsPrincipal? FrontchannelIdentityTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the issued token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? IssuedTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the merged principal containing the claims of the other principals.
@@ -1035,6 +1126,16 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the optional login hint that will be sent to the authorization server, if applicable.
         /// </summary>
         public string? LoginHint { get; set; }
+
+        /// <summary>
+        /// Gets the set of audiences that will be requested to the authorization server.
+        /// </summary>
+        public HashSet<string> Audiences { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the set of resources that will be requested to the authorization server.
+        /// </summary>
+        public HashSet<string> Resources { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the set of scopes that will be requested to the authorization server.

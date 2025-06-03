@@ -138,6 +138,11 @@ public static class OpenIddictClientModels
         public Dictionary<string, OpenIddictParameter>? AdditionalAuthorizationRequestParameters { get; init; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -218,6 +223,11 @@ public static class OpenIddictClientModels
         public string? ResponseType { get; init; }
 
         /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
+
+        /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
         /// </summary>
         public List<string>? Scopes { get; init; }
@@ -259,6 +269,11 @@ public static class OpenIddictClientModels
         public Dictionary<string, OpenIddictParameter>? AdditionalEndSessionRequestParameters { get; init; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -293,6 +308,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the unique identifier of the client registration that will be used.
         /// </summary>
         public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
 
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
@@ -336,6 +356,11 @@ public static class OpenIddictClientModels
         public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -359,6 +384,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the unique identifier of the client registration that will be used.
         /// </summary>
         public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
 
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
@@ -463,6 +493,11 @@ public static class OpenIddictClientModels
         public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -496,6 +531,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the unique identifier of the client registration that will be used.
         /// </summary>
         public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
 
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
@@ -582,6 +622,11 @@ public static class OpenIddictClientModels
         public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -628,6 +673,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the unique identifier of the client registration that will be used.
         /// </summary>
         public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
 
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
@@ -715,6 +765,11 @@ public static class OpenIddictClientModels
         public Dictionary<string, OpenIddictParameter>? AdditionalDeviceAuthorizationRequestParameters { get; init; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -738,6 +793,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the unique identifier of the client registration that will be used.
         /// </summary>
         public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
 
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
@@ -892,6 +952,11 @@ public static class OpenIddictClientModels
         public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -925,6 +990,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the unique identifier of the client registration that will be used.
         /// </summary>
         public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
 
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
@@ -1016,6 +1086,11 @@ public static class OpenIddictClientModels
         public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
 
         /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -1045,6 +1120,11 @@ public static class OpenIddictClientModels
         /// Gets or sets the unique identifier of the client registration that will be used.
         /// </summary>
         public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
 
         /// <summary>
         /// Gets the scopes that will be sent to the authorization server.
@@ -1123,6 +1203,142 @@ public static class OpenIddictClientModels
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public required ClaimsPrincipal? UserInfoTokenPrincipal { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a token exchange authentication request.
+    /// </summary>
+    public sealed record class TokenExchangeAuthenticationRequest
+    {
+        /// <summary>
+        /// Gets or sets the actor token that will be sent to the authorization server, if applicable.
+        /// </summary>
+        public string? ActorToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the type of the actor token, if applicable.
+        /// </summary>
+        public string? ActorTokenType { get; init; }
+
+        /// <summary>
+        /// Gets the audiences that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Audiences { get; init; }
+
+        /// <summary>
+        /// Gets or sets the parameters that will be added to the token request.
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
+
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo should be disabled, which may be
+        /// required when receiving an access token that cannot be used with the userinfo endpoint.
+        /// </summary>
+        /// <remarks>
+        /// Note: by default, a userinfo request is only sent when an access token is returned by the server.
+        /// </remarks>
+        public bool DisableUserInfo { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations use the same provider name.
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the type of the requested token, if applicable.
+        /// </summary>
+        public string? RequestedTokenType { get; init; }
+
+        /// <summary>
+        /// Gets the resources that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Resources { get; init; }
+
+        /// <summary>
+        /// Gets the scopes that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Scopes { get; init; }
+
+        /// <summary>
+        /// Gets or sets the subject token that will be sent to the authorization server.
+        /// </summary>
+        public required string SubjectToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the type of the subject token.
+        /// </summary>
+        public required string SubjectTokenType { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a token exchange authentication result.
+    /// </summary>
+    public sealed record class TokenExchangeAuthenticationResult
+    {
+        /// <summary>
+        /// Gets or sets the issued token.
+        /// </summary>
+        public required string IssuedToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the expiration date of the issued token, if available.
+        /// </summary>
+        public required DateTimeOffset? IssuedTokenExpirationDate { get; init; }
+
+        /// <summary>
+        /// Gets or sets the type of the issued token.
+        /// </summary>
+        public required string IssuedTokenType { get; init; }
+
+        /// <summary>
+        /// Gets or sets a merged principal containing all the claims
+        /// extracted from the identity token and userinfo token principals.
+        /// </summary>
+        public required ClaimsPrincipal Principal { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that were present in the context.
+        /// </summary>
+        public required Dictionary<string, string?> Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the refresh token, if available.
+        /// </summary>
+        public required string? RefreshToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the token response.
+        /// </summary>
+        public required OpenIddictResponse TokenResponse { get; init; }
     }
 
     /// <summary>
