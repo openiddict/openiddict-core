@@ -1,10 +1,12 @@
-using System.Collections.Generic;
-using System.Web.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace OpenIddict.Sandbox.AspNet.Server.ViewModels.Authorization;
 
-[Bind(Exclude = nameof(Parameters))]
-public class LogoutViewModel
+public class AuthorizeViewModel
 {
-    public IEnumerable<KeyValuePair<string, string>> Parameters { get; internal set; }
+    [Display(Name = "Application")]
+    public string ApplicationName { get; set; }
+
+    [Display(Name = "Scope")]
+    public string Scope { get; set; }
 }

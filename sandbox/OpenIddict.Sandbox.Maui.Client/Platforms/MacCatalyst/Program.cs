@@ -1,5 +1,4 @@
 ﻿#if MACCATALYST
-using ObjCRuntime;
 using UIKit;
 
 namespace OpenIddict.Sandbox.Maui.Client;

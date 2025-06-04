@@ -749,7 +749,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
                 else if (context.Request.Path == new PathString("/challenge/custom"))
                 {
-                    var properties = new AuthenticationProperties(new Dictionary<string, string>
+                    var properties = new AuthenticationProperties(new Dictionary<string, string?>
                     {
                         [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
                         [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",

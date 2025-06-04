@@ -27,7 +27,7 @@ public class ResourceController : ApiController
         {
             context.Authentication.Challenge(
                 authenticationTypes: OpenIddictValidationOwinDefaults.AuthenticationType,
-                properties: new AuthenticationProperties(new Dictionary<string, string>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [OpenIddictValidationOwinConstants.Properties.Scope] = "demo_api",
                     [OpenIddictValidationOwinConstants.Properties.Error] = Errors.InsufficientScope,
@@ -43,7 +43,7 @@ public class ResourceController : ApiController
         {
             context.Authentication.Challenge(
                 authenticationTypes: OpenIddictValidationOwinDefaults.AuthenticationType,
-                properties: new AuthenticationProperties(new Dictionary<string, string>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [OpenIddictValidationOwinConstants.Properties.Error] = Errors.InvalidToken,
                     [OpenIddictValidationOwinConstants.Properties.ErrorDescription] =

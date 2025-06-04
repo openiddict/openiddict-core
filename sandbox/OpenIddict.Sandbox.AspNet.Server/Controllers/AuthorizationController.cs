@@ -89,7 +89,7 @@ public class AuthorizationController : Controller
                 {
                     context.Authentication.Challenge(
                         authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
-                        properties: new AuthenticationProperties(new Dictionary<string, string>
+                        properties: new AuthenticationProperties(new Dictionary<string, string?>
                         {
                             [OpenIddictServerOwinConstants.Properties.Error] = Errors.InvalidRequest,
                             [OpenIddictServerOwinConstants.Properties.ErrorDescription] =
@@ -99,7 +99,7 @@ public class AuthorizationController : Controller
                     return new EmptyResult();
                 }
 
-                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     // Note: when only one client is registered in the client options,
                     // specifying the issuer URI or the provider name is not required.
@@ -146,7 +146,7 @@ public class AuthorizationController : Controller
             case ConsentTypes.External when authorizations.Count is 0:
                 context.Authentication.Challenge(
                     authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
-                    properties: new AuthenticationProperties(new Dictionary<string, string>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>
                     {
                         [OpenIddictServerOwinConstants.Properties.Error] = Errors.ConsentRequired,
                         [OpenIddictServerOwinConstants.Properties.ErrorDescription] =
@@ -202,7 +202,7 @@ public class AuthorizationController : Controller
             case ConsentTypes.Systematic when request.HasPromptValue(PromptValues.None):
                 context.Authentication.Challenge(
                     authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
-                    properties: new AuthenticationProperties(new Dictionary<string, string>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>
                     {
                         [OpenIddictServerOwinConstants.Properties.Error] = Errors.ConsentRequired,
                         [OpenIddictServerOwinConstants.Properties.ErrorDescription] =
@@ -215,16 +215,7 @@ public class AuthorizationController : Controller
             default: return View(new AuthorizeViewModel
             {
                 ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
-                Scope = request.Scope,
-
-                // Flow the request parameters so they can be received by the Accept/Reject actions.
-                Parameters = string.Equals(Request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase) ?
-                    from name in Request.Form.AllKeys
-                    from value in Request.Form.GetValues(name)
-                    select new KeyValuePair<string, string>(name, value) :
-                    from name in Request.QueryString.AllKeys
-                    from value in Request.QueryString.GetValues(name)
-                    select new KeyValuePair<string, string>(name, value)
+                Scope = request.Scope
             });
         }
     }
@@ -274,7 +265,7 @@ public class AuthorizationController : Controller
         {
             context.Authentication.Challenge(
                 authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
-                properties: new AuthenticationProperties(new Dictionary<string, string>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [OpenIddictServerOwinConstants.Properties.Error] = Errors.ConsentRequired,
                     [OpenIddictServerOwinConstants.Properties.ErrorDescription] =
@@ -335,17 +326,7 @@ public class AuthorizationController : Controller
     }
 
     [HttpGet, Route("~/connect/endsession")]
-    public ActionResult EndSession() => View(new AuthorizeViewModel
-    {
-        // Flow the request parameters so they can be received by the Accept/Reject actions.
-        Parameters = string.Equals(Request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase) ?
-            from name in Request.Form.AllKeys
-            from value in Request.Form.GetValues(name)
-            select new KeyValuePair<string, string>(name, value) :
-            from name in Request.QueryString.AllKeys
-            from value in Request.QueryString.GetValues(name)
-            select new KeyValuePair<string, string>(name, value)
-    });
+    public ActionResult EndSession() => View();
 
     [ActionName(nameof(EndSession)), HttpPost, Route("~/connect/endsession"), ValidateAntiForgeryToken]
     public ActionResult EndSessionPost()
@@ -381,7 +362,7 @@ public class AuthorizationController : Controller
             {
                 context.Authentication.Challenge(
                     authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
-                    properties: new AuthenticationProperties(new Dictionary<string, string>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>
                     {
                         [OpenIddictServerOwinConstants.Properties.Error] = Errors.InvalidGrant,
                         [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "The token is no longer valid."
@@ -395,7 +376,7 @@ public class AuthorizationController : Controller
             {
                 context.Authentication.Challenge(
                     authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
-                    properties: new AuthenticationProperties(new Dictionary<string, string>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>
                     {
                         [OpenIddictServerOwinConstants.Properties.Error] = Errors.InvalidGrant,
                         [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "The user is no longer allowed to sign in."

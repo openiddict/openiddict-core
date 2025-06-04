@@ -31,7 +31,7 @@ public class AuthenticationController : Controller
         // the user is directly redirected to GitHub (in this case, no login page is shown).
         if (string.Equals(provider, "Local+GitHub", StringComparison.Ordinal))
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>
             {
                 // Note: when only one client is registered in the client options,
                 // specifying the issuer URI or the provider name is not required.
@@ -61,7 +61,7 @@ public class AuthenticationController : Controller
                 return new HttpStatusCodeResult(400);
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>
             {
                 // Note: when only one client is registered in the client options,
                 // specifying the issuer URI or the provider name is not required.
@@ -86,7 +86,7 @@ public class AuthenticationController : Controller
         // Retrieve the identity stored in the local authentication cookie. If it's not available,
         // this indicate that the user is already logged out locally (or has not logged in yet).
         var result = await context.Authentication.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationType);
-        if (result is not { Identity: ClaimsIdentity identity })
+        if (result is not { Identity: ClaimsIdentity { IsAuthenticated: true } identity })
         {
             // Only allow local return URLs to prevent open redirect attacks.
             return Redirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
@@ -100,7 +100,7 @@ public class AuthenticationController : Controller
         if (identity.FindFirst(Claims.Private.RegistrationId)?.Value is string identifier &&
             await _service.GetServerConfigurationByRegistrationIdAsync(identifier) is { EndSessionEndpoint: Uri })
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>
             {
                 [OpenIddictClientOwinConstants.Properties.RegistrationId] = identifier,
 
@@ -161,7 +161,7 @@ public class AuthenticationController : Controller
         // Such identities cannot be used as-is to build an authentication cookie in ASP.NET (as the
         // antiforgery stack requires at least a name claim to bind CSRF cookies to the user's identity) but
         // the access/refresh tokens can be retrieved using result.Properties.GetTokens() to make API calls.
-        if (result.Identity is not ClaimsIdentity { IsAuthenticated: true })
+        if (result is not { Identity.IsAuthenticated: true })
         {
             throw new InvalidOperationException("The external authorization data cannot be used for authentication.");
         }
@@ -234,6 +234,6 @@ public class AuthenticationController : Controller
         // to the authorization server. Applications that prefer delaying the removal of the local cookie can
         // remove the corresponding code from the logout action and remove the authentication cookie in this action.
 
-        return Redirect(result.Properties.RedirectUri ?? "/");
+        return Redirect(result?.Properties?.RedirectUri ?? "/");
     }
 }
