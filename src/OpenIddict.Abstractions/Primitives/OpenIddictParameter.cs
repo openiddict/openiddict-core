@@ -1165,7 +1165,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
             // When the parameter is an array of strings, return a StringValues instance wrapping the cloned array.
-            string?[] value => new StringValues(value.ToArray().ToArray()),
+            string?[] value => new StringValues([.. value]),
 
             // When the parameter is a string value, return a StringValues instance with a single entry.
             string value => new StringValues(value),

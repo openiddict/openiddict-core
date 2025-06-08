@@ -423,9 +423,11 @@ public static class OpenIddictConstants
 
         public static class Prefixes
         {
+            public const string Audience = "aud:";
             public const string Endpoint = "ept:";
             public const string GrantType = "gt:";
             public const string ResponseType = "rst:";
+            public const string Resource = "rsrc:";
             public const string Scope = "scp:";
         }
 

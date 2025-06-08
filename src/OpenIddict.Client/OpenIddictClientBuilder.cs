@@ -1144,7 +1144,7 @@ public sealed class OpenIddictClientBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetPostLogoutRedirectionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetPostLogoutRedirectionEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1197,7 +1197,7 @@ public sealed class OpenIddictClientBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetRedirectionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetRedirectionEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>

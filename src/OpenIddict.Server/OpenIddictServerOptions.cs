@@ -357,6 +357,16 @@ public sealed class OpenIddictServerOptions
     public bool DisableTokenStorage { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether audience validation is disabled.
+    /// </summary>
+    public bool DisableAudienceValidation { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether resource validation is disabled.
+    /// </summary>
+    public bool DisableResourceValidation { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether scope validation is disabled.
     /// </summary>
     public bool DisableScopeValidation { get; set; }
@@ -385,6 +395,12 @@ public sealed class OpenIddictServerOptions
         OpenIddictConstants.TokenTypeIdentifiers.IdentityToken,
         OpenIddictConstants.TokenTypeIdentifiers.RefreshToken
     };
+
+    /// <summary>
+    /// Gets the OAuth 2.0 audiences enabled for this application
+    /// (exclusively used with the OAuth 2.0 Token Exchange flow).
+    /// </summary>
+    public HashSet<string> Audiences { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets the OAuth 2.0 client assertion types enabled for this application.
@@ -462,6 +478,13 @@ public sealed class OpenIddictServerOptions
     public bool RequirePushedAuthorizationRequests { get; set; }
 
     /// <summary>
+    /// Gets the OAuth 2.0 resources enabled for this application (typically used
+    /// with the OAuth 2.0 Token Exchange flow and with authorization or pushed
+    /// authorization requests that include one or more resource indicators).
+    /// </summary>
+    public HashSet<Uri> Resources { get; } = [];
+
+    /// <summary>
     /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
@@ -509,6 +532,12 @@ public sealed class OpenIddictServerOptions
     public string DefaultRequestedTokenType { get; set; } = TokenTypeIdentifiers.AccessToken;
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether audience permissions should be ignored.
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </summary>
+    public bool IgnoreAudiencePermissions { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.
     /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>
@@ -519,6 +548,12 @@ public sealed class OpenIddictServerOptions
     /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>
     public bool IgnoreGrantTypePermissions { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether resource permissions should be ignored.
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </summary>
+    public bool IgnoreResourcePermissions { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether response type permissions should be ignored.

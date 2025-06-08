@@ -415,6 +415,57 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(SR.ID2033), response.ErrorUri);
     }
 
+    [Fact]
+    public async Task ValidateAuthorizationRequest_ForbiddenAudienceCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            Audiences = ["Contoso"],
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = "code id_token token",
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2193(Parameters.Audience), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2193), response.ErrorUri);
+    }
+
+    [Theory]
+    [InlineData("fabrikam", SR.ID2030)]
+    [InlineData("/path", SR.ID2030)]
+    [InlineData("/tmp/file.xml", SR.ID2030)]
+    [InlineData("C:\\tmp\\file.xml", SR.ID2030)]
+    [InlineData("http://www.fabrikam.com/path#param=value", SR.ID2031)]
+    [InlineData("urn:fabrikam#param", SR.ID2031)]
+    public async Task ValidateAuthorizationRequest_InvalidResourceCausesAnError(string resource, string message)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            Resources = [resource],
+            ResponseType = ResponseTypes.Code
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(string.Format(SR.GetResourceString(message), Parameters.Resource), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(message), response.ErrorUri);
+    }
+
     [Theory]
     [InlineData("code id_token")]
     [InlineData("code id_token token")]
@@ -1015,6 +1066,82 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(Errors.InvalidRequest, response.Error);
         Assert.Equal(SR.FormatID2035(Scopes.OfflineAccess), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2035), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenUnregisteredResourceIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+            {
+                var application = new OpenIddictApplication();
+
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            Resources = ["urn:unregistered_resource"],
+            ResponseType = ResponseTypes.Code,
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidTarget, response.Error);
+        Assert.Equal(SR.FormatID2190(Parameters.Resource), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2190), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenResourceRegisteredInOptionsIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.RegisterResources("urn:registered_resource");
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            Resources = ["urn:registered_resource"],
+            ResponseType = ResponseTypes.Token
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.Null(response.ErrorDescription);
+        Assert.Null(response.ErrorUri);
+        Assert.NotNull(response.AccessToken);
     }
 
     [Fact]
@@ -3776,6 +3903,73 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidatePushedAuthorizationRequest_RequestIsRejectedWhenUnregisteredResourceIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+            {
+                var application = new OpenIddictApplication();
+
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/par", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            Resources = ["urn:registered_resource"],
+            ResponseType = ResponseTypes.Code
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidTarget, response.Error);
+        Assert.Equal(SR.FormatID2190(Parameters.Resource), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2190), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidatePushedAuthorizationRequest_RequestIsValidatedWhenResourceRegisteredInOptionsIsSpecified()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.RegisterResources("urn:registered_resource");
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/par", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            Resources = ["urn:registered_resource"],
+            ResponseType = ResponseTypes.Token
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.Null(response.ErrorDescription);
+        Assert.Null(response.ErrorUri);
+        Assert.NotNull(response.RequestUri);
+    }
+
+    [Fact]
     public async Task ValidatePushedAuthorizationRequest_UnknownResponseModeParameterIsRejected()
     {
         // Arrange
@@ -4555,6 +4749,58 @@ public abstract partial class OpenIddictServerIntegrationTests
             Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
         Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
             Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ValidatePushedAuthorizationRequest_RequestIsRejectedWhenResourcePermissionIsNotGranted()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.HasPermissionAsync(application,
+                Permissions.Prefixes.Resource + "urn:contoso", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.HasPermissionAsync(application,
+                Permissions.Prefixes.Resource + "urn:fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+            options.RegisterResources("urn:contoso", "urn:fabrikam");
+            options.Configure(options => options.IgnoreResourcePermissions = false);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/par", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            Resources = ["urn:contoso", "urn:fabrikam"],
+            ResponseType = ResponseTypes.Code
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2192), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2192), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+            Permissions.Prefixes.Resource + "urn:contoso", It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+            Permissions.Prefixes.Resource + "urn:fabrikam", It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]

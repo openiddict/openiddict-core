@@ -406,7 +406,7 @@ internal static class OpenIddictHelpers
                 Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
             .Where(static pair => !string.IsNullOrEmpty(pair.Key))
             .GroupBy(static pair => pair.Key)
-            .ToDictionary(static pair => pair.Key!, static pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
+            .ToDictionary(static pair => pair.Key!, static pair => new StringValues([.. pair.Select(parts => parts.Value)]));
     }
 
     /// <summary>
@@ -430,7 +430,7 @@ internal static class OpenIddictHelpers
                 Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
             .Where(static pair => !string.IsNullOrEmpty(pair.Key))
             .GroupBy(static pair => pair.Key)
-            .ToDictionary(static pair => pair.Key!, static pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
+            .ToDictionary(static pair => pair.Key!, static pair => new StringValues([.. pair.Select(parts => parts.Value)]));
     }
 
     /// <summary>

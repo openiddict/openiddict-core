@@ -44,16 +44,20 @@ public static partial class OpenIddictServerHandlers
             ValidateResponseTypeParameter.Descriptor,
             ValidateResponseModeParameter.Descriptor,
             ValidateScopeParameter.Descriptor,
+            ValidateAudienceParameter.Descriptor,
+            ValidateResourceParameter.Descriptor,
             ValidateNonceParameter.Descriptor,
             ValidatePromptParameter.Descriptor,
             ValidateProofKeyForCodeExchangeParameters.Descriptor,
             ValidateResponseType.Descriptor,
             ValidateClientRedirectUri.Descriptor,
             ValidateScopes.Descriptor,
+            ValidateResources.Descriptor,
             ValidateEndpointPermissions.Descriptor,
             ValidateGrantTypePermissions.Descriptor,
             ValidateResponseTypePermissions.Descriptor,
             ValidateScopePermissions.Descriptor,
+            ValidateResourcePermissions.Descriptor,
             ValidatePushedAuthorizationRequestsRequirement.Descriptor,
             ValidateProofKeyForCodeExchangeRequirement.Descriptor,
             ValidateAuthorizedParty.Descriptor,
@@ -92,6 +96,8 @@ public static partial class OpenIddictServerHandlers
             ValidatePushedResponseTypeParameter.Descriptor,
             ValidatePushedResponseModeParameter.Descriptor,
             ValidatePushedScopeParameter.Descriptor,
+            ValidatePushedAudienceParameter.Descriptor,
+            ValidatePushedResourceParameter.Descriptor,
             ValidatePushedNonceParameter.Descriptor,
             ValidatePushedPromptParameter.Descriptor,
             ValidatePushedProofKeyForCodeExchangeParameters.Descriptor,
@@ -99,10 +105,12 @@ public static partial class OpenIddictServerHandlers
             ValidatePushedResponseType.Descriptor,
             ValidatePushedClientRedirectUri.Descriptor,
             ValidatePushedScopes.Descriptor,
+            ValidatePushedResources.Descriptor,
             ValidatePushedEndpointPermissions.Descriptor,
             ValidatePushedGrantTypePermissions.Descriptor,
             ValidatePushedResponseTypePermissions.Descriptor,
             ValidatePushedScopePermissions.Descriptor,
+            ValidatePushedResourcePermissions.Descriptor,
             ValidatePushedProofKeyForCodeExchangeRequirement.Descriptor,
             ValidatePushedAuthorizedParty.Descriptor,
 
@@ -1056,6 +1064,103 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting authorization requests that specify an audience parameter.
+        /// </summary>
+        public sealed class ValidateAudienceParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .UseSingletonHandler<ValidateAudienceParameter>()
+                    .SetOrder(ValidateScopeParameter.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Prevent audiences parameters from being attached to authorization requests, as the
+                // standard "audience" parameter can only be used in OAuth 2.0 Token Exchange requests.
+                if (context.Request.Audiences is not (null or []))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2193(Parameters.Audience),
+                        uri: SR.FormatID8000(SR.ID2193));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting authorization requests that don't specify a valid resource parameter.
+        /// </summary>
+        public sealed class ValidateResourceParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .UseSingletonHandler<ValidateResourceParameter>()
+                    .SetOrder(ValidateAudienceParameter.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                foreach (var resource in context.Request.GetResources())
+                {
+                    // Note: resource indicators MUST be valid URIs.
+                    //
+                    // For more information, see https://datatracker.ietf.org/doc/html/rfc8707#name-resource-parameter.
+                    if (!Uri.TryCreate(resource, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
+                    {
+                        context.Logger.LogInformation(6034, SR.GetResourceString(SR.ID6034), Parameters.Resource, resource);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2030(Parameters.Resource),
+                            uri: SR.FormatID8000(SR.ID2030));
+
+                        return default;
+                    }
+
+                    // Note: resource indicators MUST NOT contain a fragment.
+                    if (!string.IsNullOrEmpty(uri.Fragment))
+                    {
+                        context.Logger.LogInformation(6035, SR.GetResourceString(SR.ID6035), Parameters.Resource, resource);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2031(Parameters.Resource),
+                            uri: SR.FormatID8000(SR.ID2031));
+
+                        return default;
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that don't specify a nonce.
         /// </summary>
         public sealed class ValidateNonceParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
@@ -1066,7 +1171,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                     .UseSingletonHandler<ValidateNonceParameter>()
-                    .SetOrder(ValidateScopeParameter.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateResourceParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1525,6 +1630,50 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting authorization requests that use unregistered resources.
+        /// </summary>
+        public sealed class ValidateResources : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .AddFilter<RequireResourceValidationEnabled>()
+                    .UseSingletonHandler<ValidateResources>()
+                    .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // If at least one resource was not recognized, return an error.
+                var resources = context.Request.GetResources().ToHashSet(StringComparer.Ordinal);
+                resources.ExceptWith(context.Options.Resources.Select(static resource => resource.AbsoluteUri));
+
+                if (resources.Count is not 0)
+                {
+                    context.Logger.LogInformation(6275, SR.GetResourceString(SR.ID6274), resources);
+
+                    context.Reject(
+                        error: Errors.InvalidTarget,
+                        description: SR.FormatID2190(Parameters.Resource),
+                        uri: SR.FormatID8000(SR.ID2190));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting authorization requests made by unauthorized applications.
         /// Note: this handler is not used when the degraded mode is enabled or when endpoint permissions are disabled.
         /// </summary>
@@ -1545,7 +1694,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireEndpointPermissionsEnabled>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .UseScopedHandler<ValidateEndpointPermissions>()
-                    .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateResources.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1818,6 +1967,63 @@ public static partial class OpenIddictServerHandlers
 
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests made by
+        /// applications that haven't been granted the appropriate audience permissions.
+        /// Note: this handler is not used when the degraded mode is enabled or when audience permissions are disabled.
+        /// </summary>
+        public sealed class ValidateResourcePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+
+            public ValidateResourcePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            public ValidateResourcePermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .AddFilter<RequireResourcePermissionsEnabled>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseScopedHandler<ValidateResourcePermissions>()
+                    .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                foreach (var resource in context.Request.GetResources())
+                {
+                    // Reject the request if the application is not allowed to use the iterated resource.
+                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Resource + resource))
+                    {
+                        context.Logger.LogInformation(6281, SR.GetResourceString(SR.ID6278), context.ClientId, resource);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.GetResourceString(SR.ID2192),
+                            uri: SR.FormatID8000(SR.ID2192));
+
+                        return;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting authorization requests made by
         /// applications for which pushed authorization requests (PAR) are enforced.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -1837,7 +2043,7 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .UseScopedHandler<ValidatePushedAuthorizationRequestsRequirement>()
-                    .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateResourcePermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -2952,6 +3158,103 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting pushed authorization requests that specify an audience parameter.
+        /// </summary>
+        public sealed class ValidatePushedAudienceParameter : IOpenIddictServerHandler<ValidatePushedAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
+                    .UseSingletonHandler<ValidatePushedAudienceParameter>()
+                    .SetOrder(ValidatePushedScopeParameter.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidatePushedAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Prevent audiences parameters from being attached to pushed authorization requests, as the
+                // standard "audience" parameter can only be used in OAuth 2.0 Token Exchange requests.
+                if (context.Request.Audiences is not (null or []))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2194(Parameters.Audience),
+                        uri: SR.FormatID8000(SR.ID2194));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting pushed authorization requests that don't specify a valid resource parameter.
+        /// </summary>
+        public sealed class ValidatePushedResourceParameter : IOpenIddictServerHandler<ValidatePushedAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
+                    .UseSingletonHandler<ValidatePushedResourceParameter>()
+                    .SetOrder(ValidatePushedAudienceParameter.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidatePushedAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                foreach (var resource in context.Request.GetResources())
+                {
+                    // Note: resource indicators MUST be valid URIs.
+                    //
+                    // For more information, see https://datatracker.ietf.org/doc/html/rfc8707#name-resource-parameter.
+                    if (!Uri.TryCreate(resource, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
+                    {
+                        context.Logger.LogInformation(6241, SR.GetResourceString(SR.ID6241), Parameters.Resource, resource);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2030(Parameters.Resource),
+                            uri: SR.FormatID8000(SR.ID2030));
+
+                        return default;
+                    }
+
+                    // Note: resource indicators MUST NOT contain a fragment.
+                    if (!string.IsNullOrEmpty(uri.Fragment))
+                    {
+                        context.Logger.LogInformation(6242, SR.GetResourceString(SR.ID6242), Parameters.Resource, resource);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2031(Parameters.Resource),
+                            uri: SR.FormatID8000(SR.ID2031));
+
+                        return default;
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting pushed authorization requests that don't specify a nonce.
         /// </summary>
         public sealed class ValidatePushedNonceParameter : IOpenIddictServerHandler<ValidatePushedAuthorizationRequestContext>
@@ -2962,7 +3265,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
                     .UseSingletonHandler<ValidatePushedNonceParameter>()
-                    .SetOrder(ValidatePushedScopeParameter.Descriptor.Order + 1_000)
+                    .SetOrder(ValidatePushedResourceParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -3482,6 +3785,50 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting pushed authorization requests that use unregistered resources.
+        /// </summary>
+        public sealed class ValidatePushedResources : IOpenIddictServerHandler<ValidatePushedAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
+                    .AddFilter<RequireResourceValidationEnabled>()
+                    .UseSingletonHandler<ValidatePushedResources>()
+                    .SetOrder(ValidatePushedScopes.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidatePushedAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // If at least one resource was not recognized, return an error.
+                var resources = context.Request.GetResources().ToHashSet(StringComparer.Ordinal);
+                resources.ExceptWith(context.Options.Resources.Select(static resource => resource.AbsoluteUri));
+
+                if (resources.Count is not 0)
+                {
+                    context.Logger.LogInformation(6275, SR.GetResourceString(SR.ID6275), resources);
+
+                    context.Reject(
+                        error: Errors.InvalidTarget,
+                        description: SR.FormatID2190(Parameters.Resource),
+                        uri: SR.FormatID8000(SR.ID2190));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting pushed authorization requests made by unauthorized applications.
         /// Note: this handler is not used when the degraded mode is enabled or when endpoint permissions are disabled.
         /// </summary>
@@ -3502,7 +3849,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireEndpointPermissionsEnabled>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .UseScopedHandler<ValidatePushedEndpointPermissions>()
-                    .SetOrder(ValidatePushedScopes.Descriptor.Order + 1_000)
+                    .SetOrder(ValidatePushedResources.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -3775,6 +4122,63 @@ public static partial class OpenIddictServerHandlers
 
         /// <summary>
         /// Contains the logic responsible for rejecting pushed authorization requests made by
+        /// applications that haven't been granted the appropriate audience permissions.
+        /// Note: this handler is not used when the degraded mode is enabled or when audience permissions are disabled.
+        /// </summary>
+        public sealed class ValidatePushedResourcePermissions : IOpenIddictServerHandler<ValidatePushedAuthorizationRequestContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+
+            public ValidatePushedResourcePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            public ValidatePushedResourcePermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
+                    .AddFilter<RequireResourcePermissionsEnabled>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseScopedHandler<ValidatePushedResourcePermissions>()
+                    .SetOrder(ValidatePushedScopePermissions.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidatePushedAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                foreach (var resource in context.Request.GetResources())
+                {
+                    // Reject the request if the application is not allowed to use the iterated resource.
+                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Resource + resource))
+                    {
+                        context.Logger.LogInformation(6283, SR.GetResourceString(SR.ID6279), context.ClientId, resource);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.GetResourceString(SR.ID2192),
+                            uri: SR.FormatID8000(SR.ID2192));
+
+                        return;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting pushed authorization requests made by
         /// applications for which proof key for code exchange (PKCE) was enforced.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -3794,7 +4198,7 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .UseScopedHandler<ValidatePushedProofKeyForCodeExchangeRequirement>()
-                    .SetOrder(ValidatePushedScopePermissions.Descriptor.Order + 1_000)
+                    .SetOrder(ValidatePushedResourcePermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
