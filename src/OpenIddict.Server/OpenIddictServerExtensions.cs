@@ -43,6 +43,8 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireAccessTokenGenerated>();
         builder.Services.TryAddSingleton<RequireAccessTokenValidated>();
         builder.Services.TryAddSingleton<RequireActorTokenValidated>();
+        builder.Services.TryAddSingleton<RequireAudiencePermissionsEnabled>();
+        builder.Services.TryAddSingleton<RequireAudienceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireAuthorizationCodeGenerated>();
         builder.Services.TryAddSingleton<RequireAuthorizationCodeValidated>();
         builder.Services.TryAddSingleton<RequireAuthorizationIdResolved>();
@@ -77,6 +79,8 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireRequestTokenGenerated>();
         builder.Services.TryAddSingleton<RequireRequestTokenPrincipal>();
         builder.Services.TryAddSingleton<RequireRequestTokenValidated>();
+        builder.Services.TryAddSingleton<RequireResourcePermissionsEnabled>();
+        builder.Services.TryAddSingleton<RequireResourceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireResponseTypePermissionsEnabled>();
         builder.Services.TryAddSingleton<RequireRevocationRequest>();
         builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();

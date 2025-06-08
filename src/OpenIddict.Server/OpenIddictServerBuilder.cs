@@ -1113,7 +1113,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetAuthorizationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetAuthorizationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1162,7 +1162,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetConfigurationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetConfigurationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1211,7 +1211,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetDeviceAuthorizationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetDeviceAuthorizationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1260,7 +1260,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetEndSessionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetEndSessionEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1309,7 +1309,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetIntrospectionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetIntrospectionEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1358,7 +1358,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetJsonWebKeySetEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetJsonWebKeySetEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1407,7 +1407,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetPushedAuthorizationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetPushedAuthorizationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1456,7 +1456,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetRevocationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetRevocationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1505,7 +1505,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetTokenEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetTokenEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1554,7 +1554,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetUserInfoEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetUserInfoEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1603,7 +1603,7 @@ public sealed class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetEndUserVerificationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetEndUserVerificationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
 
     /// <summary>
@@ -1647,6 +1647,14 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.DisableAccessTokenEncryption = true);
 
     /// <summary>
+    /// Allows processing authorization and token requests that specify audiences that
+    /// have not been registered using <see cref="RegisterAudiences(string[])"/>.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder DisableAudienceValidation()
+        => Configure(options => options.DisableAudienceValidation = true);
+
+    /// <summary>
     /// Disables authorization storage so that ad-hoc authorizations are
     /// not created when an authorization code or refresh token is issued
     /// and can't be revoked to prevent associated tokens from being used.
@@ -1655,6 +1663,14 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder DisableAuthorizationStorage()
         => Configure(options => options.DisableAuthorizationStorage = true);
+
+    /// <summary>
+    /// Allows processing authorization and token requests that specify resources that
+    /// have not been registered using <see cref="RegisterResources(string[])"/>.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder DisableResourceValidation()
+        => Configure(options => options.DisableResourceValidation = true);
 
     /// <summary>
     /// Configures OpenIddict to disable rolling refresh tokens so
@@ -1708,6 +1724,13 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.EnableDegradedMode = true);
 
     /// <summary>
+    /// Disables audience permissions enforcement. Calling this method is NOT recommended.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder IgnoreAudiencePermissions()
+        => Configure(options => options.IgnoreAudiencePermissions = true);
+
+    /// <summary>
     /// Disables endpoint permissions enforcement. Calling this method is NOT recommended.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
@@ -1722,6 +1745,13 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.IgnoreGrantTypePermissions = true);
 
     /// <summary>
+    /// Disables resource permissions enforcement. Calling this method is NOT recommended.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder IgnoreResourcePermissions()
+        => Configure(options => options.IgnoreResourcePermissions = true);
+
+    /// <summary>
     /// Disables response type permissions enforcement. Calling this method is NOT recommended.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
@@ -1734,6 +1764,27 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder IgnoreScopePermissions()
         => Configure(options => options.IgnoreScopePermissions = true);
+
+    /// <summary>
+    /// Registers the specified audiences as supported audiences
+    /// (exclusively used with the OAuth 2.0 Token Exchange flow).
+    /// </summary>
+    /// <param name="audiences">The supported audiences.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RegisterAudiences(params string[] audiences)
+    {
+        if (audiences is null)
+        {
+            throw new ArgumentNullException(nameof(audiences));
+        }
+
+        if (Array.Exists(audiences, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(audiences)), nameof(audiences));
+        }
+
+        return Configure(options => options.Audiences.UnionWith(audiences));
+    }
 
     /// <summary>
     /// Registers the specified claims as supported claims so
@@ -1775,6 +1826,46 @@ public sealed class OpenIddictServerBuilder
         }
 
         return Configure(options => options.PromptValues.UnionWith(values));
+    }
+
+    /// <summary>
+    /// Registers the specified resources as supported resources (typically used
+    /// with the OAuth 2.0 Token Exchange flow and with authorization or pushed
+    /// authorization requests that include one or more resource indicators).
+    /// </summary>
+    /// <param name="resources">The supported resources.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RegisterResources(params string[] resources)
+    {
+        if (resources is null)
+        {
+            throw new ArgumentNullException(nameof(resources));
+        }
+
+        return RegisterResources([.. resources.Select(resource => new Uri(resource, UriKind.Absolute))]);
+    }
+
+    /// <summary>
+    /// Registers the specified resources as supported resources (typically used
+    /// with the OAuth 2.0 Token Exchange flow and with authorization or pushed
+    /// authorization requests that include one or more resource indicators).
+    /// </summary>
+    /// <param name="resources">The supported resources.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RegisterResources(params Uri[] resources)
+    {
+        if (resources is null)
+        {
+            throw new ArgumentNullException(nameof(resources));
+        }
+
+        if (Array.Exists(resources, static resource => OpenIddictHelpers.IsImplicitFileUri(resource) ||
+            !string.IsNullOrEmpty(resource.Fragment)))
+        {
+            throw new ArgumentException(SR.FormatID0495(nameof(resources)), nameof(resources));
+        }
+
+        return Configure(options => options.Resources.UnionWith(resources));
     }
 
     /// <summary>

@@ -63,6 +63,40 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if audience permissions were disabled.
+    /// </summary>
+    public sealed class RequireAudiencePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.Options.IgnoreAudiencePermissions);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if audience validation was not enabled.
+    /// </summary>
+    public sealed class RequireAudienceValidationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.Options.DisableAudienceValidation);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no authorization code is generated.
     /// </summary>
     public sealed class RequireAuthorizationCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
@@ -637,6 +671,40 @@ public static class OpenIddictServerHandlerFilters
             }
 
             return new(context.ValidateRefreshToken);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if resource permissions were disabled.
+    /// </summary>
+    public sealed class RequireResourcePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.Options.IgnoreResourcePermissions);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if resource validation was not enabled.
+    /// </summary>
+    public sealed class RequireResourceValidationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.Options.DisableResourceValidation);
         }
     }
 

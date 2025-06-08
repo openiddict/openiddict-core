@@ -182,7 +182,7 @@ public class OpenIddictMessage
             // parameters with the same name to represent a multi-valued parameter.
             AddParameter(parameter.Key, parameter.Value switch
             {
-                   null or []  => default,
+                  null or []   => default,
                 [string value] => new OpenIddictParameter(value),
                  [..] values   => new OpenIddictParameter(values)
             });

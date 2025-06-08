@@ -39,6 +39,35 @@ public static class OpenIddictExtensions
     }
 
     /// <summary>
+    /// Extracts the audiences from an <see cref="OpenIddictRequest"/>.
+    /// </summary>
+    /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+    public static ImmutableArray<string> GetAudiences(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (request.Audiences is not { IsDefaultOrEmpty: false } audiences)
+        {
+            return [];
+        }
+
+        HashSet<string> set = [];
+
+        foreach (var audience in audiences)
+        {
+            if (!string.IsNullOrEmpty(audience))
+            {
+                set.Add(audience);
+            }
+        }
+
+        return [.. set];
+    }
+
+    /// <summary>
     /// Extracts the prompt values from an <see cref="OpenIddictRequest"/>.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
@@ -50,6 +79,35 @@ public static class OpenIddictExtensions
         }
 
         return GetValues(request.Prompt, Separators.Space);
+    }
+
+    /// <summary>
+    /// Extracts the resources from an <see cref="OpenIddictRequest"/>.
+    /// </summary>
+    /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+    public static ImmutableArray<string> GetResources(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (request.Resources is not { IsDefaultOrEmpty: false } resources)
+        {
+            return [];
+        }
+
+        HashSet<string> set = [];
+
+        foreach (var resource in resources)
+        {
+            if (!string.IsNullOrEmpty(resource))
+            {
+                set.Add(resource);
+            }
+        }
+
+        return [.. set];
     }
 
     /// <summary>
@@ -94,30 +152,100 @@ public static class OpenIddictExtensions
 
         if (string.IsNullOrEmpty(value))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0177), nameof(value));
+            throw new ArgumentException(SR.FormatID0366(nameof(value)), nameof(value));
         }
 
         return HasValue(request.AcrValues, value, Separators.Space);
     }
 
     /// <summary>
-    /// Determines whether the requested prompt contains the specified value.
+    /// Determines whether the requested audiences contains the specified value.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <param name="prompt">The component to look for in the parameter.</param>
-    public static bool HasPromptValue(this OpenIddictRequest request, string prompt)
+    /// <param name="audience">The value to look for in the parameters.</param>
+    public static bool HasAudience(this OpenIddictRequest request, string audience)
     {
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }
 
-        if (string.IsNullOrEmpty(prompt))
+        if (string.IsNullOrEmpty(audience))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0178), nameof(prompt));
+            throw new ArgumentException(SR.FormatID0366(nameof(audience)), nameof(audience));
         }
 
-        return HasValue(request.Prompt, prompt, Separators.Space);
+        var audiences = request.Audiences;
+        if (audiences is null or [])
+        {
+            return false;
+        }
+
+        for (var index = 0; index < audiences.Value.Length; index++)
+        {
+            if (audiences.Value[index] is { Length: > 0 } value &&
+                string.Equals(value, audience, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether the requested prompt contains the specified value.
+    /// </summary>
+    /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+    /// <param name="value">The component to look for in the parameter.</param>
+    public static bool HasPromptValue(this OpenIddictRequest request, string value)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (string.IsNullOrEmpty(value))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(value)), nameof(value));
+        }
+
+        return HasValue(request.Prompt, value, Separators.Space);
+    }
+
+    /// <summary>
+    /// Determines whether the requested resources contains the specified value.
+    /// </summary>
+    /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+    /// <param name="resource">The value to look for in the parameters.</param>
+    public static bool HasResource(this OpenIddictRequest request, string resource)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (string.IsNullOrEmpty(resource))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(resource)), nameof(resource));
+        }
+
+        var resources = request.Resources;
+        if (resources is null or [])
+        {
+            return false;
+        }
+
+        for (var index = 0; index < resources.Value.Length; index++)
+        {
+            if (resources.Value[index] is { Length: > 0 } value &&
+                string.Equals(value, resource, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -134,7 +262,7 @@ public static class OpenIddictExtensions
 
         if (string.IsNullOrEmpty(type))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0179), nameof(type));
+            throw new ArgumentException(SR.FormatID0366(nameof(type)), nameof(type));
         }
 
         return HasValue(request.ResponseType, type, Separators.Space);
@@ -154,7 +282,7 @@ public static class OpenIddictExtensions
 
         if (string.IsNullOrEmpty(scope))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0180), nameof(scope));
+            throw new ArgumentException(SR.FormatID0366(nameof(scope)), nameof(scope));
         }
 
         return HasValue(request.Scope, scope, Separators.Space);

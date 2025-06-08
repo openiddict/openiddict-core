@@ -671,6 +671,22 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void DisableAudienceValidation_AudienceValidationIsDisabled()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.DisableAudienceValidation();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.DisableAudienceValidation);
+    }
+
+    [Fact]
     public void DisableAuthorizationStorage_AuthorizationStorageIsDisabled()
     {
         // Arrange
@@ -684,6 +700,22 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.True(options.DisableAuthorizationStorage);
+    }
+
+    [Fact]
+    public void DisableResourceValidation_ResourceValidationIsDisabled()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.DisableResourceValidation();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.DisableResourceValidation);
     }
 
     [Fact]
@@ -748,6 +780,86 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.True(options.DisableTokenStorage);
+    }
+
+    [Fact]
+    public void IgnoreAudiencePermissions_AudiencePermissionsAreIgnored()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.IgnoreAudiencePermissions();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.IgnoreAudiencePermissions);
+    }
+
+    [Fact]
+    public void IgnoreGrantTypePermissions_GrantTypePermissionsAreIgnored()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.IgnoreGrantTypePermissions();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.IgnoreGrantTypePermissions);
+    }
+
+    [Fact]
+    public void IgnoreScopePermissions_ScopePermissionsAreIgnored()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.IgnoreScopePermissions();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.IgnoreScopePermissions);
+    }
+
+    [Fact]
+    public void IgnoreResourcePermissions_ResourcePermissionsAreIgnored()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.IgnoreResourcePermissions();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.IgnoreResourcePermissions);
+    }
+
+    [Fact]
+    public void IgnoreResponseTypePermissions_ResponseTypePermissionsAreIgnored()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.IgnoreResponseTypePermissions();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.IgnoreResponseTypePermissions);
     }
 
     [Fact]
@@ -2033,6 +2145,51 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void RegisterAudiences_AudiencesAreAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.RegisterAudiences("custom_audience_1", "custom_audience_2");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Contains("custom_audience_1", options.Audiences);
+        Assert.Contains("custom_audience_2", options.Audiences);
+    }
+
+    [Fact]
+    public void RegisterAudiences_ThrowsAnExceptionForNullAudiences()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.RegisterAudiences(audiences: null!));
+        Assert.Equal("audiences", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void RegisterAudiences_ThrowsAnExceptionForNullOrEmptyAudience(string? audience)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.RegisterAudiences([audience!]));
+
+        Assert.Equal("audiences", exception.ParamName);
+        Assert.Contains(SR.FormatID0457("audiences"), exception.Message);
+    }
+
+    [Fact]
     public void RegisterClaims_ClaimsAreAdded()
     {
         // Arrange
@@ -2120,6 +2277,52 @@ public class OpenIddictServerBuilderTests
 
         Assert.Equal("values", exception.ParamName);
         Assert.Contains(SR.FormatID0457("values"), exception.Message);
+    }
+
+    [Fact]
+    public void RegisterResources_ResourcesAreAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.RegisterResources("urn:custom_resource_1", "urn:custom_resource_2");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Contains(new Uri("urn:custom_resource_1", UriKind.Absolute), options.Resources);
+        Assert.Contains(new Uri("urn:custom_resource_2", UriKind.Absolute), options.Resources);
+    }
+
+    [Fact]
+    public void RegisterResources_ThrowsAnExceptionForNullResources()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.RegisterResources((Uri[]) null!));
+        Assert.Equal("resources", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData("C:\\tmp\\file.xml")]
+    [InlineData("http://www.fabrikam.com/path#param=value")]
+    [InlineData("urn:fabrikam#param")]
+    public void RegisterResources_ThrowsAnExceptionForInvalidResources(string? resource)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.RegisterResources([resource!]));
+
+        Assert.Equal("resources", exception.ParamName);
+        Assert.Contains(SR.FormatID0495("resources"), exception.Message);
     }
 
     [Fact]

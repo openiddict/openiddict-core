@@ -50,6 +50,31 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void GetAudiences_ThrowsAnExceptionForNullRequest()
+    {
+        // Arrange
+        var request = (OpenIddictRequest) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => request.GetAudiences());
+
+        Assert.Equal("request", exception.ParamName);
+    }
+
+    [Fact]
+    public void GetAudiences_ReturnsExpectedAudiences()
+    {
+        // Arrange
+        var request = new OpenIddictRequest
+        {
+            Audiences = ["Contoso", null, string.Empty, "Fabrikam", "Fabrikam"]
+        };
+
+        // Act and assert
+        Assert.Equal<IEnumerable<string>>(["Contoso", "Fabrikam"], request.GetAudiences());
+    }
+
+    [Fact]
     public void GetPromptValues_ThrowsAnExceptionForNullRequest()
     {
         // Arrange
@@ -83,6 +108,31 @@ public class OpenIddictExtensionsTests
 
         // Act and assert
         Assert.Equal(values, request.GetPromptValues());
+    }
+
+    [Fact]
+    public void GetResources_ThrowsAnExceptionForNullRequest()
+    {
+        // Arrange
+        var request = (OpenIddictRequest) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => request.GetResources());
+
+        Assert.Equal("request", exception.ParamName);
+    }
+
+    [Fact]
+    public void GetResources_ReturnsExpectedResources()
+    {
+        // Arrange
+        var request = new OpenIddictRequest
+        {
+            Resources = ["urn:contoso", null, string.Empty, "urn:fabrikam", "urn:fabrikam"]
+        };
+
+        // Act and assert
+        Assert.Equal<IEnumerable<string>>(["urn:contoso", "urn:fabrikam"], request.GetResources());
     }
 
     [Fact]
@@ -180,7 +230,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => request.HasAcrValue(value!));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0177), exception.Message);
+        Assert.StartsWith(SR.FormatID0366("value"), exception.Message);
     }
 
     [Theory]
@@ -218,6 +268,51 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void HasAudience_ThrowsAnExceptionForNullRequest()
+    {
+        // Arrange
+        var request = (OpenIddictRequest) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+        {
+            request.HasAudience("Contoso");
+        });
+
+        Assert.Equal("request", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void HasAudience_ThrowsAnExceptionForNullOrEmptyAudience(string? resource)
+    {
+        // Arrange
+        var request = new OpenIddictRequest();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => request.HasAudience(resource!));
+
+        Assert.Equal("audience", exception.ParamName);
+        Assert.StartsWith(SR.FormatID0366("audience"), exception.Message);
+    }
+
+    [Fact]
+    public void HasAudience_ReturnsExpectedResult()
+    {
+        // Arrange
+        var request = new OpenIddictRequest
+        {
+            Audiences = ["Contoso", null, string.Empty, "Fabrikam", "Fabrikam"]
+        };
+
+        // Act and assert
+        Assert.True(request.HasAudience("Contoso"));
+        Assert.True(request.HasAudience("Fabrikam"));
+        Assert.False(request.HasAudience("Northwind"));
+    }
+
+    [Fact]
     public void HasPromptValue_ThrowsAnExceptionForNullRequest()
     {
         // Arrange
@@ -235,16 +330,16 @@ public class OpenIddictExtensionsTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void HasPromptValue_ThrowsAnExceptionForNullOrEmptyPrompt(string? prompt)
+    public void HasPromptValue_ThrowsAnExceptionForNullOrEmptyPrompt(string? value)
     {
         // Arrange
         var request = new OpenIddictRequest();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => request.HasPromptValue(prompt!));
+        var exception = Assert.Throws<ArgumentException>(() => request.HasPromptValue(value!));
 
-        Assert.Equal("prompt", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0178), exception.Message);
+        Assert.Equal("value", exception.ParamName);
+        Assert.StartsWith(SR.FormatID0366("value"), exception.Message);
     }
 
     [Theory]
@@ -269,12 +364,12 @@ public class OpenIddictExtensionsTests
     [InlineData("LOGIN    CONSENT   SELECT_ACCOUNT ", false)]
     [InlineData("LOGIN", false)]
     [InlineData("LOGIN SELECT_ACCOUNT", false)]
-    public void HasPromptValue_ReturnsExpectedResult(string? prompt, bool result)
+    public void HasPromptValue_ReturnsExpectedResult(string? value, bool result)
     {
         // Arrange
         var request = new OpenIddictRequest
         {
-            Prompt = prompt
+            Prompt = value
         };
 
         // Act and assert
@@ -308,7 +403,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => request.HasResponseType(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0179), exception.Message);
+        Assert.StartsWith(SR.FormatID0366("type"), exception.Message);
     }
 
     [Theory]
@@ -346,6 +441,51 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void HasResource_ThrowsAnExceptionForNullRequest()
+    {
+        // Arrange
+        var request = (OpenIddictRequest) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+        {
+            request.HasResource("urn:contoso");
+        });
+
+        Assert.Equal("request", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void HasResource_ThrowsAnExceptionForNullOrEmptyResource(string? resource)
+    {
+        // Arrange
+        var request = new OpenIddictRequest();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => request.HasResource(resource!));
+
+        Assert.Equal("resource", exception.ParamName);
+        Assert.StartsWith(SR.FormatID0366("resource"), exception.Message);
+    }
+
+    [Fact]
+    public void HasResource_ReturnsExpectedResult()
+    {
+        // Arrange
+        var request = new OpenIddictRequest
+        {
+            Resources = ["urn:contoso", null, string.Empty, "urn:fabrikam", "urn:fabrikam"]
+        };
+
+        // Act and assert
+        Assert.True(request.HasResource("urn:contoso"));
+        Assert.True(request.HasResource("urn:fabrikam"));
+        Assert.False(request.HasResource("urn:northwind"));
+    }
+
+    [Fact]
     public void HasScope_ThrowsAnExceptionForNullRequest()
     {
         // Arrange
@@ -372,7 +512,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => request.HasScope(scope!));
 
         Assert.Equal("scope", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0180), exception.Message);
+        Assert.StartsWith(SR.FormatID0366("scope"), exception.Message);
     }
 
     [Theory]

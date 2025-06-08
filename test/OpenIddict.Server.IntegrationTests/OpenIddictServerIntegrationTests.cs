@@ -4123,8 +4123,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 options.AcceptAnonymousClients();
 
                 // Disable permission enforcement by default.
-                options.IgnoreEndpointPermissions()
+                options.IgnoreAudiencePermissions()
+                       .IgnoreEndpointPermissions()
                        .IgnoreGrantTypePermissions()
+                       .IgnoreResourcePermissions()
                        .IgnoreResponseTypePermissions()
                        .IgnoreScopePermissions();
 
