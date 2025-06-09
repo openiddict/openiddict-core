@@ -139,7 +139,6 @@ public class Worker : IHostedService
                 {
                     ApplicationType = ApplicationTypes.Web,
                     ClientId = "mvc",
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                     ClientType = ClientTypes.Confidential,
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "MVC client application",
@@ -165,6 +164,8 @@ public class Worker : IHostedService
                                 """))
                         }
                     },
+#else
+                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
 #endif
                     RedirectUris =
                     {

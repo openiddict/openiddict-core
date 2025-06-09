@@ -5847,7 +5847,15 @@ public static partial class OpenIddictClientHandlers
                     _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
                 },
 
-                Server: context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported) switch
+                // Note: if the authorization server doesn't support the OpenIddict-specific
+                // "device_authorization_request_endpoint_auth_methods_supported" node,
+                // fall back to the "token_endpoint_auth_methods_supported" node,
+                // which is the same logic as for the pushed authorization endpoint.
+                Server: context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Count switch
+                {
+                    0 => context.Configuration.TokenEndpointAuthMethodsSupported,
+                    _ => context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported,
+                }) switch
             {
                 // If at least one signing key was attached to the client registration and both
                 // the client and the server explicitly support private_key_jwt, always prefer it.
@@ -6163,9 +6171,8 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireDeviceAuthorizationRequest>()
                 .UseSingletonHandler<EvaluateGeneratedChallengeClientAssertion>()
-                .SetOrder(AttachDeviceAuthorizationRequestParameters.Descriptor.Order + 1_000)
+                .SetOrder(AttachPushedAuthorizationRequestParameters.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
