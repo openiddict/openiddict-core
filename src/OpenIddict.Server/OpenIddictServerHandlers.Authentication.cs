@@ -900,7 +900,7 @@ public static partial class OpenIddictServerHandlers
                 // Prevent response_type=none from being used with any other value.
                 // See https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#none for more information.
                 var types = context.Request.GetResponseTypes().ToHashSet(StringComparer.Ordinal);
-                if (types.Count > 1 && types.Contains(ResponseTypes.None))
+                if (types.Count is > 1 && types.Contains(ResponseTypes.None))
                 {
                     context.Logger.LogInformation(6212, SR.GetResourceString(SR.ID6212), context.Request.ResponseType);
 
@@ -2396,8 +2396,8 @@ public static partial class OpenIddictServerHandlers
                     {
                         { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
 
-                        // At this stage, throw an exception if the issuer cannot be retrieved or is not valid.
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0023))
+                        // Throw an exception if the issuer cannot be retrieved or is not valid.
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
                     };
                 }
 
@@ -2992,7 +2992,7 @@ public static partial class OpenIddictServerHandlers
                 // Prevent response_type=none from being used with any other value.
                 // See https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#none for more information.
                 var types = context.Request.GetResponseTypes().ToHashSet(StringComparer.Ordinal);
-                if (types.Count > 1 && types.Contains(ResponseTypes.None))
+                if (types.Count is > 1 && types.Contains(ResponseTypes.None))
                 {
                     context.Logger.LogInformation(6260, SR.GetResourceString(SR.ID6260), context.Request.ResponseType);
 

@@ -261,7 +261,9 @@ public static class OpenIddictConstants
     public static class JsonWebTokenTypes
     {
         public const string AccessToken = "at+jwt";
-        public const string Jwt = "JWT";
+        public const string AuthorizationGrant = "authorization-grant+jwt";
+        public const string ClientAuthentication = "client-authentication+jwt";
+        public const string GenericJsonWebToken = "JWT";
 
         public static class Prefixes
         {

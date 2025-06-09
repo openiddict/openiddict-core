@@ -80,7 +80,8 @@ public static partial class OpenIddictClientHandlers
                 //
                 // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09#section-4.3
                 // for more information.
-                if (context.ValidTokenTypes.Count > 1 && context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.StateToken))
+                if (context.ValidTokenTypes.Count is > 1 &&
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.StateToken))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0308));
                 }
@@ -1109,10 +1110,12 @@ public static partial class OpenIddictClientHandlers
                 {
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
-                    // For client assertions, use the generic "JWT" type.
-                    TokenTypeIdentifiers.Private.ClientAssertion => JsonWebTokenTypes.Jwt,
+                    // Note: OpenIddict 7.0 and higher no uses the generic "JWT" value for client assertions
+                    // but uses the new standard "client-authentication+jwt" type instead, as defined in the
+                    // https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#name-updates-to-rfc-7523
+                    // specification.
+                    TokenTypeIdentifiers.Private.ClientAssertion => JsonWebTokenTypes.ClientAuthentication,
 
-                    // For state tokens, use its private representation.
                     TokenTypeIdentifiers.Private.StateToken => JsonWebTokenTypes.Private.StateToken,
 
                     string value => value

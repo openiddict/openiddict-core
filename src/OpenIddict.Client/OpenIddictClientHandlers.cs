@@ -2646,21 +2646,20 @@ public static partial class OpenIddictClientHandlers
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
 
-            // Use the URI of the token endpoint as the audience, as recommended by the specifications.
-            // Applications that need to use a different value can register a custom event handler.
+            // Important: the initial OpenID Connect and Assertion Framework for OAuth 2.0 Client Authentication
+            // specifications initially encouraged using the token endpoint URI as the client assertion audience.
+            // Unfortunately, it was determined in 2025 that using the token endpoint URI could allow a malicious
+            // identity provider to trick a legitimate client into using attacker-controlled values as audiences,
+            // including token endpoint URIs or issuer identifiers used by other authorization servers, which could
+            // result in impersonation attacks if the same set of credentials were used to generate the assertions
+            // for all the client registrations (which is not a recommended pattern in OpenIddict). To mitigate that,
+            // OpenIddict no longer allows uses the token endpoint URI and always uses the issuer identity instead.
+            // Unlike the token endpoint URI, the issuer returned by the authorization server in its configuration
+            // document is always validated and must exactly match the value expected by the client application.
             //
-            // See https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
-            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3 for more information.
-            if (!string.IsNullOrEmpty(context.TokenEndpoint?.OriginalString))
-            {
-                principal.SetAudiences(context.TokenEndpoint.OriginalString);
-            }
-
-            // If the token endpoint URI is not available, use the issuer URI as the audience.
-            else
-            {
-                principal.SetAudiences(context.Registration.Issuer.OriginalString);
-            }
+            // For more information, see https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#name-updates-to-rfc-7521
+            // and https://openid.net/wp-content/uploads/2025/01/OIDF-Responsible-Disclosure-Notice-on-Security-Vulnerability-for-private_key_jwt.pdf.
+            principal.SetAudiences(context.Registration.Issuer.OriginalString);
 
             // Use the client_id as both the subject and the issuer, as required by the specifications.
             //

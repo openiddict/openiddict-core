@@ -190,6 +190,20 @@ public sealed class OpenIddictClientRegistration
         ClockSkew = TimeSpan.Zero,
         NameClaimType = Claims.Name,
         RoleClaimType = Claims.Role,
+        // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
+        TypeValidator = static (type, token, parameters) =>
+        {
+            if (parameters.ValidTypes is not null && parameters.ValidTypes.Any() &&
+               !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID0271))
+                {
+                    InvalidType = type
+                };
+            }
+
+            return type;
+        },
         // Note: audience and lifetime are manually validated by OpenIddict itself.
         ValidateAudience = false,
         ValidateLifetime = false

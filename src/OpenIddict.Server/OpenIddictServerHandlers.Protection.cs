@@ -95,7 +95,7 @@ public static partial class OpenIddictServerHandlers
                 // To simplify the token validation parameters selection logic, an exception is thrown
                 // if multiple token types are considered valid and contain tokens issued by the
                 // authorization server and tokens issued by the client (e.g client assertions).
-                if (context.ValidTokenTypes.Count > 1 &&
+                if (context.ValidTokenTypes.Count is > 1 &&
                     context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0308));
@@ -117,9 +117,34 @@ public static partial class OpenIddictServerHandlers
                     // Note: the audience/issuer/lifetime are manually validated by OpenIddict itself.
                     var parameters = new TokenValidationParameters
                     {
+                        TypeValidator = static (type, token, parameters) =>
+                        {
+                            // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
+                            if (parameters.ValidTypes is not null && parameters.ValidTypes.Any() &&
+                               !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
+                            {
+                                throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID0271))
+                                {
+                                    InvalidType = type
+                                };
+                            }
+
+                            return type;
+                        },
+
                         ValidateAudience = false,
                         ValidateIssuer = false,
-                        ValidateLifetime = false
+                        ValidateLifetime = false,
+
+                        // Note: OpenIddict 7.0 and higher no uses the generic "JWT" value for client assertions and
+                        // requires using the new standard "client-authentication+jwt" type instead, as defined in the
+                        // https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#name-updates-to-rfc-7523
+                        // draft. The longer "application/client-authentication+jwt" form is also considered valid.
+                        ValidTypes =
+                        [
+                            JsonWebTokenTypes.ClientAuthentication,
+                            JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.ClientAuthentication
+                        ]
                     };
 
                     // Only provide a signing key resolver if the degraded mode was not enabled.
@@ -204,8 +229,8 @@ public static partial class OpenIddictServerHandlers
                             // For identity tokens, both "JWT" and "application/jwt" are valid.
                             TokenTypeIdentifiers.IdentityToken =>
                             [
-                                JsonWebTokenTypes.Jwt,
-                                JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.Jwt
+                                JsonWebTokenTypes.GenericJsonWebToken,
+                                JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.GenericJsonWebToken
                             ],
 
                             // For authorization codes, only the short "oi_auc+jwt" form is valid.
@@ -529,22 +554,22 @@ public static partial class OpenIddictServerHandlers
                 // the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity).SetTokenType(result.TokenType switch
                 {
-                    // Client assertions are typically created by client libraries with either a missing "typ" header
-                    // or a generic value like "JWT". Since the type defined by the client cannot be used as-is,
-                    // validation is bypassed and tokens used as client assertions are assumed to be client assertions.
-                    _ when context.ValidTokenTypes.Count is 1 &&
-                           context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion)
-                        => TokenTypeIdentifiers.Private.ClientAssertion,
-
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
-                    // Both at+jwt and application/at+jwt are supported for access tokens.
-                    JsonWebTokenTypes.AccessToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
+                    // Both "at+jwt" and "application/at+jwt" are supported for access tokens.
+                    JsonWebTokenTypes.AccessToken or
+                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
                         => TokenTypeIdentifiers.AccessToken,
 
-                    // Both JWT and application/JWT are supported for identity tokens.
-                    JsonWebTokenTypes.Jwt or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.Jwt
+                    // Both "JWT" and "application/jwt" are supported for identity tokens.
+                    JsonWebTokenTypes.GenericJsonWebToken or
+                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.GenericJsonWebToken
                         => TokenTypeIdentifiers.IdentityToken,
+
+                    // Both "client-authentication+jwt" and "application/client-authentication+jwt" for client assertions.
+                    JsonWebTokenTypes.ClientAuthentication or
+                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.ClientAuthentication
+                        => TokenTypeIdentifiers.Private.ClientAssertion,
 
                     JsonWebTokenTypes.Private.AuthorizationCode => TokenTypeIdentifiers.Private.AuthorizationCode,
                     JsonWebTokenTypes.Private.DeviceCode        => TokenTypeIdentifiers.Private.DeviceCode,
@@ -1629,7 +1654,7 @@ public static partial class OpenIddictServerHandlers
                     TokenTypeIdentifiers.AccessToken               => JsonWebTokenTypes.AccessToken,
                     TokenTypeIdentifiers.Private.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
                     TokenTypeIdentifiers.Private.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
-                    TokenTypeIdentifiers.IdentityToken             => JsonWebTokenTypes.Jwt,
+                    TokenTypeIdentifiers.IdentityToken             => JsonWebTokenTypes.GenericJsonWebToken,
                     TokenTypeIdentifiers.RefreshToken              => JsonWebTokenTypes.Private.RefreshToken,
                     TokenTypeIdentifiers.Private.RequestToken      => JsonWebTokenTypes.Private.RequestToken,
                     TokenTypeIdentifiers.Private.UserCode          => JsonWebTokenTypes.Private.UserCode,

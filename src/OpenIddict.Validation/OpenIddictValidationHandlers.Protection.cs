@@ -1047,8 +1047,11 @@ public static partial class OpenIddictValidationHandlers
                 {
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
-                    // For client assertions, use the generic "JWT" type.
-                    TokenTypeIdentifiers.Private.ClientAssertion => JsonWebTokenTypes.Jwt,
+                    // Note: OpenIddict 7.0 and higher no uses the generic "JWT" value for client assertions
+                    // but uses the new standard "client-authentication+jwt" type instead, as defined in the
+                    // https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#name-updates-to-rfc-7523
+                    // specification.
+                    TokenTypeIdentifiers.Private.ClientAssertion => JsonWebTokenTypes.ClientAuthentication,
 
                     string value => value
                 };

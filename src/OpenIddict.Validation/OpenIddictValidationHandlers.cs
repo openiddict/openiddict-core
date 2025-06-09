@@ -437,8 +437,12 @@ public static partial class OpenIddictValidationHandlers
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
 
-            // Use the issuer URI as the audience. Applications that need to
-            // use a different value can register a custom event handler.
+            // Important: the initial Assertion Framework for OAuth 2.0 Client Authentication specifications
+            // initially encouraged supporting using the token endpoint URI as the client assertion audience,
+            // even for introspection requests. It was determined in 2025 that doing so may result in
+            // impersonation attacks as the token endpoint URI is not a guarded value. To mitigate that,
+            // OpenIddict always uses the issuer identity as the client assertion audience, as recommended
+            // by the https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#section-2 draft.
             principal.SetAudiences(context.Configuration.Issuer.OriginalString);
 
             // Use the client_id as both the subject and the issuer, as required by the specifications.
