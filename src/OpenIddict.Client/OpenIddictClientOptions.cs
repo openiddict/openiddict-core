@@ -113,9 +113,15 @@ public sealed class OpenIddictClientOptions
         ClockSkew = TimeSpan.Zero,
         NameClaimType = Claims.Name,
         RoleClaimType = Claims.Role,
-        // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
         TypeValidator = static (type, token, parameters) =>
         {
+            // Assume that tokens that don't have an explicit "typ" header attached are generic JSON Web Tokens.
+            if (string.IsNullOrEmpty(type))
+            {
+                type = JsonWebTokenTypes.GenericJsonWebToken;
+            }
+
+            // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
             if (parameters.ValidTypes is not null && parameters.ValidTypes.Any() &&
                !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
             {
