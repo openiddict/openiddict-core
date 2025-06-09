@@ -185,11 +185,10 @@ public sealed class OpenIddictValidationOptions
                 };
             }
 
-            // At this point, throw an exception if the type cannot be resolved from the "typ" header
-            // (provided via the type delegate parameter) or inferred from the token_usage claim.
+            // Assume that tokens that don't have an explicit "typ" header attached are generic JSON Web Tokens.
             if (string.IsNullOrEmpty(type))
             {
-                throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID0270));
+                type = JsonWebTokenTypes.GenericJsonWebToken;
             }
 
             // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
