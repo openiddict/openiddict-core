@@ -315,7 +315,8 @@ public static partial class OpenIddictServerHandlers
                 // By default, client assertions are not required, but they are extracted and validated if
                 // present and invalid client assertions are always automatically rejected by OpenIddict.
                 OpenIddictServerEndpointType.DeviceAuthorization or OpenIddictServerEndpointType.Introspection or
-                OpenIddictServerEndpointType.Revocation          or OpenIddictServerEndpointType.Token
+                OpenIddictServerEndpointType.PushedAuthorization or OpenIddictServerEndpointType.Revocation    or
+                OpenIddictServerEndpointType.Token
                     => (true, false, true, true),
 
                 _ => (false, false, false, false)
@@ -446,7 +447,8 @@ public static partial class OpenIddictServerHandlers
             (context.ClientAssertion, context.ClientAssertionType) = context.EndpointType switch
             {
                 OpenIddictServerEndpointType.DeviceAuthorization or OpenIddictServerEndpointType.Introspection or
-                OpenIddictServerEndpointType.Revocation          or OpenIddictServerEndpointType.Token
+                OpenIddictServerEndpointType.PushedAuthorization or OpenIddictServerEndpointType.Revocation    or
+                OpenIddictServerEndpointType.Token
                     when context.ExtractClientAssertion
                     => (context.Request.ClientAssertion, context.Request.ClientAssertionType),
 
@@ -1057,6 +1059,12 @@ public static partial class OpenIddictServerHandlers
                     case OpenIddictServerEndpointType.Revocation    when context.Options.AcceptAnonymousClients:
                     case OpenIddictServerEndpointType.Token         when context.Options.AcceptAnonymousClients:
                         return;
+
+                    // Note: despite being conceptually similar to the token endpoint, the pushed authorization
+                    // endpoint deliberately doesn't allow anonymous clients, as a client_id is always required
+                    // for both regular authorization requests and pushed authorization requests.
+                    //
+                    // See https://datatracker.ietf.org/doc/html/rfc9126#section-2.1 for more information.
                 }
 
                 context.Logger.LogInformation(SR.GetResourceString(SR.ID6220), Parameters.ClientId);
@@ -1088,7 +1096,8 @@ public static partial class OpenIddictServerHandlers
                         {
                             // For non-interactive endpoints, return "invalid_client" instead of "invalid_request".
                             OpenIddictServerEndpointType.DeviceAuthorization or OpenIddictServerEndpointType.Introspection or
-                            OpenIddictServerEndpointType.Revocation          or OpenIddictServerEndpointType.Token
+                            OpenIddictServerEndpointType.PushedAuthorization or OpenIddictServerEndpointType.Revocation    or
+                            OpenIddictServerEndpointType.Token
                                 => Errors.InvalidClient,
 
                             _ => Errors.InvalidRequest
@@ -1142,7 +1151,6 @@ public static partial class OpenIddictServerHandlers
             if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
                                         OpenIddictServerEndpointType.EndSession          or
                                         OpenIddictServerEndpointType.EndUserVerification or
-                                        OpenIddictServerEndpointType.PushedAuthorization or
                                         OpenIddictServerEndpointType.UserInfo)
             {
                 return;
@@ -1252,7 +1260,6 @@ public static partial class OpenIddictServerHandlers
             if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
                                         OpenIddictServerEndpointType.EndSession          or
                                         OpenIddictServerEndpointType.EndUserVerification or
-                                        OpenIddictServerEndpointType.PushedAuthorization or
                                         OpenIddictServerEndpointType.UserInfo)
             {
                 return;
