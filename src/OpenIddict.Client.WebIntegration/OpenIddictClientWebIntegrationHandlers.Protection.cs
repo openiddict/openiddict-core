@@ -19,7 +19,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Token validation:
              */
-            AmendTokenValidationParameters.Descriptor
+            AmendTokenValidationParameters.Descriptor,
+
+            /*
+             * Token generation:
+             */
+            AmendSecurityTokenDescriptor.Descriptor
         ];
 
         /// <summary>
@@ -74,6 +79,55 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.Webex => false,
 
                     _ => context.TokenValidationParameters.ValidateIssuer
+                };
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for amending the security token descriptor for the providers that require it.
+        /// </summary>
+        public sealed class AmendSecurityTokenDescriptor : IOpenIddictClientHandler<GenerateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .UseSingletonHandler<AmendSecurityTokenDescriptor>()
+                    .SetOrder(AttachTokenMetadata.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: the client registration may be null (e.g when generating a state token).
+                // In this case, don't amend the default security token descriptor.
+                if (context.Registration is null)
+                {
+                    return default;
+                }
+
+                context.SecurityTokenDescriptor.TokenType = context.Registration.ProviderType switch
+                {
+                    // Note: Apple implements a non-standard client authentication method for its endpoints that
+                    // is inspired by the standard private_key_jwt method but doesn't use the standard parameters.
+                    // OpenIddict 7.0+ no longer uses the generic "JWT" type for client assertions by default and
+                    // uses the new standard "client-authentication+jwt" type instead. While Apple currently ignores
+                    // the JSON Web Token "typ" header (making this change non-breaking), the generic "JWT" value
+                    // is deliberately used for the Apple provider to avoid a potential issue in case their "dynamic
+                    // client secret" validation logic would be updated to require using the generic "JWT" value.
+                    ProviderTypes.Apple when context.TokenType is TokenTypeIdentifiers.Private.ClientAssertion
+                        => JsonWebTokenTypes.GenericJsonWebToken,
+
+                    _ => context.SecurityTokenDescriptor.TokenType
                 };
 
                 return default;
