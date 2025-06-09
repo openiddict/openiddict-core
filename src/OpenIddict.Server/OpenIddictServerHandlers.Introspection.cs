@@ -737,7 +737,13 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                context.Issuer = context.Options.Issuer ?? context.BaseUri;
+                context.Issuer = (context.Options.Issuer ?? context.BaseUri) switch
+                {
+                    { IsAbsoluteUri: true } uri => uri,
+
+                    // Throw an exception if the issuer cannot be retrieved or is not valid.
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+                };
 
                 context.TokenId = context.GenericTokenPrincipal.GetClaim(Claims.JwtId);
                 context.Subject = context.GenericTokenPrincipal.GetClaim(Claims.Subject);

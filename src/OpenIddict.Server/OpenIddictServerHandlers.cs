@@ -758,7 +758,7 @@ public static partial class OpenIddictServerHandlers
                 return default;
             }
 
-            // Client assertions MUST contain at least one "aud" claim. For more information,
+            // Client assertions MUST contain an "aud" claim. For more information,
             // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
             // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
             if (!context.ClientAssertionPrincipal.HasClaim(Claims.Audience))
@@ -789,18 +789,15 @@ public static partial class OpenIddictServerHandlers
             static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
             {
                 // The following claims MUST be represented as unique strings.
-                Claims.AuthorizedParty or Claims.Issuer or Claims.JwtId or Claims.Subject
+                //
+                // Important: client assertions with multiple audiences was initially deliberately supported by
+                // the OpenID Connect and Assertion Framework for OAuth 2.0 Client Authentication specifications.
+                // Since 2025, using multiple audiences is no longer allowed for security reasons. As such, the
+                // "aud" claim present in client assertions MUST always be represented as a single string.
+                //
+                // See https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#section-4 for more information.
+                Claims.Audience or Claims.AuthorizedParty or Claims.Issuer or Claims.JwtId or Claims.Subject
                     => values is [{ ValueType: ClaimValueTypes.String }],
-
-                // The following claims MUST be represented as unique strings or array of strings.
-                Claims.Audience
-                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String) ||
-                       // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
-                       // if the individual elements of the parsed JSON array are all string values.
-                       (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
-                        JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
-                            is { ValueKind: JsonValueKind.Array } element &&
-                        OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
 
                 // The following claims MUST be represented as unique numeric dates.
                 Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
@@ -916,10 +913,15 @@ public static partial class OpenIddictServerHandlers
 
             Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            // Ensure at least one non-empty audience was specified (note: in
-            // the most common case, a single audience is generally specified).
-            var audiences = context.ClientAssertionPrincipal.GetClaims(Claims.Audience);
-            if (!audiences.Any(static audience => !string.IsNullOrEmpty(audience)))
+            // Important: client assertions with multiple audiences was initially deliberately supported by
+            // the OpenID Connect and Assertion Framework for OAuth 2.0 Client Authentication specifications.
+            // Since 2025, using multiple audiences is no longer allowed for security reasons: as such, a single
+            // audience is allowed here and an exception is thrown if multiple claims are present in the principal.
+            //
+            // See https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#section-4 for more information.
+            var audience = context.ClientAssertionPrincipal.GetClaim(Claims.Audience);
+            if (string.IsNullOrEmpty(audience) ||
+                !Uri.TryCreate(audience, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
             {
                 context.Reject(
                     error: Errors.InvalidGrant,
@@ -929,8 +931,14 @@ public static partial class OpenIddictServerHandlers
                 return default;
             }
 
-            // Ensure at least one of the audiences points to the current authorization server.
-            if (!ValidateAudiences(audiences))
+            // Throw an exception if the issuer cannot be retrieved or is not valid.
+            var issuer = context.Options.Issuer ?? context.BaseUri;
+            if (issuer is not { IsAbsoluteUri: true })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0496));
+            }
+
+            if (!UriEquals(uri, issuer))
             {
                 context.Reject(
                     error: Errors.InvalidGrant,
@@ -941,75 +949,6 @@ public static partial class OpenIddictServerHandlers
             }
 
             return default;
-
-            bool ValidateAudiences(ImmutableArray<string> audiences)
-            {
-                foreach (var audience in audiences)
-                {
-                    // Ignore the iterated audience if it's not a valid absolute URI.
-                    if (!Uri.TryCreate(audience, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
-                    {
-                        continue;
-                    }
-
-                    // Consider the audience valid if it matches the issuer value assigned to the current instance.
-                    //
-                    // See https://datatracker.ietf.org/doc/html/rfc7523#section-3 for more information.
-                    if (context.Options.Issuer is not null && UriEquals(uri, context.Options.Issuer))
-                    {
-                        return true;
-                    }
-
-                    // At this point, ignore the rest of the validation logic if the current base URI is not known.
-                    if (context.BaseUri is null)
-                    {
-                        continue;
-                    }
-
-                    // Consider the audience valid if it matches the current base URI, unless an explicit issuer was set.
-                    if (context.Options.Issuer is null && UriEquals(uri, context.BaseUri))
-                    {
-                        return true;
-                    }
-
-                    // Consider the audience valid if it matches one of the URIs assigned to the token
-                    // endpoint, independently of whether the request is a token request or not.
-                    if (MatchesAnyUri(uri, context.Options.TokenEndpointUris))
-                    {
-                        return true;
-                    }
-
-                    // Consider the audience valid if it matches one of the URIs
-                    // assigned to the endpoint that received the request.
-                    switch (context.EndpointType)
-                    {
-                        case OpenIddictServerEndpointType.DeviceAuthorization
-                            when MatchesAnyUri(uri, context.Options.DeviceAuthorizationEndpointUris):
-                        case OpenIddictServerEndpointType.Introspection
-                            when MatchesAnyUri(uri, context.Options.IntrospectionEndpointUris):
-                        case OpenIddictServerEndpointType.PushedAuthorization
-                            when MatchesAnyUri(uri, context.Options.PushedAuthorizationEndpointUris):
-                        case OpenIddictServerEndpointType.Revocation
-                            when MatchesAnyUri(uri, context.Options.RevocationEndpointUris):
-                            return true;
-                    }
-                }
-
-                return false;
-            }
-
-            bool MatchesAnyUri(Uri uri, List<Uri> uris)
-            {
-                for (var index = 0; index < uris.Count; index++)
-                {
-                    if (UriEquals(uri, OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, uris[index])))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
 
             static bool UriEquals(Uri left, Uri right)
             {
@@ -3541,7 +3480,13 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+            {
+                { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                // Throw an exception if the issuer cannot be retrieved or is not valid.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+            });
 
             // Set the audiences based on the resource claims stored in the principal.
             principal.SetAudiences(context.Principal.GetResources());
@@ -3665,7 +3610,13 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+            {
+                { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                // Throw an exception if the issuer cannot be retrieved or is not valid.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+            });
 
             // Attach the redirect_uri to allow for later comparison when
             // receiving a grant_type=authorization_code token request.
@@ -3791,7 +3742,13 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+            {
+                { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                // Throw an exception if the issuer cannot be retrieved or is not valid.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+            });
 
             // Restore the device code internal token identifier from the principal
             // resolved from the user code used in the end-user verification request.
@@ -4048,7 +4005,13 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+            {
+                { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                // Throw an exception if the issuer cannot be retrieved or is not valid.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+            });
 
             // Set the audiences based on the resource claims stored in the principal.
             principal.SetAudiences(context.Principal.GetResources());
@@ -4170,7 +4133,13 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+            {
+                { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                // Throw an exception if the issuer cannot be retrieved or is not valid.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+            });
 
             // Store the type of the request token.
             principal.SetClaim(Claims.Private.RequestTokenType, context.EndpointType switch
@@ -4319,7 +4288,13 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+            {
+                { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                // Throw an exception if the issuer cannot be retrieved or is not valid.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+            });
 
             context.RefreshTokenPrincipal = principal;
         }
@@ -4452,7 +4427,13 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+            {
+                { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                // Throw an exception if the issuer cannot be retrieved or is not valid.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+            });
 
             // If available, use the client_id as both the audience and the authorized party.
             // See https://openid.net/specs/openid-connect-core-1_0.html#IDToken for more information.
@@ -4579,7 +4560,13 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+            {
+                { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                // Throw an exception if the issuer cannot be retrieved or is not valid.
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+            });
 
             // Store the client_id as a public client_id claim.
             principal.SetClaim(Claims.ClientId, context.Request.ClientId);

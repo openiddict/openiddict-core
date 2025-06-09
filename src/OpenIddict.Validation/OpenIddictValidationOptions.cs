@@ -179,7 +179,7 @@ public sealed class OpenIddictValidationOptions
                 type = usage switch
                 {
                     "access_token" => JsonWebTokenTypes.AccessToken,
-                    "id_token"     => JsonWebTokenTypes.Jwt,
+                    "id_token"     => JsonWebTokenTypes.GenericJsonWebToken,
 
                     _ => throw new NotSupportedException(SR.GetResourceString(SR.ID0269))
                 };
