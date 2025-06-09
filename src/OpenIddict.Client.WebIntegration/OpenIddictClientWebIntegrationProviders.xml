@@ -385,6 +385,29 @@
   </Provider>
 
   <!--
+                                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                    ██ ▄▄▀██ ██ ██ ▀██ ██ ▄▄ █▄ ▄██ ▄▄▄█████ ▀██ ██ ▄▄▄█▄▄ ▄▄██
+                                    ██ ▄▄▀██ ██ ██ █ █ ██ █▀▀██ ███ ▄▄▄█▀▀██ █ █ ██ ▄▄▄███ ████
+                                    ██ ▀▀ ██▄▀▀▄██ ██▄ ██ ▀▀▄█▀ ▀██ ▀▀▀█▄▄██ ██▄ ██ ▀▀▀███ ████
+                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="BungieNet" DisplayName="Bungie.net" Id="30dc52f6-84b0-49ca-b48a-f843fcd81e79"
+            Documentation="https://github.com/Bungie-net/api/wiki/OAuth-Documentation">
+    <Environment Issuer="https://www.bungie.net/">
+      <Configuration AuthorizationEndpoint="https://www.bungie.net/en/OAuth/Authorize"
+                     TokenEndpoint="https://www.bungie.net/Platform/App/OAuth/token/"
+                     UserInfoEndpoint="https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="ApplicationKey" ParameterName="key" Type="String" Required="true"
+             Description="The application key used to communicate with the Bungie.net API" />
+  </Provider>
+
+  <!--
                                         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                         ██ ▄▄▀█ ▄▄▀██ █████ ▄▄▄██ ▀██ ██ ▄▄▀██ █████ ███ ██
                                         ██ ████ ▀▀ ██ █████ ▄▄▄██ █ █ ██ ██ ██ █████▄▀▀▀▄██

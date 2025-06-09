@@ -1441,14 +1441,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                          context.UserInfoResponse?.HasParameter("last_name")  is true
                     => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
 
+                // BungieNet and FitBit return the username as a custom "displayName" node:
+                ProviderTypes.BungieNet or ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["displayName"],
+
                 // These providers don't return a username so one is created using the "firstName" and "lastName" nodes:
                 ProviderTypes.Contentful or ProviderTypes.Smartsheet
                     when context.UserInfoResponse?.HasParameter("firstName") is true &&
                          context.UserInfoResponse?.HasParameter("lastName")  is true
                     => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
-
-                // FitBit returns the username as a custom "displayName" node:
-                ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["displayName"],
 
                 // Huawei returns the username as a custom "display_name" in the backchannel identity token:
                 ProviderTypes.Huawei => context.BackchannelIdentityTokenPrincipal?.GetClaim("display_name"),
@@ -1542,6 +1542,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Bitly returns the user identifier as a custom "login" node:
                 ProviderTypes.Bitly => (string?) context.UserInfoResponse?["login"],
+
+                // BungieNet returns the user identifier as a custom "membershipId" node:
+                ProviderTypes.BungieNet => (string?) context.UserInfoResponse?["membershipId"],
 
                 // Calendly returns the user identifier (formatted as a URI) as a custom "uri" node:
                 ProviderTypes.Calendly => (string?) context.UserInfoResponse?["uri"],

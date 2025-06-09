@@ -115,9 +115,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var request = context.Transaction.GetHttpRequestMessage() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
+                // Bungie.net requires sending a static API key.
+                if (context.Registration.ProviderType is ProviderTypes.BungieNet)
+                {
+                    var settings = context.Registration.GetBungieNetSettings();
+
+                    request.Headers.Add("X-API-Key", settings.ApplicationKey);
+                }
+
                 // Notion requires sending an explicit API version (which is statically set
                 // to the last version known to be supported by the OpenIddict integration).
-                if (context.Registration.ProviderType is ProviderTypes.Notion)
+                else if (context.Registration.ProviderType is ProviderTypes.Notion)
                 {
                     request.Headers.Add("Notion-Version", "2022-06-28");
                 }
@@ -399,6 +407,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     {
                         ["accounts"] = context.Response["accounts"]
                     },
+
+                    // Bungie.net returns a nested "bungieNetUser" object that is itself nested in a "Response" object.
+                    ProviderTypes.BungieNet => new(context.Response["Response"]?["bungieNetUser"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("Response/bungieNetUser"))),
 
                     // Calendly returns a nested "resource" object.
                     ProviderTypes.Calendly => new(context.Response["resource"]?.GetNamedParameters() ??
