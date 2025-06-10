@@ -121,7 +121,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
     public OpenIddictClientSystemIntegrationBuilder SetAllowedEmbeddedWebServerPorts(params int[] ports)
     {
-        if (Array.Exists(ports, static port => port < IPEndPoint.MinPort || port > IPEndPoint.MaxPort))
+        if (Array.Exists(ports, static port => port is < IPEndPoint.MinPort or > IPEndPoint.MaxPort))
         {
             throw new ArgumentOutOfRangeException(nameof(ports));
         }
@@ -278,25 +278,15 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
         return Configure(options => options.PipeSecurity = security);
     }
 
-    /// <summary>
-    /// Determines whether the specified object is equal to the current object.
-    /// </summary>
-    /// <param name="obj">The object to compare with the current object.</param>
-    /// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, false.</returns>
+    /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => base.Equals(obj);
 
-    /// <summary>
-    /// Serves as the default hash function.
-    /// </summary>
-    /// <returns>A hash code for the current object.</returns>
+    /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode() => base.GetHashCode();
 
-    /// <summary>
-    /// Returns a string that represents the current object.
-    /// </summary>
-    /// <returns>A string that represents the current object.</returns>
+    /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override string? ToString() => base.ToString();
 }

@@ -109,7 +109,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatformGuard("maccatalyst13.1")]
     [SupportedOSPlatformGuard("macos10.15")]
     internal static bool IsASWebAuthenticationSessionSupported()
-#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
         => OperatingSystem.IsIOSVersionAtLeast(12)         ||
            OperatingSystem.IsMacCatalystVersionAtLeast(13) ||
            OperatingSystem.IsMacOSVersionAtLeast(10, 15);
@@ -124,7 +124,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SupportedOSPlatformGuard("android21.0")]
     internal static bool IsCustomTabsIntentSupported()
-#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+#if SUPPORTS_ANDROIDX_BROWSER && SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
         => OperatingSystem.IsAndroidVersionAtLeast(21);
 #else
         => false;
@@ -142,7 +142,12 @@ public static class OpenIddictClientSystemIntegrationHelpers
     // guard that will prevent the WinRT projections from being loaded by the runtime on
     // platforms that don't support it. Since OpenIddict declares Windows 10 1809 as the
     // oldest supported version in the package, it is also used for the runtime check.
-    internal static bool IsWindowsRuntimeSupported() => IsWindowsVersionAtLeast(10, 0, 17763);
+    internal static bool IsWindowsRuntimeSupported()
+#if SUPPORTS_WINDOWS_RUNTIME
+        => IsWindowsVersionAtLeast(10, 0, 17763);
+#else
+        => false;
+#endif
 
     /// <summary>
     /// Determines whether WinRT app instance activation is supported on this platform.
@@ -394,11 +399,10 @@ public static class OpenIddictClientSystemIntegrationHelpers
     };
 
     /// <summary>
-    /// Starts the system browser using ShellExecute.
+    /// Starts the system browser using the operating system shell.
     /// </summary>
     /// <param name="uri">The <see cref="Uri"/> to use.</param>
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
-    [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("windows")]
     internal static async ValueTask<bool> TryLaunchBrowserWithShellExecuteAsync(Uri uri)
     {
@@ -495,7 +499,40 @@ public static class OpenIddictClientSystemIntegrationHelpers
 #endif
 
     /// <summary>
-    /// Starts the system browser using xdg-open.
+    /// Starts the system browser using the "open" executable.
+    /// </summary>
+    /// <param name="uri">The <see cref="Uri"/> to use.</param>
+    /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
+    [SupportedOSPlatform("macos")]
+    internal static async ValueTask<bool> TryLaunchBrowserWithOpenAsync(Uri uri)
+    {
+        try
+        {
+            await Task.Run(() => Process.Start(new ProcessStartInfo
+            {
+                FileName = "/usr/bin/open",
+                Arguments = uri.AbsoluteUri,
+                UseShellExecute = false,
+
+                // Note: children processes always inherit the standard input/output/error handles of the
+                // parent process by default. To ensure the messages logged by the system browser are not
+                // written to the stdio/stderr of the current process, the streams are always redirected.
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true
+            }));
+
+            return true;
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Starts the system browser using the "xdg-open" executable.
     /// </summary>
     /// <param name="uri">The <see cref="Uri"/> to use.</param>
     /// <returns><see langword="true"/> if the browser could be started, <see langword="false"/> otherwise.</returns>
@@ -510,9 +547,9 @@ public static class OpenIddictClientSystemIntegrationHelpers
                 Arguments = uri.AbsoluteUri,
                 UseShellExecute = false,
 
-                // Note: on some Linux distributions, xdg-open is known to propagate errors
-                // and warnings written to the standard error stream to the parent process.
-                // To avoid that, the streams are redirected to this instance and ignored.
+                // Note: children processes always inherit the standard input/output/error handles of the
+                // parent process by default. To ensure the messages logged by the system browser are not
+                // written to the stdio/stderr of the current process, the streams are always redirected.
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true
@@ -521,7 +558,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
             return true;
         }
 
-        catch (UnauthorizedAccessException)
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             return false;
         }
