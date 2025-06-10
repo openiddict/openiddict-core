@@ -130,7 +130,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     from value in parameter.Value
                     select (Name: parameter.Key, Value: value))
                 {
-                    if (builder.Length > 0)
+                    if (builder.Length is > 0)
                     {
                         builder.Append('&');
                     }
@@ -1696,8 +1696,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.StripeConnect when context.Properties.TryGetValue(
                     StripeConnect.Properties.AccountType, out string? type) => type switch
                     {
-                        "express"  => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
-                        "standard" => new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
+                        StripeConnect.AccountTypes.Express  => new Uri("https://connect.stripe.com/express/oauth/authorize", UriKind.Absolute),
+                        StripeConnect.AccountTypes.Standard => new Uri("https://connect.stripe.com/oauth/authorize", UriKind.Absolute),
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0479))
                     },
