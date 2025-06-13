@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Client;
+using OpenIddict.Client.WebIntegration;
 using OpenIddict.Sandbox.Console.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -104,7 +105,7 @@ builder.Services.AddOpenIddict()
                           // is discouraged practice, it is the only option to use this provider in a desktop client.
                           .SetClientSecret("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")
                           .SetRedirectUri("callback/login/google")
-                          .SetAccessType("offline")
+                          .SetAccessType(OpenIddictClientWebIntegrationConstants.Google.AccessTypes.Offline)
                           .AddScopes(Scopes.Profile)
                           .AddGrantTypes(GrantTypes.AuthorizationCode)
                           .SetProviderName("Google [code flow]")
@@ -115,7 +116,7 @@ builder.Services.AddOpenIddict()
                    options.SetClientId("1016114395689-le5kvnikv5hhg3otvn1tgs2aogpkpvff.apps.googleusercontent.com")
                           .SetClientSecret("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")
                           .SetRedirectUri("callback/login/google")
-                          .SetAccessType("offline")
+                          .SetAccessType(OpenIddictClientWebIntegrationConstants.Google.AccessTypes.Offline)
                           .AddScopes(Scopes.Profile)
                           .AddGrantTypes(GrantTypes.DeviceCode)
                           .SetProviderName("Google [device flow]")

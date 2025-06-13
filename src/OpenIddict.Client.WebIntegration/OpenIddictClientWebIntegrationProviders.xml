@@ -99,6 +99,9 @@
 
       _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0473)) }}" />
 
+    <Constant Class="AccessTypes" Value="offline" Name="Offline" />
+    <Constant Class="AccessTypes" Value="online"  Name="Online"  />
+
     <Constant Class="Regions" Value="China"  Name="China"  />
     <Constant Class="Regions" Value="Global" Name="Global" />
 
@@ -1089,6 +1092,9 @@
             Documentation="https://developers.google.com/identity/protocols/oauth2/openid-connect">
     <Environment Issuer="https://accounts.google.com/" />
 
+    <Constant Class="AccessTypes" Value="offline" Name="Offline" />
+    <Constant Class="AccessTypes" Value="online"  Name="Online"  />
+
     <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
              Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
   </Provider>
@@ -1125,6 +1131,9 @@
             Documentation="https://developer.huawei.com/consumer/en/doc/HMSCore-Guides/open-platform-oauth-0000001053629189">
     <Environment Issuer="https://accounts.huawei.com/"
                  ConfigurationEndpoint="https://oauth-login.cloud.huawei.com/.well-known/openid-configuration" />
+
+    <Constant Class="AccessTypes" Value="offline" Name="Offline" />
+    <Constant Class="AccessTypes" Value="online"  Name="Online"  />
 
     <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
              Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
@@ -1566,6 +1575,9 @@
       <Scope Name="profile" Default="true" Required="true" />
     </Environment>
 
+    <Constant Class="AccessTypes" Value="offline" Name="Offline" />
+    <Constant Class="AccessTypes" Value="online"  Name="Online"  />
+
     <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
              Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
 
@@ -1843,6 +1855,9 @@
 
       <Scope Name="identity" Default="true" Required="true" />
     </Environment>
+
+    <Constant Class="Durations" Value="permanent" Name="Permanent" />
+    <Constant Class="Durations" Value="temporary" Name="Temporary" />
 
     <Setting PropertyName="Duration" ParameterName="duration" Type="String" Required="false"
              Description="The value used as the 'duration' parameter (can be set to 'permanent' to retrieve a refresh token)" />
@@ -2706,6 +2721,9 @@
 
       <Scope Name="AaaServer.profile.READ" Default="true" Required="true" />
     </Environment>
+
+    <Constant Class="AccessTypes" Value="offline" Name="Offline" />
+    <Constant Class="AccessTypes" Value="online"  Name="Online"  />
 
     <Constant Class="Regions" Value="Australia"      Name="Australia"     />
     <Constant Class="Regions" Value="Canada"         Name="Canada"        />

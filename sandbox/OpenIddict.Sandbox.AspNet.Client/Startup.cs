@@ -9,6 +9,7 @@ using Microsoft.Owin.Host.SystemWeb;
 using Microsoft.Owin.Security.Cookies;
 using OpenIddict.Client;
 using OpenIddict.Client.Owin;
+using OpenIddict.Client.WebIntegration;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -95,7 +96,7 @@ public class Startup
                            options.SetClientId("1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com")
                                   .SetClientSecret("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")
                                   .SetRedirectUri("callback/login/google")
-                                  .SetAccessType("offline")
+                                  .SetAccessType(OpenIddictClientWebIntegrationConstants.Google.AccessTypes.Offline)
                                   .AddScopes(Scopes.Profile);
                        });
             });
