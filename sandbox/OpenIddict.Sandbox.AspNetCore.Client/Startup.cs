@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
+using OpenIddict.Client.WebIntegration;
 using OpenIddict.Sandbox.AspNetCore.Client.Models;
 using Quartz;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -152,7 +153,7 @@ public class Startup
                            options.SetClientId("1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com")
                                   .SetClientSecret("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")
                                   .SetRedirectUri("callback/login/google")
-                                  .SetAccessType("offline")
+                                  .SetAccessType(OpenIddictClientWebIntegrationConstants.Google.AccessTypes.Offline)
                                   .AddScopes(Scopes.Profile);
                        })
                        .AddReddit(options =>
@@ -160,7 +161,7 @@ public class Startup
                            options.SetClientId("vDLNqhrkwrvqHgnoBWF3og")
                                   .SetClientSecret("Tpab28Dz0upyZLqn7AN3GFD1O-zaAw")
                                   .SetRedirectUri("callback/login/reddit")
-                                  .SetDuration("permanent");
+                                  .SetDuration(OpenIddictClientWebIntegrationConstants.Reddit.Durations.Permanent);
                        });
 
 #if SUPPORTS_PEM_ENCODED_KEY_IMPORT
