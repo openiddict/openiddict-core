@@ -3177,7 +3177,7 @@ public static partial class OpenIddictServerHandlers
                 // For token requests using the OAuth 2.0 Token Exchange grant, never return an identity token as-is:
                 // clients that need to retrieve an identity token can explicitly request an identity token using the
                 // standard "requested_token_type" parameter. In that case, the identity token will be returned via
-                // the "access_token", as defined and required by the OAuth 2.0 Token Exchange specification.
+                // the "access_token" parameter, as defined and required by the OAuth 2.0 Token Exchange specification.
                 OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType() => (false, false),
 
                 // For token requests using other grant types (even for those that don't define the id_token as a
@@ -3202,26 +3202,6 @@ public static partial class OpenIddictServerHandlers
                 _ => (false, false, null)
             };
 
-            (context.GenerateRequestToken, context.IncludeRequestToken) = context.EndpointType switch
-            {
-                // Always generate a request token if request caching was enabled and the
-                // authorization request doesn't already contain a request_uri parameter.
-                OpenIddictServerEndpointType.Authorization when
-                    context.Options.EnableAuthorizationRequestCaching &&
-                    string.IsNullOrEmpty(context.Request.RequestUri) => (true, true),
-
-                // Always generate a request token if request caching was enabled and the
-                // end session request doesn't already contain a request_uri parameter.
-                OpenIddictServerEndpointType.EndSession when
-                    context.Options.EnableEndSessionRequestCaching &&
-                    string.IsNullOrEmpty(context.Request.RequestUri) => (true, true),
-
-                // Always generate and return a request token if the request is a PAR request.
-                OpenIddictServerEndpointType.PushedAuthorization => (true, true),
-
-                _ => (false, false)
-            };
-
             (context.GenerateRefreshToken, context.IncludeRefreshToken) = context.EndpointType switch
             {
                 // For token exchange requests, do not generate and return a second refresh
@@ -3241,6 +3221,26 @@ public static partial class OpenIddictServerHandlers
                 // if the special offline_access protocol scope was granted.
                 OpenIddictServerEndpointType.Token when context.Principal.HasScope(Scopes.OfflineAccess)
                     => (true, true),
+
+                _ => (false, false)
+            };
+
+            (context.GenerateRequestToken, context.IncludeRequestToken) = context.EndpointType switch
+            {
+                // Always generate a request token if request caching was enabled and the
+                // authorization request doesn't already contain a request_uri parameter.
+                OpenIddictServerEndpointType.Authorization when
+                    context.Options.EnableAuthorizationRequestCaching &&
+                    string.IsNullOrEmpty(context.Request.RequestUri) => (true, true),
+
+                // Always generate a request token if request caching was enabled and the
+                // end session request doesn't already contain a request_uri parameter.
+                OpenIddictServerEndpointType.EndSession when
+                    context.Options.EnableEndSessionRequestCaching &&
+                    string.IsNullOrEmpty(context.Request.RequestUri) => (true, true),
+
+                // Always generate and return a request token if the request is a PAR request.
+                OpenIddictServerEndpointType.PushedAuthorization => (true, true),
 
                 _ => (false, false)
             };

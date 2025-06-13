@@ -89,8 +89,37 @@ builder.Services.AddOpenIddict()
                .AddGitHub(options =>
                {
                    options.SetClientId("992372d088f8676a7945")
+                          // Note: GitHub doesn't allow creating public clients and requires using a secret. While this
+                          // is a discouraged practice, it is the only option to use this provider in a desktop client.
                           .SetClientSecret("1f18c22f766e44d7bd4ea4a6510b9e337d48ab38")
                           .SetRedirectUri("callback/login/github");
+               })
+               // Note: Google requires using separate client registrations to be able to use the authorization code flow
+               // and device flow in the same application. To work around this limitation, two registrations are used but
+               // each one explicitly restricts the grant types that OpenIddict is allowed to negotiate dynamically.
+               .AddGoogle(options =>
+               {
+                   options.SetClientId("1016114395689-arf09f1g51hadci5p5hn6lpp798k8rql.apps.googleusercontent.com")
+                          // Note: Google doesn't allow creating public clients and requires using a secret. While this
+                          // is discouraged practice, it is the only option to use this provider in a desktop client.
+                          .SetClientSecret("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")
+                          .SetRedirectUri("callback/login/google")
+                          .SetAccessType("offline")
+                          .AddScopes(Scopes.Profile)
+                          .AddGrantTypes(GrantTypes.AuthorizationCode)
+                          .SetProviderName("Google [code flow]")
+                          .SetProviderDisplayName("Google (authorization code grant-only)");
+               })
+               .AddGoogle(options =>
+               {
+                   options.SetClientId("1016114395689-le5kvnikv5hhg3otvn1tgs2aogpkpvff.apps.googleusercontent.com")
+                          .SetClientSecret("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")
+                          .SetRedirectUri("callback/login/google")
+                          .SetAccessType("offline")
+                          .AddScopes(Scopes.Profile)
+                          .AddGrantTypes(GrantTypes.DeviceCode)
+                          .SetProviderName("Google [device flow]")
+                          .SetProviderDisplayName("Google (device code grant-only)");
                })
                .AddTwitter(options =>
                {

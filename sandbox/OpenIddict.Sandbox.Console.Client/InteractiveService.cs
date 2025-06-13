@@ -36,11 +36,12 @@ public class InteractiveService : BackgroundService
 
             try
             {
+                var registration = await _service.GetClientRegistrationByProviderNameAsync(provider, stoppingToken);
                 var configuration = await _service.GetServerConfigurationByProviderNameAsync(provider, stoppingToken);
 
-                if (await AuthenticateUserInteractivelyAsync(configuration, stoppingToken))
+                if (await AuthenticateUserInteractivelyAsync(registration, configuration, stoppingToken))
                 {
-                    var flow = await GetSelectedFlowAsync(configuration, stoppingToken);
+                    var flow = await GetSelectedFlowAsync(registration, configuration, stoppingToken);
 
                     AnsiConsole.MarkupLine("[cyan]Launching the system browser.[/]");
 
@@ -144,7 +145,7 @@ public class InteractiveService : BackgroundService
 
                 else
                 {
-                    var type = await GetSelectedGrantTypeAsync(configuration, stoppingToken);
+                    var type = await GetSelectedGrantTypeAsync(registration, configuration, stoppingToken);
                     if (type is GrantTypes.DeviceCode)
                     {
                         // Ask OpenIddict to send a device authorization request and write
@@ -439,34 +440,48 @@ public class InteractiveService : BackgroundService
         }
 
         Task<(string? GrantType, string? ResponseType)> GetSelectedFlowAsync(
+            OpenIddictClientRegistration registration,
             OpenIddictConfiguration configuration, CancellationToken cancellationToken)
         {
-            static (string? GrantType, string? ResponseType) Prompt(OpenIddictConfiguration configuration)
+            static (string? GrantType, string? ResponseType) Prompt(
+                OpenIddictClientRegistration registration, OpenIddictConfiguration configuration)
             {
                 List<((string? GrantType, string? ResponseType), string DisplayName)> choices = [];
 
-                var types = configuration.ResponseTypesSupported.Select(type =>
+                var types = configuration.ResponseTypesSupported.Select(static type =>
                     new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)));
 
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.AuthorizationCode) &&
-                    types.Any(type => type.Count is 1 && type.Contains(ResponseTypes.Code)))
+                    (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.AuthorizationCode)) &&
+                    types.Any(static type => type.Count is 1 && type.Contains(ResponseTypes.Code)) &&
+                    (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
+                        .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                        .Any(static type => type.Count is 1 && type.Contains(ResponseTypes.Code))))
                 {
                     choices.Add(((
                         GrantType   : GrantTypes.AuthorizationCode,
                         ResponseType: ResponseTypes.Code), "Authorization code flow"));
                 }
 
-                if (configuration.GrantTypesSupported.Contains(GrantTypes.Implicit))
+                if (configuration.GrantTypesSupported.Contains(GrantTypes.Implicit) &&
+                    (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.Implicit)))
                 {
-                    if (types.Any(type => type.Count is 1 && type.Contains(ResponseTypes.IdToken)))
+                    if (types.Any(static type => type.Count is 1 && type.Contains(ResponseTypes.IdToken)) &&
+                        (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Any(static type => type.Count is 1 && type.Contains(ResponseTypes.IdToken))))
                     {
                         choices.Add(((
                             GrantType   : GrantTypes.Implicit,
                             ResponseType: ResponseTypes.IdToken), "Implicit flow (id_token)"));
                     }
 
-                    if (types.Any(type => type.Count is 2 && type.Contains(ResponseTypes.IdToken) &&
-                                                             type.Contains(ResponseTypes.Token)))
+                    if (types.Any(static type => type.Count is 2 && type.Contains(ResponseTypes.IdToken) &&
+                                                                    type.Contains(ResponseTypes.Token)) &&
+                        (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Any(static type => type.Count is 2 && type.Contains(ResponseTypes.IdToken) &&
+                                                                   type.Contains(ResponseTypes.Token))))
                     {
                         choices.Add(((
                             GrantType   : GrantTypes.Implicit,
@@ -475,19 +490,30 @@ public class InteractiveService : BackgroundService
                 }
 
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.AuthorizationCode) &&
-                    configuration.GrantTypesSupported.Contains(GrantTypes.Implicit))
+                    configuration.GrantTypesSupported.Contains(GrantTypes.Implicit) &&
+                    (registration.GrantTypes.Count is 0 || (registration.GrantTypes.Contains(GrantTypes.AuthorizationCode) &&
+                                                            registration.GrantTypes.Contains(GrantTypes.Implicit))))
                 {
-                    if (types.Any(type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
-                                                             type.Contains(ResponseTypes.IdToken)))
+                    if (types.Any(static type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
+                                                                    type.Contains(ResponseTypes.IdToken)) &&
+                        (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Any(static type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
+                                                                   type.Contains(ResponseTypes.IdToken))))
                     {
                         choices.Add(((
                             GrantType   : GrantTypes.AuthorizationCode,
                             ResponseType: ResponseTypes.Code + ' ' + ResponseTypes.IdToken), "Hybrid flow (code + id_token)"));
                     }
 
-                    if (types.Any(type => type.Count is 3 && type.Contains(ResponseTypes.Code) &&
+                    if (types.Any(static type => type.Count is 3 && type.Contains(ResponseTypes.Code) &&
                                                              type.Contains(ResponseTypes.IdToken) &&
-                                                             type.Contains(ResponseTypes.Token)))
+                                                             type.Contains(ResponseTypes.Token)) &&
+                        (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Any(static type => type.Count is 3 && type.Contains(ResponseTypes.Code) &&
+                                                                   type.Contains(ResponseTypes.IdToken) &&
+                                                                   type.Contains(ResponseTypes.Token))))
                     {
                         choices.Add(((
                             GrantType   : GrantTypes.AuthorizationCode,
@@ -495,8 +521,12 @@ public class InteractiveService : BackgroundService
                             "Hybrid flow (code + id_token + token)"));
                     }
 
-                    if (types.Any(type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
-                                                             type.Contains(ResponseTypes.Token)))
+                    if (types.Any(static type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
+                                                                    type.Contains(ResponseTypes.Token)) &&
+                        (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Any(static type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
+                                                                   type.Contains(ResponseTypes.Token))))
                     {
                         choices.Add(((
                             GrantType   : GrantTypes.AuthorizationCode,
@@ -504,7 +534,10 @@ public class InteractiveService : BackgroundService
                     }
                 }
 
-                if (types.Any(type => type.Count is 1 && type.Contains(ResponseTypes.None)))
+                if (types.Any(static type => type.Count is 1 && type.Contains(ResponseTypes.None)) &&
+                    (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
+                        .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                        .Any(static type => type.Count is 1 && type.Contains(ResponseTypes.None))))
                 {
                     choices.Add(((
                         GrantType   : null,
@@ -524,36 +557,42 @@ public class InteractiveService : BackgroundService
                     .UseConverter(choice => choice.DisplayName)).Item1;
             }
 
-            return WaitAsync(Task.Run(() => Prompt(configuration), cancellationToken), cancellationToken);
+            return WaitAsync(Task.Run(() => Prompt(registration, configuration), cancellationToken), cancellationToken);
         }
 
-        Task<string> GetSelectedGrantTypeAsync(OpenIddictConfiguration configuration, CancellationToken cancellationToken)
+        Task<string> GetSelectedGrantTypeAsync(
+            OpenIddictClientRegistration registration,
+            OpenIddictConfiguration configuration, CancellationToken cancellationToken)
         {
-            static string Prompt(OpenIddictConfiguration configuration)
+            static string Prompt(OpenIddictClientRegistration registration, OpenIddictConfiguration configuration)
             {
                 List<(string GrantType, string DisplayName)> choices = [];
 
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.DeviceCode) &&
                     configuration.DeviceAuthorizationEndpoint is not null &&
-                    configuration.TokenEndpoint is not null)
+                    configuration.TokenEndpoint is not null &&
+                    (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.DeviceCode)))
                 {
                     choices.Add((GrantTypes.DeviceCode, "Device authorization code grant"));
                 }
 
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.Password) &&
-                    configuration.TokenEndpoint is not null)
+                    configuration.TokenEndpoint is not null &&
+                    (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.Password)))
                 {
                     choices.Add((GrantTypes.Password, "Resource owner password credentials grant"));
                 }
 
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.TokenExchange) &&
-                    configuration.TokenEndpoint is not null)
+                    configuration.TokenEndpoint is not null &&
+                    (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.TokenExchange)))
                 {
                     choices.Add((GrantTypes.TokenExchange, "Token exchange"));
                 }
 
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.ClientCredentials) &&
-                    configuration.TokenEndpoint is not null)
+                    configuration.TokenEndpoint is not null &&
+                    (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.ClientCredentials)))
                 {
                     choices.Add((GrantTypes.ClientCredentials, "Client credentials grant (application authentication only)"));
                 }
@@ -569,10 +608,11 @@ public class InteractiveService : BackgroundService
                     .UseConverter(choice => choice.DisplayName)).GrantType;
             }
 
-            return WaitAsync(Task.Run(() => Prompt(configuration), cancellationToken), cancellationToken);
+            return WaitAsync(Task.Run(() => Prompt(registration, configuration), cancellationToken), cancellationToken);
         }
 
         Task<bool> AuthenticateUserInteractivelyAsync(
+            OpenIddictClientRegistration registration,
             OpenIddictConfiguration configuration, CancellationToken cancellationToken)
         {
             static bool Prompt() => AnsiConsole.Prompt(new ConfirmationPrompt(
@@ -583,10 +623,34 @@ public class InteractiveService : BackgroundService
                 ShowDefaultValue = true
             });
 
-            if (configuration.GrantTypesSupported.Contains(GrantTypes.AuthorizationCode) ||
-                configuration.GrantTypesSupported.Contains(GrantTypes.Implicit))
+            if (configuration.GrantTypesSupported.Contains(GrantTypes.AuthorizationCode) &&
+                (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.AuthorizationCode)))
             {
-                return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+                if (configuration.GrantTypesSupported.Any(static type => type is not (
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit or GrantTypes.RefreshToken)) &&
+                    (registration.GrantTypes.Count is 0 ||
+                     registration.GrantTypes.Any(static type => type is not (
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit or GrantTypes.RefreshToken))))
+                {
+                    return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+                }
+
+                return Task.FromResult(true);
+            }
+
+            if (configuration.GrantTypesSupported.Contains(GrantTypes.Implicit) &&
+                (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.Implicit)))
+            {
+                if (configuration.GrantTypesSupported.Any(static type => type is not (
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit or GrantTypes.RefreshToken)) &&
+                    (registration.GrantTypes.Count is 0 ||
+                     registration.GrantTypes.Any(static type => type is not (
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit or GrantTypes.RefreshToken))))
+                {
+                    return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+                }
+
+                return Task.FromResult(true);
             }
 
             return Task.FromResult(false);
