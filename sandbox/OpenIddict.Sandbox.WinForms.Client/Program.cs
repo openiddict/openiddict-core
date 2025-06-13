@@ -89,6 +89,8 @@ var host = new HostBuilder()
                        .AddGitHub(options =>
                        {
                            options.SetClientId("cf8efb4d76c0cb7109d3")
+                                  // Note: GitHub doesn't allow creating public clients and requires using a secret. While this
+                                  // is discouraged practice, it is the only option to use this provider in a desktop client.
                                   .SetClientSecret("e8c0f6b869164411bb9052e42414cbcc52d518cd")
                                   // Note: GitHub doesn't support the recommended ":/" syntax and requires using "://".
                                   .SetRedirectUri("com.openiddict.sandbox.winforms.client://callback/login/github");
