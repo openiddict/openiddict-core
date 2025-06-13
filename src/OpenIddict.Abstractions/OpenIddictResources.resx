@@ -1743,7 +1743,7 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
 'US West (Oregon)' (or 'us-west-2').</value>
   </data>
   <data name="ID0479" xml:space="preserve">
-    <value>The specified Stripe Connect account type is not valid. Supported values are 'Standard' and 'Express'.</value>
+    <value>The specified Stripe Connect account type is not valid. Supported values are 'standard' and 'express'.</value>
   </data>
   <data name="ID0480" xml:space="preserve">
     <value>A subject token must be specified when using the token exchange grant.</value>
