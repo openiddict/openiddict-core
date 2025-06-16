@@ -65,7 +65,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
                 }
 
                 // If a specific token format is expected, return immediately if it doesn't match the expected value.
-                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Private.DataProtection)
+                if (context.TokenFormat is not null and not TokenFormats.Private.DataProtection)
                 {
                     return default;
                 }
@@ -144,7 +144,8 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     _ => context.ValidTokenTypes.OrderBy(type => type switch
                     {
                         // If the token type hint corresponds to one of the valid types, test it first.
-                        string value when value == context.TokenTypeHint => 0,
+                        TokenTypeIdentifiers.AccessToken  when context.TokenTypeHint is TokenTypeHints.AccessToken  => 0,
+                        TokenTypeIdentifiers.RefreshToken when context.TokenTypeHint is TokenTypeHints.RefreshToken => 0,
 
                         TokenTypeIdentifiers.AccessToken               => 1,
                         TokenTypeIdentifiers.RefreshToken              => 2,
