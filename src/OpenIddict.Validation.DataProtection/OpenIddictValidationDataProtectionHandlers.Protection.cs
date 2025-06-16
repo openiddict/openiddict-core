@@ -59,7 +59,7 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                 }
 
                 // If a specific token format is expected, return immediately if it doesn't match the expected value.
-                if (context.TokenFormat is not null && context.TokenFormat is not TokenFormats.Private.DataProtection)
+                if (context.TokenFormat is not null and not TokenFormats.Private.DataProtection)
                 {
                     return default;
                 }
