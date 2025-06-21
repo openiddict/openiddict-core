@@ -30,7 +30,7 @@ public class Worker : IHostedService
 
             if (await manager.FindByClientIdAsync("console") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     // Note: the application must be registered as a native application to force OpenIddict
                     // to apply a relaxed redirect_uri validation policy that allows specifying a random port.
@@ -79,20 +79,23 @@ public class Worker : IHostedService
                         Permissions.ResponseTypes.None,
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
-                        Permissions.Scopes.Roles,
-                        Permissions.Prefixes.Scope + "demo_api"
+                        Permissions.Scopes.Roles
                     },
                     Requirements =
                     {
                         Requirements.Features.ProofKeyForCodeExchange,
                         Requirements.Features.PushedAuthorizationRequests
                     }
-                });
+                };
+
+                descriptor.AddScopePermissions("demo_api");
+
+                await manager.CreateAsync(descriptor);
             }
 
             if (await manager.FindByClientIdAsync("maui") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "maui",
@@ -122,20 +125,23 @@ public class Worker : IHostedService
                         Permissions.ResponseTypes.Code,
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
-                        Permissions.Scopes.Roles,
-                        Permissions.Prefixes.Scope + "demo_api"
+                        Permissions.Scopes.Roles
                     },
                     Requirements =
                     {
                         Requirements.Features.ProofKeyForCodeExchange,
                         Requirements.Features.PushedAuthorizationRequests
                     }
-                });
+                };
+
+                descriptor.AddScopePermissions("demo_api");
+
+                await manager.CreateAsync(descriptor);
             }
 
             if (await manager.FindByClientIdAsync("mvc") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ApplicationType = ApplicationTypes.Web,
                     ClientId = "mvc",
@@ -186,20 +192,23 @@ public class Worker : IHostedService
                         Permissions.ResponseTypes.Code,
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
-                        Permissions.Scopes.Roles,
-                        Permissions.Prefixes.Scope + "demo_api"
+                        Permissions.Scopes.Roles
                     },
                     Requirements =
                     {
                         Requirements.Features.ProofKeyForCodeExchange,
                         Requirements.Features.PushedAuthorizationRequests
                     }
-                });
+                };
+
+                descriptor.AddScopePermissions("demo_api");
+
+                await manager.CreateAsync(descriptor);
             }
 
             if (await manager.FindByClientIdAsync("winforms") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "winforms",
@@ -229,20 +238,23 @@ public class Worker : IHostedService
                         Permissions.ResponseTypes.Code,
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
-                        Permissions.Scopes.Roles,
-                        Permissions.Prefixes.Scope + "demo_api"
+                        Permissions.Scopes.Roles
                     },
                     Requirements =
                     {
                         Requirements.Features.ProofKeyForCodeExchange,
                         Requirements.Features.PushedAuthorizationRequests
                     }
-                });
+                };
+
+                descriptor.AddScopePermissions("demo_api");
+
+                await manager.CreateAsync(descriptor);
             }
 
             if (await manager.FindByClientIdAsync("wpf") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "wpf",
@@ -272,15 +284,18 @@ public class Worker : IHostedService
                         Permissions.ResponseTypes.Code,
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
-                        Permissions.Scopes.Roles,
-                        Permissions.Prefixes.Scope + "demo_api"
+                        Permissions.Scopes.Roles
                     },
                     Requirements =
                     {
                         Requirements.Features.ProofKeyForCodeExchange,
                         Requirements.Features.PushedAuthorizationRequests
                     }
-                });
+                };
+
+                descriptor.AddScopePermissions("demo_api");
+
+                await manager.CreateAsync(descriptor);
             }
 
             // Note: when using introspection instead of local token validation,
@@ -288,7 +303,7 @@ public class Worker : IHostedService
             // to communicate with OpenIddict's introspection endpoint.
             if (await manager.FindByClientIdAsync("resource_server") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ClientId = "resource_server",
                     ClientSecret = "80B552BB-4CD8-48DA-946E-0815E0147DD2",
@@ -297,7 +312,9 @@ public class Worker : IHostedService
                     {
                         Permissions.Endpoints.Introspection
                     }
-                });
+                };
+
+                await manager.CreateAsync(descriptor);
             }
 
             // To test this sample with Postman, use the following settings:
@@ -311,7 +328,7 @@ public class Worker : IHostedService
             // * Request access token locally: yes
             if (await manager.FindByClientIdAsync("postman") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "postman",
@@ -335,13 +352,13 @@ public class Worker : IHostedService
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
                         Permissions.Scopes.Roles
-                    },
-                    Settings =
-                    {
-                        // Use a shorter access token lifetime for tokens issued to the Postman application.
-                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromMinutes(10).ToString("c", CultureInfo.InvariantCulture)
                     }
-                });
+                };
+
+                // Use a shorter access token lifetime for tokens issued to the Postman application.
+                descriptor.SetAccessTokenLifetime(TimeSpan.FromMinutes(10));
+
+                await manager.CreateAsync(descriptor);
             }
 
 #if SUPPORTS_PEM_ENCODED_KEY_IMPORT
@@ -361,7 +378,7 @@ public class Worker : IHostedService
 
             if (await manager.FindByNameAsync("demo_api") is null)
             {
-                await manager.CreateAsync(new OpenIddictScopeDescriptor
+                var descriptor = new OpenIddictScopeDescriptor
                 {
                     DisplayName = "Demo API access",
                     DisplayNames =
@@ -373,7 +390,9 @@ public class Worker : IHostedService
                     {
                         "resource_server"
                     }
-                });
+                };
+
+                await manager.CreateAsync(descriptor);
             }
         }
     }

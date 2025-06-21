@@ -196,7 +196,7 @@ public class Startup
 
             if (await manager.FindByClientIdAsync("mvc") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ApplicationType = ApplicationTypes.Web,
                     ClientId = "mvc",
@@ -223,20 +223,23 @@ public class Startup
                         Permissions.ResponseTypes.Code,
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
-                        Permissions.Scopes.Roles,
-                        Permissions.Prefixes.Scope + "demo_api"
+                        Permissions.Scopes.Roles
                     },
                     Requirements =
                     {
                         Requirements.Features.ProofKeyForCodeExchange,
                         Requirements.Features.PushedAuthorizationRequests
                     }
-                });
+                };
+
+                descriptor.AddScopePermissions("demo_api");
+
+                await manager.CreateAsync(descriptor);
             }
 
             if (await manager.FindByClientIdAsync("postman") is null)
             {
-                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ApplicationType = ApplicationTypes.Native,
                     ClientId = "postman",
@@ -260,13 +263,13 @@ public class Startup
                         Permissions.Scopes.Email,
                         Permissions.Scopes.Profile,
                         Permissions.Scopes.Roles
-                    },
-                    Settings =
-                    {
-                        // Use a shorter access token lifetime for tokens issued to the Postman application.
-                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromMinutes(10).ToString("c", CultureInfo.InvariantCulture)
                     }
-                });
+                };
+
+                // Use a shorter access token lifetime for tokens issued to the Postman application.
+                descriptor.SetAccessTokenLifetime(TimeSpan.FromMinutes(10));
+
+                await manager.CreateAsync(descriptor);
             }
         }).GetAwaiter().GetResult();
     }

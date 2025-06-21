@@ -80,4 +80,298 @@ public class OpenIddictApplicationDescriptor
     /// Gets the settings associated with the application.
     /// </summary>
     public Dictionary<string, string> Settings { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Adds audience permissions for all the specified <paramref name="audiences"/>.
+    /// </summary>
+    /// <param name="audiences">The audiences for which audience permissions will be added.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="audiences"/> is <see langword="null"/>.</exception>
+    public OpenIddictApplicationDescriptor AddAudiencePermissions(params string[] audiences)
+    {
+        if (audiences is null)
+        {
+            throw new ArgumentNullException(nameof(audiences));
+        }
+
+        foreach (var audience in audiences)
+        {
+            Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Audience + audience);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds resource permissions for all the specified <paramref name="resources"/>.
+    /// </summary>
+    /// <param name="resources">The resources for which resource permissions will be added.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="resources"/> is <see langword="null"/>.</exception>
+    public OpenIddictApplicationDescriptor AddResourcePermissions(params string[] resources)
+    {
+        if (resources is null)
+        {
+            throw new ArgumentNullException(nameof(resources));
+        }
+
+        foreach (var resource in resources)
+        {
+            Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Resource + resource);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds scope permissions for all the specified <paramref name="scopes"/>.
+    /// </summary>
+    /// <param name="scopes">The scopes for which scope permissions will be added.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="scopes"/> is <see langword="null"/>.</exception>
+    public OpenIddictApplicationDescriptor AddScopePermissions(params string[] scopes)
+    {
+        if (scopes is null)
+        {
+            throw new ArgumentNullException(nameof(scopes));
+        }
+
+        foreach (var scope in scopes)
+        {
+            Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Scope + scope);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the application to use the specified access token <paramref name="lifetime"/>.
+    /// </summary>
+    /// <param name="lifetime">The access token lifetime or <see langword="null"/> to remove the stored value.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    public OpenIddictApplicationDescriptor SetAccessTokenLifetime(TimeSpan? lifetime)
+    {
+        if (lifetime is not null)
+        {
+            Settings[OpenIddictConstants.Settings.TokenLifetimes.AccessToken] =
+                lifetime.Value.ToString("c", CultureInfo.InvariantCulture);
+        }
+
+        else
+        {
+            Settings.Remove(OpenIddictConstants.Settings.TokenLifetimes.AccessToken);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the application to use the specified authorization code <paramref name="lifetime"/>.
+    /// </summary>
+    /// <param name="lifetime">The authorization code lifetime or <see langword="null"/> to remove the stored value.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    public OpenIddictApplicationDescriptor SetAuthorizationCodeLifetime(TimeSpan? lifetime)
+    {
+        if (lifetime is not null)
+        {
+            Settings[OpenIddictConstants.Settings.TokenLifetimes.AuthorizationCode] =
+                lifetime.Value.ToString("c", CultureInfo.InvariantCulture);
+        }
+
+        else
+        {
+            Settings.Remove(OpenIddictConstants.Settings.TokenLifetimes.AuthorizationCode);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the application to use the specified device code <paramref name="lifetime"/>.
+    /// </summary>
+    /// <param name="lifetime">The device code lifetime or <see langword="null"/> to remove the stored value.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    public OpenIddictApplicationDescriptor SetDeviceCodeLifetime(TimeSpan? lifetime)
+    {
+        if (lifetime is not null)
+        {
+            Settings[OpenIddictConstants.Settings.TokenLifetimes.DeviceCode] =
+                lifetime.Value.ToString("c", CultureInfo.InvariantCulture);
+        }
+
+        else
+        {
+            Settings.Remove(OpenIddictConstants.Settings.TokenLifetimes.DeviceCode);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the application to use the specified identity token <paramref name="lifetime"/>.
+    /// </summary>
+    /// <param name="lifetime">The identity token lifetime or <see langword="null"/> to remove the stored value.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    public OpenIddictApplicationDescriptor SetIdentityTokenLifetime(TimeSpan? lifetime)
+    {
+        if (lifetime is not null)
+        {
+            Settings[OpenIddictConstants.Settings.TokenLifetimes.IdentityToken] =
+                lifetime.Value.ToString("c", CultureInfo.InvariantCulture);
+        }
+
+        else
+        {
+            Settings.Remove(OpenIddictConstants.Settings.TokenLifetimes.IdentityToken);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the application to use the specified issued token <paramref name="lifetime"/>.
+    /// </summary>
+    /// <param name="lifetime">The issued token lifetime or <see langword="null"/> to remove the stored value.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    public OpenIddictApplicationDescriptor SetIssuedTokenLifetime(TimeSpan? lifetime)
+    {
+        if (lifetime is not null)
+        {
+            Settings[OpenIddictConstants.Settings.TokenLifetimes.IssuedToken] =
+                lifetime.Value.ToString("c", CultureInfo.InvariantCulture);
+        }
+
+        else
+        {
+            Settings.Remove(OpenIddictConstants.Settings.TokenLifetimes.IssuedToken);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the application to use the specified refresh token <paramref name="lifetime"/>.
+    /// </summary>
+    /// <param name="lifetime">The refresh token lifetime or <see langword="null"/> to remove the stored value.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    public OpenIddictApplicationDescriptor SetRefreshTokenLifetime(TimeSpan? lifetime)
+    {
+        if (lifetime is not null)
+        {
+            Settings[OpenIddictConstants.Settings.TokenLifetimes.RefreshToken] =
+                lifetime.Value.ToString("c", CultureInfo.InvariantCulture);
+        }
+
+        else
+        {
+            Settings.Remove(OpenIddictConstants.Settings.TokenLifetimes.RefreshToken);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the application to use the specified request token <paramref name="lifetime"/>.
+    /// </summary>
+    /// <param name="lifetime">The request token lifetime or <see langword="null"/> to remove the stored value.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    public OpenIddictApplicationDescriptor SetRequestTokenLifetime(TimeSpan? lifetime)
+    {
+        if (lifetime is not null)
+        {
+            Settings[OpenIddictConstants.Settings.TokenLifetimes.RequestToken] =
+                lifetime.Value.ToString("c", CultureInfo.InvariantCulture);
+        }
+
+        else
+        {
+            Settings.Remove(OpenIddictConstants.Settings.TokenLifetimes.RequestToken);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the application to use the specified user code <paramref name="lifetime"/>.
+    /// </summary>
+    /// <param name="lifetime">The user code lifetime or <see langword="null"/> to remove the stored value.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    public OpenIddictApplicationDescriptor SetUserCodeLifetime(TimeSpan? lifetime)
+    {
+        if (lifetime is not null)
+        {
+            Settings[OpenIddictConstants.Settings.TokenLifetimes.UserCode] =
+                lifetime.Value.ToString("c", CultureInfo.InvariantCulture);
+        }
+
+        else
+        {
+            Settings.Remove(OpenIddictConstants.Settings.TokenLifetimes.UserCode);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Removes all the audience permissions corresponding to the specified <paramref name="audiences"/>.
+    /// </summary>
+    /// <param name="audiences">The audiences for which audience permissions will be removed.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="audiences"/> is <see langword="null"/>.</exception>
+    public OpenIddictApplicationDescriptor RemoveAudiencePermissions(params string[] audiences)
+    {
+        if (audiences is null)
+        {
+            throw new ArgumentNullException(nameof(audiences));
+        }
+
+        foreach (var audience in audiences)
+        {
+            Permissions.Remove(OpenIddictConstants.Permissions.Prefixes.Audience + audience);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Removes all the resource permissions corresponding to the specified <paramref name="resources"/>.
+    /// </summary>
+    /// <param name="resources">The resources for which resource permissions will be added.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="resources"/> is <see langword="null"/>.</exception>
+    public OpenIddictApplicationDescriptor RemoveResourcePermissions(params string[] resources)
+    {
+        if (resources is null)
+        {
+            throw new ArgumentNullException(nameof(resources));
+        }
+
+        foreach (var resource in resources)
+        {
+            Permissions.Remove(OpenIddictConstants.Permissions.Prefixes.Resource + resource);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Removes all the scope permissions corresponding to the specified <paramref name="scopes"/>.
+    /// </summary>
+    /// <param name="scopes">The scopes for which scope permissions will be added.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="scopes"/> is <see langword="null"/>.</exception>
+    public OpenIddictApplicationDescriptor RemoveScopePermissions(params string[] scopes)
+    {
+        if (scopes is null)
+        {
+            throw new ArgumentNullException(nameof(scopes));
+        }
+
+        foreach (var scope in scopes)
+        {
+            Permissions.Remove(OpenIddictConstants.Permissions.Prefixes.Scope + scope);
+        }
+
+        return this;
+    }
 }
