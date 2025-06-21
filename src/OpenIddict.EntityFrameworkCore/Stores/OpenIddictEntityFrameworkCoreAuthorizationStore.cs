@@ -102,7 +102,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await context.Set<TAuthorization>().LongCountAsync(cancellationToken);
     }
@@ -115,7 +115,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentNullException(nameof(query));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await query(context.Set<TAuthorization>()).LongCountAsync(cancellationToken);
     }
@@ -128,7 +128,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         context.Add(authorization);
 
@@ -143,7 +143,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
 #if SUPPORTS_BULK_DBSET_OPERATIONS
         if (!Options.CurrentValue.DisableBulkOperations)
@@ -241,7 +241,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
         string? status, string? type,
         ImmutableArray<string>? scopes, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         IQueryable<TAuthorization> query = context.Set<TAuthorization>().Include(authorization => authorization.Application).AsTracking();
 
@@ -298,7 +298,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
             var key = ConvertIdentifierFromString(identifier);
 
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
@@ -326,7 +326,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
         return GetTrackedEntity() is TAuthorization authorization ? authorization : await QueryAsync();
@@ -354,7 +354,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
 
             await foreach (var authorization in
                 (from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Application).AsTracking()
@@ -374,7 +374,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         // If the application is not attached to the authorization, try to load it manually.
         if (authorization.Application is null)
@@ -406,7 +406,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentNullException(nameof(query));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await query(
             context.Set<TAuthorization>().Include(authorization => authorization.Application)
@@ -568,7 +568,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
     public virtual async IAsyncEnumerable<TAuthorization> ListAsync(int? count, int? offset,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         var query = context.Set<TAuthorization>()
                            .Include(authorization => authorization.Application)
@@ -605,7 +605,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         async IAsyncEnumerable<TResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
 
             await foreach (var authorization in query(
                 context.Set<TAuthorization>()
@@ -620,7 +620,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         List<Exception>? exceptions = null;
 
@@ -733,7 +733,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         IQueryable<TAuthorization> query = Options.CurrentValue.DisableBulkOperations ?
             context.Set<TAuthorization>().Include(authorization => authorization.Application).AsTracking() :
@@ -828,7 +828,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
 #if SUPPORTS_BULK_DBSET_OPERATIONS
@@ -896,7 +896,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(subject));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
 #if SUPPORTS_BULK_DBSET_OPERATIONS
         if (!Options.CurrentValue.DisableBulkOperations)
@@ -959,7 +959,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         if (!string.IsNullOrEmpty(identifier))
         {
@@ -1146,7 +1146,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         context.Attach(authorization);
 

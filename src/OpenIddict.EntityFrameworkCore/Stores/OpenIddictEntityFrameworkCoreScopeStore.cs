@@ -89,7 +89,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await context.Set<TScope>().LongCountAsync(cancellationToken);
     }
@@ -102,7 +102,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             throw new ArgumentNullException(nameof(query));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await query(context.Set<TScope>()).LongCountAsync(cancellationToken);
     }
@@ -115,7 +115,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             throw new ArgumentNullException(nameof(scope));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         context.Add(scope);
 
@@ -130,7 +130,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             throw new ArgumentNullException(nameof(scope));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         context.Remove(scope);
 
@@ -156,7 +156,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
         return GetTrackedEntity() is TScope scope ? scope : await QueryAsync();
@@ -180,7 +180,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return GetTrackedEntity() is TScope scope ? scope : await QueryAsync();
 
@@ -207,7 +207,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
 
             // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
             // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
@@ -239,7 +239,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
 
             var scopes = (from scope in context.Set<TScope>().AsTracking()
                           where scope.Resources!.Contains(resource)
@@ -266,7 +266,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             throw new ArgumentNullException(nameof(query));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await query(context.Set<TScope>().AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
     }
@@ -492,7 +492,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     public virtual async IAsyncEnumerable<TScope> ListAsync(int? count, int? offset,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         var query = context.Set<TScope>().OrderBy(scope => scope.Id!).AsTracking();
 
@@ -526,7 +526,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         async IAsyncEnumerable<TResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
 
             await foreach (var scope in query(context.Set<TScope>().AsTracking(), state).AsAsyncEnumerable(cancellationToken))
             {
@@ -736,7 +736,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             throw new ArgumentNullException(nameof(scope));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         context.Attach(scope);
 

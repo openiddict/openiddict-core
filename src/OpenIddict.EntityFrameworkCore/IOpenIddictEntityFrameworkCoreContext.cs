@@ -15,11 +15,20 @@ namespace OpenIddict.EntityFrameworkCore;
 public interface IOpenIddictEntityFrameworkCoreContext
 {
     /// <summary>
-    /// Gets the <see cref="DbContext"/>.
+    /// Gets the <see cref="DbContext"/> for write operation.
     /// </summary>
     /// <returns>
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the
     /// asynchronous operation, whose result returns the <see cref="DbContext"/>.
     /// </returns>
-    ValueTask<DbContext> GetDbContextAsync(CancellationToken cancellationToken);
+    ValueTask<DbContext> GetWriteDbContextAsync(CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Gets the <see cref="DbContext"/> for read operation.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the
+    /// asynchronous operation, whose result returns the <see cref="DbContext"/>.
+    /// </returns>
+    ValueTask<DbContext> GetReadDbContextAsync(CancellationToken cancellationToken);
 }

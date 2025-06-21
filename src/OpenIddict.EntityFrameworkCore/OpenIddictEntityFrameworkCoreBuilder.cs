@@ -127,7 +127,28 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
     public OpenIddictEntityFrameworkCoreBuilder UseDbContext<TContext>() where TContext : DbContext
     {
         Services.Replace(ServiceDescriptor.Scoped<
-            IOpenIddictEntityFrameworkCoreContext, OpenIddictEntityFrameworkCoreContext<TContext>>());
+            IOpenIddictEntityFrameworkCoreContext,
+            OpenIddictEntityFrameworkCoreContext<TContext, TContext>
+        >());
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the OpenIddict Entity Framework Core stores to use the specified database context type.
+    /// Use this method when you want to use read replicas for read operations and primary database for write operations.
+    /// </summary>
+    /// <typeparam name="TWriteContext">The type of the <see cref="DbContext"/> used by OpenIddict for write operations.</typeparam>
+    /// <typeparam name="TReadContext">The type of the <see cref="DbContext"/> used by OpenIddict for read operations.</typeparam>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
+    public OpenIddictEntityFrameworkCoreBuilder UseDbContext<TWriteContext, TReadContext>()
+        where TWriteContext : DbContext
+        where TReadContext : DbContext
+    {
+        Services.Replace(ServiceDescriptor.Scoped<
+            IOpenIddictEntityFrameworkCoreContext,
+            OpenIddictEntityFrameworkCoreContext<TWriteContext, TReadContext>
+        >());
 
         return this;
     }

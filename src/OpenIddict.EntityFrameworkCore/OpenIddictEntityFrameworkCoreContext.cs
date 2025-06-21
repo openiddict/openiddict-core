@@ -10,33 +10,63 @@ namespace OpenIddict.EntityFrameworkCore;
 
 /// <inheritdoc/>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictEntityFrameworkCoreContext<TContext> : IOpenIddictEntityFrameworkCoreContext
-    where TContext : DbContext
+public sealed class
+    OpenIddictEntityFrameworkCoreContext<TWriteContext, TReadContext> : IOpenIddictEntityFrameworkCoreContext
+    where TWriteContext : DbContext
+    where TReadContext : DbContext
 {
-    private readonly TContext? _context;
+    private readonly TWriteContext? _writeContext;
+
+    private readonly TReadContext? _readContext;
 
     /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictEntityFrameworkCoreContext{TContext}"/> class.
+    /// Creates a new instance of the <see cref="OpenIddictEntityFrameworkCoreContext{TContext,TReadContext}"/> class.
     /// </summary>
     public OpenIddictEntityFrameworkCoreContext()
     {
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictEntityFrameworkCoreContext{TContext}"/> class.
+    /// Creates a new instance of the <see cref="OpenIddictEntityFrameworkCoreContext{TContext,TReadContext}"/> class.
     /// </summary>
-    /// <param name="context">The Entity Framework Core context, if available.</param>
-    public OpenIddictEntityFrameworkCoreContext(TContext? context) => _context = context;
+    /// <param name="writeContext">The Entity Framework Core context, if available.</param>
+    /// <param name="readContext">The Entity Framework Core context, if available.</param>
+    public OpenIddictEntityFrameworkCoreContext(TWriteContext? writeContext, TReadContext? readContext)
+    {
+        _writeContext = writeContext;
+        _readContext = readContext;
+    }
 
     /// <inheritdoc/>
-    public ValueTask<DbContext> GetDbContextAsync(CancellationToken cancellationToken)
+    public ValueTask<DbContext> GetWriteDbContextAsync(CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
         {
             return new(Task.FromCanceled<DbContext>(cancellationToken));
         }
 
-        if (_context is not DbContext context)
+        if (_writeContext is not DbContext context)
+        {
+            return new(Task.FromException<DbContext>(new InvalidOperationException(SR.GetResourceString(SR.ID0471))));
+        }
+
+        return new(context);
+    }
+
+    /// <inheritdoc/>
+    public ValueTask<DbContext> GetReadDbContextAsync(CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return new(Task.FromCanceled<DbContext>(cancellationToken));
+        }
+
+        if (_readContext is null)
+        {
+            return GetWriteDbContextAsync(cancellationToken);
+        }
+
+        if (_readContext is not DbContext context)
         {
             return new(Task.FromException<DbContext>(new InvalidOperationException(SR.GetResourceString(SR.ID0471))));
         }

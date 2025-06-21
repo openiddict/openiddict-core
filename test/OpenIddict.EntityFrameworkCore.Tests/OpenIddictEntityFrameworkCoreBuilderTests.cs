@@ -62,13 +62,30 @@ public class OpenIddictEntityFrameworkCoreBuilderTests
         var builder = CreateBuilder(services);
 
         // Act
-        builder.UseDbContext<CustomDbContext>();
+        builder.UseDbContext<CustomWriteDbContext>();
 
         // Assert
         Assert.Contains(services, service =>
             service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictEntityFrameworkCoreContext) &&
-            service.ImplementationType == typeof(OpenIddictEntityFrameworkCoreContext<CustomDbContext>));
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkCoreContext<CustomWriteDbContext, CustomWriteDbContext>));
+    }
+    
+    [Fact]
+    public void UseDbContext_OverridesContextType_WithReadDbContext()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.UseDbContext<CustomWriteDbContext, CustomReadDbContext>();
+
+        // Assert
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictEntityFrameworkCoreContext) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkCoreContext<CustomWriteDbContext, CustomReadDbContext>));
     }
 
     private static OpenIddictEntityFrameworkCoreBuilder CreateBuilder(IServiceCollection services)
@@ -87,7 +104,11 @@ public class OpenIddictEntityFrameworkCoreBuilderTests
     public class CustomScope : OpenIddictEntityFrameworkCoreScope<long> { }
     public class CustomToken : OpenIddictEntityFrameworkCoreToken<long, CustomApplication, CustomAuthorization> { }
 
-    public class CustomDbContext : DbContext
+    public class CustomWriteDbContext : DbContext
+    {
+    }
+    
+    public class CustomReadDbContext : DbContext
     {
     }
 }

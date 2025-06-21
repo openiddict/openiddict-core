@@ -103,7 +103,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await context.Set<TApplication>().LongCountAsync(cancellationToken);
     }
@@ -116,7 +116,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             throw new ArgumentNullException(nameof(query));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await query(context.Set<TApplication>()).LongCountAsync(cancellationToken);
     }
@@ -129,7 +129,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             throw new ArgumentNullException(nameof(application));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
         context.Add(application);
 
         await context.SaveChangesAsync(cancellationToken);
@@ -143,7 +143,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             throw new ArgumentNullException(nameof(application));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
 #if SUPPORTS_BULK_DBSET_OPERATIONS
         if (!Options.CurrentValue.DisableBulkOperations)
@@ -279,7 +279,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return GetTrackedEntity() is TApplication application ? application : await QueryAsync();
 
@@ -302,7 +302,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
         return GetTrackedEntity() is TApplication application ? application : await QueryAsync();
@@ -337,7 +337,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
 
             var applications = (from application in context.Set<TApplication>().AsTracking()
                                 where application.PostLogoutRedirectUris!.Contains(uri)
@@ -373,7 +373,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
 
             var applications = (from application in context.Set<TApplication>().AsTracking()
                                 where application.RedirectUris!.Contains(uri)
@@ -411,7 +411,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             throw new ArgumentNullException(nameof(query));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         return await query(context.Set<TApplication>().AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
     }
@@ -809,7 +809,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     public virtual async IAsyncEnumerable<TApplication> ListAsync(int? count, int? offset,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetReadDbContextAsync(cancellationToken);
 
         var query = context.Set<TApplication>().OrderBy(application => application.Id!).AsTracking();
 
@@ -843,7 +843,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         async IAsyncEnumerable<TResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var context = await Context.GetDbContextAsync(cancellationToken);
+            var context = await Context.GetReadDbContextAsync(cancellationToken);
 
             await foreach (var application in query(context.Set<TApplication>().AsTracking(), state).AsAsyncEnumerable(cancellationToken))
             {
@@ -1219,7 +1219,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             throw new ArgumentNullException(nameof(application));
         }
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
+        var context = await Context.GetWriteDbContextAsync(cancellationToken);
 
         context.Attach(application);
 
