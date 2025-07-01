@@ -35,6 +35,7 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 **Developers looking for a simple and turnkey solution are strongly encouraged to evaluate these popular options**:
   - [Volo.OpenIddict.Pro](https://abp.io/modules/Volo.OpenIddict.Pro), which is based on OpenIddict, supports all the common OAuth 2.0/OpenID Connect flows and offers a powerful applications/scopes management GUI.
   - [OrchardCore.OpenId](https://docs.orchardcore.net/en/latest/docs/reference/modules/OpenId/), which is also based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
+  - [IdentitySuite](https://identitysuite.net), OpenIddict-based solution supporting common OAuth 2.0/OpenID Connect flows. Manage users, applications, UI themes, and email templates through a unified Blazor interface.
 
 > [!TIP]
 > **Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge,
