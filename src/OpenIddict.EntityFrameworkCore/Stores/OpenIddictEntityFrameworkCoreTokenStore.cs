@@ -858,7 +858,8 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         {
             return await (
                 from token in context.Set<TToken>()
-                where token.Application!.Id!.Equals(key) && token.Status != Statuses.Revoked
+                where token.Application!.Id!.Equals(key)
+                where token.Status != Statuses.Revoked
                 select token).ExecuteUpdateAsync(entity => entity.SetProperty(
                     token => token.Status, Statuses.Revoked), cancellationToken);
 
@@ -881,7 +882,8 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
                                                           .Include(token => token.Authorization)
                                                           .AsTracking()
                                      join application in context.Set<TApplication>().AsTracking() on token.Application!.Id equals application.Id
-                                     where application.Id!.Equals(key) && token.Status != Statuses.Revoked
+                                     where application.Id!.Equals(key)
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
@@ -929,7 +931,8 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         {
             return await (
                 from token in context.Set<TToken>()
-                where token.Authorization!.Id!.Equals(key) && token.Status != Statuses.Revoked
+                where token.Authorization!.Id!.Equals(key)
+                where token.Status != Statuses.Revoked
                 select token).ExecuteUpdateAsync(entity => entity.SetProperty(
                     token => token.Status, Statuses.Revoked), cancellationToken);
 
@@ -952,7 +955,8 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
                                                           .Include(token => token.Authorization)
                                                           .AsTracking()
                                      join authorization in context.Set<TAuthorization>().AsTracking() on token.Authorization!.Id equals authorization.Id
-                                     where authorization.Id!.Equals(key) && token.Status != Statuses.Revoked
+                                     where authorization.Id!.Equals(key)
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
@@ -999,7 +1003,8 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         {
             return await (
                 from token in context.Set<TToken>()
-                where token.Subject == subject && token.Status != Statuses.Revoked
+                where token.Subject == subject
+                where token.Status != Statuses.Revoked
                 select token).ExecuteUpdateAsync(entity => entity.SetProperty(
                     token => token.Status, Statuses.Revoked), cancellationToken);
 
@@ -1016,6 +1021,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
                                                           .Include(token => token.Authorization)
                                                           .AsTracking()
                                      where token.Subject == subject
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;

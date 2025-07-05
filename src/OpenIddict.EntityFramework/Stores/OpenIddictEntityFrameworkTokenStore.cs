@@ -751,7 +751,8 @@ public class OpenIddictEntityFrameworkTokenStore<
         foreach (var token in await (from token in context.Set<TToken>()
                                                           .Include(token => token.Application)
                                                           .Include(token => token.Authorization)
-                                     where token.Application!.Id!.Equals(key) && token.Status != Statuses.Revoked
+                                     where token.Application!.Id!.Equals(key)
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
@@ -801,7 +802,8 @@ public class OpenIddictEntityFrameworkTokenStore<
         foreach (var token in await (from token in context.Set<TToken>()
                                                           .Include(token => token.Application)
                                                           .Include(token => token.Authorization)
-                                     where token.Authorization!.Id!.Equals(key) && token.Status != Statuses.Revoked
+                                     where token.Authorization!.Id!.Equals(key)
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
@@ -850,7 +852,8 @@ public class OpenIddictEntityFrameworkTokenStore<
         foreach (var token in await (from token in context.Set<TToken>()
                                                           .Include(token => token.Application)
                                                           .Include(token => token.Authorization)
-                                     where token.Subject == subject && token.Status != Statuses.Revoked
+                                     where token.Subject == subject
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
