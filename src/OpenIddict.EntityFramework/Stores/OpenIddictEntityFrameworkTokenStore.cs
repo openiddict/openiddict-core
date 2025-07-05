@@ -752,6 +752,7 @@ public class OpenIddictEntityFrameworkTokenStore<
                                                           .Include(token => token.Application)
                                                           .Include(token => token.Authorization)
                                      where token.Application!.Id!.Equals(key)
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
@@ -802,6 +803,7 @@ public class OpenIddictEntityFrameworkTokenStore<
                                                           .Include(token => token.Application)
                                                           .Include(token => token.Authorization)
                                      where token.Authorization!.Id!.Equals(key)
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
@@ -851,6 +853,7 @@ public class OpenIddictEntityFrameworkTokenStore<
                                                           .Include(token => token.Application)
                                                           .Include(token => token.Authorization)
                                      where token.Subject == subject
+                                     where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
