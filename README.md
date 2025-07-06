@@ -9,8 +9,8 @@
 OpenIddict aims at providing a **versatile solution** to implement **OpenID Connect client, server and token validation support in .NET applications**.
 
 > [!TIP]
-> While the client, server and token validation features can be used in any ASP.NET 4.6.1+ or
-> [ASP.NET Core 2.1+ web application](https://documentation.openiddict.com/integrations/aspnet-core),
+> While the client, server and token validation features can be used in any ASP.NET 4.6.2+ or
+> [ASP.NET Core 2.3+ web application](https://documentation.openiddict.com/integrations/aspnet-core),
 > the client feature can also be used in
 > [Android, iOS, Linux, Mac Catalyst, macOS and Windows applications](https://documentation.openiddict.com/integrations/operating-systems)
 > to integrate with OpenIddict-based identity providers or any other OAuth 2.0/OpenID Connect-compliant implementation.
@@ -112,13 +112,14 @@ GitHub tickets opened by users who haven't contributed to the project or don't a
 
 **Support is only offered for the latest stable version of OpenIddict**. There are, however, two exceptions to this policy:
   - **ABP Framework users receive patches for OpenIddict for as long as ABP Framework itself is supported by Volosoft**
-  (typically a year following the release of a major ABP version), whether they have a commercial ABP license or just use the free packages.
+  (typically a year following the release of a major ABP version), whether they have a commercial ABP license or just use the free packages:
 
   | OpenIddict branch | ABP Framework branch | End of support date (estimated) |
   |-------------------|----------------------|---------------------------------|
   | 4.x               | 7.x                  | December 19, 2024               |
   | 5.x               | 8.x                  | November 19, 2025               |
-  | 6.x (current)     | 9.x                  | Currently supported             |
+  | 6.x               | 9.x                  | Currently supported             |
+  | 7.x (current)     | Not supported yet    | Not supported yet               |
 
   - **OpenIddict sponsors are offered extended support depending on the selected sponsorship tier:**
     - Tier 6 sponsors get full support for the previous version 1 month following the release of a new major version.
@@ -128,41 +129,27 @@ GitHub tickets opened by users who haven't contributed to the project or don't a
 
   | OpenIddict branch | Sponsorship tier | End of support date |
   |-------------------|------------------|---------------------|
-  | 4.x               | Tier 6 (or more) | January 18, 2024    |
-  | 4.x               | Tier 7 (or more) | June 18, 2024       |
-  | 4.x               | Tier 8 (or more) | December 18, 2024   |
+  | 4.x               | Tier 6           | January 18, 2024    |
+  | 4.x               | Tier 7           | June 18, 2024       |
+  | 4.x               | Tier 8           | December 18, 2024   |
   | 4.x               | Tier 9           | December 18, 2025   |
   |                   |                  |                     |
-  | 5.x               | Tier 6 (or more) | January 17, 2025    |
-  | 5.x               | Tier 7 (or more) | June 17, 2025       |
-  | 5.x               | Tier 8 (or more) | December 17, 2025   |
+  | 5.x               | Tier 6           | January 17, 2025    |
+  | 5.x               | Tier 7           | June 17, 2025       |
+  | 5.x               | Tier 8           | December 17, 2025   |
   | 5.x               | Tier 9           | December 17, 2026   |
   |                   |                  |                     |
-  | 6.x (current)     | Any              | Currently supported |
+  | 6.x               | Tier 6           | August 7, 2025      |
+  | 6.x               | Tier 7           | January 7, 2026     |
+  | 6.x               | Tier 8           | July 7, 2026        |
+  | 6.x               | Tier 9           | July 7, 2027        |
+  |                   |                  |                     |
+  | 7.x (current)     | Any              | Currently supported |
 
 > [!TIP]
 > For more information on the different tiers and the benefits they offer, visit [GitHub Sponsors](https://github.com/sponsors/kevinchalet).
 
 --------------
-
-## Running locally
-
-This project uses the newer `.slnx` format instead of the traditional `.sln` file. You can open it using **Visual Studio 2022** or newer.
-
-> [!TIP]
-> If you encounter the following error when trying to open the `.slnx` file:
->
-> > The selected file is not a valid solution file.
->
-> It's likely that the **Solution File Persistence Model** feature needs to be enabled. To do this:
->
-> 1. Open **Visual Studio**.
-> 2. Go to **Tools > Options**.
-> 3. In the left-hand menu, select **Environment > Preview Features**.
-> 4. Enable the checkbox for **Use Solution File Persistence Model**.
-> 5. Click **OK** and restart Visual Studio.
->
-> Once the solution file opens, you can set the desired project as the **Startup Project** (right-click on the project > *Set as Startup Project*) and start debugging or running as usual.
 
 ## Nightly builds
 
