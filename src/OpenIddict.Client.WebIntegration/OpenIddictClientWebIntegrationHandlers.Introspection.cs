@@ -59,7 +59,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Response.Scope = string.Join(
                         " ",
-                        scopeArray.EnumerateArray().Select(val => val.GetString())
+                        scopeArray.EnumerateArray()
+                            .Select(val => val.GetString()?.ToLowerInvariant())
+                            .Where(val => val is not null)
                     );
                 }
 
