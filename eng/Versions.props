@@ -5,10 +5,10 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <PreReleaseVersionLabel>rc</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
-    <PreReleaseBrandingLabel>Release Candidate $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
-    <StabilizePackageVersion Condition=" '$(StabilizePackageVersion)' == '' ">false</StabilizePackageVersion>
+    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
+    <PreReleaseBrandingLabel>Release to Manufacturing</PreReleaseBrandingLabel>
+    <StabilizePackageVersion Condition=" '$(StabilizePackageVersion)' == '' ">true</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition=" '$(StabilizePackageVersion)' == 'true' ">release</DotNetFinalVersionKind>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
