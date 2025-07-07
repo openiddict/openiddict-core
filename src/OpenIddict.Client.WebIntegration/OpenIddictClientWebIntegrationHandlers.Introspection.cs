@@ -6,7 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -52,17 +52,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     return default;
                 }
 
-                // Note: NetSuite returns the "scope" parameter as a non-standard string array,
-                // so this is converted to a space-separated string.
+                // Note: NetSuite returns the "scope" parameter as a non-standard JSON array of strings,
+                // which requires converting it to a space-separated string to ensure the response is
+                // not rejected by OpenIddict when validating the type of the well-known "scope" claim.
                 if (context.Registration.ProviderType is ProviderTypes.NetSuite &&
-                    (JsonElement?)context.Response[Parameters.Scope] is { ValueKind: JsonValueKind.Array } scopeArray)
+                    (JsonElement?) context.Response[Parameters.Scope] is { ValueKind: JsonValueKind.Array } element &&
+                    OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String))
                 {
-                    context.Response.Scope = string.Join(
-                        " ",
-                        scopeArray.EnumerateArray()
-                            .Select(val => val.GetString()?.ToLowerInvariant())
-                            .Where(val => val is not null)
-                    );
+                    var scopes = new HashSet<string>(StringComparer.Ordinal);
+
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        var scope = item.GetString()?.ToLowerInvariant();
+                        if (!string.IsNullOrEmpty(scope))
+                        {
+                            scopes.Add(scope);
+                        }
+                    }
+
+                    context.Response.Scope = string.Join(" ", scopes);
                 }
 
                 return default;
