@@ -18,7 +18,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
         [
             /*
-             * Token response extraction:
+             * Introspection response extraction:
              */
             MapNonStandardResponseParameters.Descriptor
         ];
