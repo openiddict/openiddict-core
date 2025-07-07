@@ -1584,7 +1584,25 @@
     <Setting PropertyName="ApprovalPrompt" ParameterName="prompt" Type="String" Required="false"
              Description="The value used as the 'approval_prompt' parameter (can be set to 'force' to display the consent form for each authorization demand)" />
   </Provider>
+  
+  <!--
+                                      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                      ██ ▀██ ██ ▄▄▄█▄▄ ▄▄██ ▄▄▄ ██ ██ █▄ ▄█▄▄ ▄▄██ ▄▄▄██
+                                      ██ █ █ ██ ▄▄▄███ ████▄▄▄▀▀██ ██ ██ ████ ████ ▄▄▄██
+                                      ██ ██▄ ██ ▀▀▀███ ████ ▀▀▀ ██▄▀▀▄█▀ ▀███ ████ ▀▀▀██
+                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
+  <Provider Name="NetSuite" Id="df795175-5032-419c-baa9-47c5a325e76e"
+            Documentation="https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_160077062690.html">
+    <Environment Issuer="https://system.netsuite.com"
+                 ConfigurationEndpoint="https://{settings.AccountId}.suitetalk.api.netsuite.com/.well-known/openid-configuration" />
+
+    <Setting PropertyName="AccountId" ParameterName="accountId" Type="String" Required="true"
+             Description="Your NetSuite account ID (e.g. 123456, or 123456-sb1 for a sandbox)"
+    />
+  </Provider>
+  
   <!--
                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                   ██ ▀██ ██ ▄▄▄█▄▀█▀▄█▄▄ ▄▄██ ▄▄▀██ █████ ▄▄▄ ██ ██ ██ ▄▄▀██
