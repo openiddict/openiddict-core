@@ -62,10 +62,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         .. Device.DefaultHandlers,
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,
+        .. Introspection.DefaultHandlers,
         .. Protection.DefaultHandlers,
         .. Revocation.DefaultHandlers,
-        .. UserInfo.DefaultHandlers,
-        .. Introspection.DefaultHandlers
+        .. UserInfo.DefaultHandlers
     ];
 
     /// <summary>
