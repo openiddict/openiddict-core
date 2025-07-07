@@ -360,8 +360,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Response.RefreshToken = null;
                 }
 
-                // Note: Alibaba Cloud, Exact Online, and NetSuite return a non-standard "expires_in"
-                // parameter formatted as a string instead of a numeric type.
+                // Note: Alibaba Cloud, Exact Online, and NetSuite return a non-standard
+                // "expires_in" parameter formatted as a string instead of a numeric type.
                 if (context.Registration.ProviderType is ProviderTypes.AlibabaCloud or ProviderTypes.ExactOnline or ProviderTypes.NetSuite &&
                     long.TryParse((string?) context.Response[Parameters.ExpiresIn],
                         NumberStyles.Integer, CultureInfo.InvariantCulture, out long value))
