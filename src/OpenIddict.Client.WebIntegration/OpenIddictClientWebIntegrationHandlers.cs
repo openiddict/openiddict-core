@@ -827,6 +827,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // While PayPal claims the OpenID Connect flavor of the code flow is supported,
                 // their implementation doesn't return an id_token from the token endpoint.
                 ProviderTypes.PayPal => (false, false, false),
+                
+                // NetSuite does not return an id_token when using the refresh_token grant type.
+                // Additionally, the at_hash inside their id_token is not a valid hash of the
+                // access token, but is instead a copy of the RS256 signature within the access token.
+                ProviderTypes.NetSuite => (true, false, false),
 
                 _ => (context.ExtractBackchannelIdentityToken,
                       context.RequireBackchannelIdentityToken,
