@@ -595,7 +595,6 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     public virtual async IAsyncEnumerable<TToken> ListAsync(int? count, int? offset,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-
         var context = await Context.GetDbContextAsync(cancellationToken);
 
         var query = context.Set<TToken>()
