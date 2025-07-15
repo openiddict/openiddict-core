@@ -1061,6 +1061,8 @@
                      DeviceAuthorizationEndpoint="https://github.com/login/device/code"
                      TokenEndpoint="https://github.com/login/oauth/access_token"
                      UserInfoEndpoint="https://api.github.com/user">
+        <CodeChallengeMethod Value="S256" />
+
         <GrantType Value="authorization_code" />
         <GrantType Value="urn:ietf:params:oauth:grant-type:device_code" />
       </Configuration>
