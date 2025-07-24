@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using OpenIddict.EntityFramework.Models;
 
 namespace OpenIddict.EntityFramework;
@@ -37,39 +38,49 @@ public sealed class OpenIddictEntityFrameworkApplicationConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        HasKey(application => application.Id);
+        HasKey(static application => application.Id);
 
-        Property(application => application.ApplicationType)
+        Property(static application => application.ApplicationType)
             .HasMaxLength(50);
 
-        Property(application => application.ClientId)
+        Property(static application => application.ClientId)
             .HasMaxLength(100)
             .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
             {
                 IsUnique = true
             }));
 
-        Property(application => application.ClientType)
+        Property(static application => application.ClientType)
             .HasMaxLength(50);
 
-        Property(application => application.ConcurrencyToken)
+        Property(static application => application.ConcurrencyToken)
             .HasMaxLength(50)
             .IsConcurrencyToken();
 
-        Property(application => application.ConsentType)
+        Property(static application => application.ConsentType)
             .HasMaxLength(50);
 
-        HasMany(application => application.Authorizations)
-            .WithOptional(authorization => authorization.Application!)
-            .Map(association =>
+        if (typeof(TKey) == typeof(string))
+        {
+            var parameter = Expression.Parameter(typeof(TApplication), "application");
+            var property = Expression.Property(parameter,
+                typeof(TApplication).GetProperty(nameof(OpenIddictEntityFrameworkApplication.Id))!);
+            var lambda = Expression.Lambda<Func<TApplication, string>>(property, parameter);
+
+            Property(lambda).HasMaxLength(100);
+        }
+
+        HasMany(static application => application.Authorizations)
+            .WithOptional(static authorization => authorization.Application!)
+            .Map(static association =>
             {
                 association.MapKey(nameof(OpenIddictEntityFrameworkAuthorization.Application) +
                                    nameof(OpenIddictEntityFrameworkApplication.Id));
             });
 
-        HasMany(application => application.Tokens)
-            .WithOptional(token => token.Application!)
-            .Map(association =>
+        HasMany(static application => application.Tokens)
+            .WithOptional(static token => token.Application!)
+            .Map(static association =>
             {
                 association.MapKey(nameof(OpenIddictEntityFrameworkToken.Application) +
                                    nameof(OpenIddictEntityFrameworkApplication.Id));

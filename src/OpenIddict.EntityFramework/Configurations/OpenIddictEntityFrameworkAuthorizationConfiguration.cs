@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using OpenIddict.EntityFramework.Models;
 
 namespace OpenIddict.EntityFramework;
@@ -35,25 +36,35 @@ public sealed class OpenIddictEntityFrameworkAuthorizationConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        HasKey(authorization => authorization.Id);
+        HasKey(static authorization => authorization.Id);
 
-        Property(authorization => authorization.ConcurrencyToken)
+        Property(static authorization => authorization.ConcurrencyToken)
             .HasMaxLength(50)
             .IsConcurrencyToken();
 
-        Property(authorization => authorization.Status)
+        if (typeof(TKey) == typeof(string))
+        {
+            var parameter = Expression.Parameter(typeof(TAuthorization), "authorization");
+            var property = Expression.Property(parameter,
+                typeof(TAuthorization).GetProperty(nameof(OpenIddictEntityFrameworkAuthorization.Id))!);
+            var lambda = Expression.Lambda<Func<TAuthorization, string>>(property, parameter);
+
+            Property(lambda).HasMaxLength(100);
+        }
+
+        Property(static authorization => authorization.Status)
             .HasMaxLength(50);
 
-        Property(authorization => authorization.Subject)
+        Property(static authorization => authorization.Subject)
             .HasMaxLength(400);
 
-        Property(authorization => authorization.Type)
+        Property(static authorization => authorization.Type)
             .HasMaxLength(50);
 
-        HasMany(authorization => authorization.Tokens)
-            .WithOptional(token => token.Authorization!)
-            .Map(association => association.MapKey(nameof(OpenIddictEntityFrameworkToken.Authorization) +
-                                                   nameof(OpenIddictEntityFrameworkAuthorization.Id)))
+        HasMany(static authorization => authorization.Tokens)
+            .WithOptional(static token => token.Authorization!)
+            .Map(static association => association.MapKey(nameof(OpenIddictEntityFrameworkToken.Authorization) +
+                                                          nameof(OpenIddictEntityFrameworkAuthorization.Id)))
             .WillCascadeOnDelete();
 
         ToTable("OpenIddictAuthorizations");

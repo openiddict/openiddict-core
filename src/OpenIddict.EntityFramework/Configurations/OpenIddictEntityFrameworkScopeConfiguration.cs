@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using OpenIddict.EntityFramework.Models;
 
 namespace OpenIddict.EntityFramework;
@@ -31,13 +32,23 @@ public sealed class OpenIddictEntityFrameworkScopeConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        HasKey(scope => scope.Id);
+        HasKey(static scope => scope.Id);
 
-        Property(scope => scope.ConcurrencyToken)
+        Property(static scope => scope.ConcurrencyToken)
             .HasMaxLength(50)
             .IsConcurrencyToken();
 
-        Property(scope => scope.Name)
+        if (typeof(TKey) == typeof(string))
+        {
+            var parameter = Expression.Parameter(typeof(TScope), "scope");
+            var property = Expression.Property(parameter,
+                typeof(TScope).GetProperty(nameof(OpenIddictEntityFrameworkScope.Id))!);
+            var lambda = Expression.Lambda<Func<TScope, string>>(property, parameter);
+
+            Property(lambda).HasMaxLength(100);
+        }
+
+        Property(static scope => scope.Name)
             .HasMaxLength(200)
             .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
             {

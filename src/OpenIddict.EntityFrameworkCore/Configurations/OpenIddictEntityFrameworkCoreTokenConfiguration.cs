@@ -37,7 +37,7 @@ public sealed class OpenIddictEntityFrameworkCoreTokenConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        builder.HasKey(token => token.Id);
+        builder.HasKey(static token => token.Id);
 
         // Warning: the non-generic overlord is deliberately used to work around
         // a breaking change introduced in Entity Framework Core 3.x (where a
@@ -51,23 +51,29 @@ public sealed class OpenIddictEntityFrameworkCoreTokenConfiguration<
             nameof(OpenIddictEntityFrameworkCoreToken.Subject),
             nameof(OpenIddictEntityFrameworkCoreToken.Type));
 
-        builder.Property(token => token.ConcurrencyToken)
+        builder.Property(static token => token.ConcurrencyToken)
                .HasMaxLength(50)
                .IsConcurrencyToken();
 
-        builder.Property(token => token.Id)
+        builder.Property(static token => token.Id)
                .ValueGeneratedOnAdd();
 
-        builder.Property(token => token.ReferenceId)
+        if (typeof(TKey) == typeof(string))
+        {
+            builder.Property(static token => token.Id)
+                   .HasMaxLength(100);
+        }
+
+        builder.Property(static token => token.ReferenceId)
                .HasMaxLength(100);
 
-        builder.Property(token => token.Status)
+        builder.Property(static token => token.Status)
                .HasMaxLength(50);
 
-        builder.Property(token => token.Subject)
+        builder.Property(static token => token.Subject)
                .HasMaxLength(400);
 
-        builder.Property(token => token.Type)
+        builder.Property(static token => token.Type)
                .HasMaxLength(150);
 
         builder.ToTable("OpenIddictTokens");
