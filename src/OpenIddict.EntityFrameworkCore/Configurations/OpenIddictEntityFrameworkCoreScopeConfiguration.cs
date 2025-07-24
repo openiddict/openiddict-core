@@ -31,7 +31,7 @@ public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        builder.HasKey(scope => scope.Id);
+        builder.HasKey(static scope => scope.Id);
 
         // Warning: the non-generic overlord is deliberately used to work around
         // a breaking change introduced in Entity Framework Core 3.x (where a
@@ -39,14 +39,20 @@ public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<
         builder.HasIndex(nameof(OpenIddictEntityFrameworkCoreScope.Name))
                .IsUnique();
 
-        builder.Property(scope => scope.ConcurrencyToken)
+        builder.Property(static scope => scope.ConcurrencyToken)
                .HasMaxLength(50)
                .IsConcurrencyToken();
 
-        builder.Property(scope => scope.Id)
+        builder.Property(static scope => scope.Id)
                .ValueGeneratedOnAdd();
 
-        builder.Property(scope => scope.Name)
+        if (typeof(TKey) == typeof(string))
+        {
+            builder.Property(static scope => scope.Id)
+                   .HasMaxLength(100);
+        }
+
+        builder.Property(static scope => scope.Name)
                .HasMaxLength(200);
 
         builder.ToTable("OpenIddictScopes");

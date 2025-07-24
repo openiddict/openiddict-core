@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using OpenIddict.EntityFramework.Models;
 
 namespace OpenIddict.EntityFramework;
@@ -37,26 +38,36 @@ public sealed class OpenIddictEntityFrameworkTokenConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        HasKey(token => token.Id);
+        HasKey(static token => token.Id);
 
-        Property(token => token.ConcurrencyToken)
+        Property(static token => token.ConcurrencyToken)
             .HasMaxLength(50)
             .IsConcurrencyToken();
+
+        if (typeof(TKey) == typeof(string))
+        {
+            var parameter = Expression.Parameter(typeof(TToken), "token");
+            var property = Expression.Property(parameter,
+                typeof(TToken).GetProperty(nameof(OpenIddictEntityFrameworkToken.Id))!);
+            var lambda = Expression.Lambda<Func<TToken, string>>(property, parameter);
+
+            Property(lambda).HasMaxLength(100);
+        }
 
         // Warning: the index on the ReferenceId property MUST NOT be declared as
         // a unique index, as Entity Framework 6.x doesn't support creating indexes
         // with null-friendly WHERE conditions, unlike Entity Framework Core.
-        Property(token => token.ReferenceId)
+        Property(static token => token.ReferenceId)
             .HasMaxLength(100)
             .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
-        Property(token => token.Status)
+        Property(static token => token.Status)
             .HasMaxLength(50);
 
-        Property(token => token.Subject)
+        Property(static token => token.Subject)
             .HasMaxLength(400);
 
-        Property(token => token.Type)
+        Property(static token => token.Type)
             .HasMaxLength(150);
 
         ToTable("OpenIddictTokens");

@@ -37,9 +37,9 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        builder.HasKey(application => application.Id);
+        builder.HasKey(static application => application.Id);
 
-        builder.Property(application => application.ApplicationType)
+        builder.Property(static application => application.ApplicationType)
                .HasMaxLength(50);
 
         // Warning: the non-generic overlord is deliberately used to work around
@@ -48,30 +48,36 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
         builder.HasIndex(nameof(OpenIddictEntityFrameworkCoreApplication.ClientId))
                .IsUnique();
 
-        builder.Property(application => application.ClientId)
+        builder.Property(static application => application.ClientId)
                .HasMaxLength(100);
 
-        builder.Property(application => application.ClientType)
+        builder.Property(static application => application.ClientType)
                .HasMaxLength(50);
 
-        builder.Property(application => application.ConcurrencyToken)
+        builder.Property(static application => application.ConcurrencyToken)
                .HasMaxLength(50)
                .IsConcurrencyToken();
 
-        builder.Property(application => application.ConsentType)
+        builder.Property(static application => application.ConsentType)
                .HasMaxLength(50);
 
-        builder.Property(application => application.Id)
+        builder.Property(static application => application.Id)
                .ValueGeneratedOnAdd();
 
-        builder.HasMany(application => application.Authorizations)
-               .WithOne(authorization => authorization.Application!)
+        if (typeof(TKey) == typeof(string))
+        {
+            builder.Property(static application => application.Id)
+                   .HasMaxLength(100);
+        }
+
+        builder.HasMany(static application => application.Authorizations)
+               .WithOne(static authorization => authorization.Application!)
                .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreAuthorization.Application) +
                               nameof(OpenIddictEntityFrameworkCoreApplication.Id))
                .IsRequired(required: false);
 
-        builder.HasMany(application => application.Tokens)
-               .WithOne(token => token.Application!)
+        builder.HasMany(static application => application.Tokens)
+               .WithOne(static token => token.Application!)
                .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreToken.Application) + nameof(OpenIddictEntityFrameworkCoreApplication.Id))
                .IsRequired(required: false);
 
