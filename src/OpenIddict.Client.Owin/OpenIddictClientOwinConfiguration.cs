@@ -54,8 +54,7 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
         options.CookieManager ??= _provider.GetService<IAppBuilder>() switch
         {
             // See https://github.com/aspnet/AspNetKatana/pull/486 for more information.
-            IAppBuilder builder when builder.Properties.TryGetValue("infrastructure.CookieManager",
-                out object? property) && property is ICookieManager manager => manager,
+            IAppBuilder builder => builder.GetDefaultCookieManager(),
 
             _ => new CookieManager()
         };
@@ -69,9 +68,9 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
         {
             foreach (var (provider, registrations) in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>()
                 .CurrentValue.Registrations
-                .Where(registration => !string.IsNullOrEmpty(registration.ProviderName))
-                .GroupBy(registration => registration.ProviderName)
-                .Select(group => (ProviderName: group.Key, Registrations: group.ToList())))
+                .Where(static registration => !string.IsNullOrEmpty(registration.ProviderName))
+                .GroupBy(static registration => registration.ProviderName)
+                .Select(static group => (ProviderName: group.Key, Registrations: group.ToList())))
             {
                 // If an explicit mapping was already added, don't overwrite it.
                 if (options.ForwardedAuthenticationTypes.Exists(type =>
