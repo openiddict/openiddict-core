@@ -39,7 +39,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.12.0"          />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.12.0"          />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.3.0"           />
-    <PackageVersion Include="Microsoft.Owin.Security"                                         Version="4.2.2"           />
+    <PackageVersion Include="Microsoft.Owin.Security"                                         Version="4.2.3"           />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts"                                 Version="10.0.17763.1000" />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.4.0"           />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.4.0"           />
@@ -55,7 +55,7 @@
     <PackageVersion Include="MartinCostello.Logging.XUnit"                                    Version="0.6.0"           />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost"                                   Version="2.3.0"           />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection"                        Version="8.0.1"           />
-    <PackageVersion Include="Microsoft.Owin.Testing"                                          Version="4.2.2"           />
+    <PackageVersion Include="Microsoft.Owin.Testing"                                          Version="4.2.3"           />
     <PackageVersion Include="Moq"                                                             Version="4.18.4"          />
     <PackageVersion Include="System.Linq.Async"                                               Version="6.0.1"           />
 
@@ -85,9 +85,9 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite"                            Version="2.3.0"           />
     <PackageVersion Include="Microsoft.Extensions.Hosting"                                    Version="8.0.1"           />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset"                                 Version="4.14.0"          />
-    <PackageVersion Include="Microsoft.Owin.Host.SystemWeb"                                   Version="4.2.2"           />
-    <PackageVersion Include="Microsoft.Owin.Security.Cookies"                                 Version="4.2.2"           />
-    <PackageVersion Include="Microsoft.Owin.Security.OAuth"                                   Version="4.2.2"           />
+    <PackageVersion Include="Microsoft.Owin.Host.SystemWeb"                                   Version="4.2.3"           />
+    <PackageVersion Include="Microsoft.Owin.Security.Cookies"                                 Version="4.2.3"           />
+    <PackageVersion Include="Microsoft.Owin.Security.OAuth"                                   Version="4.2.3"           />
     <PackageVersion Include="Microsoft.Web.Infrastructure"                                    Version="2.0.1"           />
     <PackageVersion Include="Newtonsoft.Json"                                                 Version="13.0.3"          />
     <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.14.0"          />
