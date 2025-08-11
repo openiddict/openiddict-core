@@ -32,9 +32,8 @@ out-of-the-box and custom stores can be implemented to support other providers.
 **Samples demonstrating how to use OpenIddict with the different OAuth 2.0/OpenID Connect flows**
 can be found in the [dedicated repository](https://github.com/openiddict/openiddict-samples).
 
-**Developers looking for a simple and turnkey solution are strongly encouraged to evaluate these popular options**:
-  - [Volo.OpenIddict.Pro](https://abp.io/modules/Volo.OpenIddict.Pro), which is based on OpenIddict, supports all the common OAuth 2.0/OpenID Connect flows and offers a powerful applications/scopes management GUI.
-  - [OrchardCore.OpenId](https://docs.orchardcore.net/en/latest/docs/reference/modules/OpenId/), which is also based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
+**Developers looking for a simple and turnkey solution are strongly encouraged to evaluate [Volo.OpenIddict.Pro](https://abp.io/modules/Volo.OpenIddict.Pro)**,
+which is based on OpenIddict, supports all the common OAuth 2.0/OpenID Connect flows and offers a powerful applications/scopes management GUI.
 
 > [!TIP]
 > **Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge,
@@ -63,20 +62,15 @@ Instead, **developers are encouraged to execute the conformance tests against th
 
 **Looking for additional resources to help you get started with OpenIddict?** Don't miss these interesting blog posts:
 
-- **[OpenIddict on AWS Serverless: Adding Interactive Login](https://www.ganhammar.se/posts/openiddict-on-aws-serverless-with-interactive-login)** by [Anton Ganhammar](https://github.com/ganhammar)
-- **[OpenIddict 6.0 general availability](https://kevinchalet.com/2024/12/17/openiddict-6-0-general-availability/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[OpenIddict on AWS Serverless: Flexible OAuth2/OIDC Provider](https://www.ganhammar.se/posts/openiddict-on-aws-serverless-flexible-oauth2-oidc-provider)** by [Anton Ganhammar](https://github.com/ganhammar)
-- **[OpenIddict 5.0 general availability](https://kevinchalet.com/2023/12/18/openiddict-5-0-general-availability/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[Introducing native applications, per-client token lifetimes and client assertions support in OpenIddict 5.0 preview1](https://kevinchalet.com/2023/10/20/introducing-native-applications-per-client-token-lifetimes-and-client-assertions-support-in-openiddict-5-0-preview1/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[Can you use the ASP.NET Core Identity API endpoints with OpenIddict?](https://kevinchalet.com/2023/10/04/can-you-use-the-asp-net-core-identity-api-endpoints-with-openiddict/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[OpenID Connect and OAuth 2.0 server in ASP.NET Core using OpenIddict](https://medium.com/@sergeygoodgood/openid-connect-and-oauth2-0-server-in-aspnetcore-using-openiddict-c463c6ebc082)** by [Siarhei Kharlap](https://medium.com/@sergeygoodgood)
-- **[Transparent Auth Gateway](https://alex-klaus.com/transparent-auth-gateway-1/)** by [Alex Klaus](https://github.com/aklaus)
+- **[OpenIddict 7.0 is out](https://kevinchalet.com/2025/07/07/openiddict-7-0-is-out/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[OpenIddict on AWS Serverless: adding interactive login](https://www.ganhammar.se/posts/openiddict-on-aws-serverless-with-interactive-login)** by [Anton Ganhammar](https://github.com/ganhammar)
+- **[OpenIddict on AWS Serverless: flexible OAuth 2.0/OIDC provider](https://www.ganhammar.se/posts/openiddict-on-aws-serverless-flexible-oauth2-oidc-provider)** by [Anton Ganhammar](https://github.com/ganhammar)
+- **[Transparent authentication gateway](https://alex-klaus.com/transparent-auth-gateway-1/)** by [Alex Klaus](https://github.com/aklaus)
 - **[Introducing system integration support for the OpenIddict client](https://kevinchalet.com/2023/02/27/introducing-system-integration-support-for-the-openiddict-client/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[OpenIddict 4.0 general availability](https://kevinchalet.com/2022/12/23/openiddict-4-0-general-availability/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Getting started with the OpenIddict web providers](https://kevinchalet.com/2022/12/16/getting-started-with-the-openiddict-web-providers/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Introducing the OpenIddict-powered providers](https://github.com/aspnet-contrib/AspNet.Security.OAuth.Providers/issues/694)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Introducing the OpenIddict client](https://kevinchalet.com/2022/02/25/introducing-the-openiddict-client/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[Secure a Blazor WASM ASP.NET Core hosted APP using BFF and OpenIddict](https://damienbod.com/2022/01/03/secure-a-blazor-wasm-asp-net-core-hosted-app-using-bff-and-openiddict/)** by [Damien Bowden](https://github.com/damienbod)
+- **[Secure a Blazor WASM ASP.NET Core hosted app using BFF and OpenIddict](https://damienbod.com/2022/01/03/secure-a-blazor-wasm-asp-net-core-hosted-app-using-bff-and-openiddict/)** by [Damien Bowden](https://github.com/damienbod)
 - **[Setting up an Authorization Server with OpenIddict](https://dev.to/robinvanderknaap/setting-up-an-authorization-server-with-openiddict-part-i-introduction-4jid)** by [Robin van der Knaap](https://dev.to/robinvanderknaap)
 - **[Adding OpenIddict 3.0 to an OWIN application](https://kevinchalet.com/2020/03/03/adding-openiddict-3-0-to-an-owin-application/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Creating an OpenID Connect server proxy with OpenIddict 3.0's degraded mode](https://kevinchalet.com/2020/02/18/creating-an-openid-connect-server-proxy-with-openiddict-3-0-s-degraded-mode/)** by [Kévin Chalet](https://github.com/kevinchalet)
