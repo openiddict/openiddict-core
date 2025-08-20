@@ -1121,6 +1121,27 @@
     </Environment>
   </Provider>
 
+                                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                    ██ ██ █ ▄▄▄█ ███ █ ▄▄▀█ ▄▄▄ █▄▀█▀▄█ ▄▄▀█ ██ █ ▄▄▀█▄▄ ▄▄██
+                                    ██ ▄▄ █ ▄▄▄█▄▀▀▀▄█ ▄▄▀█ ███ ███ ███ ████ ▄▄ █ ▀▀ ███ ████
+                                    ██ ██ █ ▀▀▀███ ███ ▀▀ █ ▀▀▀ █▀▄█▄▀█ ▀▀▄█ ██ █ ██ ███ ████
+                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+  <Provider Name="HeyBoxChat" Id="b1b84538-0487-4106-bf53-4d0390523686"
+            Documentation="https://s.apifox.cn/43256fe4-9a8c-4f22-949a-74a3f8b431f5/7145802m0">
+    <Environment Issuer="https://chat.xiaoheihe.cn/">
+      <Configuration AuthorizationEndpoint="https://www.xiaoheihe.cn/account/bot_oauth"
+                     TokenEndpoint="https://chat.xiaoheihe.cn/chatroom/api/token"
+                     UserInfoEndpoint="https://chat.xiaoheihe.cn/chatroom/api/account/info">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="Token" ParameterName="token" Type="String" Required="true"
+             Description="The HeyBoxChat Bot token" />
+  </Provider>
+
   <!--
                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                              ██ ██ ██ ██ █ ▄▄▀██ ███ ██ ▄▄▄█▄ ▄█

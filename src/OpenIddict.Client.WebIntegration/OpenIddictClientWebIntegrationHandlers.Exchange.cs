@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Primitives;
 using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
@@ -209,9 +210,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var request = context.Transaction.GetHttpRequestMessage() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
+                // HeyBoxChat requires a "token" header containing the Bot token.
+                if (context.Registration.ProviderType is ProviderTypes.HeyBoxChat)
+                {
+                    var settings = context.Registration.GetHeyBoxChatSettings();
+
+                    request.Headers.Add("token", settings.Token);
+                }
+
                 // Trovo requires sending the client identifier in a non-standard "client-id" header and
                 // the client secret in the payload (formatted using JSON instead of the standard format).
-                if (context.Registration.ProviderType is ProviderTypes.Trovo)
+                else if (context.Registration.ProviderType is ProviderTypes.Trovo)
                 {
                     request.Headers.Add("Client-ID", context.Request.ClientId);
 
@@ -265,6 +274,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     request.RequestUri = OpenIddictHelpers.AddQueryStringParameter(
                         request.RequestUri, name: "output", value: "json");
+                }
+
+                // For API calls made by Bots to HeyBoxChat, a series of parameters need to be added
+                // to the query string to indicate that the request is coming from a Bot, rather than
+                // from a HeyBoxChat desktop client or web carrying user authorization information.
+                else if (context.Registration.ProviderType is ProviderTypes.HeyBoxChat)
+                {
+                    request.RequestUri = OpenIddictHelpers.AddQueryStringParameters(
+                        uri: request.RequestUri,
+                        parameters: new Dictionary<string, StringValues>
+                        {
+                            ["chat_os_type"] = "bot",
+                            ["chat_version"] = "1.30.0",
+                            ["client_type"] = "heybox_chat",
+                            ["os_type"] = "web",
+                            ["x_app"] = "heybox_chat",
+                            ["x_client_type"] = "web",
+                            ["x_os_type"] = "bot"
+                        });
                 }
 
                 return default;

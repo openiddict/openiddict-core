@@ -124,6 +124,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     request.Headers.Add("X-API-Key", settings.ApplicationKey);
                 }
 
+                // HeyBoxChat requires a "token" header containing the Bot token.
+                else if (context.Registration.ProviderType is ProviderTypes.HeyBoxChat)
+                {
+                    var settings = context.Registration.GetHeyBoxChatSettings();
+
+                    request.Headers.Add("token", settings.Token);
+                }
+
                 // Notion requires sending an explicit API version (which is statically set
                 // to the last version known to be supported by the OpenIddict integration).
                 else if (context.Registration.ProviderType is ProviderTypes.Notion)
@@ -438,6 +446,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     {
                         ["accounts"] = context.Response["accounts"]
                     },
+
+                    // HeyBoxChat returns a nested "result" object.
+                    ProviderTypes.HeyBoxChat => new(context.Response["result"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("result"))),
 
                     // These providers return a nested "data" object.
                     ProviderTypes.Kook    or ProviderTypes.Kroger    or
