@@ -286,12 +286,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         parameters: new Dictionary<string, StringValues>
                         {
                             ["chat_os_type"] = "bot",
-                            ["chat_version"] = "1.30.0",
-                            ["client_type"] = "heybox_chat",
-                            ["os_type"] = "web",
-                            ["x_app"] = "heybox_chat",
-                            ["x_client_type"] = "web",
-                            ["x_os_type"] = "bot"
+                            ["chat_version"] = "1.30.0"
                         });
                 }
 
