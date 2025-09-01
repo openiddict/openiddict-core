@@ -439,6 +439,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ["accounts"] = context.Response["accounts"]
                     },
 
+                    // HeyBoxChat returns a nested "result" object.
+                    ProviderTypes.HeyBoxChat => new(context.Response["result"]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334("result"))),
+
                     // These providers return a nested "data" object.
                     ProviderTypes.Kook    or ProviderTypes.Kroger    or
                     ProviderTypes.Patreon or ProviderTypes.Pipedrive or ProviderTypes.Twitter
