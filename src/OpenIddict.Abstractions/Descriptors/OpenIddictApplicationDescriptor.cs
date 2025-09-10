@@ -103,6 +103,27 @@ public class OpenIddictApplicationDescriptor
     }
 
     /// <summary>
+    /// Adds grant type permissions for all the specified <paramref name="types"/>.
+    /// </summary>
+    /// <param name="types">The grant types for which grant types permissions will be added.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="types"/> is <see langword="null"/>.</exception>
+    public OpenIddictApplicationDescriptor AddGrantTypePermissions(params string[] types)
+    {
+        if (types is null)
+        {
+            throw new ArgumentNullException(nameof(types));
+        }
+
+        foreach (var type in types)
+        {
+            Permissions.Add(OpenIddictConstants.Permissions.Prefixes.GrantType + type);
+        }
+
+        return this;
+    }
+
+    /// <summary>
     /// Adds resource permissions for all the specified <paramref name="resources"/>.
     /// </summary>
     /// <param name="resources">The resources for which resource permissions will be added.</param>
@@ -328,6 +349,27 @@ public class OpenIddictApplicationDescriptor
         foreach (var audience in audiences)
         {
             Permissions.Remove(OpenIddictConstants.Permissions.Prefixes.Audience + audience);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Removes all the grant type permissions corresponding to the specified <paramref name="types"/>.
+    /// </summary>
+    /// <param name="types">The grant types for which grant types permissions will be removed.</param>
+    /// <returns>The <see cref="OpenIddictApplicationDescriptor"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="types"/> is <see langword="null"/>.</exception>
+    public OpenIddictApplicationDescriptor RemoveGrantTypePermissions(params string[] types)
+    {
+        if (types is null)
+        {
+            throw new ArgumentNullException(nameof(types));
+        }
+
+        foreach (var type in types)
+        {
+            Permissions.Remove(OpenIddictConstants.Permissions.Prefixes.GrantType + type);
         }
 
         return this;

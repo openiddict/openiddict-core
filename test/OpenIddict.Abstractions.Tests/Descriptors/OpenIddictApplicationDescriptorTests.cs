@@ -30,6 +30,30 @@ public class OpenIddictApplicationDescriptorTests
     }
 
     [Fact]
+    public void AddGrantTypePermissions_AddsPermissions()
+    {
+        // Arrange
+        var descriptor = new OpenIddictApplicationDescriptor();
+
+        // Act
+        descriptor.AddGrantTypePermissions(GrantTypes.Implicit, "custom_grant_type");
+
+        // Assert
+        Assert.Contains(OpenIddictConstants.Permissions.Prefixes.GrantType + GrantTypes.Implicit, descriptor.Permissions);
+        Assert.Contains(OpenIddictConstants.Permissions.Prefixes.GrantType + "custom_grant_type", descriptor.Permissions);
+    }
+
+    [Fact]
+    public void AddGrantTypePermissions_ThrowsAnExceptionForNullGrantTypes()
+    {
+        // Arrange
+        var descriptor = new OpenIddictApplicationDescriptor();
+
+        // Act and assert
+        Assert.Throws<ArgumentNullException>(() => descriptor.AddGrantTypePermissions(null!));
+    }
+
+    [Fact]
     public void AddResourcePermissions_AddsPermissions()
     {
         // Arrange
@@ -268,6 +292,31 @@ public class OpenIddictApplicationDescriptorTests
 
         // Act and assert
         Assert.Throws<ArgumentNullException>(() => descriptor.RemoveAudiencePermissions(null!));
+    }
+
+    [Fact]
+    public void RemoveGrantTypePermissions_RemovesPermissions()
+    {
+        // Arrange
+        var descriptor = new OpenIddictApplicationDescriptor();
+        descriptor.AddGrantTypePermissions(GrantTypes.Implicit, "custom_grant_type");
+
+        // Act
+        descriptor.RemoveGrantTypePermissions(GrantTypes.Implicit);
+
+        // Assert
+        Assert.DoesNotContain(GrantTypes.Implicit, descriptor.Permissions);
+        Assert.Contains(OpenIddictConstants.Permissions.Prefixes.GrantType + "custom_grant_type", descriptor.Permissions);
+    }
+
+    [Fact]
+    public void RemoveGrantTypePermissions_ThrowsAnExceptionForNullGrantTypes()
+    {
+        // Arrange
+        var descriptor = new OpenIddictApplicationDescriptor();
+
+        // Act and assert
+        Assert.Throws<ArgumentNullException>(() => descriptor.RemoveGrantTypePermissions(null!));
     }
 
     [Fact]
