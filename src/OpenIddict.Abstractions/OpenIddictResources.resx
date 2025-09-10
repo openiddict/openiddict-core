@@ -1799,6 +1799,9 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
   <data name="ID0496" xml:space="preserve">
     <value>The issuer cannot be retrieved from the server options or inferred from the current request or is not a valid value.</value>
   </data>
+  <data name="ID0497" xml:space="preserve">
+    <value>An unknown error occurred while trying to start a custom tabs intent.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

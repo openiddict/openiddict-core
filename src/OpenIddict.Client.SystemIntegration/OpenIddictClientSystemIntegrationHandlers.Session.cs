@@ -342,6 +342,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 using var builder = new CustomTabsIntent.Builder();
                 using var intent = builder.Build();
 
+                if (intent is not { Intent: not null })
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0497));
+                }
+
                 // Note: using ActivityFlags.NewTask is required when
                 // creating intents without a parent activity attached.
                 intent.Intent.AddFlags(ActivityFlags.NewTask);
