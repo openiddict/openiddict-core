@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Scriban;
+using Scriban.Runtime;
 
 namespace OpenIddict.Client.WebIntegration.Generators;
 
@@ -802,7 +803,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     {{~ end ~}}
 }
 ");
-            return template.Render(new
+            var context = CreateTemplateContext(new
             {
                 Providers = document.Root.Elements("Provider")
                     .Select(static provider => new
@@ -860,6 +861,8 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                     })
                     .ToList()
             });
+
+            return template.Render(context);
         }
 
         static string GenerateConstants(XDocument document)
@@ -913,7 +916,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
     }
 }
 ");
-            return template.Render(new
+            var context = CreateTemplateContext(new
             {
                 Providers = document.Root.Elements("Provider")
                     .Select(static provider => new
@@ -946,6 +949,8 @@ public static partial class OpenIddictClientWebIntegrationConstants
                     })
                     .ToList()
             });
+
+            return template.Render(context);
         }
 
         static string GenerateConfigurationClasses(XDocument document)
@@ -1305,7 +1310,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
     }
 }
 ");
-            return template.Render(new
+            var context = CreateTemplateContext(new
             {
                 Providers = document.Root.Elements("Provider")
                     .Select(static provider => new
@@ -1443,6 +1448,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     })
                     .ToList()
             });
+
+            return template.Render(context);
         }
 
         static string GenerateHelpers(XDocument document)
@@ -1472,7 +1479,7 @@ public static partial class OpenIddictClientWebIntegrationHelpers
     {{~ end ~}}
 }
 ");
-            return template.Render(new
+            var context = CreateTemplateContext(new
             {
                 Providers = document.Root.Elements("Provider")
                     .Select(static provider => new
@@ -1482,6 +1489,8 @@ public static partial class OpenIddictClientWebIntegrationHelpers
                     })
                     .ToList()
             });
+
+            return template.Render(context);
         }
 
         static string GenerateSettings(XDocument document)
@@ -1524,7 +1533,7 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
     {{~ end ~}}
 }
 ");
-            return template.Render(new
+            var context = CreateTemplateContext(new
             {
                 Providers = document.Root.Elements("Provider")
                     .Select(static provider => new
@@ -1572,6 +1581,20 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                     })
                     .ToList()
             });
+
+            return template.Render(context);
+        }
+
+        static TemplateContext CreateTemplateContext(object model)
+        {
+            var context = new TemplateContext
+            {
+                LoopLimit = 100_000
+            };
+
+            context.PushGlobal(ScriptObject.From(model));
+
+            return context;
         }
     }
 }

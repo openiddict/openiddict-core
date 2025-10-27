@@ -34,9 +34,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-15, ubuntu-24.04, windows-2022 ]
+        os: [ macos-26, ubuntu-24.04, windows-2022 ]
         include:
-        - os: macos-15
+        - os: macos-26
           os_name: macos
         - os: ubuntu-24.04
           os_name: linux
