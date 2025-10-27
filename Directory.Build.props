@@ -9,7 +9,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591;NU5128</NoWarn>
     <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
-    <NuGetAuditMode>direct</NuGetAuditMode>
+    <NuGetAuditMode>all</NuGetAuditMode>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DebugSymbols>true</DebugSymbols>
@@ -110,25 +110,21 @@
 
     <NetCoreAndroidTargetFrameworks
       Condition=" '$(NetCoreAndroidTargetFrameworks)' == '' And '$(SupportsAndroidTargeting)' == 'true' ">
-      net8.0-android34.0;
       net9.0-android35.0
     </NetCoreAndroidTargetFrameworks>
 
     <NetCoreIOSTargetFrameworks
       Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSTargeting)' == 'true' ">
-      net8.0-ios18.0;
       net9.0-ios18.0
     </NetCoreIOSTargetFrameworks>
 
     <NetCoreMacCatalystTargetFrameworks
       Condition=" '$(NetCoreMacCatalystTargetFrameworks)' == '' And '$(SupportsMacCatalystTargeting)' == 'true' ">
-      net8.0-maccatalyst18.0;
       net9.0-maccatalyst18.0
     </NetCoreMacCatalystTargetFrameworks>
 
     <NetCoreMacOSTargetFrameworks
       Condition=" '$(NetCoreMacOSTargetFrameworks)' == '' And '$(SupportsMacOSTargeting)' == 'true' ">
-      net8.0-macos15.0;
       net9.0-macos15.0
     </NetCoreMacOSTargetFrameworks>
 
