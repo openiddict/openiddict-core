@@ -852,6 +852,36 @@
   </Provider>
 
   <!--
+                                                ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                ██ ▄▄▄█▄ ▄██ ▄▄ ██ ▄▀▄ █ ▄▄▀██
+                                                ██ ▄▄███ ███ █▀▀██ █ █ █ ▀▀ ██
+                                                ██ ████▀ ▀██ ▀▀▄██ ███ █ ██ ██
+                                                ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Figma" Id="2bb1d445-2de1-4c9e-ad47-f289f32c7edd"
+            Documentation="https://developers.figma.com/docs/rest-api/authentication/">
+    <Environment Issuer="https://www.figma.com/">
+      <Configuration AuthorizationEndpoint="https://www.figma.com/oauth"
+                     TokenEndpoint="https://api.figma.com/v1/oauth/token"
+                     UserInfoEndpoint="https://api.figma.com/v1/me">
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+
+      <!--
+        Note: Figma requires sending the "current_user:read" scope to be able to use the userinfo endpoint.
+      -->
+
+      <Scope Name="current_user:read" Default="true" Required="true" />
+    </Environment>
+  </Provider>
+
+  <!--
                                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                               ██ ▄▄▄█▄ ▄█▄▄ ▄▄██ ▄▄▀█▄ ▄█▄▄ ▄▄██
                                               ██ ▄▄███ ████ ████ ▄▄▀██ ████ ████
@@ -1121,11 +1151,13 @@
     </Environment>
   </Provider>
 
+  <!--
                                     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                     ██ ██ █ ▄▄▄█ ███ █ ▄▄▀█ ▄▄▄ █▄▀█▀▄█ ▄▄▀█ ██ █ ▄▄▀█▄▄ ▄▄██
                                     ██ ▄▄ █ ▄▄▄█▄▀▀▀▄█ ▄▄▀█ ███ ███ ███ ████ ▄▄ █ ▀▀ ███ ████
                                     ██ ██ █ ▀▀▀███ ███ ▀▀ █ ▀▀▀ █▀▄█▄▀█ ▀▀▄█ ██ █ ██ ███ ████
                                     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
 
   <Provider Name="HeyBoxChat" Id="b1b84538-0487-4106-bf53-4d0390523686"
             Documentation="https://s.apifox.cn/43256fe4-9a8c-4f22-949a-74a3f8b431f5/7145802m0">

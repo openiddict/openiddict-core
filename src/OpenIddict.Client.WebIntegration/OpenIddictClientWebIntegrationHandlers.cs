@@ -1457,6 +1457,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                          context.UserInfoResponse?.HasParameter("lastName")  is true
                     => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
 
+                // Figma returns the username as a custom "handle" node:
+                ProviderTypes.Figma => (string?) context.UserInfoResponse?["handle"],
+
                 // Huawei returns the username as a custom "display_name" in the backchannel identity token:
                 ProviderTypes.Huawei => context.BackchannelIdentityTokenPrincipal?.GetClaim("display_name"),
 
@@ -1531,17 +1534,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Airtable    or ProviderTypes.Basecamp      or ProviderTypes.Box        or
-                ProviderTypes.Dailymotion or ProviderTypes.Deezer        or ProviderTypes.Discord    or
-                ProviderTypes.Disqus      or ProviderTypes.Facebook      or ProviderTypes.Genesys    or
-                ProviderTypes.Gitee       or ProviderTypes.GitHub        or ProviderTypes.Harvest    or
-                ProviderTypes.Kook        or ProviderTypes.Kroger        or ProviderTypes.Lichess    or
-                ProviderTypes.Linear      or ProviderTypes.Mastodon      or ProviderTypes.Meetup     or
-                ProviderTypes.Miro        or ProviderTypes.Nextcloud     or ProviderTypes.Patreon    or
-                ProviderTypes.Pipedrive   or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
-                ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or
-                ProviderTypes.Twitter     or ProviderTypes.Webflow       or ProviderTypes.Weibo      or
-                ProviderTypes.Yandex      or ProviderTypes.Zoom
+                ProviderTypes.Airtable    or ProviderTypes.Basecamp  or ProviderTypes.Box           or
+                ProviderTypes.Dailymotion or ProviderTypes.Deezer    or ProviderTypes.Discord       or
+                ProviderTypes.Disqus      or ProviderTypes.Facebook  or ProviderTypes.Figma         or
+                ProviderTypes.Genesys     or ProviderTypes.Gitee     or ProviderTypes.GitHub        or
+                ProviderTypes.Harvest     or ProviderTypes.Kook      or ProviderTypes.Kroger        or
+                ProviderTypes.Lichess     or ProviderTypes.Linear    or ProviderTypes.Mastodon      or
+                ProviderTypes.Meetup      or ProviderTypes.Miro      or ProviderTypes.Nextcloud     or
+                ProviderTypes.Patreon     or ProviderTypes.Pipedrive or ProviderTypes.Reddit        or
+                ProviderTypes.Smartsheet  or ProviderTypes.Spotify   or ProviderTypes.SubscribeStar or
+                ProviderTypes.Todoist     or ProviderTypes.Twitter   or ProviderTypes.Webflow       or
+                ProviderTypes.Weibo       or ProviderTypes.Yandex    or ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
