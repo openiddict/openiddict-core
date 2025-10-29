@@ -14,6 +14,11 @@
     <PackageReference Include="MartinCostello.Logging.XUnit" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '10.0'))) ">
     <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
 

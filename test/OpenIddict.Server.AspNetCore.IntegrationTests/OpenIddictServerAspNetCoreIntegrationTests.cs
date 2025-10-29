@@ -72,6 +72,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         await client.GetAsync("/.well-known/openid-configuration", new OpenIddictRequest());
     }
 
+#if !SUPPORTS_RELAXED_URI_LIMITS
     [Fact]
     public async Task ProcessRequest_IgnoresInvalidRequestUris()
     {
@@ -110,6 +111,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         // Act
         await client.GetAsync("/.well-known/openid-configuration", new OpenIddictRequest());
     }
+#endif
 
     [Fact]
     public async Task ProcessAuthentication_CreationDateIsMappedToIssuedUtc()

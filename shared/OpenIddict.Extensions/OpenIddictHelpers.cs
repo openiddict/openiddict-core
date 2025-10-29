@@ -1039,18 +1039,35 @@ internal static class OpenIddictHelpers
     {
         // Warning: the type and order of the arguments specified here MUST exactly match the parameters used with
         // Rfc2898DeriveBytes(string password, byte[] salt, int iterations, HashAlgorithmName hashAlgorithm).
-        using var generator = GetAlgorithmFromConfig(secret, salt, iterations, algorithm) switch
+        var generator = GetAlgorithmFromConfig(secret, salt, iterations, algorithm) switch
         {
             Rfc2898DeriveBytes result => result,
-
-#pragma warning disable CA5379
-            null => new Rfc2898DeriveBytes(secret, salt, iterations, algorithm),
-#pragma warning restore CA5379
-
+            null => null,
             var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
         };
 
-        return generator.GetBytes(length);
+        // If no custom generator was registered, use either the static/one-shot Pbkdf2() API
+        // on platforms that support it or create an instance using the dedicated constructor.
+        if (generator is null)
+        {
+#if SUPPORTS_ONE_SHOT_KEY_DERIVATION_METHODS
+            return Rfc2898DeriveBytes.Pbkdf2(secret, salt, iterations, algorithm, length);
+#else
+#pragma warning disable CA5379
+            generator = new Rfc2898DeriveBytes(secret, salt, iterations, algorithm);
+#pragma warning restore CA5379
+#endif
+        }
+
+        try
+        {
+            return generator.GetBytes(length);
+        }
+
+        finally
+        {
+            generator.Dispose();
+        }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026",
             Justification = "The default implementation is always used when no custom algorithm was registered.")]
