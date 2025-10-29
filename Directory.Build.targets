@@ -69,6 +69,7 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_KEY_DERIVATION_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_PEM_ENCODED_KEY_IMPORT</DefineConstants>
@@ -116,6 +117,11 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_DEEP_EQUALS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '10.0')) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_RELAXED_URI_LIMITS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup

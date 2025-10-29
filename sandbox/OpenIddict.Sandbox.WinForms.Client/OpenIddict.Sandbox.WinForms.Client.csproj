@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net48</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(SupportsWindowsTargeting)' == 'true' ">$(TargetFrameworks);net9.0-windows7.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(SupportsWindowsTargeting)' == 'true' ">$(TargetFrameworks);net10.0-windows7.0</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
@@ -20,6 +20,7 @@
     <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.AppServices" />
     <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.WinForms" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
 </Project>

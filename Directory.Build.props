@@ -20,6 +20,7 @@
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+    <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
   </PropertyGroup>
 
@@ -105,27 +106,32 @@
 
     <NetCoreTargetFrameworks Condition=" '$(NetCoreTargetFrameworks)' == '' ">
       net8.0;
-      net9.0
+      net9.0;
+      net10.0
     </NetCoreTargetFrameworks>
 
     <NetCoreAndroidTargetFrameworks
       Condition=" '$(NetCoreAndroidTargetFrameworks)' == '' And '$(SupportsAndroidTargeting)' == 'true' ">
-      net9.0-android35.0
+      net9.0-android;
+      net10.0-android
     </NetCoreAndroidTargetFrameworks>
 
     <NetCoreIOSTargetFrameworks
       Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSTargeting)' == 'true' ">
-      net9.0-ios18.0
+      net9.0-ios;
+      net10.0-ios
     </NetCoreIOSTargetFrameworks>
 
     <NetCoreMacCatalystTargetFrameworks
       Condition=" '$(NetCoreMacCatalystTargetFrameworks)' == '' And '$(SupportsMacCatalystTargeting)' == 'true' ">
-      net9.0-maccatalyst18.0
+      net9.0-maccatalyst;
+      net10.0-maccatalyst
     </NetCoreMacCatalystTargetFrameworks>
 
     <NetCoreMacOSTargetFrameworks
       Condition=" '$(NetCoreMacOSTargetFrameworks)' == '' And '$(SupportsMacOSTargeting)' == 'true' ">
-      net9.0-macos15.0
+      net9.0-macos;
+      net10.0-macos
     </NetCoreMacOSTargetFrameworks>
 
     <NetCoreWindowsTargetFrameworks
@@ -133,7 +139,9 @@
       net8.0-windows7.0;
       net8.0-windows10.0.17763;
       net9.0-windows7.0;
-      net9.0-windows10.0.17763
+      net9.0-windows10.0.17763;
+      net10.0-windows7.0;
+      net10.0-windows10.0.17763
     </NetCoreWindowsTargetFrameworks>
 
     <NetStandardTargetFrameworks Condition=" '$(NetStandardTargetFrameworks)' == '' ">
