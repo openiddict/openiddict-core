@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -159,7 +158,7 @@ public static partial class OpenIddictServerHandlers
             // If the base or request URIs couldn't be resolved, don't try to infer the endpoint type.
             if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.EndpointType =
@@ -181,7 +180,7 @@ public static partial class OpenIddictServerHandlers
                 context.Logger.LogInformation(6053, SR.GetResourceString(SR.ID6053), context.EndpointType);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             bool Matches(IReadOnlyList<Uri> candidates)
             {
@@ -430,7 +429,7 @@ public static partial class OpenIddictServerHandlers
                 _ => (false, false, false, false)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -560,7 +559,7 @@ public static partial class OpenIddictServerHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -606,10 +605,10 @@ public static partial class OpenIddictServerHandlers
                     description: SR.GetResourceString(SR.ID2000),
                     uri: SR.FormatID8000(SR.ID2000));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -731,7 +730,7 @@ public static partial class OpenIddictServerHandlers
                     description: SR.FormatID2171(group.Key),
                     uri: SR.FormatID8000(SR.ID2171));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Client assertions MUST contain an "iss" claim. For more information,
@@ -744,7 +743,7 @@ public static partial class OpenIddictServerHandlers
                     description: SR.FormatID2172(Claims.Issuer),
                     uri: SR.FormatID8000(SR.ID2172));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Client assertions MUST contain a "sub" claim. For more information,
@@ -757,7 +756,7 @@ public static partial class OpenIddictServerHandlers
                     description: SR.FormatID2172(Claims.Subject),
                     uri: SR.FormatID8000(SR.ID2172));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Client assertions MUST contain an "aud" claim. For more information,
@@ -770,7 +769,7 @@ public static partial class OpenIddictServerHandlers
                     description: SR.FormatID2172(Claims.Audience),
                     uri: SR.FormatID8000(SR.ID2172));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Client assertions MUST contain contain a "exp" claim. For more information,
@@ -783,10 +782,10 @@ public static partial class OpenIddictServerHandlers
                     description: SR.FormatID2172(Claims.ExpiresAt),
                     uri: SR.FormatID8000(SR.ID2172));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
             {
@@ -851,7 +850,7 @@ public static partial class OpenIddictServerHandlers
                     description: SR.FormatID2173(Claims.Subject),
                     uri: SR.FormatID8000(SR.ID2173));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // If a client identifier was also specified in the request, ensure the
@@ -865,7 +864,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2173(Claims.Issuer),
                         uri: SR.FormatID8000(SR.ID2173));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 if (!string.Equals(context.ClientId, subject, StringComparison.Ordinal))
@@ -875,7 +874,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2173(Claims.Subject),
                         uri: SR.FormatID8000(SR.ID2173));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
             }
 
@@ -885,7 +884,7 @@ public static partial class OpenIddictServerHandlers
                 request.ClientId = context.ClientAssertionPrincipal.GetClaim(Claims.Issuer);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -930,7 +929,7 @@ public static partial class OpenIddictServerHandlers
                     description: SR.FormatID2172(Claims.Audience),
                     uri: SR.FormatID8000(SR.ID2172));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Throw an exception if the issuer cannot be retrieved or is not valid.
@@ -947,10 +946,10 @@ public static partial class OpenIddictServerHandlers
                     description: SR.FormatID2173(Claims.Audience),
                     uri: SR.FormatID8000(SR.ID2173));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static bool UriEquals(Uri left, Uri right)
             {
@@ -1379,13 +1378,13 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2182(Parameters.RequestUri),
                         uri: SR.FormatID8000(SR.ID2182));
 
-                    return default;
+                    return ValueTask.CompletedTask;
 
                 // For other endpoints that don't natively support request tokens, don't return an error
                 // to allow custom implementations to use request tokens with other types of endpoints.
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2244,7 +2243,7 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2316,7 +2315,7 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2352,7 +2351,7 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2418,7 +2417,7 @@ public static partial class OpenIddictServerHandlers
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2572,7 +2571,7 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2666,7 +2665,7 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.FormatID0424(group.Key));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
             {
@@ -2882,7 +2881,7 @@ public static partial class OpenIddictServerHandlers
                 case OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType():
                     break;
 
-                default: return default;
+                default: return ValueTask.CompletedTask;
             }
 
             var identity = (ClaimsIdentity) context.Principal.Identity;
@@ -2909,7 +2908,7 @@ public static partial class OpenIddictServerHandlers
 
             if (principal is null)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Restore the internal claims resolved from the token.
@@ -2933,7 +2932,7 @@ public static partial class OpenIddictServerHandlers
                 identity.AddClaims(claims);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2964,7 +2963,7 @@ public static partial class OpenIddictServerHandlers
 
             context.Principal.SetClaim(Claims.Private.HostProperties, context.Properties);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -3001,7 +3000,7 @@ public static partial class OpenIddictServerHandlers
                 context.Principal.SetScopes(Scopes.OpenId);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -3037,7 +3036,7 @@ public static partial class OpenIddictServerHandlers
                 context.Principal.SetPresenters(context.ClientId);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -3075,7 +3074,7 @@ public static partial class OpenIddictServerHandlers
             // Reset the audiences collection, as it's set later, based on the token type.
             context.Principal.SetAudiences([]);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -3253,7 +3252,7 @@ public static partial class OpenIddictServerHandlers
                 _ => (false, false)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -5050,7 +5049,7 @@ public static partial class OpenIddictServerHandlers
                 context.UserCodePrincipal.SetClaim(Claims.Private.DeviceCodeId, identifier);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -5161,7 +5160,7 @@ public static partial class OpenIddictServerHandlers
 
             if (string.IsNullOrEmpty(context.AccessToken) && string.IsNullOrEmpty(context.AuthorizationCode))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             var credentials = context.Options.SigningCredentials.Find(
@@ -5186,7 +5185,7 @@ public static partial class OpenIddictServerHandlers
                 context.IdentityTokenPrincipal.SetClaim(Claims.CodeHash, Base64UrlEncoder.Encode(digest, 0, digest.Length / 2));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static byte[] ComputeTokenHash(SigningCredentials credentials, string token) => credentials switch
             {
@@ -5412,7 +5411,7 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -5577,7 +5576,7 @@ public static partial class OpenIddictServerHandlers
                 };
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -5613,7 +5612,7 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -5646,7 +5645,7 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -5748,7 +5747,7 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -5779,7 +5778,7 @@ public static partial class OpenIddictServerHandlers
             context.Response.ErrorDescription = context.ErrorDescription;
             context.Response.ErrorUri = context.ErrorUri;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -5815,7 +5814,7 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

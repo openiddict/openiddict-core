@@ -103,7 +103,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             context.BaseUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase));
             context.RequestUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase, request.Path, request.QueryString));
 
-            return default;
+            return ValueTask.CompletedTask;
 
             // Note: the BCL System.Uri class has strict rules (e.g it rejects specific characters and enforces a
             // limit of 65519 characters for the complete URI representation). To ensure no exception is thrown if the
@@ -150,10 +150,10 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                     description: SR.FormatID2081(HeaderNames.Host),
                     uri: SR.FormatID8000(SR.ID2081));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -187,7 +187,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             // If a token was already resolved, don't overwrite it.
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -202,10 +202,10 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             {
                 context.AccessToken = header["Bearer ".Length..];
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -295,7 +295,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             // If a token was already resolved, don't overwrite it.
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -309,10 +309,10 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             {
                 context.AccessToken = token;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -375,7 +375,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -413,7 +413,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                 context.Response.Scope = properties.GetString(Properties.Scope);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -463,7 +463,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                 _ => 400
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -502,7 +502,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             response.Headers[HeaderNames.Pragma] = "no-cache";
             response.Headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -545,7 +545,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: unlike the server stack, the validation stack doesn't expose any endpoint
@@ -606,7 +606,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
 
             response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -643,13 +643,13 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
             if (!response.Headers.ContainsKey(HeaderNames.WWWAuthenticate))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.Logger.LogInformation(6141, SR.GetResourceString(SR.ID6141), context.Transaction.Response);
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

@@ -336,10 +336,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.AccessToken),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -436,7 +436,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.AccessTokenPrincipal ??= notification.AccessTokenPrincipal;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -470,7 +470,7 @@ public static partial class OpenIddictServerHandlers
                 // See http://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
                 context.Audiences.UnionWith(context.AccessTokenPrincipal.GetPresenters());
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -529,7 +529,7 @@ public static partial class OpenIddictServerHandlers
                     context.PhoneNumber = context.AccessTokenPrincipal.GetClaim(Claims.PhoneNumber);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

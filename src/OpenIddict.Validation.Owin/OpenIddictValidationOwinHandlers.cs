@@ -12,7 +12,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants;
 using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.Properties;
@@ -105,7 +104,7 @@ public static partial class OpenIddictValidationOwinHandlers
             context.BaseUri = CreateUri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase);
             context.RequestUri = CreateUri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase + request.Path + request.QueryString);
 
-            return default;
+            return ValueTask.CompletedTask;
 
             // Note: the BCL System.Uri class has strict rules (e.g it rejects specific characters and enforces a
             // limit of 65519 characters for the complete URI representation). To ensure no exception is thrown if the
@@ -152,10 +151,10 @@ public static partial class OpenIddictValidationOwinHandlers
                     description: SR.FormatID2081(Headers.Host),
                     uri: SR.FormatID8000(SR.ID2081));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -189,7 +188,7 @@ public static partial class OpenIddictValidationOwinHandlers
             // If a token was already resolved, don't overwrite it.
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -204,10 +203,10 @@ public static partial class OpenIddictValidationOwinHandlers
             {
                 context.AccessToken = header["Bearer ".Length..];
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -298,7 +297,7 @@ public static partial class OpenIddictValidationOwinHandlers
             // If a token was already resolved, don't overwrite it.
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -313,10 +312,10 @@ public static partial class OpenIddictValidationOwinHandlers
             {
                 context.AccessToken = token;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -349,7 +348,7 @@ public static partial class OpenIddictValidationOwinHandlers
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is not { Dictionary.Count: > 0 })
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
@@ -395,7 +394,7 @@ public static partial class OpenIddictValidationOwinHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -433,7 +432,7 @@ public static partial class OpenIddictValidationOwinHandlers
                 context.Response.Scope = GetProperty(properties, Properties.Scope);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static string? GetProperty(AuthenticationProperties properties, string name)
                 => properties.Dictionary.TryGetValue(name, out string? value) ? value : null;
@@ -486,7 +485,7 @@ public static partial class OpenIddictValidationOwinHandlers
                 _ => 400
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -539,7 +538,7 @@ public static partial class OpenIddictValidationOwinHandlers
                     properties         : response.Context.Authentication.AuthenticationResponseChallenge?.Properties ?? new());
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -584,7 +583,7 @@ public static partial class OpenIddictValidationOwinHandlers
                 TrySuppressFormsAuthenticationRedirect(response.Environment);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static void TrySuppressFormsAuthenticationRedirect(IDictionary<string, object> environment)
             {
@@ -645,7 +644,7 @@ public static partial class OpenIddictValidationOwinHandlers
             response.Headers[Headers.Pragma] = "no-cache";
             response.Headers[Headers.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -688,7 +687,7 @@ public static partial class OpenIddictValidationOwinHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: unlike the server stack, the validation stack doesn't expose any endpoint
@@ -749,7 +748,7 @@ public static partial class OpenIddictValidationOwinHandlers
 
             response.Headers.Append(Headers.WwwAuthenticate, builder.ToString());
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -786,13 +785,13 @@ public static partial class OpenIddictValidationOwinHandlers
             // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
             if (!response.Headers.ContainsKey(Headers.WwwAuthenticate))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.Logger.LogInformation(6141, SR.GetResourceString(SR.ID6141), context.Transaction.Response);
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

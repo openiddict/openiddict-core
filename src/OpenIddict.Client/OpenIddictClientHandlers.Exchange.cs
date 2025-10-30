@@ -55,11 +55,11 @@ public static partial class OpenIddictClientHandlers
                             description: SR.FormatID2107(parameter.Key),
                             uri: SR.FormatID8000(SR.ID2107));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
 
                 // Note: in the typical case, the response parameters should be deserialized from a
                 // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
@@ -135,10 +135,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.GetResourceString(SR.ID2147),
                         uri: SR.FormatID8000(SR.ID2147));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

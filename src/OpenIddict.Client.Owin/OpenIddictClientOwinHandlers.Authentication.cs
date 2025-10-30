@@ -90,7 +90,7 @@ public static partial class OpenIddictClientOwinHandlers
                 response.Redirect(location);
                 context.HandleRequest();
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

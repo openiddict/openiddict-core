@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
 namespace OpenIddict.Client.SystemNetHttp;
@@ -91,7 +90,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.TokenEndpointClientAuthenticationMethod))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.TokenEndpointClientAuthenticationMethod = (
@@ -175,7 +174,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -225,7 +224,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                (context.Configuration.MtlsUserInfoEndpoint ?? context.Configuration.UserInfoEndpoint) is not Uri endpoint ||
                !string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             if (context.TokenEndpointClientAuthenticationMethod is ClientAuthenticationMethods.TlsClientAuth &&
@@ -240,7 +239,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 context.UserInfoEndpointTokenBindingMethods.Add(TokenBindingMethods.Private.SelfSignedTlsClientCertificate);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -278,7 +277,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.DeviceAuthorizationEndpointClientAuthenticationMethod))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.DeviceAuthorizationEndpointClientAuthenticationMethod = (
@@ -370,7 +369,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -408,7 +407,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.PushedAuthorizationEndpointClientAuthenticationMethod))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.PushedAuthorizationEndpointClientAuthenticationMethod = (
@@ -501,7 +500,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -539,7 +538,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.IntrospectionEndpointClientAuthenticationMethod))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.IntrospectionEndpointClientAuthenticationMethod = (
@@ -623,7 +622,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -661,7 +660,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.RevocationEndpointClientAuthenticationMethod))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.RevocationEndpointClientAuthenticationMethod = (
@@ -745,7 +744,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -834,7 +833,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             context.Transaction.SetProperty(typeof(HttpClient).FullName!, _factory.CreateClient(builder.ToString()) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0174)));
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -866,7 +865,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!,
                 new HttpRequestMessage(HttpMethod.Get, context.RemoteUri));
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -898,7 +897,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!,
                 new HttpRequestMessage(HttpMethod.Post, context.RemoteUri));
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -945,7 +944,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             request.VersionPolicy = client.DefaultVersionPolicy;
 #endif
 #endif
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -986,7 +985,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // that require using HTTP compression can register a custom event handler to send an
             // Accept-Encoding header containing the supported algorithms (e.g GZip/Deflate/Brotli).
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1040,7 +1039,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 productName: assembly.Name!,
                 productVersion: assembly.Version!.ToString()));
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1081,7 +1080,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // Attach the contact address specified in the options, if available.
             request.Headers.From = _options.CurrentValue.ContactAddress?.ToString();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1135,7 +1134,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 context.Transaction.Request.ClientId = context.Transaction.Request.ClientSecret = null;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static string? EscapeDataString(string? value)
                 => value is not null ? Uri.EscapeDataString(value).Replace("%20", "+") : null;
@@ -1175,7 +1174,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
             if (context.Transaction.Request.Count is 0)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // For GET requests, attach the request parameters to the query string by default.
@@ -1198,7 +1197,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     select new KeyValuePair<string?, string?>(parameter.Key, value));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1300,7 +1299,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // Remove the request from the transaction properties.
             context.Transaction.SetProperty<HttpRequestMessage>(typeof(HttpRequestMessage).FullName!, null);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1556,7 +1555,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // Don't overwrite the response if one was already provided.
             if (context.Transaction.Response is not null)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
@@ -1566,14 +1565,14 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
             if (response.Headers.WwwAuthenticate.Count is 0)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.Transaction.Response = new OpenIddictResponse(response.Headers.WwwAuthenticate
                 .Where(static header => !string.IsNullOrEmpty(header.Parameter))
                 .SelectMany(static header => ParseParameters(header.Parameter!)));
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static IEnumerable<KeyValuePair<string, string?>> ParseParameters(string parameter)
             {
@@ -1685,7 +1684,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // Don't overwrite the response if one was already provided.
             if (context.Transaction.Response is not null)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
@@ -1700,7 +1699,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 context.Transaction.Response = new OpenIddictResponse();
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1808,7 +1807,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // Remove the response from the transaction properties.
             context.Transaction.SetProperty<HttpResponseMessage>(typeof(HttpResponseMessage).FullName!, null);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

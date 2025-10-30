@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Client.SystemIntegration;
 

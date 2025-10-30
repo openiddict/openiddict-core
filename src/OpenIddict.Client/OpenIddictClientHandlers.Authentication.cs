@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -187,7 +186,7 @@ public static partial class OpenIddictClientHandlers
                 // Don't overwrite the endpoint URI if it was already set.
                 if (!string.IsNullOrEmpty(context.AuthorizationEndpoint))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Ensure the authorization endpoint is present and is a valid absolute URI.
@@ -199,7 +198,7 @@ public static partial class OpenIddictClientHandlers
 
                 context.AuthorizationEndpoint = context.Configuration.AuthorizationEndpoint.AbsoluteUri;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -235,11 +234,11 @@ public static partial class OpenIddictClientHandlers
                             description: SR.FormatID2107(parameter.Key),
                             uri: SR.FormatID8000(SR.ID2107));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
 
                 // Note: in the typical case, the response parameters should be deserialized from a
                 // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
@@ -307,10 +306,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.GetResourceString(SR.ID2179),
                         uri: SR.FormatID8000(SR.ID2179));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -347,7 +346,7 @@ public static partial class OpenIddictClientHandlers
                         description: SR.FormatID2180(Parameters.RequestUri),
                         uri: SR.FormatID8000(SR.ID2180));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Return an error if the "request_uri" parameter is malformed.
@@ -359,10 +358,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.FormatID2181(Parameters.RequestUri),
                         uri: SR.FormatID8000(SR.ID2181));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -400,10 +399,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.FormatID2180(Parameters.ExpiresIn),
                         uri: SR.FormatID8000(SR.ID2180));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -670,7 +669,7 @@ public static partial class OpenIddictClientHandlers
                     context.Request.ResponseMode = null;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 

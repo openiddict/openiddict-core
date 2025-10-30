@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using OpenIddict.Extensions;
 using Properties = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
 
 namespace OpenIddict.Server.AspNetCore;
@@ -105,7 +104,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             context.BaseUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase));
             context.RequestUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase, request.Path, request.QueryString));
 
-            return default;
+            return ValueTask.CompletedTask;
 
             // Note: the BCL System.Uri class has strict rules (e.g it rejects specific characters and enforces a
             // limit of 65519 characters for the complete URI representation). To ensure no exception is thrown if the
@@ -153,10 +152,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.GetResourceString(SR.ID2083),
                     uri: SR.FormatID8000(SR.ID2083));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -198,10 +197,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.FormatID2081(HeaderNames.Host),
                     uri: SR.FormatID8000(SR.ID2081));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -264,7 +263,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -302,7 +301,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 context.Response.Scope = properties.GetString(Properties.Scope);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -365,7 +364,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -428,7 +427,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -476,10 +475,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.GetResourceString(SR.ID2084),
                     uri: SR.FormatID8000(SR.ID2084));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -682,7 +681,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretPost),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Reject requests that use client_secret_basic if support was explicitly disabled in the options.
@@ -700,10 +699,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretBasic),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -743,7 +742,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             string? header = request.Headers[HeaderNames.Authorization];
             if (string.IsNullOrEmpty(header) || !header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // At this point, reject requests that use multiple client authentication methods.
@@ -758,7 +757,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.GetResourceString(SR.ID2087),
                     uri: SR.FormatID8000(SR.ID2087));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             try
@@ -774,14 +773,14 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                         description: SR.GetResourceString(SR.ID2055),
                         uri: SR.FormatID8000(SR.ID2055));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Attach the basic authentication credentials to the request message.
                 context.Transaction.Request.ClientId = UnescapeDataString(data[..index]);
                 context.Transaction.Request.ClientSecret = UnescapeDataString(data[(index + 1)..]);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
@@ -791,7 +790,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.GetResourceString(SR.ID2055),
                     uri: SR.FormatID8000(SR.ID2055));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             static string? UnescapeDataString(string data)
@@ -842,13 +841,13 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             string? header = request.Headers[HeaderNames.Authorization];
             if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Attach the access token to the request message.
             context.Transaction.Request.AccessToken = header["Bearer ".Length..];
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -888,7 +887,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 case OpenIddictServerEndpointType.Authorization when
                     context.Options.EnableAuthorizationRequestCaching &&
                     string.IsNullOrEmpty(context.Transaction.Request?.RequestUri):
-                    return default;
+                    return ValueTask.CompletedTask;
 
                 // When end session request caching is enabled and the request doesn't contain a
                 // request_uri yet, do not enable the pass-through mode to allow OpenIddict to trigger
@@ -896,12 +895,12 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 case OpenIddictServerEndpointType.EndSession when
                     context.Options.EnableEndSessionRequestCaching &&
                     string.IsNullOrEmpty(context.Transaction.Request?.RequestUri):
-                    return default;
+                    return ValueTask.CompletedTask;
 
             }
 
             context.SkipRequest();
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -967,7 +966,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 _ => 400
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1006,7 +1005,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             response.Headers[HeaderNames.Pragma] = "no-cache";
             response.Headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1049,7 +1048,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             var scheme = (context.EndpointType, context.Transaction.Response.Error) switch
@@ -1074,7 +1073,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             if (string.IsNullOrEmpty(scheme))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -1128,7 +1127,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1165,13 +1164,13 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
             if (!response.Headers.ContainsKey(HeaderNames.WWWAuthenticate))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.Logger.LogInformation(6141, SR.GetResourceString(SR.ID6141), context.Transaction.Response);
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1268,12 +1267,12 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.SkipRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1313,7 +1312,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Determine if the status code pages middleware has been enabled for this request.
@@ -1322,7 +1321,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             var feature = response.HttpContext.Features.Get<IStatusCodePagesFeature>();
             if (feature is not { Enabled: true })
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Mark the request as fully handled to prevent the other OpenIddict server handlers
@@ -1330,7 +1329,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             // to rewrite the response using the logic defined by the developer when registering it.
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1437,7 +1436,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             context.Logger.LogInformation(6145, SR.GetResourceString(SR.ID6145));
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

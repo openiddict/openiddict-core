@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 using OpenIddict.MongoDb.Models;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
@@ -519,9 +518,11 @@ public class OpenIddictMongoDbTokenStore<
 
         // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
         // maximum number of elements that can be removed by a single call to PruneAsync() is deliberately limited.
-        foreach (var buffer in identifiers.Take(1_000_000).Buffer(1_000))
+        foreach (var buffer in identifiers.Take(1_000_000).Chunk(1_000))
         {
-            result += (await collection.DeleteManyAsync(token => buffer.Contains(token.Id), cancellationToken)).DeletedCount;
+            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure the
+            // span-based MemoryExtensions.Contains() API (which is not supported by MongoDB) is not used instead.
+            result += (await collection.DeleteManyAsync(token => Enumerable.Contains(buffer, token.Id), cancellationToken)).DeletedCount;
         }
 
         return result;
@@ -634,7 +635,7 @@ public class OpenIddictMongoDbTokenStore<
             token.ApplicationId = ObjectId.Empty;
         }
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -655,7 +656,7 @@ public class OpenIddictMongoDbTokenStore<
             token.AuthorizationId = ObjectId.Empty;
         }
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -668,7 +669,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.CreationDate = date?.UtcDateTime;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -681,7 +682,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.ExpirationDate = date?.UtcDateTime;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -694,7 +695,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.Payload = payload;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -710,7 +711,7 @@ public class OpenIddictMongoDbTokenStore<
         {
             token.Properties = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -733,7 +734,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.Properties = BsonDocument.Parse(Encoding.UTF8.GetString(stream.ToArray()));
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -746,7 +747,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.RedemptionDate = date?.UtcDateTime;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -759,7 +760,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.ReferenceId = identifier;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -772,7 +773,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.Status = status;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -785,7 +786,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.Subject = subject;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -798,7 +799,7 @@ public class OpenIddictMongoDbTokenStore<
 
         token.Type = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>

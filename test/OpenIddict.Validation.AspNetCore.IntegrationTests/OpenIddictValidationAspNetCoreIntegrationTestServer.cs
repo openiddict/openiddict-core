@@ -56,7 +56,7 @@ public class OpenIddictValidationAspNetCoreIntegrationTestServer : OpenIddictVal
         await Host.StopAsync();
         Host.Dispose();
 #else
-        return default;
+        return ValueTask.CompletedTask;
 #endif
     }
 }

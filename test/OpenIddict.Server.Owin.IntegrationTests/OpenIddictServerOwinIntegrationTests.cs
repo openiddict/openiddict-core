@@ -44,7 +44,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     var request = context.Transaction.GetOwinRequest()!;
                     request.Host = new HostString("fabrikam.com:100000");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MinValue);
@@ -58,7 +58,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     Assert.Null(context.RequestUri);
                     Assert.Equal(OpenIddictServerEndpointType.Unknown, context.EndpointType);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -83,7 +83,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     var request = context.Transaction.GetOwinRequest()!;
                     request.QueryString = new QueryString("?" + new string([.. Enumerable.Repeat('x', 100_000)]));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MinValue);
@@ -97,7 +97,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     Assert.Null(context.RequestUri);
                     Assert.Equal(OpenIddictServerEndpointType.Unknown, context.EndpointType);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -121,7 +121,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
@@ -136,7 +136,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetCreationDate(new DateTimeOffset(2020, 01, 01, 00, 00, 00, TimeSpan.Zero));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -172,7 +172,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
@@ -186,7 +186,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                         .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetExpirationDate(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -229,7 +229,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
                     context.Properties["custom_property"] = "value";
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1);
@@ -270,7 +270,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessChallengeContext>(builder =>
@@ -278,7 +278,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     Assert.Equal("value", context.Properties["custom_property"]);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -312,7 +312,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -351,7 +351,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -433,7 +433,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -470,7 +470,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -497,7 +497,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -505,7 +505,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     Assert.Equal("value", context.Properties["custom_property"]);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -537,7 +537,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -576,7 +576,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignOutContext>(builder =>
@@ -584,7 +584,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     Assert.Equal("value", context.Properties["custom_property"]);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -615,7 +615,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 

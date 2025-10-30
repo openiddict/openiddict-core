@@ -57,7 +57,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.ResponseType = null;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

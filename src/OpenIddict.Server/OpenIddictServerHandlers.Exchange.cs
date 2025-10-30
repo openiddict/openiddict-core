@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -376,7 +375,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.GrantType),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token requests that don't specify a supported grant type.
@@ -389,7 +388,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2032(Parameters.GrantType),
                         uri: SR.FormatID8000(SR.ID2032));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token requests that specify scope=offline_access if the refresh token flow is not enabled.
@@ -401,10 +400,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2035(Scopes.OfflineAccess),
                         uri: SR.FormatID8000(SR.ID2035));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -447,7 +446,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.ClientId),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject grant_type=client_credentials requests that don't specify a client_id or a client_assertion.
@@ -464,10 +463,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.ClientId),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -506,10 +505,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.Code),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -545,7 +544,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2037(Parameters.ClientAssertionType, Parameters.ClientAssertion),
                         uri: SR.FormatID8000(SR.ID2037));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Ensure a client_assertion is specified when a client_assertion_type was attached.
@@ -557,7 +556,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2037(Parameters.ClientAssertion, Parameters.ClientAssertionType),
                         uri: SR.FormatID8000(SR.ID2037));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject requests that use multiple client authentication methods.
@@ -573,7 +572,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.GetResourceString(SR.ID2087),
                         uri: SR.FormatID8000(SR.ID2087));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Ensure the specified client_assertion_type is supported.
@@ -585,7 +584,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2032(Parameters.ClientAssertionType),
                         uri: SR.FormatID8000(SR.ID2032));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject grant_type=client_credentials requests missing the client credentials.
@@ -600,10 +599,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2057(Parameters.ClientSecret, Parameters.ClientAssertion),
                         uri: SR.FormatID8000(SR.ID2057));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -640,10 +639,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2058(Parameters.DeviceCode),
                         uri: SR.FormatID8000(SR.ID2058));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -682,10 +681,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.RefreshToken),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -715,7 +714,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (!context.Request.IsTokenExchangeGrantType())
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token exchange requests missing the mandatory subject token.
@@ -730,7 +729,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.SubjectToken),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token exchange requests missing the mandatory subject token type.
@@ -743,7 +742,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.SubjectTokenType),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token exchange requests that specify an actor token but don't include an actor token type.
@@ -757,7 +756,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2037(Parameters.ActorToken, Parameters.ActorTokenType),
                         uri: SR.FormatID8000(SR.ID2037));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token exchange requests that specify an actor token type but don't include an actor token.
@@ -771,7 +770,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2037(Parameters.ActorTokenType, Parameters.ActorToken),
                         uri: SR.FormatID8000(SR.ID2037));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token exchange requests that specify an unsupported subject token type.
@@ -782,7 +781,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2032(Parameters.SubjectTokenType),
                         uri: SR.FormatID8000(SR.ID2032));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token exchange requests that specify an unsupported actor token type.
@@ -794,7 +793,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2032(Parameters.ActorTokenType),
                         uri: SR.FormatID8000(SR.ID2032));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject token exchange requests that specify an unsupported requested token type.
@@ -806,10 +805,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2032(Parameters.RequestedTokenType),
                         uri: SR.FormatID8000(SR.ID2032));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -849,10 +848,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2059(Parameters.Username, Parameters.Password),
                         uri: SR.FormatID8000(SR.ID2059));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -881,7 +880,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (!context.Request.IsAuthorizationCodeGrantType())
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Optimization: the ValidateCodeVerifier event handler automatically rejects grant_type=authorization_code
@@ -897,10 +896,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.CodeVerifier),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -944,10 +943,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2074(Parameters.Scope),
                         uri: SR.FormatID8000(SR.ID2074));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -976,7 +975,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (context.Request.Audiences is null or [])
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Prevent audiences parameters from being attached to token requests that don't use the
@@ -990,10 +989,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2195(Parameters.Audience),
                         uri: SR.FormatID8000(SR.ID2195));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1034,7 +1033,7 @@ public static partial class OpenIddictServerHandlers
                             description: SR.FormatID2030(Parameters.Resource),
                             uri: SR.FormatID8000(SR.ID2030));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
 
                     // Note: resource indicators MUST NOT contain a fragment.
@@ -1047,11 +1046,11 @@ public static partial class OpenIddictServerHandlers
                             description: SR.FormatID2031(Parameters.Resource),
                             uri: SR.FormatID8000(SR.ID2031));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1171,10 +1170,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2190(Parameters.Audience),
                         uri: SR.FormatID8000(SR.ID2190));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1215,10 +1214,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2190(Parameters.Resource),
                         uri: SR.FormatID8000(SR.ID2190));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1715,7 +1714,7 @@ public static partial class OpenIddictServerHandlers
                         //
                         // See https://tools.ietf.org/html/rfc6749#section-6
                         // and http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken for more information.
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
 
                     // If at least one presenter was associated to the authorization code/device code/refresh token,
@@ -1739,7 +1738,7 @@ public static partial class OpenIddictServerHandlers
                                              _               => SR.FormatID8000(SR.ID2068)
                             });
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
 
                     // Ensure the authorization code/device code/refresh token was issued to the client making the token request.
@@ -1762,7 +1761,7 @@ public static partial class OpenIddictServerHandlers
                                              _               => SR.FormatID8000(SR.ID2071)
                             });
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
@@ -1791,7 +1790,7 @@ public static partial class OpenIddictServerHandlers
                                     description: SR.GetResourceString(SR.ID2186),
                                     uri: SR.FormatID8000(SR.ID2186));
 
-                                return default;
+                                return ValueTask.CompletedTask;
                             }
 
                             // Reject the request if the caller is neither a valid audience nor a valid presenter.
@@ -1805,7 +1804,7 @@ public static partial class OpenIddictServerHandlers
                                     description: SR.GetResourceString(SR.ID2187),
                                     uri: SR.FormatID8000(SR.ID2187));
 
-                                return default;
+                                return ValueTask.CompletedTask;
                             }
 
                             break;
@@ -1830,7 +1829,7 @@ public static partial class OpenIddictServerHandlers
                                     description: SR.GetResourceString(SR.ID2186),
                                     uri: SR.FormatID8000(SR.ID2186));
 
-                                return default;
+                                return ValueTask.CompletedTask;
                             }
 
                             // Reject the request if the caller is not a valid presenter.
@@ -1843,7 +1842,7 @@ public static partial class OpenIddictServerHandlers
                                     description: SR.GetResourceString(SR.ID2187),
                                     uri: SR.FormatID8000(SR.ID2187));
 
-                                return default;
+                                return ValueTask.CompletedTask;
                             }
 
                             break;
@@ -1877,7 +1876,7 @@ public static partial class OpenIddictServerHandlers
                                     description: SR.GetResourceString(SR.ID2188),
                                     uri: SR.FormatID8000(SR.ID2188));
 
-                                return default;
+                                return ValueTask.CompletedTask;
                             }
 
                             // Reject the request if the caller is neither a valid audience nor a valid presenter.
@@ -1891,7 +1890,7 @@ public static partial class OpenIddictServerHandlers
                                     description: SR.GetResourceString(SR.ID2189),
                                     uri: SR.FormatID8000(SR.ID2189));
 
-                                return default;
+                                return ValueTask.CompletedTask;
                             }
 
                             break;
@@ -1916,7 +1915,7 @@ public static partial class OpenIddictServerHandlers
                                     description: SR.GetResourceString(SR.ID2188),
                                     uri: SR.FormatID8000(SR.ID2188));
 
-                                return default;
+                                return ValueTask.CompletedTask;
                             }
 
                             // Reject the request if the caller is not a valid presenter.
@@ -1929,7 +1928,7 @@ public static partial class OpenIddictServerHandlers
                                     description: SR.GetResourceString(SR.ID2189),
                                     uri: SR.FormatID8000(SR.ID2189));
 
-                                return default;
+                                return ValueTask.CompletedTask;
                             }
 
                             break;
@@ -1941,7 +1940,7 @@ public static partial class OpenIddictServerHandlers
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1970,7 +1969,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (!context.Request.IsAuthorizationCodeGrantType())
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 Debug.Assert(context.AuthorizationCodePrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
@@ -1985,7 +1984,7 @@ public static partial class OpenIddictServerHandlers
                 var uri = context.AuthorizationCodePrincipal.GetClaim(Claims.Private.RedirectUri);
                 if (string.IsNullOrEmpty(uri))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 if (string.IsNullOrEmpty(context.Request.RedirectUri))
@@ -1997,7 +1996,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.RedirectUri),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 if (!string.Equals(uri, context.Request.RedirectUri, StringComparison.Ordinal))
@@ -2009,10 +2008,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2072(Parameters.RedirectUri),
                         uri: SR.FormatID8000(SR.ID2072));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -2041,7 +2040,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (!context.Request.IsAuthorizationCodeGrantType())
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 Debug.Assert(context.AuthorizationCodePrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
@@ -2066,10 +2065,10 @@ public static partial class OpenIddictServerHandlers
                             description: SR.FormatID2073(Parameters.CodeVerifier, Parameters.CodeChallenge),
                             uri: SR.FormatID8000(SR.ID2073));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Get the code verifier from the token request. If it cannot be found, return an invalid_grant error.
@@ -2082,7 +2081,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2029(Parameters.CodeVerifier),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 var comparand = context.AuthorizationCodePrincipal.GetClaim(Claims.Private.CodeChallengeMethod) switch
@@ -2112,10 +2111,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2052(Parameters.CodeVerifier),
                         uri: SR.FormatID8000(SR.ID2052));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -2145,7 +2144,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (string.IsNullOrEmpty(context.Request.Scope) || !context.Request.IsRefreshTokenGrantType())
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 Debug.Assert(context.RefreshTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
@@ -2163,7 +2162,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2074(Parameters.Scope),
                         uri: SR.FormatID8000(SR.ID2074));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // When an explicit scope parameter has been included in the token request,
@@ -2179,10 +2178,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2052(Parameters.Scope),
                         uri: SR.FormatID8000(SR.ID2052));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -2215,7 +2214,7 @@ public static partial class OpenIddictServerHandlers
                     !context.Request.IsRefreshTokenGrantType() &&
                     !context.Request.IsTokenExchangeGrantType())
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 var notification = context.Transaction.GetProperty<ValidateTokenRequestContext>(
@@ -2247,7 +2246,7 @@ public static partial class OpenIddictServerHandlers
                     _ => null
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -2276,7 +2275,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (string.IsNullOrEmpty(context.Error))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // If the error indicates an invalid token, return a standard invalid_grant.
@@ -2286,7 +2285,7 @@ public static partial class OpenIddictServerHandlers
                                                  context.Request.IsRefreshTokenGrantType() ||
                                                  context.Request.IsTokenExchangeGrantType()))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.Response.Error = context.Error switch
@@ -2300,7 +2299,7 @@ public static partial class OpenIddictServerHandlers
                     _ => context.Error // Otherwise, keep the error as-is.
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

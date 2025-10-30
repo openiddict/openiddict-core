@@ -10,7 +10,6 @@ using System.Net.Http.Json;
 using System.Text;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Validation.IntegrationTests;
 
@@ -509,6 +508,6 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
     {
         HttpClient.Dispose();
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 }

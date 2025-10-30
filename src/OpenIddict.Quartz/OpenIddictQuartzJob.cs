@@ -7,7 +7,6 @@
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Quartz;
 

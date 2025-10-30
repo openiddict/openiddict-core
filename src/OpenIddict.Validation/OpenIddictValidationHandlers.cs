@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Validation;
@@ -100,7 +99,7 @@ public static partial class OpenIddictValidationHandlers
             // As such, the token is not directly resolved from the request, that may be null at this stage.
             // Instead, the token is expected to be populated by one or multiple handlers provided by the host.
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -136,10 +135,10 @@ public static partial class OpenIddictValidationHandlers
                     description: SR.GetResourceString(SR.ID2000),
                     uri: SR.FormatID8000(SR.ID2000));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -215,7 +214,7 @@ public static partial class OpenIddictValidationHandlers
 
             context.SendIntrospectionRequest = context.Options.ValidationType is OpenIddictValidationType.Introspection;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -247,7 +246,7 @@ public static partial class OpenIddictValidationHandlers
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.IntrospectionEndpointClientAuthenticationMethod))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.IntrospectionEndpointClientAuthenticationMethod = (
@@ -274,7 +273,7 @@ public static partial class OpenIddictValidationHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -319,7 +318,7 @@ public static partial class OpenIddictValidationHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -353,7 +352,7 @@ public static partial class OpenIddictValidationHandlers
             context.IntrospectionRequest.Token = context.AccessToken;
             context.IntrospectionRequest.TokenTypeHint = TokenTypeHints.AccessToken;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -392,7 +391,7 @@ public static partial class OpenIddictValidationHandlers
                 _ => (false, false)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -454,7 +453,7 @@ public static partial class OpenIddictValidationHandlers
 
             context.ClientAssertionPrincipal = principal;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -577,7 +576,7 @@ public static partial class OpenIddictValidationHandlers
                 context.IntrospectionRequest.ClientSecret = context.Options.ClientSecret;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -684,12 +683,12 @@ public static partial class OpenIddictValidationHandlers
                     description: SR.GetResourceString(SR.ID2110),
                     uri: SR.FormatID8000(SR.ID2110));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.AccessTokenPrincipal.SetTokenType(TokenTypeIdentifiers.AccessToken);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -728,7 +727,7 @@ public static partial class OpenIddictValidationHandlers
             // If no explicit audience has been configured, skip the audience validation.
             if (context.Options.Audiences.Count is 0)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // If the access token doesn't have any audience attached, return an error.
@@ -742,7 +741,7 @@ public static partial class OpenIddictValidationHandlers
                     description: SR.GetResourceString(SR.ID2093),
                     uri: SR.FormatID8000(SR.ID2093));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // If the access token doesn't include any registered audience, return an error.
@@ -755,10 +754,10 @@ public static partial class OpenIddictValidationHandlers
                     description: SR.GetResourceString(SR.ID2094),
                     uri: SR.FormatID8000(SR.ID2094));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -875,7 +874,7 @@ public static partial class OpenIddictValidationHandlers
             context.Response.ErrorDescription ??= notification?.ErrorDescription ?? SR.GetResourceString(SR.ID2095);
             context.Response.ErrorUri ??= notification?.ErrorUri ?? SR.FormatID8000(SR.ID2095);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -911,7 +910,7 @@ public static partial class OpenIddictValidationHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -942,7 +941,7 @@ public static partial class OpenIddictValidationHandlers
             context.Response.ErrorDescription = context.ErrorDescription;
             context.Response.ErrorUri = context.ErrorUri;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -978,7 +977,7 @@ public static partial class OpenIddictValidationHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

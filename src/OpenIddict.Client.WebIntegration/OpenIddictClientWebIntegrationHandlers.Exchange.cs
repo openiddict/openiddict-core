@@ -13,7 +13,6 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Primitives;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
@@ -115,7 +114,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.RedirectUri = null;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -176,7 +175,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.ClientId = context.Request.ClientSecret = null;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -228,7 +227,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.ClientId = null;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -264,7 +263,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 if (request.RequestUri is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // By default, Deezer returns non-standard token responses formatted as formurl-encoded
@@ -290,7 +289,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         });
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -340,7 +339,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => request.Content
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -370,7 +369,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 if (context.Response is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: when using the client credentials grant, Dailymotion returns a "refresh_token"
@@ -433,7 +432,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Response["id_token"] = null;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

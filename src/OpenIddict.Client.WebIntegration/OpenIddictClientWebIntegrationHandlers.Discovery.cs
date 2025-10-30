@@ -5,7 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.OpenIddictClientHandlers.Discovery;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
@@ -76,7 +75,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => context.Response[Metadata.Issuer]
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -160,7 +159,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -206,7 +205,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -258,7 +257,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -373,7 +372,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ClientAuthenticationMethods.PrivateKeyJwt);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -453,7 +452,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token/userinfo", UriKind.Absolute);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

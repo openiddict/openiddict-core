@@ -14,7 +14,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
 using Properties = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.Properties;
@@ -103,7 +102,7 @@ public static partial class OpenIddictServerOwinHandlers
             context.BaseUri = CreateUri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase);
             context.RequestUri = CreateUri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase + request.Path + request.QueryString);
 
-            return default;
+            return ValueTask.CompletedTask;
 
             // Note: the BCL System.Uri class has strict rules (e.g it rejects specific characters and enforces a
             // limit of 65519 characters for the complete URI representation). To ensure no exception is thrown if the
@@ -151,10 +150,10 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.GetResourceString(SR.ID2083),
                     uri: SR.FormatID8000(SR.ID2083));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -197,10 +196,10 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.FormatID2081(Headers.Host),
                     uri: SR.FormatID8000(SR.ID2081));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -233,7 +232,7 @@ public static partial class OpenIddictServerOwinHandlers
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is not { Dictionary.Count: > 0 })
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
@@ -279,7 +278,7 @@ public static partial class OpenIddictServerOwinHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -317,7 +316,7 @@ public static partial class OpenIddictServerOwinHandlers
                 context.Response.Scope = GetProperty(properties, Properties.Scope);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static string? GetProperty(AuthenticationProperties properties, string name)
                 => properties.Dictionary.TryGetValue(name, out string? value) ? value : null;
@@ -353,7 +352,7 @@ public static partial class OpenIddictServerOwinHandlers
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is not { Dictionary.Count: > 0 })
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
@@ -399,7 +398,7 @@ public static partial class OpenIddictServerOwinHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -432,7 +431,7 @@ public static partial class OpenIddictServerOwinHandlers
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is not { Dictionary.Count: > 0 })
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
@@ -478,7 +477,7 @@ public static partial class OpenIddictServerOwinHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -529,10 +528,10 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.GetResourceString(SR.ID2084),
                     uri: SR.FormatID8000(SR.ID2084));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -744,7 +743,7 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretPost),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Reject requests that use client_secret_basic if support was explicitly disabled in the options.
@@ -759,10 +758,10 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretBasic),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -802,7 +801,7 @@ public static partial class OpenIddictServerOwinHandlers
             var header = request.Headers[Headers.Authorization];
             if (string.IsNullOrEmpty(header) || !header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // At this point, reject requests that use multiple client authentication methods.
@@ -817,7 +816,7 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.GetResourceString(SR.ID2087),
                     uri: SR.FormatID8000(SR.ID2087));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             try
@@ -833,14 +832,14 @@ public static partial class OpenIddictServerOwinHandlers
                         description: SR.GetResourceString(SR.ID2055),
                         uri: SR.FormatID8000(SR.ID2055));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Attach the basic authentication credentials to the request message.
                 context.Transaction.Request.ClientId = UnescapeDataString(data[..index]);
                 context.Transaction.Request.ClientSecret = UnescapeDataString(data[(index + 1)..]);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
@@ -850,7 +849,7 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.GetResourceString(SR.ID2055),
                     uri: SR.FormatID8000(SR.ID2055));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             static string? UnescapeDataString(string data)
@@ -901,13 +900,13 @@ public static partial class OpenIddictServerOwinHandlers
             var header = request.Headers[Headers.Authorization];
             if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Attach the access token to the request message.
             context.Transaction.Request.AccessToken = header["Bearer ".Length..];
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -947,7 +946,7 @@ public static partial class OpenIddictServerOwinHandlers
                 case OpenIddictServerEndpointType.Authorization when
                     context.Options.EnableAuthorizationRequestCaching &&
                     string.IsNullOrEmpty(context.Transaction.Request?.RequestUri):
-                    return default;
+                    return ValueTask.CompletedTask;
 
                 // When end session request caching is enabled and the request doesn't contain a
                 // request_uri yet, do not enable the pass-through mode to allow OpenIddict to trigger
@@ -955,12 +954,12 @@ public static partial class OpenIddictServerOwinHandlers
                 case OpenIddictServerEndpointType.EndSession when
                     context.Options.EnableEndSessionRequestCaching &&
                     string.IsNullOrEmpty(context.Transaction.Request?.RequestUri):
-                    return default;
+                    return ValueTask.CompletedTask;
 
             }
 
             context.SkipRequest();
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1026,7 +1025,7 @@ public static partial class OpenIddictServerOwinHandlers
                 _ => 400
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1079,7 +1078,7 @@ public static partial class OpenIddictServerOwinHandlers
                     properties         : response.Context.Authentication.AuthenticationResponseChallenge?.Properties ?? new());
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1124,7 +1123,7 @@ public static partial class OpenIddictServerOwinHandlers
                 TrySuppressFormsAuthenticationRedirect(response.Environment);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static void TrySuppressFormsAuthenticationRedirect(IDictionary<string, object> environment)
             {
@@ -1185,7 +1184,7 @@ public static partial class OpenIddictServerOwinHandlers
             response.Headers[Headers.Pragma] = "no-cache";
             response.Headers[Headers.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1228,7 +1227,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             var scheme = (context.EndpointType, context.Transaction.Response.Error) switch
@@ -1253,7 +1252,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             if (string.IsNullOrEmpty(scheme))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -1307,7 +1306,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             response.Headers.Append(Headers.WwwAuthenticate, builder.ToString());
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1344,13 +1343,13 @@ public static partial class OpenIddictServerOwinHandlers
             // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
             if (!response.Headers.ContainsKey(Headers.WwwAuthenticate))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.Logger.LogInformation(6141, SR.GetResourceString(SR.ID6141), context.Transaction.Response);
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1447,7 +1446,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Don't return the state originally sent by the client application.
@@ -1455,7 +1454,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             context.SkipRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1562,7 +1561,7 @@ public static partial class OpenIddictServerOwinHandlers
             context.Logger.LogInformation(6145, SR.GetResourceString(SR.ID6145));
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

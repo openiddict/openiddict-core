@@ -30,6 +30,6 @@ public class OpenIddictServerOwinIntegrationTestServer : OpenIddictServerIntegra
         // Dispose of the underlying test server.
         Server.Dispose();
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 }

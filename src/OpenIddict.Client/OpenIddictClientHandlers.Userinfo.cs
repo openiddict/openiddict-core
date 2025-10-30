@@ -52,7 +52,7 @@ public static partial class OpenIddictClientHandlers
                 // Ignore the response instance if a userinfo token was extracted.
                 if (!string.IsNullOrEmpty(context.UserInfoToken))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 foreach (var parameter in context.Response.GetParameters())
@@ -64,11 +64,11 @@ public static partial class OpenIddictClientHandlers
                             description: SR.FormatID2107(parameter.Key),
                             uri: SR.FormatID8000(SR.ID2107));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
 
                 // Note: in the typical case, the response parameters should be deserialized from a
                 // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
@@ -131,10 +131,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.GetResourceString(SR.ID2148),
                         uri: SR.FormatID8000(SR.ID2148));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -166,7 +166,7 @@ public static partial class OpenIddictClientHandlers
                 // Ignore the response instance if a userinfo token was extracted.
                 if (!string.IsNullOrEmpty(context.UserInfoToken))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Create a new claims-based identity using the same authentication type
@@ -225,7 +225,7 @@ public static partial class OpenIddictClientHandlers
 
                 context.Principal = new ClaimsPrincipal(identity);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

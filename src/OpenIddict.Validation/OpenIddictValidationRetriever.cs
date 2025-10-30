@@ -7,7 +7,6 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.IdentityModel.Protocols;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Validation;
 

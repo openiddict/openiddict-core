@@ -80,7 +80,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 // Remove the access token from the request payload to ensure it's not sent twice.
                 context.Request.AccessToken = null;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 

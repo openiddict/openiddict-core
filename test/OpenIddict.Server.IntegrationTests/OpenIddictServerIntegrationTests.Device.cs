@@ -59,7 +59,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -92,7 +92,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -118,7 +118,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -361,7 +361,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -439,7 +439,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -820,7 +820,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -856,7 +856,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -885,7 +885,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -921,7 +921,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -957,7 +957,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -986,7 +986,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1029,7 +1029,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Parameters["custom_parameter"] = "custom_value";
                     context.Parameters["parameter_with_multiple_values"] = new(["custom_value_1", "custom_value_2"]);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1063,7 +1063,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ApplyDeviceAuthorizationResponseContext>(builder =>
@@ -1076,7 +1076,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1105,7 +1105,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ApplyDeviceAuthorizationResponseContext>(builder =>
@@ -1114,7 +1114,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Response["custom_parameter"] = "custom_value";
                     context.Response["parameter_with_multiple_values"] = new(["custom_value_1", "custom_value_2"]);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1172,7 +1172,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1205,7 +1205,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1231,7 +1231,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1264,7 +1264,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1297,7 +1297,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1323,7 +1323,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1356,7 +1356,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1389,7 +1389,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1415,7 +1415,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1446,7 +1446,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                         .SetTokenType(TokenTypeIdentifiers.Private.UserCode);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -1461,7 +1461,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Parameters["custom_parameter"] = "custom_value";
                     context.Parameters["parameter_with_multiple_values"] = new(["custom_value_1", "custom_value_2"]);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ApplyEndUserVerificationResponseContext>(builder =>
@@ -1470,7 +1470,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Transaction.SetProperty("custom_response", context.Response);
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1500,7 +1500,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ApplyEndUserVerificationResponseContext>(builder =>
@@ -1513,7 +1513,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1539,7 +1539,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ApplyEndUserVerificationResponseContext>(builder =>
@@ -1547,7 +1547,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Response["custom_parameter"] = "custom_value";
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 

@@ -56,7 +56,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     var request = context.Transaction.GetOwinRequest()!;
                     request.Headers["Authorization"] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MinValue);
@@ -92,7 +92,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     var request = context.Transaction.GetOwinRequest()!;
                     request.Headers["Authorization"] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MinValue);

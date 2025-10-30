@@ -13,7 +13,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 using OpenIddict.Server;
 
 namespace Microsoft.Extensions.DependencyInjection;

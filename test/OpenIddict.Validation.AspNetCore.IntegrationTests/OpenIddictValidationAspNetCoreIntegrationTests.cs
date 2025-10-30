@@ -48,7 +48,7 @@ public partial class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddict
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetCreationDate(new DateTimeOffset(2020, 01, 01, 00, 00, 00, TimeSpan.Zero));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -87,7 +87,7 @@ public partial class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddict
                         .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetExpirationDate(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);

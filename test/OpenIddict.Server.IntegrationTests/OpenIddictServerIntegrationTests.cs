@@ -139,7 +139,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<HandleEndUserVerificationRequestContext>(builder =>
@@ -147,7 +147,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessRequestContext>(builder =>
@@ -156,7 +156,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     // Assert
                     Assert.Equal(type, context.EndpointType);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -377,7 +377,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<HandleEndUserVerificationRequestContext>(builder =>
@@ -385,7 +385,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessRequestContext>(builder =>
@@ -394,7 +394,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     // Assert
                     Assert.Equal(type, context.EndpointType);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -429,7 +429,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<HandleEndUserVerificationRequestContext>(builder =>
@@ -437,7 +437,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessRequestContext>(builder =>
@@ -450,7 +450,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     // Assert
                     Assert.Equal(type, context.EndpointType);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(InferEndpointType.Descriptor.Order + 500);
@@ -493,7 +493,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -522,7 +522,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -552,7 +552,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -582,7 +582,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
@@ -596,7 +596,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -629,7 +629,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -659,7 +659,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -689,7 +689,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
@@ -703,7 +703,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.IdentityToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -736,7 +736,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -768,7 +768,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -800,7 +800,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
@@ -815,7 +815,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetClaim(Claims.Subject, "Bob le Magnifique")
                         .SetPresenters("Fabrikam");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -850,7 +850,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessAuthenticationContext>(builder =>
@@ -860,7 +860,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     // Assert
                     Assert.Null(context.RequestTokenPrincipal);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MaxValue);
@@ -894,7 +894,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessAuthenticationContext>(builder =>
@@ -904,7 +904,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     // Assert
                     Assert.Null(context.RequestTokenPrincipal);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MaxValue);
@@ -935,7 +935,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
@@ -949,7 +949,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.Private.RequestToken)
                         .SetClaim(Claims.Private.RequestTokenType, RequestTokenTypes.Private.CachedEndSessionRequest);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -963,7 +963,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.NotNull(context.RequestTokenPrincipal);
                     Assert.NotNull(context.RequestTokenPrincipal.GetClaim(Claims.Private.RequestParameters));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MaxValue);
@@ -994,7 +994,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
@@ -1009,7 +1009,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetClaim(Claims.Private.RequestTokenType, RequestTokenTypes.Private.PushedAuthorizationRequest)
                         .SetClaim(Claims.Private.RequestParameters, "{}");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -1023,7 +1023,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.NotNull(context.RequestTokenPrincipal);
                     Assert.NotNull(context.RequestTokenPrincipal.GetClaim(Claims.Private.RequestParameters));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateRequestTokenType.Descriptor.Order + 1);
@@ -1054,7 +1054,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1085,7 +1085,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1116,7 +1116,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
@@ -1130,7 +1130,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.RefreshToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -1180,7 +1180,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1209,7 +1209,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1245,7 +1245,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1284,7 +1284,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -1295,7 +1295,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1334,7 +1334,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessChallengeContext>(builder =>
@@ -1342,7 +1342,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1376,7 +1376,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessChallengeContext>(builder =>
@@ -1389,7 +1389,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1421,7 +1421,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessChallengeContext>(builder =>
@@ -1435,7 +1435,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Parameters["node_array_parameter"] = new JsonArray("Contoso", "Fabrikam");
                     context.Parameters["node_object_parameter"] = new JsonObject { ["parameter"] = "value" };
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1496,7 +1496,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1524,7 +1524,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1557,7 +1557,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1590,7 +1590,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Test"));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1621,7 +1621,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1655,7 +1655,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1687,7 +1687,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, 42);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1728,7 +1728,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.Principal = new ClaimsPrincipal(identity);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1761,7 +1761,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -1769,7 +1769,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     Assert.Equal([Scopes.OpenId], context.Principal!.GetScopes(), StringComparer.Ordinal);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1804,7 +1804,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OfflineAccess)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -1812,7 +1812,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     Assert.Equal(["http://www.fabrikam.com/"], context.Principal!.GetResources(), StringComparer.Ordinal);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -1845,7 +1845,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -1859,7 +1859,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.GenerateRefreshToken = context.IncludeRefreshToken = true;
                     context.GenerateUserCode = context.IncludeUserCode = true;
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -1899,7 +1899,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -1919,7 +1919,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.False(context.IncludeRefreshToken);
                     Assert.False(context.IncludeUserCode);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -1965,7 +1965,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -1975,7 +1975,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateAccessToken);
                     Assert.True(context.IncludeAccessToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2018,7 +2018,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetPresenters("Fabrikam")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2031,7 +2031,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateAccessToken);
                     Assert.True(context.IncludeAccessToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2071,7 +2071,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.Private.DeviceCode)
                         .SetPresenters("Fabrikam");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2084,7 +2084,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2097,7 +2097,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateAccessToken);
                     Assert.True(context.IncludeAccessToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2137,7 +2137,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.RefreshToken)
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2150,7 +2150,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateAccessToken);
                     Assert.True(context.IncludeAccessToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2184,7 +2184,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -2194,7 +2194,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateAccessToken);
                     Assert.True(context.IncludeAccessToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2229,7 +2229,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -2239,7 +2239,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateAccessToken);
                     Assert.True(context.IncludeAccessToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2275,7 +2275,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -2285,7 +2285,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateAccessToken);
                     Assert.True(context.IncludeAccessToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2322,7 +2322,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -2332,7 +2332,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateAuthorizationCode);
                     Assert.True(context.IncludeAuthorizationCode);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2368,7 +2368,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -2378,7 +2378,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateDeviceCode);
                     Assert.True(context.IncludeDeviceCode);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2418,7 +2418,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.Profile, Scopes.OfflineAccess)
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2430,7 +2430,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     Assert.Equal([Scopes.Profile], context.AccessTokenPrincipal!.GetScopes(), StringComparer.Ordinal);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(PrepareAccessTokenPrincipal.Descriptor.Order + 500);
@@ -2465,7 +2465,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -2475,7 +2475,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.False(context.GenerateRefreshToken);
                     Assert.False(context.IncludeRefreshToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2517,7 +2517,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OfflineAccess)
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2530,7 +2530,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateRefreshToken);
                     Assert.True(context.IncludeRefreshToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2570,7 +2570,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.Private.DeviceCode)
                         .SetPresenters("Fabrikam");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2584,7 +2584,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OfflineAccess)
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2597,7 +2597,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateRefreshToken);
                     Assert.True(context.IncludeRefreshToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2638,7 +2638,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OfflineAccess)
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2651,7 +2651,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateRefreshToken);
                     Assert.True(context.IncludeRefreshToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2686,7 +2686,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateRefreshToken);
                     Assert.True(context.IncludeRefreshToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2699,7 +2699,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OfflineAccess)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -2732,7 +2732,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateRefreshToken);
                     Assert.True(context.IncludeRefreshToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2745,7 +2745,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OfflineAccess)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -2779,7 +2779,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateRefreshToken);
                     Assert.True(context.IncludeRefreshToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2792,7 +2792,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OfflineAccess)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -2822,7 +2822,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -2832,7 +2832,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.False(context.GenerateIdentityToken);
                     Assert.False(context.IncludeIdentityToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2871,7 +2871,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -2881,7 +2881,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateIdentityToken);
                     Assert.True(context.IncludeIdentityToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2925,7 +2925,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OpenId)
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2938,7 +2938,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateIdentityToken);
                     Assert.True(context.IncludeIdentityToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -2978,7 +2978,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.Private.DeviceCode)
                         .SetPresenters("Fabrikam");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -2992,7 +2992,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OpenId)
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -3005,7 +3005,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateIdentityToken);
                     Assert.True(context.IncludeIdentityToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -3046,7 +3046,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.OpenId)
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -3059,7 +3059,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateIdentityToken);
                     Assert.True(context.IncludeIdentityToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -3094,7 +3094,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateIdentityToken);
                     Assert.True(context.IncludeIdentityToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -3106,7 +3106,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3139,7 +3139,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -3149,7 +3149,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateIdentityToken);
                     Assert.True(context.IncludeIdentityToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -3186,7 +3186,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -3196,7 +3196,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateIdentityToken);
                     Assert.True(context.IncludeIdentityToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -3229,7 +3229,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -3239,7 +3239,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.True(context.GenerateUserCode);
                     Assert.True(context.IncludeUserCode);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
@@ -3279,7 +3279,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetClaim(Claims.Subject, "Bob le Bricoleur")
                         .SetClaim(Claims.Prefixes.Private + "_private_claim", "value");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -3291,7 +3291,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     Assert.Equal([Scopes.OpenId, Scopes.OfflineAccess], context.Principal!.GetScopes(), StringComparer.Ordinal);
                     Assert.Equal("value", context.Principal!.GetClaim(Claims.Prefixes.Private + "_private_claim"));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3351,7 +3351,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -3438,7 +3438,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -3505,7 +3505,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -3587,7 +3587,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3669,7 +3669,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3703,7 +3703,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3737,7 +3737,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetScopes(Scopes.Profile)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3777,7 +3777,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -3785,7 +3785,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3820,7 +3820,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -3833,7 +3833,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3865,7 +3865,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignInContext>(builder =>
@@ -3878,7 +3878,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Parameters["object_parameter"] = JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}");
                     context.Parameters["node_array_parameter"] = new JsonArray("Contoso", "Fabrikam");
                     context.Parameters["node_object_parameter"] = new JsonObject { ["parameter"] = "value" };
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3939,7 +3939,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SkipRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -3974,7 +3974,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SignOut();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignOutContext>(builder =>
@@ -3982,7 +3982,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -4010,7 +4010,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SignOut();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignOutContext>(builder =>
@@ -4023,7 +4023,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -4049,7 +4049,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 {
                     context.SignOut();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
 
             options.AddEventHandler<ProcessSignOutContext>(builder =>
@@ -4059,7 +4059,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     context.Parameters["integer_parameter"] = 42;
                     context.Parameters["string_parameter"] = "Bob l'Eponge";
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 

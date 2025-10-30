@@ -16,7 +16,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFramework.Models;
-using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFramework;
@@ -965,7 +964,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.CreationDate = date?.UtcDateTime;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -978,7 +977,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.ExpirationDate = date?.UtcDateTime;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -991,7 +990,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.Payload = payload;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1007,7 +1006,7 @@ public class OpenIddictEntityFrameworkTokenStore<
         {
             token.Properties = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1030,7 +1029,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1043,7 +1042,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.RedemptionDate = date?.UtcDateTime;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1056,7 +1055,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.ReferenceId = identifier;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1069,7 +1068,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.Status = status;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1082,7 +1081,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.Subject = subject;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1095,7 +1094,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         token.Type = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>

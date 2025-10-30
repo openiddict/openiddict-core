@@ -13,5 +13,5 @@ public abstract class OpenIddictServerIntegrationTestServer : IAsyncDisposable
 {
     public abstract ValueTask<OpenIddictServerIntegrationTestClient> CreateClientAsync();
 
-    public virtual ValueTask DisposeAsync() => default;
+    public virtual ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

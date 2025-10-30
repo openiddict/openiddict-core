@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 using OpenIddict.MongoDb.Models;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
@@ -443,9 +442,11 @@ public class OpenIddictMongoDbAuthorizationStore<
 
         // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
         // maximum number of elements that can be removed by a single call to PruneAsync() is deliberately limited.
-        foreach (var buffer in identifiers.Take(1_000_000).Buffer(1_000))
+        foreach (var buffer in identifiers.Take(1_000_000).Chunk(1_000))
         {
-            result += (await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id), cancellationToken)).DeletedCount;
+            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure the
+            // span-based MemoryExtensions.Contains() API (which is not supported by MongoDB) is not used instead.
+            result += (await collection.DeleteManyAsync(authorization => Enumerable.Contains(buffer, authorization.Id), cancellationToken)).DeletedCount;
         }
 
         return result;
@@ -541,7 +542,7 @@ public class OpenIddictMongoDbAuthorizationStore<
             authorization.ApplicationId = ObjectId.Empty;
         }
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -555,7 +556,7 @@ public class OpenIddictMongoDbAuthorizationStore<
 
         authorization.CreationDate = date?.UtcDateTime;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -571,7 +572,7 @@ public class OpenIddictMongoDbAuthorizationStore<
         {
             authorization.Properties = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -594,7 +595,7 @@ public class OpenIddictMongoDbAuthorizationStore<
 
         authorization.Properties = BsonDocument.Parse(Encoding.UTF8.GetString(stream.ToArray()));
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -610,12 +611,12 @@ public class OpenIddictMongoDbAuthorizationStore<
         {
             authorization.Scopes = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         authorization.Scopes = scopes.ToImmutableList();
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -628,7 +629,7 @@ public class OpenIddictMongoDbAuthorizationStore<
 
         authorization.Status = status;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -641,7 +642,7 @@ public class OpenIddictMongoDbAuthorizationStore<
 
         authorization.Subject = subject;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -654,7 +655,7 @@ public class OpenIddictMongoDbAuthorizationStore<
 
         authorization.Type = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
