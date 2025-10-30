@@ -12,7 +12,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 

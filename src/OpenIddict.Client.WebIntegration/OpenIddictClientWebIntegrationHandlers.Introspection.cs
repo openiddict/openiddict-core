@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using System.Text.Json;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -49,7 +48,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 if (context.Response is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: NetSuite returns the "scope" parameter as a non-standard JSON array of strings,
@@ -73,7 +72,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Response.Scope = string.Join(" ", scopes);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

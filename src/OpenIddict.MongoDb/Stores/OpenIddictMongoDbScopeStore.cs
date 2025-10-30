@@ -397,7 +397,7 @@ public class OpenIddictMongoDbScopeStore<
 
         scope.Description = description;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -413,14 +413,14 @@ public class OpenIddictMongoDbScopeStore<
         {
             scope.Descriptions = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         scope.Descriptions = descriptions.ToImmutableDictionary(
             pair => pair.Key.Name,
             pair => pair.Value);
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -436,14 +436,14 @@ public class OpenIddictMongoDbScopeStore<
         {
             scope.DisplayNames = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         scope.DisplayNames = names.ToImmutableDictionary(
             pair => pair.Key.Name,
             pair => pair.Value);
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -456,7 +456,7 @@ public class OpenIddictMongoDbScopeStore<
 
         scope.DisplayName = name;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -469,7 +469,7 @@ public class OpenIddictMongoDbScopeStore<
 
         scope.Name = name;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -485,7 +485,7 @@ public class OpenIddictMongoDbScopeStore<
         {
             scope.Properties = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -508,7 +508,7 @@ public class OpenIddictMongoDbScopeStore<
 
         scope.Properties = BsonDocument.Parse(Encoding.UTF8.GetString(stream.ToArray()));
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -523,12 +523,12 @@ public class OpenIddictMongoDbScopeStore<
         {
             scope.Resources = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         scope.Resources = resources.ToImmutableList();
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>

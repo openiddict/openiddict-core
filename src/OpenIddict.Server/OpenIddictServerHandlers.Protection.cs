@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -264,7 +263,7 @@ public static partial class OpenIddictServerHandlers
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
                 context.TokenValidationParameters = parameters;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -294,7 +293,7 @@ public static partial class OpenIddictServerHandlers
                 // If no character was explicitly added, all characters are considered valid.
                 if (context.AllowedCharset.Count is 0)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Remove the disallowed characters from the token string. If the token is
@@ -307,12 +306,12 @@ public static partial class OpenIddictServerHandlers
                         description: SR.GetResourceString(SR.ID2004),
                         uri: SR.FormatID8000(SR.ID2004));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.Token = token;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -632,7 +631,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (context.Principal is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: in previous OpenIddict versions, scopes were represented as a JSON array
@@ -648,7 +647,7 @@ public static partial class OpenIddictServerHandlers
                     context.Principal.SetClaim(Claims.Scope, string.Join(" ", scopes));
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -677,7 +676,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (context.Principal is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // To reduce the size of tokens, some of the private claims used by OpenIddict
@@ -751,7 +750,7 @@ public static partial class OpenIddictServerHandlers
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -906,7 +905,7 @@ public static partial class OpenIddictServerHandlers
                         });
 
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // When using JWT or Data Protection tokens, the correct token type is always enforced by IdentityModel
@@ -924,7 +923,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.FormatID0005(type, string.Join(", ", context.ValidTokenTypes)));
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -981,10 +980,10 @@ public static partial class OpenIddictServerHandlers
                             _ => SR.FormatID8000(SR.ID2019)
                         });
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1017,7 +1016,7 @@ public static partial class OpenIddictServerHandlers
                 // If no specific value is expected, skip the default presenter validation.
                 if (context.ValidPresenters.Count is 0)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // If the token doesn't have any presenter attached, return an error.
@@ -1031,7 +1030,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.GetResourceString(SR.ID2184),
                         uri: SR.FormatID8000(SR.ID2184));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // If the token doesn't include any registered presenter, return an error.
@@ -1044,10 +1043,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.GetResourceString(SR.ID2185),
                         uri: SR.FormatID8000(SR.ID2185));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1080,7 +1079,7 @@ public static partial class OpenIddictServerHandlers
                 // If no specific value is expected, skip the default audience validation.
                 if (context.ValidAudiences.Count is 0)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // If the token doesn't have any audience attached, return an error.
@@ -1094,7 +1093,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.GetResourceString(SR.ID2093),
                         uri: SR.FormatID8000(SR.ID2093));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // If the token doesn't include any registered audience, return an error.
@@ -1107,10 +1106,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.GetResourceString(SR.ID2094),
                         uri: SR.FormatID8000(SR.ID2094));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1409,7 +1408,7 @@ public static partial class OpenIddictServerHandlers
                     _ => context.Options.SigningCredentials.First()
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1552,7 +1551,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.SecurityTokenDescriptor.Subject = (ClaimsIdentity) principal.Identity;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1668,7 +1667,7 @@ public static partial class OpenIddictServerHandlers
                     string value => value
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1699,7 +1698,7 @@ public static partial class OpenIddictServerHandlers
                 // If a token was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Token))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.Token = context.SecurityTokenHandler.CreateToken(context.SecurityTokenDescriptor);
@@ -1707,7 +1706,7 @@ public static partial class OpenIddictServerHandlers
                 context.Logger.LogTrace(6013, SR.GetResourceString(SR.ID6013), context.TokenType,
                     context.Token, context.SecurityTokenDescriptor.Subject?.Claims ?? []);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 

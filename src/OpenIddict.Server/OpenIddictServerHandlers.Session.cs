@@ -12,7 +12,6 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -389,7 +388,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (string.IsNullOrEmpty(context.Request.RequestUri))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // OpenIddict only supports "request_uri" parameters containing a reference to a request token
@@ -402,13 +401,13 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2028(Parameters.RequestUri),
                         uri: SR.FormatID8000(SR.ID2028));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: unlike authorization requests, the client_id parameter is not required for end
                 // session requests and may not be present in the original request before it is cached.
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -437,7 +436,7 @@ public static partial class OpenIddictServerHandlers
 
                 if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // If an optional post_logout_redirect_uri was provided, validate it.
@@ -450,7 +449,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2030(Parameters.PostLogoutRedirectUri),
                         uri: SR.FormatID8000(SR.ID2030));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 if (!string.IsNullOrEmpty(uri.Fragment))
@@ -462,10 +461,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2031(Parameters.PostLogoutRedirectUri),
                         uri: SR.FormatID8000(SR.ID2031));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -557,7 +556,7 @@ public static partial class OpenIddictServerHandlers
                 var value = context.RequestTokenPrincipal?.GetClaim(Claims.Private.RequestParameters);
                 if (string.IsNullOrEmpty(value))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 using var document = JsonDocument.Parse(value);
@@ -569,7 +568,7 @@ public static partial class OpenIddictServerHandlers
                 context.Request = request;
                 context.PostLogoutRedirectUri = request.PostLogoutRedirectUri;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -947,7 +946,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.IdentityTokenHintPrincipal ??= notification.IdentityTokenHintPrincipal;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -979,7 +978,7 @@ public static partial class OpenIddictServerHandlers
                 // post_logout_redirect_uri, as the user agent will be redirected to the same page.
                 if (context.Request is null || !string.IsNullOrEmpty(context.Response.RequestUri))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 var notification = context.Transaction.GetProperty<ValidateEndSessionRequestContext>(
@@ -992,7 +991,7 @@ public static partial class OpenIddictServerHandlers
                     context.PostLogoutRedirectUri = notification.PostLogoutRedirectUri;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1028,7 +1027,7 @@ public static partial class OpenIddictServerHandlers
                     context.Response.State = context.Request?.State;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

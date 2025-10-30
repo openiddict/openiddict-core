@@ -14,7 +14,6 @@ using System.Text;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationAuthenticationMode;
 
 namespace OpenIddict.Client.SystemIntegration;

@@ -12,7 +12,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Principal;
-using OpenIddict.Extensions;
 
 #if SUPPORTS_ANDROID
 using Android.Content;

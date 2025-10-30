@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using System.Text.Json;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -49,7 +48,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 if (context.Response is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: Google doesn't return a standard "verification_uri" parameter
@@ -91,7 +90,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Response["expire_in"] = null;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

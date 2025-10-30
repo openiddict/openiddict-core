@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -65,11 +64,11 @@ public static partial class OpenIddictClientHandlers
                             description: SR.FormatID2107(parameter.Key),
                             uri: SR.FormatID8000(SR.ID2107));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
 
                 // Note: in the typical case, the response parameters should be deserialized from a
                 // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
@@ -149,10 +148,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.GetResourceString(SR.ID2146),
                         uri: SR.FormatID8000(SR.ID2146));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -192,7 +191,7 @@ public static partial class OpenIddictClientHandlers
                         description: SR.FormatID2105(Parameters.Active),
                         uri: SR.FormatID8000(SR.ID2105));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 if (active is not true)
@@ -202,10 +201,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.GetResourceString(SR.ID2106),
                         uri: SR.FormatID8000(SR.ID2106));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -244,7 +243,7 @@ public static partial class OpenIddictClientHandlers
                             description: SR.GetResourceString(SR.ID2108),
                             uri: SR.FormatID8000(SR.ID2108));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
 
                     // Ensure the issuer matches the expected value.
@@ -255,11 +254,11 @@ public static partial class OpenIddictClientHandlers
                             description: SR.GetResourceString(SR.ID2109),
                             uri: SR.FormatID8000(SR.ID2109));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -303,10 +302,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.GetResourceString(SR.ID2176),
                         uri: SR.FormatID8000(SR.ID2176));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -341,7 +340,7 @@ public static partial class OpenIddictClientHandlers
                 // whether the returned token has an acceptable type depending on the context.
                 switch ((string?) context.Response[Claims.TokenUsage])
                 {
-                    case null or { Length: 0 }: return default;
+                    case null or { Length: 0 }: return ValueTask.CompletedTask;
 
                     // Note: by default, OpenIddict only allows access/refresh tokens to be
                     // introspected but additional types can be added using the events model.
@@ -359,10 +358,10 @@ public static partial class OpenIddictClientHandlers
                             description: SR.GetResourceString(SR.ID2118),
                             uri: SR.FormatID8000(SR.ID2118));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -455,7 +454,7 @@ public static partial class OpenIddictClientHandlers
 
                 context.Principal = new ClaimsPrincipal(identity);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -521,7 +520,7 @@ public static partial class OpenIddictClientHandlers
                     _ => []
                 });
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

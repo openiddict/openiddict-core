@@ -545,7 +545,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         scope.Description = description;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -561,7 +561,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         {
             scope.Descriptions = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -584,7 +584,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         scope.Descriptions = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -597,7 +597,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         scope.DisplayName = name;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -613,7 +613,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         {
             scope.DisplayNames = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -636,7 +636,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         scope.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -649,7 +649,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         scope.Name = name;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -665,7 +665,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         {
             scope.Properties = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -688,7 +688,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         scope.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -703,7 +703,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         {
             scope.Resources = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -725,7 +725,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         scope.Resources = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>

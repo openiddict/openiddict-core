@@ -92,7 +92,7 @@ public static partial class OpenIddictServerOwinHandlers
             if (!string.IsNullOrEmpty(context.Response.Error) &&
                 !string.Equals(context.Response.Error, Errors.AccessDenied, StringComparison.Ordinal))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
@@ -104,7 +104,7 @@ public static partial class OpenIddictServerOwinHandlers
                 context.HandleRequest();
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

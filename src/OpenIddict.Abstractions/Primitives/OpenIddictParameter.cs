@@ -12,7 +12,6 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Primitives;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Abstractions;
 

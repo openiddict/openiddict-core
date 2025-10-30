@@ -15,7 +15,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFrameworkCore.Models;
-using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFrameworkCore;
@@ -1016,7 +1015,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         authorization.CreationDate = date?.UtcDateTime;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1032,7 +1031,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
         {
             authorization.Properties = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1055,7 +1054,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         authorization.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1071,7 +1070,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
         {
             authorization.Scopes = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1093,7 +1092,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         authorization.Scopes = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1107,7 +1106,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         authorization.Status = status;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1121,7 +1120,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         authorization.Subject = subject;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1135,7 +1134,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         authorization.Type = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>

@@ -20,7 +20,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
-using OpenIddict.Extensions;
 using Properties = OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants.Properties;
 
 namespace OpenIddict.Client.AspNetCore;
@@ -120,7 +119,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             context.BaseUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase));
             context.RequestUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase, request.Path, request.QueryString));
 
-            return default;
+            return ValueTask.CompletedTask;
 
             // Note: the BCL System.Uri class has strict rules (e.g it rejects specific characters and enforces a
             // limit of 65519 characters for the complete URI representation). To ensure no exception is thrown if the
@@ -168,10 +167,10 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     description: SR.GetResourceString(SR.ID2083),
                     uri: SR.FormatID8000(SR.ID2083));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -213,10 +212,10 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     description: SR.FormatID2081(HeaderNames.Host),
                     uri: SR.FormatID8000(SR.ID2081));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -330,7 +329,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0402));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -364,7 +363,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0377));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -437,7 +436,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     description: SR.GetResourceString(SR.ID2129),
                     uri: SR.FormatID8000(SR.ID2129));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             try
@@ -451,7 +450,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                         description: SR.GetResourceString(SR.ID2163),
                         uri: SR.FormatID8000(SR.ID2163));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Extract the length of the request forgery protection.
@@ -463,7 +462,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                         description: SR.GetResourceString(SR.ID2163),
                         uri: SR.FormatID8000(SR.ID2163));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: since the correlation cookie is not protected against tampering, an unexpected
@@ -480,7 +479,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     description: SR.GetResourceString(SR.ID2163),
                     uri: SR.FormatID8000(SR.ID2163));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Return a response header asking the browser to delete the state cookie.
@@ -488,7 +487,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // Note: when deleting a cookie, the same options used when creating it MUST be specified.
             request.HttpContext.Response.Cookies.Delete(name, builder.Build(request.HttpContext));
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -522,7 +521,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0402));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -629,7 +628,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static string? GetProperty(AuthenticationProperties properties, string name)
                 => properties.Items.TryGetValue(name, out string? value) ? value : null;
@@ -672,7 +671,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0364));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -704,7 +703,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // If an explicit response type was specified, don't overwrite it.
             if (!string.IsNullOrEmpty(context.ResponseMode))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: in most cases, the query response mode will be used as it offers the best compatibility and,
@@ -715,7 +714,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // the remote server, the response types are taken into account when selecting the best response mode.
             if (context.ResponseType?.Split(Separators.Space) is not IList<string> { Count: > 0 } types)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.ResponseMode = (
@@ -764,7 +763,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 _ => null
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -857,7 +856,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // Add the correlation cookie to the response headers.
             response.Cookies.Append(name, Base64UrlEncoder.Encode(payload), options);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -954,7 +953,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
 
             static string? GetProperty(AuthenticationProperties properties, string name)
                 => properties.Items.TryGetValue(name, out string? value) ? value : null;
@@ -997,7 +996,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0365));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1089,7 +1088,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // Add the correlation cookie to the response headers.
             response.Cookies.Append(name, Base64UrlEncoder.Encode(payload), options);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1123,7 +1122,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 
             context.SkipRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1166,7 +1165,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 _ => 400
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1205,7 +1204,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             response.Headers[HeaderNames.Pragma] = "no-cache";
             response.Headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1243,12 +1242,12 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.SkipRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1288,7 +1287,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Determine if the status code pages middleware has been enabled for this request.
@@ -1297,7 +1296,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var feature = response.HttpContext.Features.Get<IStatusCodePagesFeature>();
             if (feature is not { Enabled: true })
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Mark the request as fully handled to prevent the other OpenIddict client handlers
@@ -1305,7 +1304,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // to rewrite the response using the logic defined by the developer when registering it.
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1412,7 +1411,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             context.Logger.LogInformation(6145, SR.GetResourceString(SR.ID6145));
             context.HandleRequest();
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

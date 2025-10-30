@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Extensions.Primitives;
-using OpenIddict.Extensions;
 
 #if SUPPORTS_ANDROID
 using Android.Content;

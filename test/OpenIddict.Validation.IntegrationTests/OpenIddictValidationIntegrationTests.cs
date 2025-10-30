@@ -47,7 +47,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
                     Assert.True(context.RequireAccessToken);
                     Assert.True(context.ValidateAccessToken);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1);
@@ -158,7 +158,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -197,7 +197,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -237,7 +237,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -277,7 +277,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
                         .SetTokenType(TokenTypeIdentifiers.AccessToken)
                         .SetClaim(Claims.Subject, "Bob le Magnifique");
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
@@ -330,7 +330,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
                 {
                     context.Reject(error, description, uri);
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 
@@ -361,7 +361,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
 
                     context.HandleRequest();
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }));
         });
 

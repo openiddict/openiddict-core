@@ -5,7 +5,6 @@
  */
 
 using System.ComponentModel;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Client.SystemIntegration;
 

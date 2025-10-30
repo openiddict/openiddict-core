@@ -54,7 +54,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // In this case, don't amend the default token validation parameters.
                 if (context.Registration is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.TokenValidationParameters.ValidateIssuer = context.Registration.ProviderType switch
@@ -81,7 +81,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => context.TokenValidationParameters.ValidateIssuer
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -112,7 +112,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // In this case, don't amend the default security token descriptor.
                 if (context.Registration is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.SecurityTokenDescriptor.TokenType = context.Registration.ProviderType switch
@@ -130,7 +130,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => context.SecurityTokenDescriptor.TokenType
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

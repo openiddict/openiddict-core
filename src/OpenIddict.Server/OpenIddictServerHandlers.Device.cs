@@ -10,7 +10,6 @@ using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -363,10 +362,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2035(Scopes.OfflineAccess),
                         uri: SR.FormatID8000(SR.ID2035));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -402,7 +401,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2037(Parameters.ClientAssertionType, Parameters.ClientAssertion),
                         uri: SR.FormatID8000(SR.ID2037));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Ensure a client_assertion is specified when a client_assertion_type was attached.
@@ -414,7 +413,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2037(Parameters.ClientAssertion, Parameters.ClientAssertionType),
                         uri: SR.FormatID8000(SR.ID2037));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Reject requests that use multiple client authentication methods.
@@ -430,7 +429,7 @@ public static partial class OpenIddictServerHandlers
                         description: SR.GetResourceString(SR.ID2087),
                         uri: SR.FormatID8000(SR.ID2087));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Ensure the specified client_assertion_type is supported.
@@ -442,10 +441,10 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2032(Parameters.ClientAssertionType),
                         uri: SR.FormatID8000(SR.ID2032));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1135,7 +1134,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.UserCodePrincipal ??= notification.UserCodePrincipal;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

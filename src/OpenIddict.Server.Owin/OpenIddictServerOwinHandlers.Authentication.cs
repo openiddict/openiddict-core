@@ -93,7 +93,7 @@ public static partial class OpenIddictServerOwinHandlers
 
                 if (string.IsNullOrEmpty(context.Response.RequestUri))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -116,7 +116,7 @@ public static partial class OpenIddictServerOwinHandlers
                 response.Redirect(location);
                 context.HandleRequest();
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -244,7 +244,7 @@ public static partial class OpenIddictServerOwinHandlers
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.Logger.LogInformation(6148, SR.GetResourceString(SR.ID6148), context.RedirectUri, context.Response);
@@ -268,7 +268,7 @@ public static partial class OpenIddictServerOwinHandlers
                 response.Redirect(location);
                 context.HandleRequest();
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -305,7 +305,7 @@ public static partial class OpenIddictServerOwinHandlers
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.Logger.LogInformation(6149, SR.GetResourceString(SR.ID6149), context.RedirectUri, context.Response);
@@ -332,7 +332,7 @@ public static partial class OpenIddictServerOwinHandlers
                 response.Redirect(builder.ToString());
                 context.HandleRequest();
 
-                return default;
+                return ValueTask.CompletedTask;
 
                 static bool Contains(StringBuilder builder, char delimiter)
                 {

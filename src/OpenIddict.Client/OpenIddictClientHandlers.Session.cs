@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -170,7 +169,7 @@ public static partial class OpenIddictClientHandlers
                 // Don't overwrite the endpoint URI if it was already set.
                 if (!string.IsNullOrEmpty(context.EndSessionEndpoint))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Ensure the end session endpoint is present and is a valid absolute URI.
@@ -182,7 +181,7 @@ public static partial class OpenIddictClientHandlers
 
                 context.EndSessionEndpoint = context.Configuration.EndSessionEndpoint.AbsoluteUri;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 

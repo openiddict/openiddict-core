@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 using static OpenIddict.Client.OpenIddictClientModels;
 

@@ -73,7 +73,7 @@ public static partial class OpenIddictServerOwinHandlers
 
                 if (string.IsNullOrEmpty(context.Response.RequestUri))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -95,7 +95,7 @@ public static partial class OpenIddictServerOwinHandlers
 
                 response.Redirect(location);
                 context.HandleRequest();
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -131,7 +131,7 @@ public static partial class OpenIddictServerOwinHandlers
 
                 if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.Logger.LogInformation(6151, SR.GetResourceString(SR.ID6151), context.PostLogoutRedirectUri, context.Response);
@@ -155,7 +155,7 @@ public static partial class OpenIddictServerOwinHandlers
                 response.Redirect(location);
                 context.HandleRequest();
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -194,7 +194,7 @@ public static partial class OpenIddictServerOwinHandlers
                 if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) ||
                     !string.IsNullOrEmpty(context.Response.Error))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
@@ -206,7 +206,7 @@ public static partial class OpenIddictServerOwinHandlers
                     context.HandleRequest();
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

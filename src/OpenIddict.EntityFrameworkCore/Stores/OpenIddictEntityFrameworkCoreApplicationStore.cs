@@ -863,7 +863,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.ApplicationType = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -876,7 +876,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.ClientId = identifier;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -889,7 +889,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.ClientSecret = secret;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -902,7 +902,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.ClientType = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -915,7 +915,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.ConsentType = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -928,7 +928,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.DisplayName = name;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -944,7 +944,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         {
             application.DisplayNames = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -967,7 +967,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -980,7 +980,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.JsonWebKeySet = set is not null ? JsonSerializer.Serialize(set, OpenIddictSerializer.Default.JsonWebKeySet) : null;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -995,7 +995,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         {
             application.Permissions = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1017,7 +1017,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.Permissions = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1033,7 +1033,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         {
             application.PostLogoutRedirectUris = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1055,7 +1055,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.PostLogoutRedirectUris = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1071,7 +1071,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         {
             application.Properties = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1094,7 +1094,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1110,7 +1110,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         {
             application.RedirectUris = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1132,7 +1132,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.RedirectUris = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1147,7 +1147,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         {
             application.Requirements = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1169,7 +1169,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.Requirements = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -1185,7 +1185,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         {
             application.Settings = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -1208,7 +1208,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         application.Settings = Encoding.UTF8.GetString(stream.ToArray());
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>

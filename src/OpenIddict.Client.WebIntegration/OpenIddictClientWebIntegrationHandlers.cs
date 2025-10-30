@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -114,7 +113,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.FormatID2029("hmac"),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 var builder = new StringBuilder();
@@ -162,7 +161,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                             description: SR.FormatID2052("hmac"),
                             uri: SR.FormatID8000(SR.ID2052));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
@@ -173,11 +172,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.FormatID2052("hmac"),
                         uri: SR.FormatID8000(SR.ID2052));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -237,7 +236,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                            _   => SR.FormatID8000(SR.ID2152)
                     });
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             else if (context.Registration.ProviderType is ProviderTypes.Deezer)
@@ -266,7 +265,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                                   _       => SR.FormatID8000(SR.ID2152)
                         });
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
             }
 
@@ -292,7 +291,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                               _  => SR.FormatID8000(SR.ID2152)
                         });
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
             }
 
@@ -307,7 +306,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.GetResourceString(SR.ID2149),
                         uri: SR.FormatID8000(SR.ID2149));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
             }
 
@@ -321,11 +320,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.GetResourceString(SR.ID2149),
                         uri: SR.FormatID8000(SR.ID2149));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -367,7 +366,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.FormatID2029("shop"),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Resolve the shop name from the authentication properties.
@@ -389,7 +388,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.FormatID2052("shop"),
                         uri: SR.FormatID8000(SR.ID2052));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
             }
 
@@ -404,7 +403,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.FormatID2029("device_id"),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Store the device identifier as an authentication property
@@ -424,7 +423,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.FormatID2029("location"),
                         uri: SR.FormatID8000(SR.ID2029));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Ensure the specified location corresponds to well-known region.
@@ -435,7 +434,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         description: SR.FormatID2052("location"),
                         uri: SR.FormatID8000(SR.ID2052));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Store the validated location as an authentication property
@@ -443,7 +442,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Properties[Zoho.Properties.Location] = location;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -487,7 +486,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.TokenEndpointClientAuthenticationMethod
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -573,7 +572,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.TokenEndpoint
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -618,7 +617,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.ClientAssertionPrincipal.SetAudiences("https://appleid.apple.com");
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -684,7 +683,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 };
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -729,7 +728,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.TokenRequest.ClientAssertionType = null;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -762,7 +761,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             if (context.TokenRequest.RedirectUri is null)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: some providers don't support the "state" parameter, don't flow
@@ -788,7 +787,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.TokenRequest.RedirectUri
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -838,7 +837,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                       context.ValidateBackchannelIdentityToken)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -884,7 +883,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.DisableBackchannelIdentityTokenNonceValidation
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -975,7 +974,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.SendUserInfoRequest
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1015,7 +1014,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.DisableUserInfoValidation
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1108,7 +1107,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.UserInfoEndpoint
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1244,7 +1243,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserInfoRequest["uid"] = context.TokenResponse?["uid"];
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1279,7 +1278,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // Don't overwrite the userinfo token principal if one was already set.
             if (context.UserInfoTokenPrincipal is not null)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Some providers don't provide an OAuth 2.0/OpenID Connect userinfo endpoint but
@@ -1311,7 +1310,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             if (parameters is null)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             var identity = new ClaimsIdentity(
@@ -1349,7 +1348,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.UserInfoTokenPrincipal = new ClaimsPrincipal(identity);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1615,7 +1614,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
             });
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1657,7 +1656,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Properties[Shopify.Properties.ShopName] = settings.ShopName;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1733,7 +1732,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.AuthorizationEndpoint
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1770,7 +1769,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.ResponseMode
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1814,7 +1813,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.Request.Scope
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1845,7 +1844,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             if (context.RedirectUri is null)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // Note: some providers don't support the "state" parameter, don't flow
@@ -1868,7 +1867,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request.State = null;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2061,7 +2060,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request.Prompt = settings.Prompt;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2099,7 +2098,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 _ => context.RevocationEndpointClientAuthenticationMethod
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2144,7 +2143,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.ClientAssertionPrincipal.SetAudiences("https://appleid.apple.com");
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2189,7 +2188,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.RevocationRequest.ClientAssertionType = null;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

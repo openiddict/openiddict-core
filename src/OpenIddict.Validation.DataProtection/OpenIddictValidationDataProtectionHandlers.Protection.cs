@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 using static OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes;
 using static OpenIddict.Validation.OpenIddictValidationHandlers.Protection;
 using Schemes = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes.Schemes;
@@ -55,13 +54,13 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal is not null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // If a specific token format is expected, return immediately if it doesn't match the expected value.
                 if (context.TokenFormat is not null and not TokenFormats.Private.DataProtection)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: ASP.NET Core Data Protection tokens created by the default implementation always start
@@ -78,7 +77,7 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                         "Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtectionProvider",
                         StringComparison.Ordinal))
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: unlike the equivalent handler in the server stack, the logic used here is
@@ -101,14 +100,14 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                         description: SR.GetResourceString(SR.ID2004),
                         uri: SR.FormatID8000(SR.ID2004));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 context.Principal = principal;
 
                 context.Logger.LogTrace(6152, SR.GetResourceString(SR.ID6152), context.Token, context.Principal.Claims);
 
-                return default;
+                return ValueTask.CompletedTask;
 
                 ClaimsPrincipal? ValidateToken(string type)
                 {

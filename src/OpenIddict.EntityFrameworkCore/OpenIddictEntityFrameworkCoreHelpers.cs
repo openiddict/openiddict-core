@@ -10,7 +10,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFrameworkCore;
 using OpenIddict.EntityFrameworkCore.Models;
-using OpenIddict.Extensions;
 
 namespace Microsoft.EntityFrameworkCore;
 

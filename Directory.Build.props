@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
-    <LangVersion>13.0</LangVersion>
+    <LangVersion>14.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>9.0</AnalysisLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -218,6 +218,7 @@
 
   <ItemGroup Condition=" '$(IncludeInternalExtensions)' == 'true' ">
     <Compile Include="$(MSBuildThisFileDirectory)shared\OpenIddict.Extensions\*.cs" Visible="false" />
+    <Using Include="OpenIddict.Extensions" />
   </ItemGroup>
 
 </Project>

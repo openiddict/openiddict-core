@@ -100,7 +100,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 response.Redirect(location);
                 context.HandleRequest();
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

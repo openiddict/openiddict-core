@@ -57,7 +57,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
                     var request = context.Transaction.GetHttpRequest()!;
                     request.Headers[HeaderNames.Authorization] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MinValue);
@@ -93,7 +93,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
                     var request = context.Transaction.GetHttpRequest()!;
                     request.Headers[HeaderNames.Authorization] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 });
 
                 builder.SetOrder(int.MinValue);

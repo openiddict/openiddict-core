@@ -82,7 +82,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => request.Method
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -145,7 +145,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     request.Headers.Add("Client-ID", context.Registration.ClientId);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -210,7 +210,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         request.Headers.Authorization?.Parameter);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -251,7 +251,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Request.ClientId = context.Registration.ClientId;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -301,7 +301,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => request.Content
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -337,7 +337,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 if (response.Content is null)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Some providers are known to return invalid or incorrect media types, which prevents
@@ -367,7 +367,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => response.Content.Headers.ContentType
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -488,7 +488,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     _ => context.Response
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -536,7 +536,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

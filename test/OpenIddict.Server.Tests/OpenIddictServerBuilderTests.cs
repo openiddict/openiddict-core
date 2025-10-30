@@ -1,12 +1,15 @@
-using System.Globalization;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
+
+#if !SUPPORTS_CERTIFICATE_GENERATION
+using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
+#endif
 
 namespace OpenIddict.Server.Tests;
 
@@ -2428,6 +2431,6 @@ public class OpenIddictServerBuilderTests
 
     private class CustomHandler : IOpenIddictServerHandler<CustomContext>
     {
-        public ValueTask HandleAsync(CustomContext context) => default;
+        public ValueTask HandleAsync(CustomContext context) => ValueTask.CompletedTask;
     }
 }

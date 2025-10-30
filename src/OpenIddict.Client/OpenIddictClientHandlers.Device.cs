@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -58,11 +57,11 @@ public static partial class OpenIddictClientHandlers
                             description: SR.FormatID2107(parameter.Key),
                             uri: SR.FormatID8000(SR.ID2107));
 
-                        return default;
+                        return ValueTask.CompletedTask;
                     }
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
 
                 // Note: in the typical case, the response parameters should be deserialized from a
                 // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
@@ -136,10 +135,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.GetResourceString(SR.ID2167),
                         uri: SR.FormatID8000(SR.ID2167));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -176,7 +175,7 @@ public static partial class OpenIddictClientHandlers
                         description: SR.FormatID2168(Parameters.VerificationUri),
                         uri: SR.FormatID8000(SR.ID2168));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Return an error if the "verification_uri" parameter is malformed.
@@ -188,7 +187,7 @@ public static partial class OpenIddictClientHandlers
                         description: SR.FormatID2169(Parameters.VerificationUri),
                         uri: SR.FormatID8000(SR.ID2169));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: the "verification_uri_complete" parameter is optional and MUST NOT
@@ -202,10 +201,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.FormatID2169(Parameters.VerificationUriComplete),
                         uri: SR.FormatID8000(SR.ID2169));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -242,10 +241,10 @@ public static partial class OpenIddictClientHandlers
                         description: SR.FormatID2168(Parameters.ExpiresIn),
                         uri: SR.FormatID8000(SR.ID2168));
 
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }

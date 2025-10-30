@@ -508,7 +508,7 @@ public class OpenIddictMongoDbApplicationStore<
 
         application.ApplicationType = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -522,7 +522,7 @@ public class OpenIddictMongoDbApplicationStore<
 
         application.ClientId = identifier;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -536,7 +536,7 @@ public class OpenIddictMongoDbApplicationStore<
 
         application.ClientSecret = secret;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -550,7 +550,7 @@ public class OpenIddictMongoDbApplicationStore<
 
         application.ClientType = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -564,7 +564,7 @@ public class OpenIddictMongoDbApplicationStore<
 
         application.ConsentType = type;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -578,7 +578,7 @@ public class OpenIddictMongoDbApplicationStore<
 
         application.DisplayName = name;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -594,14 +594,14 @@ public class OpenIddictMongoDbApplicationStore<
         {
             application.DisplayNames = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         application.DisplayNames = names.ToImmutableDictionary(
             pair => pair.Key.Name,
             pair => pair.Value);
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -616,7 +616,7 @@ public class OpenIddictMongoDbApplicationStore<
         application.JsonWebKeySet = set is not null ? BsonDocument.Parse(
             JsonSerializer.Serialize(set, OpenIddictSerializer.Default.JsonWebKeySet)) : null;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -632,12 +632,12 @@ public class OpenIddictMongoDbApplicationStore<
         {
             application.Permissions = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         application.Permissions = permissions.ToImmutableList();
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -653,12 +653,12 @@ public class OpenIddictMongoDbApplicationStore<
         {
             application.PostLogoutRedirectUris = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         application.PostLogoutRedirectUris = uris.ToImmutableList();
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -674,7 +674,7 @@ public class OpenIddictMongoDbApplicationStore<
         {
             application.Properties = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         using var stream = new MemoryStream();
@@ -697,7 +697,7 @@ public class OpenIddictMongoDbApplicationStore<
 
         application.Properties = BsonDocument.Parse(Encoding.UTF8.GetString(stream.ToArray()));
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -713,12 +713,12 @@ public class OpenIddictMongoDbApplicationStore<
         {
             application.RedirectUris = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         application.RedirectUris = uris.ToImmutableList();
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -734,12 +734,12 @@ public class OpenIddictMongoDbApplicationStore<
         {
             application.Requirements = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         application.Requirements = requirements.ToImmutableList();
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -755,12 +755,12 @@ public class OpenIddictMongoDbApplicationStore<
         {
             application.Settings = null;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         application.Settings = settings;
 
-        return default;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>

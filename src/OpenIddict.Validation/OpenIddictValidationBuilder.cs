@@ -12,7 +12,6 @@ using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 using OpenIddict.Validation;
 
 namespace Microsoft.Extensions.DependencyInjection;

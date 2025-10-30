@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationConstants;
 
 namespace OpenIddict.Client.SystemIntegration;
@@ -154,7 +153,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0390))
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -192,7 +191,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0375))
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -230,7 +229,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0393))
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -263,13 +262,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // If the base or request URIs couldn't be resolved, don't try to infer the endpoint type.
             if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             // If an endpoint was already inferred by the generic handler, don't override it.
             if (context.EndpointType is not OpenIddictClientEndpointType.Unknown)
             {
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.EndpointType =
@@ -277,7 +276,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 Matches(context.Options.PostLogoutRedirectionEndpointUris) ? OpenIddictClientEndpointType.PostLogoutRedirection :
                                                                              OpenIddictClientEndpointType.Unknown;
 
-            return default;
+            return ValueTask.CompletedTask;
 
             bool Matches(IReadOnlyList<Uri> uris)
             {
@@ -351,10 +350,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 response.StatusCode = (int) HttpStatusCode.NotFound;
 
                 context.HandleRequest();
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -398,7 +397,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     description: SR.GetResourceString(SR.ID2084),
                     uri: SR.FormatID8000(SR.ID2084));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.Transaction.Request = request.QueryString.AllKeys.Length switch
@@ -407,7 +406,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => new OpenIddictRequest(request.QueryString)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -555,7 +554,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             context.Transaction.Request = new OpenIddictRequest(parameters);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -591,7 +590,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             context.Transaction.Request = new OpenIddictRequest(callback.Parameters);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -739,7 +738,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => (context.Configuration, context.Registration)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -785,7 +784,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.StateToken
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -832,7 +831,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.StateTokenPrincipal
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -879,7 +878,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 }
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1020,12 +1019,12 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     description: SR.GetResourceString(SR.ID2139),
                     uri: SR.FormatID8000(SR.ID2139));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
 
             context.RequestForgeryProtection = protection;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1073,7 +1072,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => (context.AuthorizationCode, context.FrontchannelAccessToken, context.FrontchannelIdentityToken)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1120,7 +1119,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.FrontchannelIdentityTokenPrincipal
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1167,7 +1166,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.FrontchannelAccessTokenPrincipal
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1214,7 +1213,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.AuthorizationCodePrincipal
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1260,7 +1259,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.TokenResponse
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1308,7 +1307,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => (context.BackchannelAccessToken, context.BackchannelIdentityToken, context.RefreshToken)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1355,7 +1354,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.BackchannelIdentityTokenPrincipal
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1402,7 +1401,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.BackchannelAccessTokenPrincipal
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1449,7 +1448,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.RefreshTokenPrincipal
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1495,7 +1494,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => (context.UserInfoResponse, context.UserInfoTokenPrincipal, context.UserInfoToken)
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1540,7 +1539,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => context.MergedPrincipal
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1583,7 +1582,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0380));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1626,7 +1625,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0381));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1657,7 +1656,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             context.BaseUri ??= context.Options.ClientUri;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1947,7 +1946,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // should be redirected to a different instance using inter-process communication.
             context.StateTokenPrincipal.SetClaim(Claims.Private.InstanceId, _options.CurrentValue.InstanceIdentifier);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -1997,7 +1996,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0378));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2028,7 +2027,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             context.BaseUri ??= context.Options.ClientUri;
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2129,7 +2128,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // should be redirected to a different instance using inter-process communication.
             context.StateTokenPrincipal.SetClaim(Claims.Private.InstanceId, _options.CurrentValue.InstanceIdentifier);
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2179,7 +2178,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0378));
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2236,10 +2235,10 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _lifetime.StopApplication();
 
                 context.HandleRequest();
-                return default;
+                return ValueTask.CompletedTask;
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2282,7 +2281,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 _ => 400
             };
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2321,7 +2320,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             response.Headers[Headers.Pragma] = "no-cache";
             response.Headers[Headers.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2358,7 +2357,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // Note: this logic applies to both successful and errored responses.
 
             context.HandleRequest();
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -2394,7 +2393,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // Note: this logic applies to both successful and errored responses.
 
             context.HandleRequest();
-            return default;
+            return ValueTask.CompletedTask;
         }
     }
 }

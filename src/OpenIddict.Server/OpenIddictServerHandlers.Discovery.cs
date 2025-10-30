@@ -10,7 +10,6 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -351,7 +350,7 @@ public static partial class OpenIddictServerHandlers
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
                 };
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -408,7 +407,7 @@ public static partial class OpenIddictServerHandlers
                 context.UserInfoEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.UserInfoEndpointUris.FirstOrDefault());
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -437,7 +436,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.GrantTypes.UnionWith(context.Options.GrantTypes);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -466,7 +465,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.ResponseTypes.UnionWith(context.Options.ResponseTypes);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -496,7 +495,7 @@ public static partial class OpenIddictServerHandlers
                 // Only include the response modes if at least one response type is returned.
                 if (context.ResponseTypes.Count is 0)
                 {
-                    return default;
+                    return ValueTask.CompletedTask;
                 }
 
                 // Note: returning an access or identity token using the query response mode is explicitly disallowed.
@@ -514,7 +513,7 @@ public static partial class OpenIddictServerHandlers
                 context.ResponseModes.UnionWith(context.Options.ResponseModes.Where(
                     static mode => mode is not ResponseModes.Query));
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -571,7 +570,7 @@ public static partial class OpenIddictServerHandlers
                     context.TokenEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -605,7 +604,7 @@ public static partial class OpenIddictServerHandlers
                     context.CodeChallengeMethods.UnionWith(context.Options.CodeChallengeMethods);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -634,7 +633,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.Scopes.UnionWith(context.Options.Scopes);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -663,7 +662,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.Claims.UnionWith(context.Options.Claims);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -692,7 +691,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.SubjectTypes.UnionWith(context.Options.SubjectTypes);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -721,7 +720,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.PromptValues.UnionWith(context.Options.PromptValues);
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -787,7 +786,7 @@ public static partial class OpenIddictServerHandlers
                     context.IdTokenSigningAlgorithms.Add(algorithm);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -816,7 +815,7 @@ public static partial class OpenIddictServerHandlers
 
                 context.RequirePushedAuthorizationRequests = context.Options.RequirePushedAuthorizationRequests;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -855,7 +854,7 @@ public static partial class OpenIddictServerHandlers
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.
                 context.Metadata[Metadata.AuthorizationResponseIssParameterSupported] = true;
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1343,7 +1342,7 @@ public static partial class OpenIddictServerHandlers
                     context.Keys.Add(key);
                 }
 
-                return default;
+                return ValueTask.CompletedTask;
             }
         }
     }
