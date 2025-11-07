@@ -1157,11 +1157,15 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             throw new ValidationException(builder.ToString(), results);
         }
 
+        if (!Options.CurrentValue.DisableEntityCaching)
+        {
+            await Cache.RemoveAsync(application, cancellationToken);
+        }
+
         await Store.UpdateAsync(application, cancellationToken);
 
         if (!Options.CurrentValue.DisableEntityCaching)
         {
-            await Cache.RemoveAsync(application, cancellationToken);
             await Cache.AddAsync(application, cancellationToken);
         }
 
