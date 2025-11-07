@@ -1168,11 +1168,15 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             throw new ValidationException(builder.ToString(), results);
         }
 
+        if (!Options.CurrentValue.DisableEntityCaching)
+        {
+            await Cache.RemoveAsync(token, cancellationToken);
+        }
+
         await Store.UpdateAsync(token, cancellationToken);
 
         if (!Options.CurrentValue.DisableEntityCaching)
         {
-            await Cache.RemoveAsync(token, cancellationToken);
             await Cache.AddAsync(token, cancellationToken);
         }
 

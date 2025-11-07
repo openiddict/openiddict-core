@@ -963,11 +963,15 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
             throw new ValidationException(builder.ToString(), results);
         }
 
+        if (!Options.CurrentValue.DisableEntityCaching)
+        {
+            await Cache.RemoveAsync(authorization, cancellationToken);
+        }
+
         await Store.UpdateAsync(authorization, cancellationToken);
 
         if (!Options.CurrentValue.DisableEntityCaching)
         {
-            await Cache.RemoveAsync(authorization, cancellationToken);
             await Cache.AddAsync(authorization, cancellationToken);
         }
 

@@ -870,11 +870,15 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
             throw new ValidationException(builder.ToString(), results);
         }
 
+        if (!Options.CurrentValue.DisableEntityCaching)
+        {
+            await Cache.RemoveAsync(scope, cancellationToken);
+        }
+
         await Store.UpdateAsync(scope, cancellationToken);
 
         if (!Options.CurrentValue.DisableEntityCaching)
         {
-            await Cache.RemoveAsync(scope, cancellationToken);
             await Cache.AddAsync(scope, cancellationToken);
         }
 
