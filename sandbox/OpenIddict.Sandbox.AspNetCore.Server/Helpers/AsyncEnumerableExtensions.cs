@@ -1,4 +1,5 @@
-﻿namespace OpenIddict.Sandbox.AspNetCore.Server.Helpers;
+﻿#if !SUPPORTS_ASYNC_LINQ
+namespace OpenIddict.Sandbox.AspNetCore.Server.Helpers;
 
 public static class AsyncEnumerableExtensions
 {
@@ -24,3 +25,4 @@ public static class AsyncEnumerableExtensions
         }
     }
 }
+#endif

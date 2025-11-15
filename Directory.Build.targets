@@ -123,6 +123,7 @@
 
   <PropertyGroup
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '10.0')) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_ASYNC_LINQ</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_RELAXED_URI_LIMITS</DefineConstants>
   </PropertyGroup>
 
