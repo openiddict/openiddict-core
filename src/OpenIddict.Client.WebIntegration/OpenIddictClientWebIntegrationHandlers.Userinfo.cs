@@ -124,6 +124,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     request.Headers.Add("X-API-Key", settings.ApplicationKey);
                 }
 
+                // Etsy requires sending the client identifier 'client_id' gotten from Authorization Code exchange aka x-api-key in the Headers
+                // AND the AccessToken aka 'oAuth2' in Etsy Docs with the shops_r Scope in the Authorization Bearer Header.
+                else if (context.Registration.ProviderType is ProviderTypes.Etsy)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer",
+                        request.Headers.Authorization?.Parameter);
+                    request.Headers.Add("x-api-key", context.Registration.ClientId);
+                }
+
                 // Notion requires sending an explicit API version (which is statically set
                 // to the last version known to be supported by the OpenIddict integration).
                 else if (context.Registration.ProviderType is ProviderTypes.Notion)

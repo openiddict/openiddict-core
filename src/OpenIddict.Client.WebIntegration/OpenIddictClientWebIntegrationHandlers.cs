@@ -1520,9 +1520,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
             {
                 // These providers return the user identifier as a custom "user_id" node:
-                ProviderTypes.Amazon        or ProviderTypes.HubSpot or
-                ProviderTypes.StackExchange or ProviderTypes.Typeform or
-                ProviderTypes.VkId
+                ProviderTypes.Amazon        or   ProviderTypes.Etsy or
+                ProviderTypes.HubSpot       or   ProviderTypes.StackExchange or
+                ProviderTypes.Typeform      or   ProviderTypes.VkId
+                
                     => (string?) context.UserInfoResponse?["user_id"],
 
                 // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
