@@ -1051,6 +1051,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         left : new Uri("https://api.dailymotion.com/user", UriKind.Absolute),
                         right: new Uri(identifier, UriKind.Relative)),
 
+                // Etsy's userinfo endpoint requires sending the user identifier in the URI path, which can be gotten from one of the tokens returned by the Token endpoint.
+                ProviderTypes.Etsy when (string?) context.TokenResponse?["access_token"] is string accessToken
+                                        && accessToken.Split(['.'],3).First() is string userId // TODO: Check if string type is correct because Etsy Reference states <int64> for this as Path Parameter https://developers.etsy.com/documentation/reference#operation/getUser
+                    => OpenIddictHelpers.CreateAbsoluteUri(
+                        left : new Uri("https://openapi.etsy.com/v3/application/users/", UriKind.Absolute),
+                        right: new Uri(userId, UriKind.Relative)),
+
                 // HubSpot doesn't have a static userinfo endpoint but allows retrieving basic information
                 // by using an access token info endpoint that requires sending the token in the URI path.
                 ProviderTypes.HubSpot when
@@ -1407,6 +1414,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ?.Select(parameter => (string?) parameter["email"])
                     ?.FirstOrDefault(),
 
+                // Etsy returns the email address as a custom "primary_email" node:
+                ProviderTypes.Etsy => (string?) context.UserInfoResponse?["primary_email"],
+
                 // HubSpot returns the email address as a custom "user" node:
                 ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
 
@@ -1442,7 +1452,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => (string?) context.UserInfoResponse?["username"],
 
                 // These providers don't return a username so one is created using the "first_name" and "last_name" nodes:
-                ProviderTypes.Basecamp or ProviderTypes.Harvest or ProviderTypes.VkId
+                ProviderTypes.Basecamp or ProviderTypes.Etsy or ProviderTypes.Harvest or ProviderTypes.VkId
                     when context.UserInfoResponse?.HasParameter("first_name") is true &&
                          context.UserInfoResponse?.HasParameter("last_name")  is true
                     => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
