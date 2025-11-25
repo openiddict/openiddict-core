@@ -545,6 +545,21 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     }
                 }
 
+                // Note: Etsy doesn't returns a standard "name" containing first + last Name claim formatted in the JSON object.
+                else if (context.Registration.ProviderType is ProviderTypes.Etsy)
+                {
+                    string? firstName = (string?) context.Response["first_name"];
+                    string? lastName = (string?) context.Response["last_name"];
+                    // user_id gets returned as integer but OpenIddict expects a string
+                    // TODO: Check if this is needed as for calling the getUser Endpoint we already require user_id as parameter
+                    context.Response[Claims.Subject] = context.Response["user_id"]; // Claims are not giving a user_id by default and client_Id is alredy used for x-api-key
+                    context.Response[Claims.Name] = $"{firstName} {lastName}";
+                    context.Response[Claims.FamilyName] = lastName;
+                    context.Response[Claims.GivenName] = firstName;
+                    // Mapping Email and Picture claims
+                    context.Response[Claims.Email] = context.Response["primary_email"];
+                    context.Response[Claims.Picture] = context.Response["image_url_75x75"];
+                }
                 return ValueTask.CompletedTask;
             }
         }

@@ -772,7 +772,7 @@
                                                       ██ ▀▀▀██▄██▄▄▄█▀▀▀▄
                                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
-  <Provider Name="Etsy"
+  <Provider Name="Etsy" Id="d9f3c1a2-4b7e-4c9d-8a2f-3b7e5c1d9a6f"
             Documentation="https://developers.etsy.com/documentation/essentials/authentication">
     <Environment Issuer="https://www.etsy.com/">
       
@@ -782,20 +782,18 @@
         <!--
         The getMe Endpoint does only provide the 'user_id' and 'shop_id' parameters, which can only be 1 user_id + 1 shop_id!
         -->
-        
+
+        <CodeChallengeMethod Value="S256" />
+
         <!--Etsy API requires Authorization Code flow + Refresh Token to work!-->
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
-        
-        <CodeChallengeMethod Value="S256" />
-        
 
       </Configuration>
       <!--Required for getMe UserInfoEndpoint-->
       <Scope Name="shops_r"       Default="true" Required="true" />
       <!--Email scope is required if we want call getUser Endpoint and not only the getMe endpoint as mentioned above-->
       <Scope Name="email_r"       Default="true" Required="false" />
-      
       <!--Optional scopes-->
       <Scope Name="address_r"     Default="false" Required="false" />
       <Scope Name="address_w"     Default="false" Required="false" />
@@ -819,6 +817,7 @@
     
     <!--TODO: Add shop_id UserInfo Claim-->
     <!--TODO: Add the getUser Endpoint Call, to get complete expected UserInfo. required additional scope: 'email_r', json response parameters: 'user_id' 'primary_email' 'first_name' 'last_name' 'image_url_75x75', Path Parameters: 'user_id' <int64>, Uri: https://openapi.etsy.com/v3/application/users/{user_id}, See API Reference: https://developers.etsy.com/documentation/reference#operation/getUser-->
+    
   </Provider>
 
 
