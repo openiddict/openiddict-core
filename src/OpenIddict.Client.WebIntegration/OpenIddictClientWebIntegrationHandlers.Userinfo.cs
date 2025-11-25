@@ -124,12 +124,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     request.Headers.Add("X-API-Key", settings.ApplicationKey);
                 }
 
-                // Etsy requires sending the client identifier 'client_id' gotten from Authorization Code exchange aka x-api-key in the Headers
-                // AND the AccessToken aka 'oAuth2' in Etsy Docs with the shops_r Scope in the Authorization Bearer Header.
+                // Etsy requires sending the client identifier 'client_id' gotten from Authorization Code exchange aka x-api-key in the Headers (AttachAccessTokenParameter sets Authorization Bearer header already by default).
                 else if (context.Registration.ProviderType is ProviderTypes.Etsy)
                 {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer",
-                        request.Headers.Authorization?.Parameter);
                     request.Headers.Add("x-api-key", context.Registration.ClientId);
                 }
 
