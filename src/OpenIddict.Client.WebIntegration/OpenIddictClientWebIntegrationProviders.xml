@@ -777,10 +777,12 @@
     <Environment Issuer="https://www.etsy.com/">
       
       <Configuration AuthorizationEndpoint="https://www.etsy.com/oauth/connect"
-                     TokenEndpoint="https://openapi.etsy.com/v3/public/oauth/token"
-                     UserInfoEndpoint="https://openapi.etsy.com/v3/application/users/me">
+                     TokenEndpoint="https://openapi.etsy.com/v3/public/oauth/token">
+                     
         <!--
-        The getMe Endpoint does only provide the 'user_id' and 'shop_id' parameters, which can only be 1 user_id + 1 shop_id!
+        The getMe Endpoint https://developers.etsy.com/documentation/reference#operation/getMe does only provide the 'user_id' and 'shop_id' parameters,
+        but the UserInfo Endpoint Response is expected to contain user information like 'nameidentifier', 'email', 'given_name, 'family_name', etc.
+        To get those additional user information, the getUser Endpoint must be called and got's overridden in 'OpenIdDictClient.WebIntegration.AuthenticationHandlers.OverrideUserInfoEndpoint'
         -->
 
         <CodeChallengeMethod Value="S256" />
@@ -790,10 +792,13 @@
         <GrantType Value="refresh_token" />
 
       </Configuration>
-      <!--Required for getMe UserInfoEndpoint-->
-      <Scope Name="shops_r"       Default="true" Required="true" />
-      <!--Email scope is required if we want call getUser Endpoint and not only the getMe endpoint as mentioned above-->
-      <Scope Name="email_r"       Default="true" Required="false" />
+      <!--
+      Required for getMe Endpoint, but as this doesn't provide any user information, which we are not already able to extract from 'access_token' ('user_id'),
+      except from the 'shop_id', we are using getUser Endpoint instead for UserInformation
+      -->
+      <Scope Name="shops_r"       Default="true" Required="false" />
+      <!--Email scope is required for UserInfoEndpoint equivalent getUser Endpoint and not only the getMe endpoint as mentioned above-->
+      <Scope Name="email_r"       Default="true" Required="true" />
       <!--Optional scopes-->
       <Scope Name="address_r"     Default="false" Required="false" />
       <Scope Name="address_w"     Default="false" Required="false" />
@@ -814,10 +819,6 @@
       <Scope Name="transactions_r" Default="false" Required="false" />
       <Scope Name="transactions_w" Default="false" Required="false" />
     </Environment>
-    
-    <!--TODO: Add shop_id UserInfo Claim-->
-    <!--TODO: Add the getUser Endpoint Call, to get complete expected UserInfo. required additional scope: 'email_r', json response parameters: 'user_id' 'primary_email' 'first_name' 'last_name' 'image_url_75x75', Path Parameters: 'user_id' <int64>, Uri: https://openapi.etsy.com/v3/application/users/{user_id}, See API Reference: https://developers.etsy.com/documentation/reference#operation/getUser-->
-    
   </Provider>
 
 
