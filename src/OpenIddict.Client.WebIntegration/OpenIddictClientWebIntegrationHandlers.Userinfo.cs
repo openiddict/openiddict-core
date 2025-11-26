@@ -542,23 +542,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     }
                 }
 
-                // Note: Etsy doesn't returns a standard "name" containing first + last Name claim formatted in the JSON object.
-                else if (context.Registration.ProviderType is ProviderTypes.Etsy)
-                {
-                    // TODO: Check if https://github.com/DevTKSS/openiddict-core/blob/ccd2281b5584d640bace1912a88da2c3c701bcd7/src/OpenIddict.Client.WebIntegration/OpenIddictClientWebIntegrationHandlers.cs?plain=1#L1455-L1459 makes this obsolete
-                    string? firstName = (string?) context.Response["first_name"];
-                    string? lastName = (string?) context.Response["last_name"];
-                    // user_id gets returned as integer but OpenIddict might expect it a string?
-                    // TODO: Check if this is obsolete from https://github.com/DevTKSS/openiddict-core/blob/ccd2281b5584d640bace1912a88da2c3c701bcd7/src/OpenIddict.Client.WebIntegration/OpenIddictClientWebIntegrationHandlers.cs?plain=1#L1532-L1538
-                    context.Response[Claims.Subject] = context.Response["user_id"]; // Claims are not giving a user_id by default and client_Id is alredy used for x-api-key
-                    context.Response[Claims.Name] = $"{firstName} {lastName}";
-                    context.Response[Claims.FamilyName] = lastName;
-                    context.Response[Claims.GivenName] = firstName;
-                    // TODO: Check if this is still needed or obsolete from https://github.com/DevTKSS/openiddict-core/blob/ccd2281b5584d640bace1912a88da2c3c701bcd7/src/OpenIddict.Client.WebIntegration/OpenIddictClientWebIntegrationHandlers.cs?plain=1#L1417-L1419
-                    context.Response[Claims.Email] = context.Response["primary_email"];
-                    // Picture claims
-                    context.Response[Claims.Picture] = context.Response["image_url_75x75"];
-                }
                 return ValueTask.CompletedTask;
             }
         }

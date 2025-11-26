@@ -799,25 +799,6 @@
       <Scope Name="shops_r"       Default="true" Required="false" />
       <!--Email scope is required for UserInfoEndpoint equivalent getUser Endpoint and not only the getMe endpoint as mentioned above-->
       <Scope Name="email_r"       Default="true" Required="true" />
-      <!--Optional scopes-->
-      <Scope Name="address_r"     Default="false" Required="false" />
-      <Scope Name="address_w"     Default="false" Required="false" />
-      <Scope Name="billing_r"     Default="false" Required="false" />
-      <Scope Name="cart_r"        Default="false" Required="false" />
-      <Scope Name="cart_w"        Default="false" Required="false" />
-      <Scope Name="favorites_r"   Default="false" Required="false" />
-      <Scope Name="favorites_w"   Default="false" Required="false" />
-      <Scope Name="feedback_r"    Default="false" Required="false" />
-      <Scope Name="listings_d"    Default="false" Required="false" />
-      <Scope Name="listings_r"    Default="false" Required="false" />
-      <Scope Name="listings_w"    Default="false" Required="false" />
-      <Scope Name="profile_r"     Default="false" Required="false" />
-      <Scope Name="profile_w"     Default="false" Required="false" />
-      <Scope Name="recommend_r"   Default="false" Required="false" />
-      <Scope Name="recommend_w"   Default="false" Required="false" />
-      <Scope Name="shops_w"       Default="false" Required="false" />
-      <Scope Name="transactions_r" Default="false" Required="false" />
-      <Scope Name="transactions_w" Default="false" Required="false" />
     </Environment>
   </Provider>
 
