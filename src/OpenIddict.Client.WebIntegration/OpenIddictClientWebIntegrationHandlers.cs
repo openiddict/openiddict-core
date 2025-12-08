@@ -666,6 +666,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.TokenRequest.UserCode = code;
             }
 
+            // osu! requires the "public" scope for client credentials grant, as tokens without scopes are invalid.
+            else if (context.GrantType is GrantTypes.ClientCredentials &&
+                context.Registration.ProviderType is ProviderTypes.Osu)
+            {
+                context.TokenRequest.Scope = "public";
+            }
+
             // VK ID requires attaching a non-standard "device_id" parameter to all token requests.
             //
             // This parameter is either resolved from the authorization response (for the authorization
