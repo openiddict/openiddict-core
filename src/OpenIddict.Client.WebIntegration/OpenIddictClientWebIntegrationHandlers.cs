@@ -28,6 +28,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         OverrideTokenEndpointClientAuthenticationMethod.Descriptor,
         OverrideTokenEndpoint.Descriptor,
         AttachNonStandardClientAssertionClaims.Descriptor,
+        OverrideScope.Descriptor,
         AttachAdditionalTokenRequestParameters.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
         AdjustRedirectUriInTokenRequest.Descriptor,
@@ -622,6 +623,45 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for overriding the scope to be attached
+    /// to the token request for the providers that require it.
+    /// </summary>
+    public sealed class OverrideScope : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<OverrideScope>()
+                .SetOrder(AttachTokenRequestParameters.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc />
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // osu! requires that the scope must be "public" for client credentials
+            // grant, as other scopes have no meaningful effect.
+            if (context.GrantType is GrantTypes.ClientCredentials &&
+                context.Registration.ProviderType is ProviderTypes.Osu)
+            {
+                context.TokenRequest.Scope = "public";
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching additional parameters
     /// to the token request for the providers that require it.
     /// </summary>
@@ -664,13 +704,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 context.TokenRequest.UserCode = code;
-            }
-
-            // osu! requires the "public" scope for client credentials grant, as tokens without scopes are invalid.
-            else if (context.GrantType is GrantTypes.ClientCredentials &&
-                context.Registration.ProviderType is ProviderTypes.Osu)
-            {
-                context.TokenRequest.Scope = "public";
             }
 
             // VK ID requires attaching a non-standard "device_id" parameter to all token requests.
@@ -1445,7 +1478,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.DeviantArt or
                 ProviderTypes.Discord      or ProviderTypes.Disqus      or ProviderTypes.Kook       or
                 ProviderTypes.Lichess      or ProviderTypes.Mastodon    or ProviderTypes.Mixcloud   or
-                ProviderTypes.Trakt        or ProviderTypes.WordPress
+                ProviderTypes.Osu          or ProviderTypes.Trakt       or ProviderTypes.WordPress
                     => (string?) context.UserInfoResponse?["username"],
 
                 // These providers don't return a username so one is created using the "first_name" and "last_name" nodes:
@@ -1540,17 +1573,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Airtable    or ProviderTypes.Basecamp  or ProviderTypes.Box           or
-                ProviderTypes.Dailymotion or ProviderTypes.Deezer    or ProviderTypes.Discord       or
-                ProviderTypes.Disqus      or ProviderTypes.Facebook  or ProviderTypes.Figma         or
-                ProviderTypes.Genesys     or ProviderTypes.Gitee     or ProviderTypes.GitHub        or
-                ProviderTypes.Harvest     or ProviderTypes.Kook      or ProviderTypes.Kroger        or
-                ProviderTypes.Lichess     or ProviderTypes.Linear    or ProviderTypes.Mastodon      or
-                ProviderTypes.Meetup      or ProviderTypes.Miro      or ProviderTypes.Nextcloud     or
-                ProviderTypes.Patreon     or ProviderTypes.Pipedrive or ProviderTypes.Reddit        or
-                ProviderTypes.Smartsheet  or ProviderTypes.Spotify   or ProviderTypes.SubscribeStar or
-                ProviderTypes.Todoist     or ProviderTypes.Twitter   or ProviderTypes.Webflow       or
-                ProviderTypes.Weibo       or ProviderTypes.Yandex    or ProviderTypes.Zoom
+                ProviderTypes.Airtable      or ProviderTypes.Basecamp   or ProviderTypes.Box       or
+                ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or ProviderTypes.Discord   or
+                ProviderTypes.Disqus        or ProviderTypes.Facebook   or ProviderTypes.Figma     or
+                ProviderTypes.Genesys       or ProviderTypes.Gitee      or ProviderTypes.GitHub    or
+                ProviderTypes.Harvest       or ProviderTypes.Kook       or ProviderTypes.Kroger    or
+                ProviderTypes.Lichess       or ProviderTypes.Linear     or ProviderTypes.Mastodon  or
+                ProviderTypes.Meetup        or ProviderTypes.Miro       or ProviderTypes.Nextcloud or
+                ProviderTypes.Osu           or ProviderTypes.Patreon    or ProviderTypes.Pipedrive or
+                ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify   or
+                ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter   or
+                ProviderTypes.Webflow       or ProviderTypes.Weibo      or ProviderTypes.Yandex    or
+                ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:

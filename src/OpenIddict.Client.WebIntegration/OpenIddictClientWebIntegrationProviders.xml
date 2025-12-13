@@ -1765,15 +1765,16 @@
         <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
       </Configuration>
+
     </Environment>
 
-    <Constant Class="GameModes" Value="osu"    Name="Standard" />
-    <Constant Class="GameModes" Value="taiko"  Name="Taiko"    />
-    <Constant Class="GameModes" Value="fruits" Name="Fruits"   />
-    <Constant Class="GameModes" Value="mania"  Name="Mania"    />
+    <Constant Class="GameMode" Value="osu"    Name="Standard" />
+    <Constant Class="GameMode" Value="taiko"  Name="Taiko"    />
+    <Constant Class="GameMode" Value="fruits" Name="Catch"   />
+    <Constant Class="GameMode" Value="mania"  Name="Mania"    />
 
     <Setting PropertyName="GameMode" ParameterName="mode" Type="String" Required="false"
-             Description="The game mode to retrieve statistics for (e.g., 'osu', 'taiko', 'fruits', 'mania'). User default mode will be used if not specified." />
+             Description="The game mode to retrieve statistics for (e.g., 'osu', 'taiko', 'fruits', 'mania'). User default mode will be used if not specified" />
   </Provider>
 
   <!--
