@@ -1759,8 +1759,7 @@
             Documentation="https://osu.ppy.sh/docs/index.html#authentication">
     <Environment Issuer="https://osu.ppy.sh/">
       <Configuration AuthorizationEndpoint="https://osu.ppy.sh/oauth/authorize"
-                     TokenEndpoint="https://osu.ppy.sh/oauth/token"
-                     UserInfoEndpoint="{(string.IsNullOrEmpty(settings.GameMode) ? 'https://osu.ppy.sh/api/v2/me' : $'https://osu.ppy.sh/api/v2/me/{settings.GameMode}')}">
+                     TokenEndpoint="https://osu.ppy.sh/oauth/token">
         <GrantType Value="authorization_code" />
         <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
@@ -1773,8 +1772,7 @@
     <Constant Class="GameMode" Value="fruits" Name="Catch"   />
     <Constant Class="GameMode" Value="mania"  Name="Mania"    />
 
-    <Setting PropertyName="GameMode" ParameterName="mode" Type="String" Required="false"
-             Description="The game mode to retrieve statistics for (e.g., 'osu', 'taiko', 'fruits', 'mania'). User default mode will be used if not specified" />
+    <Property Name="GameMode" DictionaryKey=".game_mode" />
   </Provider>
 
   <!--

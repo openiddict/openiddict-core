@@ -635,7 +635,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenRequest>()
                 .UseSingletonHandler<OverrideScope>()
-                .SetOrder(AttachTokenRequestParameters.Descriptor.Order + 250)
+                .SetOrder(AttachTokenRequestParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -647,14 +647,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
-
             // osu! requires that the scope must be "public" for client credentials
             // grant, as other scopes have no meaningful effect.
             if (context.GrantType is GrantTypes.ClientCredentials &&
                 context.Registration.ProviderType is ProviderTypes.Osu)
             {
-                context.TokenRequest.Scope = "public";
+                context.Scopes.Add("public");
+                // TODO: how does user code add custom scopes here?
             }
 
             return ValueTask.CompletedTask;
@@ -963,7 +962,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Note: these providers don't have a static userinfo endpoint attached to their configuration
                 // so OpenIddict doesn't, by default, send a userinfo request. Since a dynamic endpoint is later
                 // computed and attached to the context, the default value MUST be overridden to send a request.
-                ProviderTypes.Dailymotion or ProviderTypes.HubSpot or
+                ProviderTypes.Dailymotion or ProviderTypes.HubSpot or ProviderTypes.Osu or
                 ProviderTypes.SuperOffice or ProviderTypes.Zoho
                     when context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or
                                               GrantTypes.Implicit          or GrantTypes.Password   or
@@ -1098,6 +1097,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => OpenIddictHelpers.CreateAbsoluteUri(
                         left : new Uri("https://api.hubapi.com/oauth/v1/access-tokens", UriKind.Absolute),
                         right: new Uri(token, UriKind.Relative)),
+
+                // osu! supports specifying a game mode when querying the userinfo endpoint.
+                ProviderTypes.Osu
+                    => !context.Properties.TryGetValue(Osu.Properties.GameMode, out string? gameMode) ||
+                        string.IsNullOrEmpty(gameMode) ?
+                            new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute) :
+                            new Uri($"https://osu.ppy.sh/api/v2/me/{gameMode}", UriKind.Absolute),
 
                 // SuperOffice doesn't expose a static OpenID Connect userinfo endpoint but offers an API whose
                 // absolute URI needs to be computed based on a special claim returned in the identity token.
