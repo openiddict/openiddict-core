@@ -647,13 +647,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // osu! requires that the scope must be "public" for client credentials
-            // grant, as other scopes have no meaningful effect.
+            // osu! requires at least one scope to be set for client credentials grant, as tokens without
+            // scopes are not valid. If no scope is explicitly specified, use the default value `public`.
             if (context.GrantType is GrantTypes.ClientCredentials &&
-                context.Registration.ProviderType is ProviderTypes.Osu)
+                context.Registration.ProviderType is ProviderTypes.Osu &&
+                context.Scopes.Count is 0)
             {
                 context.Scopes.Add("public");
-                // TODO: how does user code add custom scopes here?
             }
 
             return ValueTask.CompletedTask;
