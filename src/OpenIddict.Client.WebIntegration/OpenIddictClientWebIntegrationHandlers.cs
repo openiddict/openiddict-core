@@ -1103,7 +1103,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => !context.Properties.TryGetValue(Osu.Properties.GameMode, out string? gameMode) ||
                         string.IsNullOrEmpty(gameMode) ?
                             new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute) :
-                            new Uri($"https://osu.ppy.sh/api/v2/me/{gameMode}", UriKind.Absolute),
+                            OpenIddictHelpers.CreateAbsoluteUri(
+                                left : new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute),
+                                right: new Uri(gameMode, UriKind.Relative)),
 
                 // SuperOffice doesn't expose a static OpenID Connect userinfo endpoint but offers an API whose
                 // absolute URI needs to be computed based on a special claim returned in the identity token.
