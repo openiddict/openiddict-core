@@ -1767,10 +1767,10 @@
 
     </Environment>
 
-    <Constant Class="GameMode" Value="osu"    Name="Standard" />
-    <Constant Class="GameMode" Value="taiko"  Name="Taiko"    />
-    <Constant Class="GameMode" Value="fruits" Name="Catch"   />
-    <Constant Class="GameMode" Value="mania"  Name="Mania"    />
+    <Constant Class="GameModes" Value="osu"    Name="Standard" />
+    <Constant Class="GameModes" Value="taiko"  Name="Taiko"    />
+    <Constant Class="GameModes" Value="fruits" Name="Catch"    />
+    <Constant Class="GameModes" Value="mania"  Name="Mania"    />
 
     <Property Name="GameMode" DictionaryKey=".game_mode" />
   </Provider>
