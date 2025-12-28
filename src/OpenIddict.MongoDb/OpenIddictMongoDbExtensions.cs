@@ -24,10 +24,7 @@ public static class OpenIddictMongoDbExtensions
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public static OpenIddictMongoDbBuilder UseMongoDb(this OpenIddictCoreBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Note: Mongo uses simple binary comparison checks by default so the additional
         // query filtering applied by the default OpenIddict managers can be safely disabled.
@@ -61,15 +58,8 @@ public static class OpenIddictMongoDbExtensions
     public static OpenIddictCoreBuilder UseMongoDb(
         this OpenIddictCoreBuilder builder, Action<OpenIddictMongoDbBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseMongoDb());
 

@@ -38,10 +38,7 @@ public sealed class OpenIddictClientAspNetCoreBuilder
     /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictClientAspNetCoreBuilder Configure(Action<OpenIddictClientAspNetCoreOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -74,10 +71,7 @@ public sealed class OpenIddictClientAspNetCoreBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientAspNetCoreBuilder AddForwardedAuthenticationScheme(string provider, string? caption)
     {
-        if (string.IsNullOrEmpty(provider))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(provider);
 
         return Configure(options => options.ForwardedAuthenticationSchemes.Add(
             new AuthenticationScheme(provider, caption, typeof(OpenIddictClientAspNetCoreForwarder))));

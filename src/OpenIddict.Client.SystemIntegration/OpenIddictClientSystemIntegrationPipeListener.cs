@@ -6,7 +6,6 @@
 
 using System.ComponentModel;
 using System.IO.Pipes;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -131,7 +130,7 @@ public sealed class OpenIddictClientSystemIntegrationPipeListener : BackgroundSe
         static NamedPipeServerStream CreatePipeServerStream(OpenIddictClientSystemIntegrationOptions options)
             // Note: the ACL-based PipeSecurity class is only supported on Windows. On other operating systems,
             // PipeOptions.CurrentUserOnly can be used as an alternative, but only for TFMs that implement it.
-            => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+            => OperatingSystem.IsWindows() ?
 #if SUPPORTS_NAMED_PIPE_CONSTRUCTOR_WITH_ACL
                 new NamedPipeServerStream(
 #elif SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL

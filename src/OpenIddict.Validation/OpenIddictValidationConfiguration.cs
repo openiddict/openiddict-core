@@ -33,10 +33,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictValidationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
 

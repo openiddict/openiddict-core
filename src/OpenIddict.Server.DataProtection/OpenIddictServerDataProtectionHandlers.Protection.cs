@@ -271,10 +271,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(GenerateTokenContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // ASP.NET Core Data Protection can be used to format certain types of tokens in lieu
                 // of the default token format (typically, JSON Web Token). By default, Data Protection
@@ -333,10 +330,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(GenerateTokenContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // If an access token was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Token))

@@ -21,10 +21,7 @@ public sealed class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// <returns><see langword="true"/> if the type is supported, <see langword="false"/> otherwise.</returns>
     public override bool CanConvert(Type typeToConvert)
     {
-        if (typeToConvert is null)
-        {
-            throw new ArgumentNullException(nameof(typeToConvert));
-        }
+        ArgumentNullException.ThrowIfNull(typeToConvert);
 
         return typeToConvert == typeof(OpenIddictMessage) ||
                typeToConvert == typeof(OpenIddictRequest) ||
@@ -40,10 +37,7 @@ public sealed class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// <returns>The deserialized <see cref="OpenIddictMessage"/> instance.</returns>
     public override OpenIddictMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (typeToConvert is null)
-        {
-            throw new ArgumentNullException(nameof(typeToConvert));
-        }
+        ArgumentNullException.ThrowIfNull(typeToConvert);
 
         using var document = JsonDocument.ParseValue(ref reader);
 
@@ -61,15 +55,8 @@ public sealed class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// <param name="options">The JSON serializer options.</param>
     public override void Write(Utf8JsonWriter writer, OpenIddictMessage value, JsonSerializerOptions options)
     {
-        if (writer is null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (value is null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(value);
 
         value.WriteTo(writer);
     }

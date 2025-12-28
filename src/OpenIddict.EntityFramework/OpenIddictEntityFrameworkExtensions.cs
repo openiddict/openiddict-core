@@ -24,10 +24,7 @@ public static class OpenIddictEntityFrameworkExtensions
     /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
     public static OpenIddictEntityFrameworkBuilder UseEntityFramework(this OpenIddictCoreBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Since Entity Framework 6.x may be used with databases performing case-insensitive
         // or culture-sensitive comparisons, ensure the additional filtering logic is enforced
@@ -64,15 +61,8 @@ public static class OpenIddictEntityFrameworkExtensions
     public static OpenIddictCoreBuilder UseEntityFramework(
         this OpenIddictCoreBuilder builder, Action<OpenIddictEntityFrameworkBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseEntityFramework());
 

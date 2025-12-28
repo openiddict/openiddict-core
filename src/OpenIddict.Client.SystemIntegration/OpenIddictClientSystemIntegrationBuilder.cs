@@ -40,10 +40,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
     public OpenIddictClientSystemIntegrationBuilder Configure(Action<OpenIddictClientSystemIntegrationOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -209,10 +206,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientSystemIntegrationBuilder SetApplicationDiscriminator(string discriminator)
     {
-        if (string.IsNullOrEmpty(discriminator))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(discriminator)), nameof(discriminator));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(discriminator);
 
         return Configure(options => options.ApplicationDiscriminator = discriminator);
     }
@@ -226,10 +220,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientSystemIntegrationBuilder SetInstanceIdentifier(string identifier)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(identifier)), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         return Configure(options => options.InstanceIdentifier = identifier);
     }
@@ -243,10 +234,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientSystemIntegrationBuilder SetPipeName(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(name)), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Configure(options => options.PipeName = name);
     }
@@ -270,10 +258,7 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced), SupportedOSPlatform("windows")]
     public OpenIddictClientSystemIntegrationBuilder SetPipeSecurity(PipeSecurity security)
     {
-        if (security is null)
-        {
-            throw new ArgumentNullException(nameof(security));
-        }
+        ArgumentNullException.ThrowIfNull(security);
 
         return Configure(options => options.PipeSecurity = security);
     }

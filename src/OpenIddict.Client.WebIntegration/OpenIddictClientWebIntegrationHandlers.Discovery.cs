@@ -45,10 +45,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.Response[Metadata.Issuer] = context.Registration.ProviderType switch
                 {
@@ -97,10 +94,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: some providers don't list the grant types they support, which prevents the OpenIddict
                 // client from using them (unless they are assumed to be enabled by default, like the
@@ -182,10 +176,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Some providers support Proof Key for Code Exchange but don't list any supported code
                 // challenge method in the server configuration metadata. To ensure the OpenIddict client
@@ -227,10 +218,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Atlassian includes the "openid" scope in its server configuration but doesn't currently allow
                 // requesting it. To prevent an error from being returned, OpenID Connect support is disabled.
@@ -280,10 +268,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Alibaba Cloud doesn't document whether sending client credentials using basic authentication
                 // is supported and doesn't return a "token_endpoint_auth_methods_supported" nor a
@@ -394,10 +379,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // While Atlassian implements an OpenID Connect userinfo endpoint, using it requires
                 // requesting the "openid" scope, which isn't allowed yet. To work around this

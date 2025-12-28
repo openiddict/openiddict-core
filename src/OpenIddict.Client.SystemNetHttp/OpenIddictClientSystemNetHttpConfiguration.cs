@@ -42,10 +42,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict System.Net.Http client components.
         options.Handlers.AddRange(OpenIddictClientSystemNetHttpHandlers.DefaultHandlers);
@@ -62,10 +59,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
     /// <inheritdoc/>
     public void Configure(string? name, HttpClientFactoryOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
 
@@ -179,10 +173,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
     /// <inheritdoc/>
     public void PostConfigure(string? name, HttpClientFactoryOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
 
@@ -270,10 +261,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientSystemNetHttpOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // If no client authentication certificate selector was provided, use fallback delegates that
         // automatically use the first X.509 signing certificate attached to the client registration

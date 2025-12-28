@@ -104,10 +104,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         return ReplaceService<IModelCustomizer,
             OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TScope, TToken, TKey>>(builder);
@@ -199,10 +196,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         return builder
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
@@ -230,10 +224,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
 #endif
     internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         return ExecuteAsync(source, cancellationToken);
 
@@ -263,10 +254,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     internal static async ValueTask<IDbContextTransaction?> CreateTransactionAsync(
         this DbContext context, IsolationLevel level, CancellationToken cancellationToken)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Note: transactions that specify an explicit isolation level are only supported by
         // relational providers and trying to use them with a different provider results in

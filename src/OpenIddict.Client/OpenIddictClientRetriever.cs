@@ -38,10 +38,7 @@ public sealed class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddi
     async Task<OpenIddictConfiguration> IConfigurationRetriever<OpenIddictConfiguration>.GetConfigurationAsync(
         [StringSyntax(StringSyntaxAttribute.Uri)] string address, IDocumentRetriever retriever, CancellationToken cancel)
     {
-        if (string.IsNullOrEmpty(address))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(address);
 
         if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
         {

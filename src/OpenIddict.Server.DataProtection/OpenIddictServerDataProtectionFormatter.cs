@@ -20,10 +20,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
 {
     public ClaimsPrincipal ReadToken(BinaryReader reader)
     {
-        if (reader is null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         var (principal, properties) = Read(reader);
 
@@ -191,15 +188,8 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
 
     public void WriteToken(BinaryWriter writer, ClaimsPrincipal principal)
     {
-        if (writer is null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (principal is null)
-        {
-            throw new ArgumentNullException(nameof(principal));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(principal);
 
         var properties = new Dictionary<string, string>();
 
@@ -321,15 +311,8 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
 
         static void WriteClaim(BinaryWriter writer, Claim claim)
         {
-            if (writer is null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (claim is null)
-            {
-                throw new ArgumentNullException(nameof(claim));
-            }
+            ArgumentNullException.ThrowIfNull(writer);
+            ArgumentNullException.ThrowIfNull(claim);
 
             WriteWithDefault(writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
             writer.Write(claim.Value);

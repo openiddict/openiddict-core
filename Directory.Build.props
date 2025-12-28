@@ -16,12 +16,15 @@
     <DebugType>portable</DebugType>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <SuppressSymbolPackageFormatValidation>true</SuppressSymbolPackageFormatValidation>
+    <EmbedAllSources>true</EmbedAllSources>
     <EnableXlfLocalization>false</EnableXlfLocalization>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <PolyUseEmbeddedAttribute>true</PolyUseEmbeddedAttribute>
+    <PolyArgumentExceptions>true</PolyArgumentExceptions>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -205,10 +208,6 @@
 
   <PropertyGroup Condition=" $(RepoRelativeProjectDir.Contains('src')) Or $(RepoRelativeProjectDir.Contains('test')) ">
     <IncludeInternalExtensions Condition=" '$(IncludeInternalExtensions)' == '' ">true</IncludeInternalExtensions>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <PolySharpIncludeRuntimeSupportedAttributes>true</PolySharpIncludeRuntimeSupportedAttributes>
   </PropertyGroup>
 
   <ItemGroup>

@@ -30,6 +30,7 @@
       allow loading dependencies that are not strong-named), the warning can be safely disabled.
     -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
+    <DefineConstants>$(DefineConstants);FeatureRuntimeInformation;FeatureValueTuple</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

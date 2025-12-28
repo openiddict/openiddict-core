@@ -23,10 +23,7 @@ public static class OpenIddictQuartzExtensions
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public static OpenIddictQuartzBuilder UseQuartz(this OpenIddictCoreBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddQuartz();
 
@@ -54,15 +51,8 @@ public static class OpenIddictQuartzExtensions
     public static OpenIddictCoreBuilder UseQuartz(
         this OpenIddictCoreBuilder builder, Action<OpenIddictQuartzBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseQuartz());
 

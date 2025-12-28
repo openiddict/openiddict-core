@@ -68,10 +68,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     public virtual async ValueTask<long> CountAsync<TResult>(
         Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -82,10 +79,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask CreateAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -96,10 +90,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask DeleteAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -164,10 +155,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     public virtual IAsyncEnumerable<TAuthorization> FindByApplicationIdAsync(
         string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         return ExecuteAsync(cancellationToken);
 
@@ -187,10 +175,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask<TAuthorization?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -203,10 +188,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     public virtual IAsyncEnumerable<TAuthorization> FindBySubjectAsync(
         string subject, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(subject);
 
         return ExecuteAsync(cancellationToken);
 
@@ -226,10 +208,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetApplicationIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         if (authorization.ApplicationId == ObjectId.Empty)
         {
@@ -244,10 +223,7 @@ public class OpenIddictMongoDbAuthorizationStore<
         Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -258,10 +234,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         if (authorization.CreationDate is null)
         {
@@ -274,10 +247,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         return new(authorization.Id.ToString());
     }
@@ -285,10 +255,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         if (authorization.Properties is null)
         {
@@ -309,10 +276,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         if (authorization.Scopes is not { Count: > 0 })
         {
@@ -325,10 +289,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetStatusAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         return new(authorization.Status);
     }
@@ -336,10 +297,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetSubjectAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         return new(authorization.Subject);
     }
@@ -347,10 +305,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetTypeAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         return new(authorization.Type);
     }
@@ -400,10 +355,7 @@ public class OpenIddictMongoDbAuthorizationStore<
         Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return ExecuteAsync(cancellationToken);
 
@@ -490,10 +442,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -508,10 +457,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(subject));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(subject);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -527,10 +473,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     public virtual ValueTask SetApplicationIdAsync(TAuthorization authorization,
         string? identifier, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         if (!string.IsNullOrEmpty(identifier))
         {
@@ -549,10 +492,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     public virtual ValueTask SetCreationDateAsync(TAuthorization authorization,
         DateTimeOffset? date, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         authorization.CreationDate = date?.UtcDateTime;
 
@@ -563,10 +503,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     public virtual ValueTask SetPropertiesAsync(TAuthorization authorization,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         if (properties is not { Count: > 0 })
         {
@@ -602,10 +539,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     public virtual ValueTask SetScopesAsync(TAuthorization authorization,
         ImmutableArray<string> scopes, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         if (scopes.IsDefaultOrEmpty)
         {
@@ -622,10 +556,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask SetStatusAsync(TAuthorization authorization, string? status, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         authorization.Status = status;
 
@@ -635,10 +566,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask SetSubjectAsync(TAuthorization authorization, string? subject, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         authorization.Subject = subject;
 
@@ -648,10 +576,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual ValueTask SetTypeAsync(TAuthorization authorization, string? type, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         authorization.Type = type;
 
@@ -661,10 +586,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     /// <inheritdoc/>
     public virtual async ValueTask UpdateAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         // Generate a new concurrency token and attach it
         // to the authorization before persisting the changes.

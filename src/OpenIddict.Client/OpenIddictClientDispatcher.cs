@@ -36,10 +36,7 @@ public sealed class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
     /// <inheritdoc/>
     public async ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         await foreach (var handler in GetHandlersAsync())
         {

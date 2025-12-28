@@ -78,10 +78,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -171,10 +168,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: the specification doesn't define a standard way to return an error other than
                 // returning a 4xx status code. That said, some implementations are known to return
@@ -214,10 +208,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: the issuer returned in the discovery document must exactly match the URI used to access it.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
@@ -278,10 +269,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: the authorization_endpoint node is required by the OpenID Connect discovery specification
                 // but is optional in the OAuth 2.0 authorization server metadata specification. To make OpenIddict
@@ -330,10 +318,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: the jwks_uri node is required by the OpenID Connect discovery specification.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient.
@@ -382,10 +367,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var endpoint = (string?) context.Response[Metadata.DeviceAuthorizationEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
@@ -425,10 +407,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var endpoint = (string?) context.Response[Metadata.IntrospectionEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
@@ -468,10 +447,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var endpoint = (string?) context.Response[Metadata.EndSessionEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
@@ -512,10 +488,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
                 // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
@@ -548,10 +521,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
                 // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
@@ -583,10 +553,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
                 // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
@@ -618,10 +585,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
                 // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
@@ -653,10 +617,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
                 // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
@@ -688,10 +649,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: as recommended by the specification, values present in the "mtls_endpoint_aliases" node
                 // that can't be recognized as OAuth 2.0 endpoints or are not valid URIs are simply ignored.
@@ -723,10 +681,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var endpoint = (string?) context.Response[Metadata.PushedAuthorizationRequestEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
@@ -766,10 +721,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var endpoint = (string?) context.Response[Metadata.RevocationEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
@@ -809,10 +761,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var endpoint = (string?) context.Response[Metadata.TokenEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
@@ -852,10 +801,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var endpoint = (string?) context.Response[Metadata.UserInfoEndpoint];
                 if (!string.IsNullOrEmpty(endpoint))
@@ -895,10 +841,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the grant types supported by the authorization endpoint, if available.
                 foreach (var type in (ImmutableArray<string?>?) context.Response[Metadata.GrantTypesSupported] ?? [])
@@ -931,10 +874,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the response modes supported by the authorization endpoint, if available.
                 foreach (var mode in (ImmutableArray<string?>?) context.Response[Metadata.ResponseModesSupported] ?? [])
@@ -967,10 +907,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the response types supported by the authorization endpoint, if available.
                 foreach (var type in (ImmutableArray<string?>?) context.Response[Metadata.ResponseTypesSupported] ?? [])
@@ -1003,10 +940,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the code challenge methods supported by the authorization endpoint, if available.
                 foreach (var method in (ImmutableArray<string?>?) context.Response[Metadata.CodeChallengeMethodsSupported] ?? [])
@@ -1039,10 +973,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the scopes supported by the remote server, if available.
                 foreach (var scope in (ImmutableArray<string?>?) context.Response[Metadata.ScopesSupported] ?? [])
@@ -1076,10 +1007,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.Configuration.AuthorizationResponseIssParameterSupported = (bool?)
                     context.Response[Metadata.AuthorizationResponseIssParameterSupported];
@@ -1107,10 +1035,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.Configuration.TlsClientCertificateBoundAccessTokens = (bool?)
                     context.Response[Metadata.TlsClientCertificateBoundAccessTokens];
@@ -1138,10 +1063,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.Configuration.RequirePushedAuthorizationRequests = (bool?)
                     context.Response[Metadata.RequirePushedAuthorizationRequests];
@@ -1169,10 +1091,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the client authentication methods supported by the device authorization endpoint, if available.
                 //
@@ -1209,10 +1128,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the client authentication methods supported by the introspection endpoint, if available.
                 foreach (var method in (ImmutableArray<string?>?) context.Response[Metadata.IntrospectionEndpointAuthMethodsSupported] ?? [])
@@ -1246,10 +1162,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the client authentication methods supported by the pushed authorization endpoint, if available.
                 //
@@ -1286,10 +1199,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the client authentication methods supported by the revocation endpoint, if available.
                 foreach (var method in (ImmutableArray<string?>?) context.Response[Metadata.RevocationEndpointAuthMethodsSupported] ?? [])
@@ -1323,10 +1233,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Resolve the client authentication methods supported by the token endpoint, if available.
                 foreach (var method in (ImmutableArray<string?>?) context.Response[Metadata.TokenEndpointAuthMethodsSupported] ?? [])
@@ -1359,10 +1266,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -1421,10 +1325,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: the specification doesn't define a standard way to return an error other than
                 // returning a 4xx status code. That said, some implementations are known to return
@@ -1464,10 +1365,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleJsonWebKeySetResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var keys = context.Response[JsonWebKeySetParameterNames.Keys]?.GetUnnamedParameters();
                 if (keys is not { Count: > 0 })

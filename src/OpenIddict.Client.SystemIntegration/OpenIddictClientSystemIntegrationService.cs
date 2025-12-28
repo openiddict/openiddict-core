@@ -53,10 +53,7 @@ public sealed class OpenIddictClientSystemIntegrationService
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public Task HandleCustomTabsIntentAsync(Intent intent, CancellationToken cancellationToken = default)
     {
-        if (intent is null)
-        {
-            throw new ArgumentNullException(nameof(intent));
-        }
+        ArgumentNullException.ThrowIfNull(intent);
 
         if (intent.Data is null)
         {
@@ -139,10 +136,7 @@ public sealed class OpenIddictClientSystemIntegrationService
     /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
     private async Task HandleRequestAsync<TProperty>(TProperty property, CancellationToken cancellationToken) where TProperty : class
     {
-        if (property is null)
-        {
-            throw new ArgumentNullException(nameof(property));
-        }
+        ArgumentNullException.ThrowIfNull(property);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -188,15 +182,8 @@ public sealed class OpenIddictClientSystemIntegrationService
         OpenIddictClientSystemIntegrationActivation activation,
         string identifier, CancellationToken cancellationToken = default)
     {
-        if (activation is null)
-        {
-            throw new ArgumentNullException(nameof(activation));
-        }
-
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(identifier)), nameof(identifier));
-        }
+        ArgumentNullException.ThrowIfNull(activation);
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         using var buffer = new MemoryStream();
         using var writer = new BinaryWriter(buffer);

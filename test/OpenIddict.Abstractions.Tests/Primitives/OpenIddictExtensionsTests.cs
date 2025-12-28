@@ -227,10 +227,9 @@ public class OpenIddictExtensionsTests
         var request = new OpenIddictRequest();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => request.HasAcrValue(value!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => request.HasAcrValue(value!));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.FormatID0366("value"), exception.Message);
     }
 
     [Theory]
@@ -291,10 +290,9 @@ public class OpenIddictExtensionsTests
         var request = new OpenIddictRequest();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => request.HasAudience(resource!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => request.HasAudience(resource!));
 
         Assert.Equal("audience", exception.ParamName);
-        Assert.StartsWith(SR.FormatID0366("audience"), exception.Message);
     }
 
     [Fact]
@@ -336,10 +334,9 @@ public class OpenIddictExtensionsTests
         var request = new OpenIddictRequest();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => request.HasPromptValue(value!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => request.HasPromptValue(value!));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.FormatID0366("value"), exception.Message);
     }
 
     [Theory]
@@ -400,10 +397,9 @@ public class OpenIddictExtensionsTests
         var request = new OpenIddictRequest();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => request.HasResponseType(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => request.HasResponseType(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.FormatID0366("type"), exception.Message);
     }
 
     [Theory]
@@ -464,10 +460,9 @@ public class OpenIddictExtensionsTests
         var request = new OpenIddictRequest();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => request.HasResource(resource!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => request.HasResource(resource!));
 
         Assert.Equal("resource", exception.ParamName);
-        Assert.StartsWith(SR.FormatID0366("resource"), exception.Message);
     }
 
     [Fact]
@@ -509,10 +504,9 @@ public class OpenIddictExtensionsTests
         var request = new OpenIddictRequest();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => request.HasScope(scope!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => request.HasScope(scope!));
 
         Assert.Equal("scope", exception.ParamName);
-        Assert.StartsWith(SR.FormatID0366("scope"), exception.Message);
     }
 
     [Theory]
@@ -1119,10 +1113,9 @@ public class OpenIddictExtensionsTests
         var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => claim.HasDestination(null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => claim.HasDestination(null!));
 
         Assert.Equal("destination", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0181), exception.Message);
     }
 
     [Fact]
@@ -1765,10 +1758,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type!, "value"));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaim(type!, "value"));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -1780,10 +1772,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type!, "value"));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaim(type!, "value"));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -1858,10 +1849,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type!, true));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaim(type!, true));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -1873,10 +1863,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type!, true));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaim(type!, true));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -1951,10 +1940,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type!, 42L));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaim(type!, 42L));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -1966,10 +1954,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type!, 42L));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaim(type!, 42L));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -2044,10 +2031,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type!, new Dictionary<string, string?>()));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaim(type!, new Dictionary<string, string?>()));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -2059,10 +2045,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type!, new Dictionary<string, string?>()));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaim(type!, new Dictionary<string, string?>()));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -2143,10 +2128,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type!, default(JsonElement)));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaim(type!, default(JsonElement)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -2158,10 +2142,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type!, default(JsonElement)));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaim(type!, default(JsonElement)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -2264,10 +2247,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type!, (JsonNode) null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaim(type!, (JsonNode) null!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -2279,10 +2261,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type!, (JsonNode) null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaim(type!, (JsonNode) null!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -2409,10 +2390,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaims(type!, []));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaims(type!, []));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -2424,10 +2404,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims(type!, []));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaims(type!, []));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -2542,10 +2521,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaims(type!, default(JsonElement)));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaims(type!, default(JsonElement)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -2557,10 +2535,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims(type!, default(JsonElement)));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaims(type!, default(JsonElement)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -2714,10 +2691,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaims(type!, (JsonArray) null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaims(type!, new JsonArray()));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -2729,10 +2705,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims(type!, (JsonArray) null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaims(type!, new JsonArray()));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -2997,10 +2972,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.GetClaims(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.GetClaims(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -3012,10 +2986,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.GetClaims(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.GetClaims(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -3117,10 +3090,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.HasClaim(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.HasClaim(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -3132,10 +3104,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.HasClaim(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.HasClaim(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -3203,10 +3174,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.RemoveClaims(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.RemoveClaims(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -3218,10 +3188,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.RemoveClaims(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.RemoveClaims(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -3298,10 +3267,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type!, "value"));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaim(type!, "value"));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -3313,10 +3281,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type!, "value"));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaim(type!, "value"));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -3453,10 +3420,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type!, true));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaim(type!, true));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -3468,10 +3434,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type!, "value"));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaim(type!, "value"));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -3608,10 +3573,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type!, 42L));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaim(type!, 42L));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -3623,10 +3587,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type!, 42L));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaim(type!, 42L));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -3766,10 +3729,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type!, new Dictionary<string, string?>()));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaim(type!, new Dictionary<string, string?>()));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -3781,10 +3743,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type!, new Dictionary<string, string?>()));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaim(type!, new Dictionary<string, string?>()));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -3934,10 +3895,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type!, default(JsonElement)));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaim(type!, default(JsonElement)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -3949,10 +3909,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type!, default(JsonElement)));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaim(type!, default(JsonElement)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -4144,10 +4103,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type!, (JsonNode) null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaim(type!, (JsonNode) null!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -4159,10 +4117,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type!, (JsonNode) null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaim(type!, (JsonNode) null!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -4353,10 +4310,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaims(type!, []));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaims(type!, []));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -4368,10 +4324,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims(type!, []));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaims(type!, []));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -4514,10 +4469,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaims(type!, default(JsonElement)));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaims(type!, default(JsonElement)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -4529,10 +4483,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims(type!, default(JsonElement)));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaims(type!, default(JsonElement)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -4729,10 +4682,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaims(type!, (JsonArray) null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaims(type!, new JsonArray()));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Theory]
@@ -4744,10 +4696,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims(type!, (JsonArray) null!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaims(type!, new JsonArray()));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
     }
 
     [Fact]
@@ -5862,10 +5813,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.HasAudience(audience!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.HasAudience(audience!));
 
         Assert.Equal("audience", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0186), exception.Message);
     }
 
     [Theory]
@@ -5877,10 +5827,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.HasAudience(audience!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.HasAudience(audience!));
 
         Assert.Equal("audience", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0186), exception.Message);
     }
 
     [Theory]
@@ -5956,10 +5905,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.HasPresenter(presenter!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.HasPresenter(presenter!));
 
         Assert.Equal("presenter", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0187), exception.Message);
     }
 
     [Theory]
@@ -5971,10 +5919,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.HasPresenter(presenter!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.HasPresenter(presenter!));
 
         Assert.Equal("presenter", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0187), exception.Message);
     }
 
     [Theory]
@@ -6050,10 +5997,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.HasResource(resource!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.HasResource(resource!));
 
         Assert.Equal("resource", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0062), exception.Message);
     }
 
     [Theory]
@@ -6065,10 +6011,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.HasResource(resource!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.HasResource(resource!));
 
         Assert.Equal("resource", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0062), exception.Message);
     }
 
     [Theory]
@@ -6144,10 +6089,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.HasScope(scope!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.HasScope(scope!));
 
         Assert.Equal("scope", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0180), exception.Message);
     }
 
     [Theory]
@@ -6159,10 +6103,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.HasScope(scope!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.HasScope(scope!));
 
         Assert.Equal("scope", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0180), exception.Message);
     }
 
     [Theory]
@@ -6238,10 +6181,9 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => identity.HasTokenType(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.HasTokenType(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0188), exception.Message);
     }
 
     [Theory]
@@ -6253,10 +6195,9 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.HasTokenType(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.HasTokenType(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0188), exception.Message);
     }
 
     [Fact]

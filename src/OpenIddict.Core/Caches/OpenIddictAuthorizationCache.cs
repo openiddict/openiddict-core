@@ -44,10 +44,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     /// <inheritdoc/>
     public async ValueTask AddAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         _cache.Remove(new
         {
@@ -104,10 +101,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     /// <inheritdoc/>
     public IAsyncEnumerable<TAuthorization> FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         return ExecuteAsync(cancellationToken);
 
@@ -145,10 +139,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     /// <inheritdoc/>
     public ValueTask<TAuthorization?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var parameters = new
         {
@@ -179,10 +170,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     /// <inheritdoc/>
     public IAsyncEnumerable<TAuthorization> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(subject);
 
         return ExecuteAsync(cancellationToken);
 
@@ -220,10 +208,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     /// <inheritdoc/>
     public async ValueTask RemoveAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         var identifier = await _store.GetIdAsync(authorization, cancellationToken);
         if (string.IsNullOrEmpty(identifier))
@@ -247,10 +232,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     private async ValueTask CreateEntryAsync(object key, TAuthorization? authorization, CancellationToken cancellationToken)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         using var entry = _cache.CreateEntry(key);
 
@@ -273,10 +255,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     private async ValueTask CreateEntryAsync(object key, ImmutableArray<TAuthorization> authorizations, CancellationToken cancellationToken)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         using var entry = _cache.CreateEntry(key);
 
@@ -302,10 +281,7 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     /// </returns>
     private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
+        ArgumentNullException.ThrowIfNull(authorization);
 
         var identifier = await _store.GetIdAsync(authorization, cancellationToken);
         if (string.IsNullOrEmpty(identifier))

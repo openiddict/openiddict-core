@@ -24,10 +24,7 @@ public static class OpenIddictValidationAspNetCoreExtensions
     /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
     public static OpenIddictValidationAspNetCoreBuilder UseAspNetCore(this OpenIddictValidationBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddAuthentication();
 
@@ -67,15 +64,8 @@ public static class OpenIddictValidationAspNetCoreExtensions
     public static OpenIddictValidationBuilder UseAspNetCore(
         this OpenIddictValidationBuilder builder, Action<OpenIddictValidationAspNetCoreBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseAspNetCore());
 

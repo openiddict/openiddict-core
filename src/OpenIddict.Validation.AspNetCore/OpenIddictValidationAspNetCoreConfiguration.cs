@@ -20,10 +20,7 @@ public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOpti
     /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
         if (options.SchemeMap.TryGetValue(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
@@ -39,10 +36,7 @@ public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOpti
     /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core validation components.
         options.Handlers.AddRange(OpenIddictValidationAspNetCoreHandlers.DefaultHandlers);
@@ -51,10 +45,7 @@ public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOpti
     /// <inheritdoc/>
     public void PostConfigure(string? name, AuthenticationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (!TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
             !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))

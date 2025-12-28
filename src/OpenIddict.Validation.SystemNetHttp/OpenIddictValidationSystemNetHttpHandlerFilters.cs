@@ -19,10 +19,7 @@ public static class OpenIddictValidationSystemNetHttpHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseExternalContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(
                 string.Equals(context.RemoteUri?.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) ||

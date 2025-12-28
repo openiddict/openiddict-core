@@ -25,10 +25,7 @@ public static class OpenIddictValidationServerIntegrationExtensions
     /// <returns>The <see cref="OpenIddictValidationServerIntegrationBuilder"/> instance.</returns>
     public static OpenIddictValidationServerIntegrationBuilder UseLocalServer(this OpenIddictValidationBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
@@ -51,15 +48,8 @@ public static class OpenIddictValidationServerIntegrationExtensions
     public static OpenIddictValidationBuilder UseLocalServer(
         this OpenIddictValidationBuilder builder, Action<OpenIddictValidationServerIntegrationBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseLocalServer());
 

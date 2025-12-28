@@ -62,10 +62,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
@@ -103,10 +100,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ExtractUserInfoResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Don't overwrite the response if one was already provided.
                 if (context.Response is not null || !string.IsNullOrEmpty(context.UserInfoToken))

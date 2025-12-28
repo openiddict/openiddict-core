@@ -89,10 +89,7 @@ public class OpenIddictApplicationDescriptor
     /// <exception cref="ArgumentNullException"><paramref name="audiences"/> is <see langword="null"/>.</exception>
     public OpenIddictApplicationDescriptor AddAudiencePermissions(params string[] audiences)
     {
-        if (audiences is null)
-        {
-            throw new ArgumentNullException(nameof(audiences));
-        }
+        ArgumentNullException.ThrowIfNull(audiences);
 
         foreach (var audience in audiences)
         {
@@ -110,10 +107,7 @@ public class OpenIddictApplicationDescriptor
     /// <exception cref="ArgumentNullException"><paramref name="types"/> is <see langword="null"/>.</exception>
     public OpenIddictApplicationDescriptor AddGrantTypePermissions(params string[] types)
     {
-        if (types is null)
-        {
-            throw new ArgumentNullException(nameof(types));
-        }
+        ArgumentNullException.ThrowIfNull(types);
 
         foreach (var type in types)
         {
@@ -131,10 +125,7 @@ public class OpenIddictApplicationDescriptor
     /// <exception cref="ArgumentNullException"><paramref name="resources"/> is <see langword="null"/>.</exception>
     public OpenIddictApplicationDescriptor AddResourcePermissions(params string[] resources)
     {
-        if (resources is null)
-        {
-            throw new ArgumentNullException(nameof(resources));
-        }
+        ArgumentNullException.ThrowIfNull(resources);
 
         foreach (var resource in resources)
         {
@@ -152,10 +143,7 @@ public class OpenIddictApplicationDescriptor
     /// <exception cref="ArgumentNullException"><paramref name="scopes"/> is <see langword="null"/>.</exception>
     public OpenIddictApplicationDescriptor AddScopePermissions(params string[] scopes)
     {
-        if (scopes is null)
-        {
-            throw new ArgumentNullException(nameof(scopes));
-        }
+        ArgumentNullException.ThrowIfNull(scopes);
 
         foreach (var scope in scopes)
         {
@@ -341,10 +329,7 @@ public class OpenIddictApplicationDescriptor
     /// <exception cref="ArgumentNullException"><paramref name="audiences"/> is <see langword="null"/>.</exception>
     public OpenIddictApplicationDescriptor RemoveAudiencePermissions(params string[] audiences)
     {
-        if (audiences is null)
-        {
-            throw new ArgumentNullException(nameof(audiences));
-        }
+        ArgumentNullException.ThrowIfNull(audiences);
 
         foreach (var audience in audiences)
         {
@@ -362,10 +347,7 @@ public class OpenIddictApplicationDescriptor
     /// <exception cref="ArgumentNullException"><paramref name="types"/> is <see langword="null"/>.</exception>
     public OpenIddictApplicationDescriptor RemoveGrantTypePermissions(params string[] types)
     {
-        if (types is null)
-        {
-            throw new ArgumentNullException(nameof(types));
-        }
+        ArgumentNullException.ThrowIfNull(types);
 
         foreach (var type in types)
         {
@@ -383,10 +365,7 @@ public class OpenIddictApplicationDescriptor
     /// <exception cref="ArgumentNullException"><paramref name="resources"/> is <see langword="null"/>.</exception>
     public OpenIddictApplicationDescriptor RemoveResourcePermissions(params string[] resources)
     {
-        if (resources is null)
-        {
-            throw new ArgumentNullException(nameof(resources));
-        }
+        ArgumentNullException.ThrowIfNull(resources);
 
         foreach (var resource in resources)
         {
@@ -404,10 +383,7 @@ public class OpenIddictApplicationDescriptor
     /// <exception cref="ArgumentNullException"><paramref name="scopes"/> is <see langword="null"/>.</exception>
     public OpenIddictApplicationDescriptor RemoveScopePermissions(params string[] scopes)
     {
-        if (scopes is null)
-        {
-            throw new ArgumentNullException(nameof(scopes));
-        }
+        ArgumentNullException.ThrowIfNull(scopes);
 
         foreach (var scope in scopes)
         {

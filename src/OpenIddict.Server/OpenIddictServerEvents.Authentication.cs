@@ -89,10 +89,7 @@ public static partial class OpenIddictServerEvents
         /// <param name="uri">The redirect_uri to use when redirecting the user agent.</param>
         public void SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
         {
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0100), nameof(uri));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(uri);
 
             // Don't allow validation to alter the redirect_uri parameter extracted
             // from the request if the URI was explicitly provided by the client.
@@ -299,10 +296,7 @@ public static partial class OpenIddictServerEvents
         /// <param name="uri">The redirect_uri to use when redirecting the user agent.</param>
         public void SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
         {
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0100), nameof(uri));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(uri);
 
             // Don't allow validation to alter the redirect_uri parameter extracted
             // from the request if the URI was explicitly provided by the client.
