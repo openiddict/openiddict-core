@@ -28,7 +28,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         OverrideTokenEndpointClientAuthenticationMethod.Descriptor,
         OverrideTokenEndpoint.Descriptor,
         AttachNonStandardClientAssertionClaims.Descriptor,
-        OverrideScope.Descriptor,
+        OverrideScopes.Descriptor,
         AttachAdditionalTokenRequestParameters.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
         AdjustRedirectUriInTokenRequest.Descriptor,
@@ -605,10 +605,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for overriding the scope to be attached
-    /// to the token request for the providers that require it.
+    /// Contains the logic responsible for overriding the scopes for the providers that require it.
     /// </summary>
-    public sealed class OverrideScope : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class OverrideScopes : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -616,7 +615,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenRequest>()
-                .UseSingletonHandler<OverrideScope>()
+                .UseSingletonHandler<OverrideScopes>()
                 .SetOrder(AttachTokenRequestParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -624,10 +623,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc />
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // osu! requires at least one scope to be set for client credentials grant, as tokens without
             // scopes are not valid. If no scope is explicitly specified, use the default value `public`.
@@ -1057,13 +1053,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         right: new Uri(token, UriKind.Relative)),
 
                 // osu! supports specifying a game mode when querying the userinfo endpoint.
-                ProviderTypes.Osu
-                    => !context.Properties.TryGetValue(Osu.Properties.GameMode, out string? gameMode) ||
-                        string.IsNullOrEmpty(gameMode) ?
-                            new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute) :
-                            OpenIddictHelpers.CreateAbsoluteUri(
-                                left : new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute),
-                                right: new Uri(gameMode, UriKind.Relative)),
+                ProviderTypes.Osu => context.Properties.GetValueOrDefault(Osu.Properties.GameMode) switch
+                {
+                    { Length: > 0 } mode => OpenIddictHelpers.CreateAbsoluteUri(
+                        left : new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute),
+                        right: new Uri(mode, UriKind.Relative)),
+
+                    _ => new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute)
+                },
 
                 // SuperOffice doesn't expose a static OpenID Connect userinfo endpoint but offers an API whose
                 // absolute URI needs to be computed based on a special claim returned in the identity token.
