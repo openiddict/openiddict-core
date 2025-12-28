@@ -40,10 +40,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareAuthorizationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Some providers implement old drafts of the OAuth 2.0 specification that didn't support
                 // the "response_type" parameter but relied on a "type" parameter to determine the type

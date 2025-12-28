@@ -241,10 +241,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetClaimsIssuer(string issuer)
         {
-            if (string.IsNullOrEmpty(issuer))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(issuer));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(issuer);
 
             return Set(registration => registration.ClaimsIssuer = issuer);
         }
@@ -256,10 +253,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetProviderName(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             return Set(registration => registration.ProviderName = name);
         }
@@ -271,10 +265,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetProviderDisplayName(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             return Set(registration => registration.ProviderDisplayName = name);
         }
@@ -286,10 +277,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetRegistrationId(string identifier)
         {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(identifier));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(identifier);
 
             return Set(registration => registration.RegistrationId = identifier);
         }
@@ -301,10 +289,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetClientId(string identifier)
         {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(identifier));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(identifier);
 
             return Set(registration => registration.ClientId = identifier);
         }
@@ -316,10 +301,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetClientSecret(string secret)
         {
-            if (string.IsNullOrEmpty(secret))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0125), nameof(secret));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(secret);
 
             return Set(registration => registration.ClientSecret = secret);
         }
@@ -335,10 +317,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetPostLogoutRedirectUri(Uri uri)
         {
-            if (uri is null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
+            ArgumentNullException.ThrowIfNull(uri);
 
             return Set(registration => registration.PostLogoutRedirectUri = uri);
         }
@@ -354,10 +333,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetPostLogoutRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
         {
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(uri);
 
             return SetPostLogoutRedirectUri(new Uri(uri, UriKind.RelativeOrAbsolute));
         }
@@ -373,10 +349,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetRedirectUri(Uri uri)
         {
-            if (uri is null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
+            ArgumentNullException.ThrowIfNull(uri);
 
             return Set(registration => registration.RedirectUri = uri);
         }
@@ -392,10 +365,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
         {
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(uri);
 
             return SetRedirectUri(new Uri(uri, UriKind.RelativeOrAbsolute));
         }
@@ -421,10 +391,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Add{{ setting.property_name }}(params {{ setting.clr_type }}[] {{ setting.parameter_name }})
         {
-            if ({{ setting.parameter_name }} is null)
-            {
-                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
-            }
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
 
             return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }}.UnionWith({{ setting.parameter_name }}));
         }
@@ -439,10 +406,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(ECDsaSecurityKey {{ setting.parameter_name }})
         {
-            if ({{ setting.parameter_name }} is null)
-            {
-                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
-            }
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
 
             if ({{ setting.parameter_name }}.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
             {
@@ -524,10 +488,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Uri {{ setting.parameter_name }})
         {
-            if ({{ setting.parameter_name }} is null)
-            {
-                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
-            }
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
 
             if (!{{ setting.parameter_name }}.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri({{ setting.parameter_name }}))
             {
@@ -547,10 +508,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(string {{ setting.parameter_name }})
         {
-            if (string.IsNullOrEmpty({{ setting.parameter_name }}))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof({{ setting.parameter_name }}));
-            }
+            ArgumentException.ThrowIfNullOrEmpty({{ setting.parameter_name }});
 
             return Set{{ setting.property_name }}(new Uri({{ setting.parameter_name }}, UriKind.RelativeOrAbsolute));
         }
@@ -565,10 +523,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(X509Certificate2 {{ setting.parameter_name }})
         {
-            if ({{ setting.parameter_name }} is null)
-            {
-                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
-            }
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
 
             if (!{{ setting.parameter_name }}.HasPrivateKey)
             {
@@ -591,7 +546,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         public {{ provider.name }} Set{{ setting.property_name }}(Assembly assembly, string resource, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
-            => Set{{ setting.property_name }}(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            => Set{{ setting.property_name }}(assembly, resource, password, OperatingSystem.IsMacOS() ?
                 X509KeyStorageFlags.MachineKeySet :
                 X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -613,15 +568,8 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             Assembly assembly, string resource,
             string? password, X509KeyStorageFlags flags)
         {
-            if (assembly is null)
-            {
-                throw new ArgumentNullException(nameof(assembly));
-            }
-
-            if (string.IsNullOrEmpty(resource))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-            }
+            ArgumentNullException.ThrowIfNull(assembly);
+            ArgumentException.ThrowIfNullOrEmpty(resource);
 
             using var stream = assembly.GetManifestResourceStream(resource) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
@@ -641,7 +589,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
-            => Set{{ setting.property_name }}(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            => Set{{ setting.property_name }}(stream, password, OperatingSystem.IsMacOS() ?
                 X509KeyStorageFlags.MachineKeySet :
                 X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -660,10 +608,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password, X509KeyStorageFlags flags)
         {
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
+            ArgumentNullException.ThrowIfNull(stream);
 
             using var buffer = new MemoryStream();
             stream.CopyTo(buffer);
@@ -691,10 +636,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint)
         {
-            if (string.IsNullOrEmpty(thumbprint))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
             return Set{{ setting.property_name }}(
                 GetCertificate(StoreLocation.CurrentUser, thumbprint) ??
@@ -724,10 +666,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint, StoreName name, StoreLocation location)
         {
-            if (string.IsNullOrEmpty(thumbprint))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
             using var store = new X509Store(name, location);
             store.Open(OpenFlags.ReadOnly);
@@ -759,10 +698,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}({{ setting.clr_type }} {{ setting.parameter_name }})
         {
-            if ({{ setting.parameter_name }} is null)
-            {
-                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
-            }
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
 
             return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
         }
@@ -790,10 +726,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientRegistration""/> instance.</returns>
         private {{ provider.name }} Set(Action<OpenIddictClientRegistration> configuration)
         {
-            if (configuration is null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
+            ArgumentNullException.ThrowIfNull(configuration);
 
             configuration(Registration);
 
@@ -973,6 +906,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 {
     public static partial void ConfigureProvider(OpenIddictClientRegistration registration)
     {
+        ArgumentNullException.ThrowIfNull(registration);
+
         {{~ for provider in providers ~}}
         {{~ if for.index == 0 ~}}
         if (registration.ProviderType is ProviderTypes.{{ provider.name }})

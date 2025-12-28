@@ -61,10 +61,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.

@@ -63,10 +63,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignOutContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new PrepareEndSessionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -107,10 +104,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignOutContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ApplyEndSessionRequestContext(context.Transaction)
                 {
@@ -161,10 +155,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyEndSessionRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Don't overwrite the endpoint URI if it was already set.
                 if (!string.IsNullOrEmpty(context.EndSessionEndpoint))
@@ -208,10 +199,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ExtractPostLogoutRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -270,10 +258,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ValidatePostLogoutRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -326,10 +311,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new HandlePostLogoutRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -383,10 +365,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ApplyPostLogoutRedirectionResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -431,10 +410,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ValidatePostLogoutRedirectionRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ProcessAuthenticationContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);

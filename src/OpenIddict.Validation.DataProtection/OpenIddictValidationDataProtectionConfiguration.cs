@@ -29,10 +29,7 @@ public sealed class OpenIddictValidationDataProtectionConfiguration : IConfigure
     /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict Data Protection validation components.
         options.Handlers.AddRange(OpenIddictValidationDataProtectionHandlers.DefaultHandlers);
@@ -41,10 +38,7 @@ public sealed class OpenIddictValidationDataProtectionConfiguration : IConfigure
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictValidationDataProtectionOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.DataProtectionProvider ??= _dataProtectionProvider;
     }

@@ -88,10 +88,7 @@ public sealed class OpenIddictServerHandlerDescriptor
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> Import(OpenIddictServerHandlerDescriptor descriptor)
         {
-            if (descriptor is null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
+            ArgumentNullException.ThrowIfNull(descriptor);
 
             if (descriptor.ContextType != typeof(TContext))
             {
@@ -114,10 +111,7 @@ public sealed class OpenIddictServerHandlerDescriptor
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> SetServiceDescriptor(ServiceDescriptor descriptor)
         {
-            if (descriptor is null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
+            ArgumentNullException.ThrowIfNull(descriptor);
 
             if (!typeof(IOpenIddictServerHandler<TContext>).IsAssignableFrom(descriptor.ServiceType))
             {

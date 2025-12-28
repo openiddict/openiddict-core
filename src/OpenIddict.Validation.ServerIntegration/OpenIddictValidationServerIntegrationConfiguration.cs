@@ -29,10 +29,7 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
     /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Note: the issuer may be null. In this case, it will be usually provided by
         // a validation handler registered by the host (e.g ASP.NET Core or OWIN/Katana).
@@ -58,10 +55,7 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictValidationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.ValidationType is not OpenIddictValidationType.Direct)
         {

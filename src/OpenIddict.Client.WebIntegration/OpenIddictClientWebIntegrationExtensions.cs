@@ -25,10 +25,7 @@ public static partial class OpenIddictClientWebIntegrationExtensions
     /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/> instance.</returns>
     public static OpenIddictClientWebIntegrationBuilder UseWebProviders(this OpenIddictClientBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Register the System.Net.Http integration.
         builder.UseSystemNetHttp();
@@ -68,15 +65,8 @@ public static partial class OpenIddictClientWebIntegrationExtensions
     public static OpenIddictClientBuilder UseWebProviders(
         this OpenIddictClientBuilder builder, Action<OpenIddictClientWebIntegrationBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseWebProviders());
 

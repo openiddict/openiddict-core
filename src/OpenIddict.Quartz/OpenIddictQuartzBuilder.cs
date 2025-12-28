@@ -35,10 +35,7 @@ public sealed class OpenIddictQuartzBuilder
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder Configure(Action<OpenIddictQuartzOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -66,10 +63,7 @@ public sealed class OpenIddictQuartzBuilder
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder SetMaximumRefireCount(int count)
     {
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), SR.GetResourceString(SR.ID0279));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
 
         return Configure(options => options.MaximumRefireCount = count);
     }
@@ -81,10 +75,7 @@ public sealed class OpenIddictQuartzBuilder
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder SetMinimumAuthorizationLifespan(TimeSpan lifespan)
     {
-        if (lifespan < TimeSpan.FromMinutes(10))
-        {
-            throw new ArgumentOutOfRangeException(nameof(lifespan), SR.GetResourceString(SR.ID0280));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(lifespan, TimeSpan.FromMinutes(10));
 
         return Configure(options => options.MinimumAuthorizationLifespan = lifespan);
     }
@@ -96,10 +87,7 @@ public sealed class OpenIddictQuartzBuilder
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder SetMinimumTokenLifespan(TimeSpan lifespan)
     {
-        if (lifespan < TimeSpan.FromMinutes(10))
-        {
-            throw new ArgumentOutOfRangeException(nameof(lifespan), SR.GetResourceString(SR.ID0280));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(lifespan, TimeSpan.FromMinutes(10));
 
         return Configure(options => options.MinimumTokenLifespan = lifespan);
     }

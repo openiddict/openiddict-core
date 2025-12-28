@@ -45,10 +45,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateTokenContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: the client registration may be null (e.g when validating a state token).
                 // In this case, don't amend the default token validation parameters.
@@ -103,10 +100,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(GenerateTokenContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: the client registration may be null (e.g when generating a state token).
                 // In this case, don't amend the default security token descriptor.

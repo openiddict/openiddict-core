@@ -28,10 +28,7 @@ public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOpti
     /// <inheritdoc/>
     public void Configure(QuartzOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.AddJob<OpenIddictQuartzJob>(builder =>
         {

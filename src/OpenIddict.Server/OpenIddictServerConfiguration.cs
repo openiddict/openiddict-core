@@ -32,10 +32,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
 

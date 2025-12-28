@@ -21,10 +21,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
     /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
         if (options.SchemeMap.TryGetValue(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
@@ -40,10 +37,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
     /// <inheritdoc/>
     public void Configure(OpenIddictServerOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core server components.
         options.Handlers.AddRange(OpenIddictServerAspNetCoreHandlers.DefaultHandlers);
@@ -55,10 +49,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
     /// <inheritdoc/>
     public void PostConfigure(string? name, AuthenticationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (!TryValidate(options.SchemeMap, options.DefaultAuthenticateScheme) ||
             !TryValidate(options.SchemeMap, options.DefaultChallengeScheme) ||
@@ -106,10 +97,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerAspNetCoreOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.EnableErrorPassthrough && options.EnableStatusCodePagesIntegration)
         {

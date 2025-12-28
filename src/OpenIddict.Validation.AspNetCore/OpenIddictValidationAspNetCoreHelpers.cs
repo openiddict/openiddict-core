@@ -21,10 +21,7 @@ public static class OpenIddictValidationAspNetCoreHelpers
     /// <returns>The <see cref="HttpRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static HttpRequest? GetHttpRequest(this OpenIddictValidationTransaction transaction)
     {
-        if (transaction is null)
-        {
-            throw new ArgumentNullException(nameof(transaction));
-        }
+        ArgumentNullException.ThrowIfNull(transaction);
 
         if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
         {
@@ -46,10 +43,7 @@ public static class OpenIddictValidationAspNetCoreHelpers
     /// <returns>The <see cref="OpenIddictValidationEndpointType"/>.</returns>
     public static OpenIddictValidationEndpointType GetOpenIddictValidationEndpointType(this HttpContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.EndpointType ?? default;
     }
@@ -61,10 +55,7 @@ public static class OpenIddictValidationAspNetCoreHelpers
     /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
     public static OpenIddictRequest? GetOpenIddictValidationRequest(this HttpContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.Request;
     }
@@ -76,10 +67,7 @@ public static class OpenIddictValidationAspNetCoreHelpers
     /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
     public static OpenIddictResponse? GetOpenIddictValidationResponse(this HttpContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.Response;
     }

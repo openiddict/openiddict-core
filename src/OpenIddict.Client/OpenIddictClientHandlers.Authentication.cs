@@ -78,10 +78,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new PrepareAuthorizationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -123,10 +120,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ApplyAuthorizationRequestContext(context.Transaction)
                 {
@@ -178,10 +172,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Don't overwrite the endpoint URI if it was already set.
                 if (!string.IsNullOrEmpty(context.AuthorizationEndpoint))
@@ -220,10 +211,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandlePushedAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -284,10 +272,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandlePushedAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // For more information, see https://www.rfc-editor.org/rfc/rfc8628#section-3.2.
                 if (!string.IsNullOrEmpty(context.Response.Error))
@@ -331,10 +316,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandlePushedAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Return an error if the mandatory "request_uri" parameter is missing.
                 //
@@ -384,10 +366,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandlePushedAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Return an error if the mandatory "expires_in" parameter is missing.
                 //
@@ -429,10 +408,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ExtractRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -491,10 +467,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ValidateRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -547,10 +520,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new HandleRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -604,10 +574,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ApplyRedirectionResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -646,10 +613,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareAuthorizationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // When the response mode corresponds to the default mode assigned to the selected
                 // response type, the specification explicitly recommends omitting the response mode.
@@ -697,10 +661,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ValidateRedirectionRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ProcessAuthenticationContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);

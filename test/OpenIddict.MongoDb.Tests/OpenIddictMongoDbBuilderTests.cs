@@ -105,10 +105,9 @@ public class OpenIddictMongoDbBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetApplicationsCollectionName(name!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => builder.SetApplicationsCollectionName(name!));
 
         Assert.Equal("name", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
     }
 
     [Fact]
@@ -138,10 +137,9 @@ public class OpenIddictMongoDbBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationsCollectionName(name!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => builder.SetAuthorizationsCollectionName(name!));
 
         Assert.Equal("name", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
     }
 
     [Fact]
@@ -171,10 +169,9 @@ public class OpenIddictMongoDbBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetScopesCollectionName(name!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => builder.SetScopesCollectionName(name!));
 
         Assert.Equal("name", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
     }
 
     [Fact]
@@ -204,10 +201,9 @@ public class OpenIddictMongoDbBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetTokensCollectionName(name!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => builder.SetTokensCollectionName(name!));
 
         Assert.Equal("name", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
     }
 
     [Fact]

@@ -29,7 +29,7 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientAspNetCoreHandler"/> class.
     /// </summary>
-#if SUPPORTS_TIME_PROVIDER
+#if SUPPORTS_AUTHENTICATION_HANDLER_TIME_PROVIDER_ARGUMENT
     public OpenIddictClientAspNetCoreHandler(
         IOpenIddictClientDispatcher dispatcher,
         IOpenIddictClientFactory factory,

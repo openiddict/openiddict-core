@@ -88,10 +88,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Shopify returns custom/non-standard parameters like the name of the shop for which the
             // installation request was initiated. To prevent these parameters from being tampered with,
@@ -152,7 +149,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 try
                 {
                     if (!OpenIddictHelpers.FixedTimeEquals(
-                        left : OpenIddictHelpers.ConvertFromHexadecimalString(signature),
+                        left : Convert.FromHexString(signature),
                         right: OpenIddictHelpers.ComputeSha256MessageAuthenticationCode(
                             key : Encoding.UTF8.GetBytes(context.Registration.ClientSecret),
                             data: Encoding.UTF8.GetBytes(builder.ToString()))))
@@ -201,10 +198,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Note: some providers are known to return non-standard errors.
             // To normalize the set of errors handled by the OpenIddict client,
@@ -350,10 +344,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -467,10 +458,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.TokenEndpointClientAuthenticationMethod = context.Registration.ProviderType switch
             {
@@ -510,10 +498,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.TokenEndpoint = context.Registration.ProviderType switch
             {
@@ -597,10 +582,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -680,10 +662,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
 
@@ -746,10 +725,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
 
@@ -791,10 +767,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
 
@@ -849,10 +822,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             (context.ExtractBackchannelIdentityToken,
              context.RequireBackchannelIdentityToken,
@@ -899,10 +869,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Note: despite implementing OpenID Connect, some providers are known to implement the
             // specification incorrectly and either don't support the "nonce" authorization request
@@ -944,10 +911,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.SendUserInfoRequest = context.Registration.ProviderType switch
             {
@@ -1035,10 +999,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Note: despite implementing OpenID Connect, some providers are known to implement completely custom
             // userinfo endpoints or semi-standard endpoints that don't fully conform to the core specification.
@@ -1077,10 +1038,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.UserInfoEndpoint = context.Registration.ProviderType switch
             {
@@ -1179,10 +1137,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.UserInfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
@@ -1315,10 +1270,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
             Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
@@ -1420,10 +1372,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
@@ -1685,10 +1634,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // If no explicit shop name was attached to the challenge properties, use the
             // shop name set in the provider settings, if set. Otherwise, throw an exception.
@@ -1728,10 +1674,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.AuthorizationEndpoint = context.Registration.ProviderType switch
             {
@@ -1804,10 +1747,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.ResponseMode = context.Registration.ProviderType switch
             {
@@ -1842,10 +1782,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.Request.Scope = context.Registration.ProviderType switch
             {
@@ -1886,10 +1823,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             if (context.RedirectUri is null)
             {
@@ -1940,10 +1874,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Active Directory Federation Services allows sending an optional custom "resource"
             // parameter to define what API resources the access token will give access to.
@@ -2133,10 +2064,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessRevocationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.RevocationEndpointClientAuthenticationMethod = context.Registration.ProviderType switch
             {
@@ -2171,10 +2099,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessRevocationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -2216,10 +2141,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessRevocationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.RevocationRequest is not null, SR.GetResourceString(SR.ID4008));
 

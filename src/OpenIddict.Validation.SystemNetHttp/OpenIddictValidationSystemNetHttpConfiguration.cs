@@ -42,10 +42,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
     /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict System.Net.Http validation components.
         options.Handlers.AddRange(OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers);
@@ -62,10 +59,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
     /// <inheritdoc/>
     public void Configure(string? name, HttpClientFactoryOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
 
@@ -166,10 +160,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
     /// <inheritdoc/>
     public void PostConfigure(string? name, HttpClientFactoryOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
 
@@ -251,10 +242,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
 
     public void PostConfigure(string? name, OpenIddictValidationSystemNetHttpOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // If no client authentication certificate selector was provided, use fallback delegates that
         // automatically use the first X.509 signing certificate attached to the client registration

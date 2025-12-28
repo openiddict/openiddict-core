@@ -29,10 +29,7 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableErrorPassthrough);
         }
@@ -46,10 +43,7 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(context.Transaction.GetHttpRequest() is not null);
         }
@@ -69,10 +63,7 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnablePostLogoutRedirectionEndpointPassthrough);
         }
@@ -92,10 +83,7 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableRedirectionEndpointPassthrough);
         }
@@ -114,10 +102,7 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableStatusCodePagesIntegration);
         }
@@ -136,10 +121,7 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!_options.CurrentValue.DisableTransportSecurityRequirement);
         }

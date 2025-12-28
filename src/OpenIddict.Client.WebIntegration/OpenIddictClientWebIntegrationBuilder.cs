@@ -35,10 +35,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/> instance.</returns>
     public OpenIddictClientWebIntegrationBuilder Configure(Action<OpenIddictClientWebIntegrationOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 

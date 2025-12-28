@@ -59,10 +59,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -106,10 +103,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -169,10 +163,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -233,10 +224,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // ArcGIS Online doesn't support header-based content negotiation and requires using
                 // the non-standard "f" parameter to get back JSON responses instead of HTML pages.
@@ -274,10 +262,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareUserInfoRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
@@ -325,10 +310,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ExtractUserInfoResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -390,10 +372,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ExtractUserInfoResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
@@ -511,10 +490,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ExtractUserInfoResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 

@@ -30,10 +30,7 @@ public static class OpenIddictValidationAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!_options.CurrentValue.DisableAccessTokenExtractionFromAuthorizationHeader);
         }
@@ -53,10 +50,7 @@ public static class OpenIddictValidationAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!_options.CurrentValue.DisableAccessTokenExtractionFromBodyForm);
         }
@@ -76,10 +70,7 @@ public static class OpenIddictValidationAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!_options.CurrentValue.DisableAccessTokenExtractionFromQueryString);
         }
@@ -93,10 +84,7 @@ public static class OpenIddictValidationAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(context.Transaction.GetHttpRequest() is not null);
         }

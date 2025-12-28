@@ -29,10 +29,7 @@ public sealed class OpenIddictClientDataProtectionConfiguration : IConfigureOpti
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict Data Protection server components.
         options.Handlers.AddRange(OpenIddictClientDataProtectionHandlers.DefaultHandlers);
@@ -41,10 +38,7 @@ public sealed class OpenIddictClientDataProtectionConfiguration : IConfigureOpti
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientDataProtectionOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.DataProtectionProvider ??= _dataProtectionProvider;
     }

@@ -21,15 +21,8 @@ public static class OpenIddictServerHelpers
     public static TProperty? GetProperty<TProperty>(
         this OpenIddictServerTransaction transaction, string name) where TProperty : class
     {
-        if (transaction is null)
-        {
-            throw new ArgumentNullException(nameof(transaction));
-        }
-
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0106), nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(transaction);
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         if (transaction.Properties.TryGetValue(name, out var property) && property is TProperty result)
         {
@@ -51,15 +44,8 @@ public static class OpenIddictServerHelpers
         this OpenIddictServerTransaction transaction,
         string name, TProperty? value) where TProperty : class
     {
-        if (transaction is null)
-        {
-            throw new ArgumentNullException(nameof(transaction));
-        }
-
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0106), nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(transaction);
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         if (value is null)
         {

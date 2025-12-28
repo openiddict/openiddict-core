@@ -37,10 +37,7 @@ public sealed class OpenIddictServerDataProtectionBuilder
     /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder Configure(Action<OpenIddictServerDataProtectionOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -55,10 +52,7 @@ public sealed class OpenIddictServerDataProtectionBuilder
     /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
     {
-        if (provider is null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullException.ThrowIfNull(provider);
 
         return Configure(options => options.DataProtectionProvider = provider);
     }
@@ -70,10 +64,7 @@ public sealed class OpenIddictServerDataProtectionBuilder
     /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder UseFormatter(IOpenIddictServerDataProtectionFormatter formatter)
     {
-        if (formatter is null)
-        {
-            throw new ArgumentNullException(nameof(formatter));
-        }
+        ArgumentNullException.ThrowIfNull(formatter);
 
         return Configure(options => options.Formatter = formatter);
     }

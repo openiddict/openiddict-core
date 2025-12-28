@@ -37,10 +37,7 @@ public sealed class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder Configure(Action<OpenIddictCoreOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -447,10 +444,7 @@ public sealed class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetEntityCacheLimit(int limit)
     {
-        if (limit < 10)
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0233), nameof(limit));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(limit, 10);
 
         return Configure(options => options.EntityCacheLimit = limit);
     }

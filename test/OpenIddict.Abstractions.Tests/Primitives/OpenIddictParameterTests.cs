@@ -581,11 +581,10 @@ public class OpenIddictParameterTests
         var parameter = new OpenIddictParameter();
 
         // Act
-        var exception = Assert.Throws<ArgumentException>(() => parameter.GetNamedParameter(name!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => parameter.GetNamedParameter(name!));
 
         // Assert
         Assert.Equal("name", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0192), exception.Message);
     }
 
     [Fact]
@@ -678,7 +677,6 @@ public class OpenIddictParameterTests
 
         // Assert
         Assert.Equal("index", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0193), exception.Message);
     }
 
     [Fact]
@@ -1239,11 +1237,10 @@ public class OpenIddictParameterTests
         var parameter = new OpenIddictParameter();
 
         // Act
-        var exception = Assert.Throws<ArgumentException>(() => parameter.TryGetNamedParameter(name!, out _));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => parameter.TryGetNamedParameter(name!, out _));
 
         // Assert
         Assert.Equal("name", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0192), exception.Message);
     }
 
     [Fact]
@@ -1343,7 +1340,6 @@ public class OpenIddictParameterTests
 
         // Assert
         Assert.Equal("index", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0193), exception.Message);
     }
 
     [Fact]

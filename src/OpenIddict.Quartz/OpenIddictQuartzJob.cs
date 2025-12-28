@@ -45,10 +45,7 @@ public sealed class OpenIddictQuartzJob : IJob
     /// <inheritdoc/>
     public async Task Execute(IJobExecutionContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         List<Exception>? exceptions = null;
 

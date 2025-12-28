@@ -40,10 +40,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.JsonWebTokenHandler is null)
         {

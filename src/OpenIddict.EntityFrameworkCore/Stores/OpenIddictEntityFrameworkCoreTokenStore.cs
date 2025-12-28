@@ -109,10 +109,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -122,10 +119,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask CreateAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -137,10 +131,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask DeleteAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -211,10 +202,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TToken> FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         return ExecuteAsync(cancellationToken);
 
@@ -246,10 +234,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         return ExecuteAsync(cancellationToken);
 
@@ -281,10 +266,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
@@ -305,10 +287,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -328,10 +307,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TToken> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(subject);
 
         return ExecuteAsync(cancellationToken);
 
@@ -352,10 +328,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask<string?> GetApplicationIdAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -384,10 +357,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -399,10 +369,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask<string?> GetAuthorizationIdAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -429,10 +396,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         if (token.CreationDate is null)
         {
@@ -445,10 +409,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<DateTimeOffset?> GetExpirationDateAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         if (token.ExpirationDate is null)
         {
@@ -461,10 +422,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetIdAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         return new(ConvertIdentifierToString(token.Id));
     }
@@ -472,10 +430,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetPayloadAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         return new(token.Payload);
     }
@@ -483,10 +438,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         if (string.IsNullOrEmpty(token.Properties))
         {
@@ -518,10 +470,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<DateTimeOffset?> GetRedemptionDateAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         if (token.RedemptionDate is null)
         {
@@ -534,10 +483,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetReferenceIdAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         return new(token.ReferenceId);
     }
@@ -545,10 +491,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetStatusAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         return new(token.Status);
     }
@@ -556,10 +499,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetSubjectAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         return new(token.Subject);
     }
@@ -567,10 +507,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetTypeAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         return new(token.Type);
     }
@@ -623,10 +560,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return ExecuteAsync(cancellationToken);
 
@@ -843,10 +777,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
@@ -916,10 +847,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
@@ -989,10 +917,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(subject));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(subject);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -1054,10 +979,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask SetApplicationIdAsync(TToken token, string? identifier, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -1108,10 +1030,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask SetAuthorizationIdAsync(TToken token, string? identifier, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
@@ -1162,10 +1081,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask SetCreationDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         token.CreationDate = date?.UtcDateTime;
 
@@ -1175,10 +1091,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask SetExpirationDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         token.ExpirationDate = date?.UtcDateTime;
 
@@ -1188,10 +1101,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask SetPayloadAsync(TToken token, string? payload, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         token.Payload = payload;
 
@@ -1202,10 +1112,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     public virtual ValueTask SetPropertiesAsync(TToken token,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         if (properties is not { Count: > 0 })
         {
@@ -1240,10 +1147,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask SetRedemptionDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         token.RedemptionDate = date?.UtcDateTime;
 
@@ -1253,10 +1157,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask SetReferenceIdAsync(TToken token, string? identifier, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         token.ReferenceId = identifier;
 
@@ -1266,10 +1167,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask SetStatusAsync(TToken token, string? status, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         token.Status = status;
 
@@ -1279,10 +1177,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask SetSubjectAsync(TToken token, string? subject, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         token.Subject = subject;
 
@@ -1292,10 +1187,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual ValueTask SetTypeAsync(TToken token, string? type, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         token.Type = type;
 
@@ -1305,10 +1197,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     /// <inheritdoc/>
     public virtual async ValueTask UpdateAsync(TToken token, CancellationToken cancellationToken)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 

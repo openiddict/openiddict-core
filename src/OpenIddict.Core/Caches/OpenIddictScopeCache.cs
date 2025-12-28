@@ -44,10 +44,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     /// <inheritdoc/>
     public async ValueTask AddAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         _cache.Remove(new
         {
@@ -97,10 +94,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     /// <inheritdoc/>
     public ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var parameters = new
         {
@@ -131,10 +125,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     /// <inheritdoc/>
     public ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         var parameters = new
         {
@@ -188,10 +179,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     /// <inheritdoc/>
     public IAsyncEnumerable<TScope> FindByResourceAsync(string resource, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(resource))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(resource);
 
         return ExecuteAsync(cancellationToken);
 
@@ -229,10 +217,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     /// <inheritdoc/>
     public async ValueTask RemoveAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         var identifier = await _store.GetIdAsync(scope, cancellationToken);
         if (string.IsNullOrEmpty(identifier))
@@ -256,10 +241,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     private async ValueTask CreateEntryAsync(object key, TScope? scope, CancellationToken cancellationToken)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         using var entry = _cache.CreateEntry(key);
 
@@ -282,10 +264,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     private async ValueTask CreateEntryAsync(object key, ImmutableArray<TScope> scopes, CancellationToken cancellationToken)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         using var entry = _cache.CreateEntry(key);
 
@@ -311,10 +290,7 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
     /// </returns>
     private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         var identifier = await _store.GetIdAsync(scope, cancellationToken);
         if (string.IsNullOrEmpty(identifier))

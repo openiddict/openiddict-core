@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -82,10 +81,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.TokenEndpointClientAuthenticationMethod))
@@ -204,10 +200,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Unlike DPoP, the mTLS specification doesn't use a specific token type to represent
             // certificate-bound tokens. As such, most implementations (e.g Keycloak) simply return
@@ -269,10 +262,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.DeviceAuthorizationEndpointClientAuthenticationMethod))
@@ -399,10 +389,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.PushedAuthorizationEndpointClientAuthenticationMethod))
@@ -530,10 +517,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessIntrospectionContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.IntrospectionEndpointClientAuthenticationMethod))
@@ -652,10 +636,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessRevocationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // If an explicit client authentication method was attached, don't overwrite it.
             if (!string.IsNullOrEmpty(context.RevocationEndpointClientAuthenticationMethod))
@@ -772,10 +753,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Note: HttpClientFactory doesn't support flowing a list of properties that can be
             // accessed from the HttpClientAction or HttpMessageHandlerBuilderAction delegates
@@ -856,10 +834,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Store the HttpRequestMessage in the transaction properties.
             context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!,
@@ -888,10 +863,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Store the HttpRequestMessage in the transaction properties.
             context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!,
@@ -920,10 +892,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
 #if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION || SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
@@ -968,10 +937,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
@@ -1013,10 +979,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
@@ -1067,10 +1030,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
@@ -1103,10 +1063,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
@@ -1160,10 +1117,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
@@ -1220,10 +1174,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
@@ -1284,10 +1235,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
@@ -1322,10 +1270,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Note: automatic content decompression can be enabled by constructing an HttpClient wrapping
             // a generic HttpClientHandler, a SocketsHttpHandler or a WinHttpHandler instance with the
@@ -1367,7 +1312,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // Content-Encoding header from the response, which leads to incorrect results when trying
             // to decompress the content a second time. To avoid that, the entire logic used in this
             // handler is ignored on iOS if the native HTTP handler (NSUrlSessionHandler) is used.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) &&
+            if (OperatingSystem.IsIOS() &&
                 AppContext.TryGetSwitch("System.Net.Http.UseNativeHttpHandler", out bool value) && value)
             {
                 return;
@@ -1468,10 +1413,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Don't overwrite the response if one was already provided.
             if (context.Transaction.Response is not null)
@@ -1547,10 +1489,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Don't overwrite the response if one was already provided.
             if (context.Transaction.Response is not null)
@@ -1676,10 +1615,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Don't overwrite the response if one was already provided.
             if (context.Transaction.Response is not null)
@@ -1722,10 +1658,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
@@ -1792,10 +1725,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.

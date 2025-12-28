@@ -42,10 +42,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictClientSystemNetHttpBuilder Configure(Action<OpenIddictClientSystemNetHttpOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -63,10 +60,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientSystemNetHttpBuilder ConfigureHttpClient(Action<HttpClient> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return ConfigureHttpClient((registration, client) => configuration(client));
     }
@@ -84,15 +78,8 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientSystemNetHttpBuilder ConfigureHttpClient(string provider, Action<HttpClient> configuration)
     {
-        if (string.IsNullOrEmpty(provider))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentException.ThrowIfNullOrEmpty(provider);
 
         return ConfigureHttpClient((registration, client) =>
         {
@@ -115,10 +102,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientSystemNetHttpBuilder ConfigureHttpClient(Action<OpenIddictClientRegistration, HttpClient> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return Configure(options => options.HttpClientActions.Add(configuration));
     }
@@ -134,10 +118,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientSystemNetHttpBuilder ConfigureHttpClientHandler(Action<HttpClientHandler> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return ConfigureHttpClientHandler((registration, handler) => configuration(handler));
     }
@@ -155,15 +136,8 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientSystemNetHttpBuilder ConfigureHttpClientHandler(string provider, Action<HttpClientHandler> configuration)
     {
-        if (string.IsNullOrEmpty(provider))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentException.ThrowIfNullOrEmpty(provider);
 
         return ConfigureHttpClientHandler((registration, handler) =>
         {
@@ -187,10 +161,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     public OpenIddictClientSystemNetHttpBuilder ConfigureHttpClientHandler(
         Action<OpenIddictClientRegistration, HttpClientHandler> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return Configure(options => options.HttpClientHandlerActions.Add(configuration));
     }
@@ -203,10 +174,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictClientSystemNetHttpBuilder SetContactAddress(MailAddress address)
     {
-        if (address is null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         return Configure(options => options.ContactAddress = address);
     }
@@ -219,10 +187,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictClientSystemNetHttpBuilder SetContactAddress(string address)
     {
-        if (string.IsNullOrEmpty(address))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(address)), nameof(address));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(address);
 
         return SetContactAddress(new MailAddress(address));
     }
@@ -234,10 +199,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictClientSystemNetHttpBuilder SetHttpErrorPolicy(IAsyncPolicy<HttpResponseMessage> policy)
     {
-        if (policy is null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
         return Configure(options => options.HttpErrorPolicy = policy);
     }
@@ -257,10 +219,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     public OpenIddictClientSystemNetHttpBuilder SetHttpResiliencePipeline(
         Action<ResiliencePipelineBuilder<HttpResponseMessage>> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         var builder = new ResiliencePipelineBuilder<HttpResponseMessage>();
         configuration(builder);
@@ -279,10 +238,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictClientSystemNetHttpBuilder SetHttpResiliencePipeline(ResiliencePipeline<HttpResponseMessage> pipeline)
     {
-        if (pipeline is null)
-        {
-            throw new ArgumentNullException(nameof(pipeline));
-        }
+        ArgumentNullException.ThrowIfNull(pipeline);
 
         return Configure(options => options.HttpResiliencePipeline = pipeline);
     }
@@ -296,10 +252,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictClientSystemNetHttpBuilder SetProductInformation(ProductInfoHeaderValue information)
     {
-        if (information is null)
-        {
-            throw new ArgumentNullException(nameof(information));
-        }
+        ArgumentNullException.ThrowIfNull(information);
 
         return Configure(options => options.ProductInformation = information);
     }
@@ -313,10 +266,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictClientSystemNetHttpBuilder SetProductInformation(string name, string? version)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0345), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return SetProductInformation(new ProductInfoHeaderValue(name, version));
     }
@@ -330,10 +280,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictClientSystemNetHttpBuilder SetProductInformation(Assembly assembly)
     {
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
 
         return SetProductInformation(new ProductInfoHeaderValue(
             productName: assembly.GetName().Name!,
@@ -356,10 +303,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     public OpenIddictClientSystemNetHttpBuilder SetSelfSignedTlsClientAuthenticationCertificateSelector(
         Func<OpenIddictClientRegistration, X509Certificate2?> selector)
     {
-        if (selector is null)
-        {
-            throw new ArgumentNullException(nameof(selector));
-        }
+        ArgumentNullException.ThrowIfNull(selector);
 
         return Configure(options => options.SelfSignedTlsClientAuthenticationCertificateSelector = selector);
     }
@@ -380,10 +324,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     public OpenIddictClientSystemNetHttpBuilder SetTlsClientAuthenticationCertificateSelector(
         Func<OpenIddictClientRegistration, X509Certificate2?> selector)
     {
-        if (selector is null)
-        {
-            throw new ArgumentNullException(nameof(selector));
-        }
+        ArgumentNullException.ThrowIfNull(selector);
 
         return Configure(options => options.TlsClientAuthenticationCertificateSelector = selector);
     }

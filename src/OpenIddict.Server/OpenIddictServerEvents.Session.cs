@@ -87,10 +87,7 @@ public static partial class OpenIddictServerEvents
         /// <param name="uri">The post_logout_redirect_uri to use when redirecting the user agent.</param>
         public void SetPostLogoutRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
         {
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0102), nameof(uri));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(uri);
 
             // Don't allow validation to alter the post_logout_redirect_uri parameter extracted
             // from the request if the URI was explicitly provided by the client application.

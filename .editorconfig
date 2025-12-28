@@ -95,7 +95,7 @@ csharp_using_directive_placement = outside_namespace
 
 [*.{cs,vb}]
 dotnet_code_quality_unused_parameters = all
-dotnet_diagnostic.CA1510.severity = none
+dotnet_diagnostic.CA1510.severity = suggestion
 dotnet_diagnostic.CA2254.severity = none
 dotnet_diagnostic.IDE0002.severity = none
 dotnet_diagnostic.IDE0305.severity = none

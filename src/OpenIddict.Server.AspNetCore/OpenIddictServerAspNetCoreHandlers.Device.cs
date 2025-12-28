@@ -74,10 +74,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ApplyEndUserVerificationResponseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.

@@ -24,10 +24,7 @@ public static class OpenIddictValidationExtensions
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public static OpenIddictValidationBuilder AddValidation(this OpenIddictBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddLogging();
         builder.Services.AddOptions();
@@ -73,15 +70,8 @@ public static class OpenIddictValidationExtensions
         this OpenIddictBuilder builder,
         Action<OpenIddictValidationBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.AddValidation());
 

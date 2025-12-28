@@ -35,10 +35,7 @@ internal static class OpenIddictHelpers
     /// </returns>
     public static bool IncludesAnyFromSet<T>(IReadOnlyList<T> array, ISet<T> set)
     {
-        if (set is null)
-        {
-            throw new ArgumentNullException(nameof(set));
-        }
+        ArgumentNullException.ThrowIfNull(set);
 
         for (var index = 0; index < array.Count; index++)
         {
@@ -150,15 +147,8 @@ internal static class OpenIddictHelpers
     /// <exception cref="InvalidOperationException"><paramref name="left"/> is not an absolute URI.</exception>
     public static bool IsBaseOf(Uri left, Uri right)
     {
-        if (left is null)
-        {
-            throw new ArgumentNullException(nameof(left));
-        }
-
-        if (right is null)
-        {
-            throw new ArgumentNullException(nameof(right));
-        }
+        ArgumentNullException.ThrowIfNull(left);
+        ArgumentNullException.ThrowIfNull(right);
 
         if (left is not { IsAbsoluteUri: true })
         {
@@ -188,10 +178,7 @@ internal static class OpenIddictHelpers
     /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
     public static bool IsImplicitFileUri(Uri uri)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return uri.IsAbsoluteUri && uri.IsFile &&
             !uri.OriginalString.StartsWith(uri.Scheme, StringComparison.OrdinalIgnoreCase);
@@ -206,10 +193,7 @@ internal static class OpenIddictHelpers
     /// <returns>The final <see cref="Uri"/> instance, with the specified parameter appended.</returns>
     public static Uri AddQueryStringParameter(Uri uri, string name, string? value)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         var builder = new StringBuilder(uri.Query);
         if (builder.Length > 0)
@@ -238,15 +222,8 @@ internal static class OpenIddictHelpers
     /// <exception cref="ArgumentNullException"><paramref name="parameters"/> is <see langword="null"/>.</exception>
     public static Uri AddQueryStringParameters(Uri uri, IReadOnlyDictionary<string, StringValues> parameters)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(parameters);
 
         if (parameters.Count is 0)
         {
@@ -302,10 +279,7 @@ internal static class OpenIddictHelpers
     /// <exception cref="ArgumentNullException"><paramref name="query"/> is <see langword="null"/>.</exception>
     public static IReadOnlyDictionary<string, StringValues> ParseQuery(string query)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return query.TrimStart(Separators.QuestionMark[0])
             .Split([Separators.Ampersand[0], Separators.Semicolon[0]], StringSplitOptions.RemoveEmptyEntries)
@@ -326,10 +300,7 @@ internal static class OpenIddictHelpers
     /// <exception cref="ArgumentNullException"><paramref name="fragment"/> is <see langword="null"/>.</exception>
     public static IReadOnlyDictionary<string, StringValues> ParseFragment(string fragment)
     {
-        if (fragment is null)
-        {
-            throw new ArgumentNullException(nameof(fragment));
-        }
+        ArgumentNullException.ThrowIfNull(fragment);
 
         return fragment.TrimStart(Separators.Hash[0])
             .Split([Separators.Ampersand[0], Separators.Semicolon[0]], StringSplitOptions.RemoveEmptyEntries)
@@ -353,15 +324,8 @@ internal static class OpenIddictHelpers
     public static async ValueTask<IReadOnlyDictionary<string, StringValues>> ParseFormAsync(
         Stream stream, Encoding encoding, CancellationToken cancellationToken)
     {
-        if (stream is null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
-
-        if (encoding is null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var reader = new FormReader(stream, encoding);
         return await reader.ReadFormAsync(cancellationToken);
@@ -692,7 +656,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] CreateRandomArray(int size)
     {
-        var algorithm = GetAlgorithmFromConfig() switch
+        using var algorithm = GetAlgorithmFromConfig() switch
         {
             RandomNumberGenerator result => result,
             null => null,
@@ -701,32 +665,13 @@ internal static class OpenIddictHelpers
 
         // If no custom random number generator was registered, use either the static GetBytes() or
         // Fill() APIs on platforms that support them or create a default instance provided by the BCL.
-#if SUPPORTS_ONE_SHOT_RANDOM_NUMBER_GENERATOR_METHODS
         if (algorithm is null)
         {
             return RandomNumberGenerator.GetBytes(size / 8);
         }
-#endif
+
         var array = new byte[size / 8];
-
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-        if (algorithm is null)
-        {
-            RandomNumberGenerator.Fill(array);
-            return array;
-        }
-#else
-        algorithm ??= RandomNumberGenerator.Create();
-#endif
-        try
-        {
-            algorithm.GetBytes(array);
-        }
-
-        finally
-        {
-            algorithm.Dispose();
-        }
+        algorithm.GetBytes(array);
 
         return array;
 
@@ -747,40 +692,30 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static string CreateRandomString(ReadOnlySpan<string> charset, int count)
     {
-        var algorithm = GetAlgorithmFromConfig() switch
+        using var algorithm = GetAlgorithmFromConfig() switch
         {
             RandomNumberGenerator result => result,
             null => null,
             var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
         };
 
-        try
-        {
-            var builder = new StringBuilder();
+        var builder = new StringBuilder();
 
-            for (var index = 0; index < count; index++)
+        for (var index = 0; index < count; index++)
+        {
+            // Pick a character in the specified charset by generating a random index.
+            builder.Append(charset[index: algorithm switch
             {
-                // Pick a character in the specified charset by generating a random index.
-                builder.Append(charset[index: algorithm switch
-                {
-#if SUPPORTS_INT32_RANDOM_NUMBER_GENERATOR_METHODS
-                    // If no custom random number generator was registered, use
-                    // the static GetInt32() API on platforms that support it.
-                    null => RandomNumberGenerator.GetInt32(0, charset.Length),
-#endif
-                    // Otherwise, create a default implementation if necessary
-                    // and use the local function that achieves the same result.
-                    _ => GetInt32(algorithm ??= RandomNumberGenerator.Create(), 0..charset.Length)
-                }]);
-            }
+                // If no custom random number generator was registered, use the static GetInt32() API.
+                null => RandomNumberGenerator.GetInt32(0, charset.Length),
 
-            return builder.ToString();
+                // Otherwise, create a default implementation if necessary
+                // and use the local function that achieves the same result.
+                _ => GetInt32(algorithm, 0..charset.Length)
+            }]);
         }
 
-        finally
-        {
-            algorithm?.Dispose();
-        }
+        return builder.ToString();
 
         static int GetInt32(RandomNumberGenerator algorithm, Range range)
         {
@@ -868,32 +803,6 @@ internal static class OpenIddictHelpers
     }
 
     /// <summary>
-    /// Converts the specified hex-encoded <paramref name="value"/> to a byte array.
-    /// </summary>
-    /// <param name="value">The hexadecimal string.</param>
-    /// <returns>The byte array.</returns>
-    public static byte[] ConvertFromHexadecimalString(string value)
-    {
-#if SUPPORTS_HEXADECIMAL_STRING_CONVERSION
-        return Convert.FromHexString(value);
-#else
-        if ((uint) value.Length % 2 is not 0)
-        {
-            throw new FormatException(SR.GetResourceString(SR.ID0413));
-        }
-
-        var array = new byte[value.Length / 2];
-
-        for (var index = 0; index < value.Length; index += 2)
-        {
-            array[index / 2] = Convert.ToByte(value.Substring(index, 2), 16);
-        }
-
-        return array;
-#endif
-    }
-
-    /// <summary>
     /// Removes the characters that are not part of <paramref name="charset"/>
     /// from the specified <paramref name="value"/> string.
     /// </summary>
@@ -906,10 +815,7 @@ internal static class OpenIddictHelpers
     /// <exception cref="ArgumentNullException"><paramref name="charset"/> is <see langword="null"/>.</exception>
     public static string? RemoveDisallowedCharacters(string? value, IReadOnlyCollection<string> charset)
     {
-        if (charset is null)
-        {
-            throw new ArgumentNullException(nameof(charset));
-        }
+        ArgumentNullException.ThrowIfNull(charset);
 
         if (charset.Count is 0 || string.IsNullOrEmpty(value))
         {

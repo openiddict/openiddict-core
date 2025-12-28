@@ -25,10 +25,7 @@ public static class OpenIddictClientDataProtectionExtensions
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public static OpenIddictClientDataProtectionBuilder UseDataProtection(this OpenIddictClientBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddDataProtection();
 
@@ -60,15 +57,8 @@ public static class OpenIddictClientDataProtectionExtensions
     public static OpenIddictClientBuilder UseDataProtection(
         this OpenIddictClientBuilder builder, Action<OpenIddictClientDataProtectionBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseDataProtection());
 

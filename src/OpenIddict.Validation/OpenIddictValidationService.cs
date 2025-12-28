@@ -35,10 +35,7 @@ public class OpenIddictValidationService
     /// <returns>The principal containing the claims extracted from the token.</returns>
     public async ValueTask<ClaimsPrincipal> ValidateAccessTokenAsync(string token, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0162), nameof(token));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(token);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -78,10 +75,7 @@ public class OpenIddictValidationService
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
     internal async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(Uri uri, CancellationToken cancellationToken = default)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri)
         {
@@ -203,10 +197,7 @@ public class OpenIddictValidationService
     /// <returns>The security keys retrieved from the remote server.</returns>
     internal async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(Uri uri, CancellationToken cancellationToken = default)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri)
         {
@@ -333,20 +324,9 @@ public class OpenIddictValidationService
         OpenIddictConfiguration configuration, OpenIddictRequest request,
         Uri uri, string? method, CancellationToken cancellationToken = default)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {

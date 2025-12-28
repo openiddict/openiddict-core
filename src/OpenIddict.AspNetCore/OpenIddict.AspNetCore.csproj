@@ -4,6 +4,7 @@
     <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
+    <IncludePolyfills>false</IncludePolyfills>
     <IncludeInternalExtensions>false</IncludeInternalExtensions>
   </PropertyGroup>
 

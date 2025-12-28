@@ -55,10 +55,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
@@ -106,10 +103,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // These providers don't support the standard "token" parameter and
                 // require using the non-standard "access_token" parameter instead.
@@ -167,10 +161,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -208,10 +199,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -260,10 +248,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ExtractRevocationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.

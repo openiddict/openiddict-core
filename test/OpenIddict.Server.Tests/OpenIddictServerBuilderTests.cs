@@ -530,10 +530,9 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.AllowCustomFlow(type!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => builder.AllowCustomFlow(type!));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.Contains("The grant type cannot be null or empty.", exception.Message);
     }
 
     [Fact]
@@ -1920,7 +1919,6 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetUserCodeCharset(["0"]));
 
-        Assert.StartsWith(SR.FormatID0440(9), exception.Message);
         Assert.Equal("charset", exception.ParamName);
     }
 
@@ -2018,7 +2016,6 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetUserCodeLength(length));
 
-        Assert.StartsWith(SR.FormatID0439(6), exception.Message);
         Assert.Equal("length", exception.ParamName);
     }
 
@@ -2125,10 +2122,9 @@ public class OpenIddictServerBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetIssuer(uri!));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => builder.SetIssuer(uri!));
 
         Assert.Equal("uri", exception.ParamName);
-        Assert.StartsWith(SR.FormatID0366("uri"), exception.Message);
     }
 
     [Fact]

@@ -129,10 +129,7 @@ public sealed class OpenIddictServerOwinBuilder
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder SetRealm(string realm)
     {
-        if (string.IsNullOrEmpty(realm))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0107), nameof(realm));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(realm);
 
         return Configure(options => options.Realm = realm);
     }

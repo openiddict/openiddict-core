@@ -5,7 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Extensions.Primitives;
@@ -99,10 +98,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             public async ValueTask HandleAsync(ApplyEndSessionRequestContext context)
 #pragma warning restore CS1998
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
 #if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
                 if (string.IsNullOrEmpty(context.PostLogoutRedirectUri) ||
@@ -322,10 +318,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             public async ValueTask HandleAsync(ApplyEndSessionRequestContext context)
 #pragma warning restore CS1998
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
 #if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
                 if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
@@ -398,10 +391,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             public async ValueTask HandleAsync(ApplyEndSessionRequestContext context)
 #pragma warning restore CS1998
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
 #if SUPPORTS_WINDOWS_RUNTIME
                 if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
@@ -543,10 +533,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ApplyEndSessionRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var uri = OpenIddictHelpers.AddQueryStringParameters(
                     uri: new Uri(context.EndSessionEndpoint, UriKind.Absolute),
@@ -554,7 +541,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                         static parameter => parameter.Key,
                         static parameter => (StringValues) parameter.Value));
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     // Note: on Windows, multiple application models exist and must be supported to cover most scenarios:
                     //
@@ -612,13 +599,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     return;
                 }
 #endif
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && await TryLaunchBrowserWithOpenAsync(uri))
+                if (OperatingSystem.IsMacOS() && await TryLaunchBrowserWithOpenAsync(uri))
                 {
                     context.HandleRequest();
                     return;
                 }
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && await TryLaunchBrowserWithXdgOpenAsync(uri))
+                if (OperatingSystem.IsLinux() && await TryLaunchBrowserWithXdgOpenAsync(uri))
                 {
                     context.HandleRequest();
                     return;
@@ -648,10 +635,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ApplyPostLogoutRedirectionResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
@@ -671,11 +655,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     _                     => "Logout failed. Please return to the application."
                 });
 
-#if SUPPORTS_STREAM_MEMORY_METHODS
                 await response.OutputStream.WriteAsync(buffer);
-#else
-                await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-#endif
                 await response.OutputStream.FlushAsync();
 
                 context.HandleRequest();
