@@ -81,10 +81,7 @@ public static partial class OpenIddictServerOwinHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
                 {
@@ -145,10 +142,7 @@ public static partial class OpenIddictServerOwinHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
@@ -231,10 +225,7 @@ public static partial class OpenIddictServerOwinHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
@@ -292,10 +283,7 @@ public static partial class OpenIddictServerOwinHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.

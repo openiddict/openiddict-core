@@ -24,10 +24,7 @@ public static class OpenIddictClientOwinExtensions
     /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
     public static OpenIddictClientOwinBuilder UseOwin(this OpenIddictClientBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddWebEncoders();
 
@@ -68,15 +65,8 @@ public static class OpenIddictClientOwinExtensions
     public static OpenIddictClientBuilder UseOwin(
         this OpenIddictClientBuilder builder, Action<OpenIddictClientOwinBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseOwin());
 

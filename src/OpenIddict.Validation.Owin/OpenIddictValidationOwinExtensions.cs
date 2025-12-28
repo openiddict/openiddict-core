@@ -24,10 +24,7 @@ public static class OpenIddictValidationOwinExtensions
     /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/> instance.</returns>
     public static OpenIddictValidationOwinBuilder UseOwin(this OpenIddictValidationBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Note: unlike regular OWIN middleware, the OpenIddict validation middleware is registered
         // as a scoped service in the DI container. This allows containers that support middleware
@@ -62,15 +59,8 @@ public static class OpenIddictValidationOwinExtensions
     public static OpenIddictValidationBuilder UseOwin(
         this OpenIddictValidationBuilder builder, Action<OpenIddictValidationOwinBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseOwin());
 

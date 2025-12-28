@@ -59,10 +59,7 @@ public static partial class OpenIddictClientOwinHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyEndSessionRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to OWIN requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.

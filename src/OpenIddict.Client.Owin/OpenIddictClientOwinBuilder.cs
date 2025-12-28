@@ -38,10 +38,7 @@ public sealed class OpenIddictClientOwinBuilder
     /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
     public OpenIddictClientOwinBuilder Configure(Action<OpenIddictClientOwinOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -137,10 +134,7 @@ public sealed class OpenIddictClientOwinBuilder
     /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
     public OpenIddictClientOwinBuilder SetCookieManager(ICookieManager manager)
     {
-        if (manager is null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullException.ThrowIfNull(manager);
 
         return Configure(options => options.CookieManager = manager);
     }
