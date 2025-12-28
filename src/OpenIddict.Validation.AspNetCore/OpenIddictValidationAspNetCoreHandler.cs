@@ -27,7 +27,7 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationAspNetCoreHandler"/> class.
     /// </summary>
-#if SUPPORTS_TIME_PROVIDER
+#if SUPPORTS_AUTHENTICATION_HANDLER_TIME_PROVIDER_ARGUMENT
     public OpenIddictValidationAspNetCoreHandler(
         IOpenIddictValidationDispatcher dispatcher,
         IOpenIddictValidationFactory factory,

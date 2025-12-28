@@ -72,10 +72,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ExtractRevocationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -134,10 +131,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ValidateRevocationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -195,10 +189,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new HandleRevocationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -252,10 +243,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ApplyRevocationResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -294,10 +282,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Reject revocation requests missing the mandatory token parameter.
                 if (string.IsNullOrEmpty(context.Request.Token))
@@ -334,10 +319,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Ensure a client_assertion_type is specified when a client_assertion was attached.
                 if (!string.IsNullOrEmpty(context.Request.ClientAssertion) &&
@@ -418,10 +400,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ProcessAuthenticationContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -486,10 +465,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
@@ -529,10 +505,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -576,10 +549,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
                 Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
@@ -642,10 +612,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = context.Transaction.GetProperty<ValidateRevocationRequestContext>(
                     typeof(ValidateRevocationRequestContext).FullName!) ??
@@ -686,10 +653,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(HandleRevocationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(context.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -751,10 +715,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyRevocationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 if (string.IsNullOrEmpty(context.Error))
                 {

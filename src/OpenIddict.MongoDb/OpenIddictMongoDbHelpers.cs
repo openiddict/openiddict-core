@@ -22,10 +22,7 @@ internal static class OpenIddictMongoDbHelpers
     /// <returns>The streamed async enumeration containing the results.</returns>
     internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IAsyncCursorSource<T> source, CancellationToken cancellationToken)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         return ExecuteAsync(source, cancellationToken);
 
@@ -52,10 +49,7 @@ internal static class OpenIddictMongoDbHelpers
     /// <returns>The streamed async enumeration containing the results.</returns>
     internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         return ((IAsyncCursorSource<T>) source).ToAsyncEnumerable(cancellationToken);
     }

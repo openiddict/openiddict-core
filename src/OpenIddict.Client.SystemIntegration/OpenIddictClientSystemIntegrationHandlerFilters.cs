@@ -30,10 +30,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
 #if SUPPORTS_AUTHENTICATION_SERVICES
             if (IsASWebAuthenticationSessionSupported())
@@ -61,10 +58,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!string.IsNullOrEmpty(context.Nonce));
         }
@@ -83,10 +77,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
 #if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
             if (IsCustomTabsIntentSupported())
@@ -118,10 +109,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableEmbeddedWebServer is true);
         }
@@ -135,10 +123,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(context.Transaction.GetHttpListenerContext() is not null);
         }
@@ -152,10 +137,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(Environment.UserInteractive);
         }
@@ -170,10 +152,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(context.Transaction.GetPlatformCallback() is not null);
         }
@@ -187,10 +166,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(context.Transaction.GetProtocolActivation() is not null);
         }
@@ -210,10 +186,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             if (!context.Transaction.Properties.TryGetValue(
                 typeof(OpenIddictClientSystemIntegrationAuthenticationMode).FullName!, out var result) ||
@@ -240,10 +213,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
 #if SUPPORTS_WINDOWS_RUNTIME
             if (IsWebAuthenticationBrokerSupported())

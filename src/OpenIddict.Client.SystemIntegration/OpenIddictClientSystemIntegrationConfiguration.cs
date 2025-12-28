@@ -7,7 +7,6 @@
 using System.ComponentModel;
 using System.IO.Pipes;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
@@ -38,10 +37,7 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict client system integration components.
         options.Handlers.AddRange(OpenIddictClientSystemIntegrationHandlers.DefaultHandlers);
@@ -53,10 +49,7 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // If no explicit client URI was set, default to the static "http://localhost/" address, which is
         // adequate for a native/mobile client and points to the embedded web server when it is enabled.
@@ -66,18 +59,15 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientSystemIntegrationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        // Ensure the operating system is supported.
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("android"))     &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Linux)                 &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)                   &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // Ensure the operating system version is supported.
+        if ((OperatingSystem.IsAndroid()     && !OperatingSystem.IsAndroidVersionAtLeast(21))        ||
+            (OperatingSystem.IsIOS()         && !OperatingSystem.IsIOSVersionAtLeast(12))            ||
+             OperatingSystem.IsLinux()                                                               ||
+            (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) ||
+            (OperatingSystem.IsMacOS()       && !OperatingSystem.IsMacOSVersionAtLeast(10, 15))      ||
+            (OperatingSystem.IsWindows()     && !OperatingSystem.IsWindowsVersionAtLeast(7)))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
@@ -87,34 +77,16 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
         // is used to prevent the generic/non-OS specific TFM from being used as launching the system
         // browser cannot be done using Process.Start() and requires using OS-specific APIs that are
         // not available on the portable version of the OpenIddict.Client.SystemIntegration package.
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("android")))
+        if (OperatingSystem.IsAndroid())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
         }
 #endif
 
 #if !SUPPORTS_UIKIT
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) ||
-            RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")))
+        if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
-        }
-#endif
-
-#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
-        // Ensure the operating system version is supported.
-        if ((OperatingSystem.IsAndroid()     && !OperatingSystem.IsAndroidVersionAtLeast(21))        ||
-            (OperatingSystem.IsIOS()         && !OperatingSystem.IsIOSVersionAtLeast(12))            ||
-            (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) ||
-            (OperatingSystem.IsMacOS()       && !OperatingSystem.IsMacOSVersionAtLeast(10, 15))      ||
-            (OperatingSystem.IsWindows()     && !OperatingSystem.IsWindowsVersionAtLeast(7)))
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
-        }
-#else
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsWindowsVersionAtLeast(7))
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 #endif
 
@@ -141,10 +113,8 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             IsASWebAuthenticationSessionSupported() ? ASWebAuthenticationSession :
             IsCustomTabsIntentSupported()           ? CustomTabsIntent           : SystemBrowser;
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("android"))     &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        if (!OperatingSystem.IsAndroid()     && !OperatingSystem.IsIOS() &&
+            !OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacOS())
         {
             options.EnableActivationHandling    ??= true;
             options.EnableActivationRedirection ??= true;
@@ -189,13 +159,13 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             // Note: on Windows, the name is deliberately prefixed with "LOCAL\" to support
             // partial trust/sandboxed applications that are executed in an AppContainer
             // and cannot communicate with applications outside the sandbox container.
-            options.PipeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+            options.PipeName = OperatingSystem.IsWindows() ?
                 @$"LOCAL\{options.ApplicationDiscriminator}" :
                 options.ApplicationDiscriminator;
         }
 
 #if SUPPORTS_CURRENT_USER_ONLY_PIPE_OPTION
-        if (options.PipeOptions is null && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (options.PipeOptions is null && !OperatingSystem.IsWindows())
         {
             // Note: the CurrentUserOnly option is also supported on Windows, but is less
             // flexible than using a PipeSecurity object (e.g cross-process communication
@@ -214,11 +184,11 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
         // between elevated and non-elevated processes. Note: if the process executes
         // inside an AppContainer, don't override the default OS pipe security policy
         // to allow all applications with the same identity to access the named pipe.
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && options.PipeSecurity is null)
+        if (OperatingSystem.IsWindows() && options.PipeSecurity is null)
         {
             using var identity = WindowsIdentity.GetCurrent(TokenAccessLevels.Query);
 
-            if (!IsWindowsVersionAtLeast(10, 0, 10240) || !HasAppContainerToken(identity))
+            if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) || !HasAppContainerToken(identity))
             {
                 options.PipeSecurity = new PipeSecurity();
                 options.PipeSecurity.SetOwner(identity.User!);

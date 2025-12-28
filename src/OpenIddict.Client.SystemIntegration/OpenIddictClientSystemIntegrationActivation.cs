@@ -21,10 +21,7 @@ public sealed class OpenIddictClientSystemIntegrationActivation
     /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
     public OpenIddictClientSystemIntegrationActivation(Uri uri)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {

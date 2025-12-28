@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -46,10 +45,7 @@ public sealed class OpenIddictServerBuilder
         Action<OpenIddictServerHandlerDescriptor.Builder<TContext>> configuration)
         where TContext : BaseContext
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         // Note: handlers registered using this API are assumed to be custom handlers by default.
         var builder = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
@@ -68,10 +64,7 @@ public sealed class OpenIddictServerBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerBuilder AddEventHandler(OpenIddictServerHandlerDescriptor descriptor)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         // Register the handler in the services collection.
         Services.Add(descriptor.ServiceDescriptor);
@@ -87,10 +80,7 @@ public sealed class OpenIddictServerBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerBuilder RemoveEventHandler(OpenIddictServerHandlerDescriptor descriptor)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         Services.RemoveAll(descriptor.ServiceDescriptor.ServiceType);
 
@@ -116,10 +106,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder Configure(Action<OpenIddictServerOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -142,10 +129,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
     {
-        if (credentials is null)
-        {
-            throw new ArgumentNullException(nameof(credentials));
-        }
+        ArgumentNullException.ThrowIfNull(credentials);
 
         return Configure(options => options.EncryptionCredentials.Add(credentials));
     }
@@ -157,10 +141,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEncryptionKey(SecurityKey key)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         // If the encryption key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
@@ -196,10 +177,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEncryptionKeys(IEnumerable<SecurityKey> keys)
     {
-        if (keys is null)
-        {
-            throw new ArgumentNullException(nameof(keys));
-        }
+        ArgumentNullException.ThrowIfNull(keys);
 
         return keys.Aggregate(this, static (builder, key) => builder.AddEncryptionKey(key));
     }
@@ -218,10 +196,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject)
     {
-        if (subject is null)
-        {
-            throw new ArgumentNullException(nameof(subject));
-        }
+        ArgumentNullException.ThrowIfNull(subject);
 
         Services.AddOptions<OpenIddictServerOptions>().Configure<IServiceProvider>((options, provider) =>
         {
@@ -251,7 +226,7 @@ public sealed class OpenIddictServerBuilder
 
                 // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
                 // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     certificate.FriendlyName = "OpenIddict Server Development Encryption Certificate";
                 }
@@ -268,7 +243,7 @@ public sealed class OpenIddictServerBuilder
 
                     // Note: macOS requires marking the certificate private key as exportable.
                     // If this flag is not set, a CryptographicException is thrown at runtime.
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    if (OperatingSystem.IsMacOS())
                     {
                         flags |= X509KeyStorageFlags.Exportable;
                     }
@@ -322,10 +297,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEphemeralEncryptionKey(string algorithm)
     {
-        if (string.IsNullOrEmpty(algorithm))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0057), nameof(algorithm));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(algorithm);
 
         return algorithm switch
         {
@@ -351,10 +323,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEncryptionCertificate(X509Certificate2 certificate)
     {
-        if (certificate is null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullException.ThrowIfNull(certificate);
 
         // If the certificate is a X.509v3 certificate that specifies at least one
         // key usage, ensure that the certificate key can be used for key encryption.
@@ -386,7 +355,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder AddEncryptionCertificate(Assembly assembly, string resource, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
-        => AddEncryptionCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+        => AddEncryptionCertificate(assembly, resource, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -405,15 +374,8 @@ public sealed class OpenIddictServerBuilder
         Assembly assembly, string resource,
         string? password, X509KeyStorageFlags flags)
     {
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (string.IsNullOrEmpty(resource))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
+        ArgumentException.ThrowIfNullOrEmpty(resource);
 
         using var stream = assembly.GetManifestResourceStream(resource) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
@@ -430,7 +392,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder AddEncryptionCertificate(Stream stream, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
-        => AddEncryptionCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+        => AddEncryptionCertificate(stream, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -446,10 +408,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEncryptionCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
     {
-        if (stream is null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
 
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
@@ -474,10 +433,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEncryptionCertificate(string thumbprint)
     {
-        if (string.IsNullOrEmpty(thumbprint))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
         return AddEncryptionCertificate(
             GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
@@ -504,10 +460,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEncryptionCertificate(string thumbprint, StoreName name, StoreLocation location)
     {
-        if (string.IsNullOrEmpty(thumbprint))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
@@ -525,11 +478,8 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEncryptionCertificates(IEnumerable<X509Certificate2> certificates)
     {
-        if (certificates is null)
-        {
-            throw new ArgumentNullException(nameof(certificates));
-        }
-        
+        ArgumentNullException.ThrowIfNull(certificates);
+
         return certificates.Aggregate(this, static (builder, certificate) => builder.AddEncryptionCertificate(certificate));
     }
 
@@ -540,10 +490,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddSigningCredentials(SigningCredentials credentials)
     {
-        if (credentials is null)
-        {
-            throw new ArgumentNullException(nameof(credentials));
-        }
+        ArgumentNullException.ThrowIfNull(credentials);
 
         return Configure(options => options.SigningCredentials.Add(credentials));
     }
@@ -555,10 +502,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddSigningKey(SecurityKey key)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         // If the signing key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
@@ -612,10 +556,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddSigningKeys(IEnumerable<SecurityKey> keys)
     {
-        if (keys is null)
-        {
-            throw new ArgumentNullException(nameof(keys));
-        }
+        ArgumentNullException.ThrowIfNull(keys);
 
         return keys.Aggregate(this, static (builder, key) => builder.AddSigningKey(key));
     }
@@ -634,10 +575,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject)
     {
-        if (subject is null)
-        {
-            throw new ArgumentNullException(nameof(subject));
-        }
+        ArgumentNullException.ThrowIfNull(subject);
 
         Services.AddOptions<OpenIddictServerOptions>().Configure<IServiceProvider>((options, provider) =>
         {
@@ -668,7 +606,7 @@ public sealed class OpenIddictServerBuilder
 
                 // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
                 // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     certificate.FriendlyName = "OpenIddict Server Development Signing Certificate";
                 }
@@ -685,7 +623,7 @@ public sealed class OpenIddictServerBuilder
 
                     // Note: macOS requires marking the certificate private key as exportable.
                     // If this flag is not set, a CryptographicException is thrown at runtime.
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    if (OperatingSystem.IsMacOS())
                     {
                         flags |= X509KeyStorageFlags.Exportable;
                     }
@@ -738,10 +676,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddEphemeralSigningKey(string algorithm)
     {
-        if (string.IsNullOrEmpty(algorithm))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0057), nameof(algorithm));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(algorithm);
 
         return algorithm switch
         {
@@ -796,10 +731,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddSigningCertificate(X509Certificate2 certificate)
     {
-        if (certificate is null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullException.ThrowIfNull(certificate);
 
         // If the certificate is a X.509v3 certificate that specifies at least
         // one key usage, ensure that the certificate key can be used for signing.
@@ -831,7 +763,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder AddSigningCertificate(Assembly assembly, string resource, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
-        => AddSigningCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+        => AddSigningCertificate(assembly, resource, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -850,15 +782,8 @@ public sealed class OpenIddictServerBuilder
         Assembly assembly, string resource,
         string? password, X509KeyStorageFlags flags)
     {
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (string.IsNullOrEmpty(resource))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
+        ArgumentException.ThrowIfNullOrEmpty(resource);
 
         using var stream = assembly.GetManifestResourceStream(resource) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
@@ -875,7 +800,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder AddSigningCertificate(Stream stream, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
-        => AddSigningCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+        => AddSigningCertificate(stream, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -891,10 +816,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddSigningCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
     {
-        if (stream is null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
 
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
@@ -919,10 +841,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddSigningCertificate(string thumbprint)
     {
-        if (string.IsNullOrEmpty(thumbprint))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
         return AddSigningCertificate(
             GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
@@ -949,10 +868,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddSigningCertificate(string thumbprint, StoreName name, StoreLocation location)
     {
-        if (string.IsNullOrEmpty(thumbprint))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
@@ -970,11 +886,8 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AddSigningCertificates(IEnumerable<X509Certificate2> certificates)
     {
-        if (certificates is null)
-        {
-            throw new ArgumentNullException(nameof(certificates));
-        }
-        
+        ArgumentNullException.ThrowIfNull(certificates);
+
         return certificates.Aggregate(this, static (builder, certificate) => builder.AddSigningCertificate(certificate));
     }
 
@@ -1009,10 +922,7 @@ public sealed class OpenIddictServerBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerBuilder AllowCustomFlow(string type)
     {
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0071), nameof(type));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(type);
 
         return Configure(options => options.GrantTypes.Add(type));
     }
@@ -1107,10 +1017,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetAuthorizationEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetAuthorizationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1124,10 +1031,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetAuthorizationEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1156,10 +1060,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetConfigurationEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetConfigurationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1173,10 +1074,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetConfigurationEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1205,10 +1103,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetDeviceAuthorizationEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetDeviceAuthorizationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1222,10 +1117,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetDeviceAuthorizationEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1254,10 +1146,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetEndSessionEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetEndSessionEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1271,10 +1160,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetEndSessionEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1303,10 +1189,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetIntrospectionEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetIntrospectionEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1320,10 +1203,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetIntrospectionEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1352,10 +1232,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetJsonWebKeySetEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetJsonWebKeySetEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1369,10 +1246,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetJsonWebKeySetEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1401,10 +1275,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetPushedAuthorizationEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetPushedAuthorizationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1418,10 +1289,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetPushedAuthorizationEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1450,10 +1318,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetRevocationEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetRevocationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1467,10 +1332,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetRevocationEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1499,10 +1361,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetTokenEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetTokenEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1516,10 +1375,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetTokenEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1548,10 +1404,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetUserInfoEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetUserInfoEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1565,10 +1418,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetUserInfoEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1597,10 +1447,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetEndUserVerificationEndpointUris(
         [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         return SetEndUserVerificationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
     }
@@ -1614,10 +1461,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetEndUserVerificationEndpointUris(params Uri[] uris)
     {
-        if (uris is null)
-        {
-            throw new ArgumentNullException(nameof(uris));
-        }
+        ArgumentNullException.ThrowIfNull(uris);
 
         if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
         {
@@ -1772,10 +1616,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder RegisterAudiences(params string[] audiences)
     {
-        if (audiences is null)
-        {
-            throw new ArgumentNullException(nameof(audiences));
-        }
+        ArgumentNullException.ThrowIfNull(audiences);
 
         if (Array.Exists(audiences, string.IsNullOrEmpty))
         {
@@ -1793,10 +1634,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder RegisterClaims(params string[] claims)
     {
-        if (claims is null)
-        {
-            throw new ArgumentNullException(nameof(claims));
-        }
+        ArgumentNullException.ThrowIfNull(claims);
 
         if (Array.Exists(claims, string.IsNullOrEmpty))
         {
@@ -1814,10 +1652,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder RegisterPromptValues(params string[] values)
     {
-        if (values is null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         if (Array.Exists(values, string.IsNullOrEmpty))
         {
@@ -1836,10 +1671,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder RegisterResources(params string[] resources)
     {
-        if (resources is null)
-        {
-            throw new ArgumentNullException(nameof(resources));
-        }
+        ArgumentNullException.ThrowIfNull(resources);
 
         return RegisterResources([.. resources.Select(resource => new Uri(resource, UriKind.Absolute))]);
     }
@@ -1853,10 +1685,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder RegisterResources(params Uri[] resources)
     {
-        if (resources is null)
-        {
-            throw new ArgumentNullException(nameof(resources));
-        }
+        ArgumentNullException.ThrowIfNull(resources);
 
         if (Array.Exists(resources, static resource => OpenIddictHelpers.IsImplicitFileUri(resource) ||
             !string.IsNullOrEmpty(resource.Fragment)))
@@ -1875,10 +1704,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder RegisterScopes(params string[] scopes)
     {
-        if (scopes is null)
-        {
-            throw new ArgumentNullException(nameof(scopes));
-        }
+        ArgumentNullException.ThrowIfNull(scopes);
 
         if (Array.Exists(scopes, string.IsNullOrEmpty))
         {
@@ -1993,15 +1819,8 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetUserCodeCharset(params string[] charset)
     {
-        if (charset is null)
-        {
-            throw new ArgumentNullException(nameof(charset));
-        }
-
-        if (charset.Length is < 9)
-        {
-            throw new ArgumentOutOfRangeException(nameof(charset), SR.FormatID0440(9));
-        }
+        ArgumentNullException.ThrowIfNull(charset);
+        ArgumentOutOfRangeException.ThrowIfLessThan(charset.Length, 9, nameof(charset));
 
         if (charset.Length != charset.Distinct(StringComparer.Ordinal).Count())
         {
@@ -2055,10 +1874,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetUserCodeLength(int length)
     {
-        if (length is < 6)
-        {
-            throw new ArgumentOutOfRangeException(nameof(length), SR.FormatID0439(6));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(length, 6);
 
         return Configure(options => options.UserCodeLength = length);
     }
@@ -2081,10 +1897,7 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetIssuer(Uri uri)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return Configure(options => options.Issuer = uri);
     }
@@ -2098,10 +1911,7 @@ public sealed class OpenIddictServerBuilder
     public OpenIddictServerBuilder SetIssuer(
         [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(uri)), nameof(uri));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(uri);
 
         if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
         {

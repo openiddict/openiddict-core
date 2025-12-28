@@ -74,10 +74,7 @@ public sealed class OpenIddictClientOwinBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientOwinBuilder AddForwardedAuthenticationType(string provider, string? caption)
     {
-        if (string.IsNullOrEmpty(provider))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(provider);
 
         return Configure(options => options.ForwardedAuthenticationTypes.Add(new AuthenticationDescription
         {

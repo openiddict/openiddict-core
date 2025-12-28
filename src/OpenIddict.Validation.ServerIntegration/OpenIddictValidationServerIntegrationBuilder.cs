@@ -35,10 +35,7 @@ public sealed class OpenIddictValidationServerIntegrationBuilder
     /// <returns>The <see cref="OpenIddictValidationServerIntegrationBuilder"/> instance.</returns>
     public OpenIddictValidationServerIntegrationBuilder Configure(Action<OpenIddictValidationServerIntegrationOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 

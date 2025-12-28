@@ -69,38 +69,6 @@ public static class OpenIddictClientSystemIntegrationHelpers
         => transaction.GetProperty<HttpListenerContext>(typeof(HttpListenerContext).FullName!);
 
     /// <summary>
-    /// Determines whether the current Windows version
-    /// is greater than or equals to the specified version.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> if the current Windows version is greater than
-    /// or equals to the specified version, <see langword="false"/> otherwise.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [SupportedOSPlatformGuard("windows")]
-    internal static bool IsWindowsVersionAtLeast(int major, int minor = 0, int build = 0, int revision = 0)
-    {
-#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
-        return OperatingSystem.IsWindowsVersionAtLeast(major, minor, build, revision);
-#else
-        if (Environment.OSVersion.Platform is PlatformID.Win32NT &&
-            Environment.OSVersion.Version >= new Version(major, minor, build, revision))
-        {
-            return true;
-        }
-
-        // Note: on older versions of .NET, Environment.OSVersion.Version is known to be affected by
-        // the compatibility shims used by Windows 10+ when the application doesn't have a manifest
-        // that explicitly indicates it's compatible with Windows 10 and higher. To avoid that, a
-        // second pass using RuntimeInformation.OSDescription (that calls NtDll.RtlGetVersion() under
-        // the hood) is made. Note: no version is returned on UWP due to the missing Win32 API.
-        return RuntimeInformation.OSDescription.StartsWith("Microsoft Windows ", StringComparison.OrdinalIgnoreCase) &&
-               RuntimeInformation.OSDescription["Microsoft Windows ".Length..] is string value &&
-               Version.TryParse(value, out Version? version) && version >= new Version(major, minor, build, revision);
-#endif
-    }
-
-    /// <summary>
     /// Determines whether the ASWebAuthenticationSession API is supported on this platform.
     /// </summary>
     /// <returns><see langword="true"/> if the ASWebAuthenticationSession API is supported, <see langword="false"/> otherwise.</returns>
@@ -144,7 +112,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     // oldest supported version in the package, it is also used for the runtime check.
     internal static bool IsWindowsRuntimeSupported()
 #if SUPPORTS_WINDOWS_RUNTIME
-        => IsWindowsVersionAtLeast(10, 0, 17763);
+        => OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763);
 #else
         => false;
 #endif
@@ -227,10 +195,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatform("windows10.0.10240")]
     internal static unsafe bool HasAppContainerToken(WindowsIdentity identity)
     {
-        if (identity is null)
-        {
-            throw new ArgumentNullException(nameof(identity));
-        }
+        ArgumentNullException.ThrowIfNull(identity);
 
         int* buffer = stackalloc int[1];
 

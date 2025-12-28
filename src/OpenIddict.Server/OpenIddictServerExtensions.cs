@@ -24,10 +24,7 @@ public static class OpenIddictServerExtensions
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public static OpenIddictServerBuilder AddServer(this OpenIddictBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddLogging();
         builder.Services.AddOptions();
@@ -115,15 +112,8 @@ public static class OpenIddictServerExtensions
     /// <returns>The <see cref="OpenIddictBuilder"/> instance.</returns>
     public static OpenIddictBuilder AddServer(this OpenIddictBuilder builder, Action<OpenIddictServerBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.AddServer());
 

@@ -45,10 +45,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     /// <inheritdoc/>
     public async ValueTask AddAsync(TApplication application, CancellationToken cancellationToken)
     {
-        if (application is null)
-        {
-            throw new ArgumentNullException(nameof(application));
-        }
+        ArgumentNullException.ThrowIfNull(application);
 
         _cache.Remove(new
         {
@@ -107,10 +104,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     /// <inheritdoc/>
     public ValueTask<TApplication?> FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var parameters = new
         {
@@ -141,10 +135,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     /// <inheritdoc/>
     public ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var parameters = new
         {
@@ -176,10 +167,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     public IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
         [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(uri);
 
         return ExecuteAsync(cancellationToken);
 
@@ -218,10 +206,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     public IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
         [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(uri);
 
         return ExecuteAsync(cancellationToken);
 
@@ -259,10 +244,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     /// <inheritdoc/>
     public async ValueTask RemoveAsync(TApplication application, CancellationToken cancellationToken)
     {
-        if (application is null)
-        {
-            throw new ArgumentNullException(nameof(application));
-        }
+        ArgumentNullException.ThrowIfNull(application);
 
         var identifier = await _store.GetIdAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(identifier))
@@ -286,10 +268,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     private async ValueTask CreateEntryAsync(object key, TApplication? application, CancellationToken cancellationToken)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         using var entry = _cache.CreateEntry(key);
 
@@ -312,10 +291,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     private async ValueTask CreateEntryAsync(object key, ImmutableArray<TApplication> applications, CancellationToken cancellationToken)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         using var entry = _cache.CreateEntry(key);
 
@@ -341,10 +317,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     /// </returns>
     private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TApplication application, CancellationToken cancellationToken)
     {
-        if (application is null)
-        {
-            throw new ArgumentNullException(nameof(application));
-        }
+        ArgumentNullException.ThrowIfNull(application);
 
         var identifier = await _store.GetIdAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(identifier))

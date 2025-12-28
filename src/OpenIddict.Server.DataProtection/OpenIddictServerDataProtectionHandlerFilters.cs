@@ -20,10 +20,7 @@ public static class OpenIddictServerDataProtectionHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(context.TokenFormat is TokenFormats.Private.DataProtection);
         }

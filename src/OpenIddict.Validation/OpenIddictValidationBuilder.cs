@@ -7,7 +7,6 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -45,10 +44,7 @@ public sealed class OpenIddictValidationBuilder
         Action<OpenIddictValidationHandlerDescriptor.Builder<TContext>> configuration)
         where TContext : BaseContext
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         // Note: handlers registered using this API are assumed to be custom handlers by default.
         var builder = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
@@ -67,10 +63,7 @@ public sealed class OpenIddictValidationBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationBuilder AddEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         // Register the handler in the services collection.
         Services.Add(descriptor.ServiceDescriptor);
@@ -86,10 +79,7 @@ public sealed class OpenIddictValidationBuilder
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationBuilder RemoveEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         Services.RemoveAll(descriptor.ServiceDescriptor.ServiceType);
 
@@ -115,10 +105,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder Configure(Action<OpenIddictValidationOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -132,10 +119,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
     {
-        if (credentials is null)
-        {
-            throw new ArgumentNullException(nameof(credentials));
-        }
+        ArgumentNullException.ThrowIfNull(credentials);
 
         return Configure(options => options.EncryptionCredentials.Add(credentials));
     }
@@ -147,10 +131,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionKey(SecurityKey key)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         // If the encryption key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
@@ -181,10 +162,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionKeys(IEnumerable<SecurityKey> keys)
     {
-        if (keys is null)
-        {
-            throw new ArgumentNullException(nameof(keys));
-        }
+        ArgumentNullException.ThrowIfNull(keys);
 
         return keys.Aggregate(this, static (builder, key) => builder.AddEncryptionKey(key));
     }
@@ -196,10 +174,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(X509Certificate2 certificate)
     {
-        if (certificate is null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullException.ThrowIfNull(certificate);
 
         // If the certificate is a X.509v3 certificate that specifies at least one
         // key usage, ensure that the certificate key can be used for key encryption.
@@ -232,7 +207,7 @@ public sealed class OpenIddictValidationBuilder
         Assembly assembly, string resource, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
-        => AddEncryptionCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+        => AddEncryptionCertificate(assembly, resource, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -251,15 +226,8 @@ public sealed class OpenIddictValidationBuilder
         Assembly assembly, string resource,
         string? password, X509KeyStorageFlags flags)
     {
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (string.IsNullOrEmpty(resource))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
+        ArgumentException.ThrowIfNullOrEmpty(resource);
 
         using var stream = assembly.GetManifestResourceStream(resource) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
@@ -276,7 +244,7 @@ public sealed class OpenIddictValidationBuilder
     public OpenIddictValidationBuilder AddEncryptionCertificate(Stream stream, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
-        => AddEncryptionCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+        => AddEncryptionCertificate(stream, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -293,10 +261,7 @@ public sealed class OpenIddictValidationBuilder
     public OpenIddictValidationBuilder AddEncryptionCertificate(
         Stream stream, string? password, X509KeyStorageFlags flags)
     {
-        if (stream is null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
 
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
@@ -321,10 +286,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(string thumbprint)
     {
-        if (string.IsNullOrEmpty(thumbprint))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
         return AddEncryptionCertificate(
             GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
@@ -352,10 +314,7 @@ public sealed class OpenIddictValidationBuilder
     public OpenIddictValidationBuilder AddEncryptionCertificate(
         string thumbprint, StoreName name, StoreLocation location)
     {
-        if (string.IsNullOrEmpty(thumbprint))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
@@ -373,11 +332,8 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificates(IEnumerable<X509Certificate2> certificates)
     {
-        if (certificates is null)
-        {
-            throw new ArgumentNullException(nameof(certificates));
-        }
-        
+        ArgumentNullException.ThrowIfNull(certificates);
+
         return certificates.Aggregate(this, static (builder, certificate) => builder.AddEncryptionCertificate(certificate));
     }
 
@@ -388,10 +344,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningCredentials(SigningCredentials credentials)
     {
-        if (credentials is null)
-        {
-            throw new ArgumentNullException(nameof(credentials));
-        }
+        ArgumentNullException.ThrowIfNull(credentials);
 
         return Configure(options => options.SigningCredentials.Add(credentials));
     }
@@ -403,10 +356,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningKey(SecurityKey key)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         // If the signing key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
@@ -460,10 +410,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningKeys(IEnumerable<SecurityKey> keys)
     {
-        if (keys is null)
-        {
-            throw new ArgumentNullException(nameof(keys));
-        }
+        ArgumentNullException.ThrowIfNull(keys);
 
         return keys.Aggregate(this, static (builder, key) => builder.AddSigningKey(key));
     }
@@ -475,10 +422,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningCertificate(X509Certificate2 certificate)
     {
-        if (certificate is null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullException.ThrowIfNull(certificate);
 
         // If the certificate is a X.509v3 certificate that specifies at least
         // one key usage, ensure that the certificate key can be used for signing.
@@ -510,7 +454,7 @@ public sealed class OpenIddictValidationBuilder
     public OpenIddictValidationBuilder AddSigningCertificate(Assembly assembly, string resource, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
-        => AddSigningCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+        => AddSigningCertificate(assembly, resource, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -529,15 +473,8 @@ public sealed class OpenIddictValidationBuilder
         Assembly assembly, string resource,
         string? password, X509KeyStorageFlags flags)
     {
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (string.IsNullOrEmpty(resource))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
+        ArgumentException.ThrowIfNullOrEmpty(resource);
 
         using var stream = assembly.GetManifestResourceStream(resource) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
@@ -554,7 +491,7 @@ public sealed class OpenIddictValidationBuilder
     public OpenIddictValidationBuilder AddSigningCertificate(Stream stream, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
-        => AddSigningCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+        => AddSigningCertificate(stream, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
 #else
@@ -570,10 +507,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
     {
-        if (stream is null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
 
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
@@ -598,10 +532,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningCertificate(string thumbprint)
     {
-        if (string.IsNullOrEmpty(thumbprint))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
         return AddSigningCertificate(
             GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
@@ -628,10 +559,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningCertificate(string thumbprint, StoreName name, StoreLocation location)
     {
-        if (string.IsNullOrEmpty(thumbprint))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
@@ -649,11 +577,8 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningCertificates(IEnumerable<X509Certificate2> certificates)
     {
-        if (certificates is null)
-        {
-            throw new ArgumentNullException(nameof(certificates));
-        }
-        
+        ArgumentNullException.ThrowIfNull(certificates);
+
         return certificates.Aggregate(this, static (builder, certificate) => builder.AddSigningCertificate(certificate));
     }
 
@@ -665,10 +590,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddAudiences(params string[] audiences)
     {
-        if (audiences is null)
-        {
-            throw new ArgumentNullException(nameof(audiences));
-        }
+        ArgumentNullException.ThrowIfNull(audiences);
 
         if (Array.Exists(audiences, string.IsNullOrEmpty))
         {
@@ -717,10 +639,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetConfiguration(OpenIddictConfiguration configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return Configure(options => options.Configuration = configuration);
     }
@@ -733,10 +652,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetClaimsIssuer(string issuer)
     {
-        if (string.IsNullOrEmpty(issuer))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(issuer));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(issuer);
 
         return Configure(options => options.ClaimsIssuer = issuer);
     }
@@ -749,10 +665,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetClientId(string identifier)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         return Configure(options => options.ClientId = identifier);
     }
@@ -765,10 +678,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetClientSecret(string secret)
     {
-        if (string.IsNullOrEmpty(secret))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0125), nameof(secret));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(secret);
 
         return Configure(options => options.ClientSecret = secret);
     }
@@ -781,10 +691,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetIssuer(Uri uri)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return Configure(options => options.Issuer = uri);
     }
@@ -797,10 +704,7 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetIssuer([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0126), nameof(uri));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(uri);
 
         if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
         {

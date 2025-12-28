@@ -39,10 +39,7 @@ public sealed class OpenIddictMongoDbBuilder
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder Configure(Action<OpenIddictMongoDbOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -124,10 +121,7 @@ public sealed class OpenIddictMongoDbBuilder
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder SetApplicationsCollectionName(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Configure(options => options.ApplicationsCollectionName = name);
     }
@@ -139,10 +133,7 @@ public sealed class OpenIddictMongoDbBuilder
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder SetAuthorizationsCollectionName(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Configure(options => options.AuthorizationsCollectionName = name);
     }
@@ -154,10 +145,7 @@ public sealed class OpenIddictMongoDbBuilder
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder SetScopesCollectionName(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Configure(options => options.ScopesCollectionName = name);
     }
@@ -169,10 +157,7 @@ public sealed class OpenIddictMongoDbBuilder
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder SetTokensCollectionName(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Configure(options => options.TokensCollectionName = name);
     }
@@ -185,10 +170,7 @@ public sealed class OpenIddictMongoDbBuilder
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder UseDatabase(IMongoDatabase database)
     {
-        if (database is null)
-        {
-            throw new ArgumentNullException(nameof(database));
-        }
+        ArgumentNullException.ThrowIfNull(database);
 
         return Configure(options => options.Database = database);
     }

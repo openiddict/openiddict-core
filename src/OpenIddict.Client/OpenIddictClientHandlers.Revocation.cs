@@ -41,10 +41,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleRevocationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -98,10 +95,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleRevocationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 if (!string.IsNullOrEmpty(context.Response.Error))
                 {

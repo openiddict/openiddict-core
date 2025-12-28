@@ -24,10 +24,7 @@ public static class OpenIddictServerAspNetCoreExtensions
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public static OpenIddictServerAspNetCoreBuilder UseAspNetCore(this OpenIddictServerBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddAuthentication();
 
@@ -75,15 +72,8 @@ public static class OpenIddictServerAspNetCoreExtensions
     public static OpenIddictServerBuilder UseAspNetCore(
         this OpenIddictServerBuilder builder, Action<OpenIddictServerAspNetCoreBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseAspNetCore());
 

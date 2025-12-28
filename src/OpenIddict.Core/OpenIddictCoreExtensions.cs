@@ -23,10 +23,7 @@ public static class OpenIddictCoreExtensions
     /// <returns>The <see cref="OpenIddictBuilder"/> instance.</returns>
     public static OpenIddictCoreBuilder AddCore(this OpenIddictBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddLogging();
         builder.Services.AddMemoryCache();
@@ -70,15 +67,8 @@ public static class OpenIddictCoreExtensions
     /// <returns>The <see cref="OpenIddictBuilder"/> instance.</returns>
     public static OpenIddictBuilder AddCore(this OpenIddictBuilder builder, Action<OpenIddictCoreBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.AddCore());
 

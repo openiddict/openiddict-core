@@ -25,10 +25,7 @@ public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<
 {
     public void Configure(EntityTypeBuilder<TScope> builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Warning: optional foreign keys MUST NOT be added as CLR properties because
         // Entity Framework would throw an exception due to the TKey generic parameter

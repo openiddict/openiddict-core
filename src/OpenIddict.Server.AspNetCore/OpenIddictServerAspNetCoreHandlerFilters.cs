@@ -30,10 +30,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableAuthorizationEndpointPassthrough);
         }
@@ -53,10 +50,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableEndSessionEndpointPassthrough);
         }
@@ -75,10 +69,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableErrorPassthrough);
         }
@@ -92,10 +83,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(context.Transaction.GetHttpRequest() is not null);
         }
@@ -114,10 +102,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableStatusCodePagesIntegration);
         }
@@ -136,10 +121,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!_options.CurrentValue.DisableTransportSecurityRequirement);
         }
@@ -159,10 +141,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableTokenEndpointPassthrough);
         }
@@ -182,10 +161,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableUserInfoEndpointPassthrough);
         }
@@ -205,10 +181,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(_options.CurrentValue.EnableEndUserVerificationEndpointPassthrough);
         }

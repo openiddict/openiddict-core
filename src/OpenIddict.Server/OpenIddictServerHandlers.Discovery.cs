@@ -85,10 +85,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ExtractConfigurationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -147,10 +144,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ValidateConfigurationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -204,10 +198,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new HandleConfigurationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -295,10 +286,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ApplyConfigurationResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -337,10 +325,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.Issuer = (context.Options.Issuer ?? context.BaseUri) switch
                 {
@@ -372,10 +357,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: while OpenIddict allows specifying multiple endpoint URIs, the OAuth 2.0
                 // and OpenID Connect discovery specifications only allow a single URI per endpoint.
@@ -429,10 +411,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.GrantTypes.UnionWith(context.Options.GrantTypes);
 
@@ -458,10 +437,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.ResponseTypes.UnionWith(context.Options.ResponseTypes);
 
@@ -487,10 +463,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Only include the response modes if at least one response type is returned.
                 if (context.ResponseTypes.Count is 0)
@@ -536,10 +509,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: "device_authorization_endpoint_auth_methods_supported" is not a standard parameter
                 // but is supported by OpenIddict 4.3.0 and higher for consistency with the other endpoints.
@@ -593,10 +563,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Only include the code challenge methods if the authorization code grant type is enabled.
                 if (context.GrantTypes.Contains(GrantTypes.AuthorizationCode))
@@ -626,10 +593,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.Scopes.UnionWith(context.Options.Scopes);
 
@@ -655,10 +619,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.Claims.UnionWith(context.Options.Claims);
 
@@ -684,10 +645,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.SubjectTypes.UnionWith(context.Options.SubjectTypes);
 
@@ -713,10 +671,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.PromptValues.UnionWith(context.Options.PromptValues);
 
@@ -742,10 +697,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 foreach (var credentials in context.Options.SigningCredentials)
                 {
@@ -808,10 +760,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 context.RequirePushedAuthorizationRequests = context.Options.RequirePushedAuthorizationRequests;
 
@@ -837,10 +786,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Note: these optional features are not yet supported by OpenIddict,
                 // so "false" is returned to encourage clients not to use them.
@@ -882,10 +828,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ExtractJsonWebKeySetRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -944,10 +887,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ValidateJsonWebKeySetRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -1001,10 +941,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new HandleJsonWebKeySetRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -1129,10 +1066,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 var notification = new ApplyJsonWebKeySetResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
@@ -1171,10 +1105,7 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleJsonWebKeySetRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 foreach (var credentials in context.Options.SigningCredentials)
                 {

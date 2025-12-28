@@ -43,10 +43,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleDeviceAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -113,10 +110,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleDeviceAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // For more information, see https://www.rfc-editor.org/rfc/rfc8628#section-3.2.
                 if (!string.IsNullOrEmpty(context.Response.Error))
@@ -161,10 +155,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleDeviceAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Return an error if the mandatory "verification_uri" parameter is missing.
                 // For more information, see https://www.rfc-editor.org/rfc/rfc8628#section-3.2.
@@ -227,10 +218,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleDeviceAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // Return an error if the mandatory "expires_in" parameter is missing.
                 // For more information, see https://www.rfc-editor.org/rfc/rfc8628#section-3.2.

@@ -69,10 +69,7 @@ public class OpenIddictMongoDbScopeStore<
     public virtual async ValueTask<long> CountAsync<TResult>(
         Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
@@ -83,10 +80,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual async ValueTask CreateAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
@@ -97,10 +91,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual async ValueTask DeleteAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
@@ -116,10 +107,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual async ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
@@ -130,10 +118,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual async ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
@@ -168,10 +153,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TScope> FindByResourceAsync(string resource, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(resource))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(resource);
 
         return ExecuteAsync(cancellationToken);
 
@@ -192,10 +174,7 @@ public class OpenIddictMongoDbScopeStore<
         Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
@@ -206,10 +185,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetDescriptionAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return new(scope.Description);
     }
@@ -217,10 +193,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (scope.Descriptions is not { Count: > 0 })
         {
@@ -235,10 +208,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return new(scope.DisplayName);
     }
@@ -246,10 +216,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (scope.DisplayNames is not { Count: > 0 })
         {
@@ -264,10 +231,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetIdAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return new(scope.Id.ToString());
     }
@@ -275,10 +239,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask<string?> GetNameAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return new(scope.Name);
     }
@@ -286,10 +247,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (scope.Properties is null)
         {
@@ -310,10 +268,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (scope.Resources is not { Count: > 0 })
         {
@@ -368,10 +323,7 @@ public class OpenIddictMongoDbScopeStore<
         Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return ExecuteAsync(cancellationToken);
 
@@ -390,10 +342,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask SetDescriptionAsync(TScope scope, string? description, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         scope.Description = description;
 
@@ -404,10 +353,7 @@ public class OpenIddictMongoDbScopeStore<
     public virtual ValueTask SetDescriptionsAsync(TScope scope,
         ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (descriptions is not { Count: > 0 })
         {
@@ -427,10 +373,7 @@ public class OpenIddictMongoDbScopeStore<
     public virtual ValueTask SetDisplayNamesAsync(TScope scope,
         ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (names is not { Count: > 0 })
         {
@@ -449,10 +392,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask SetDisplayNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         scope.DisplayName = name;
 
@@ -462,10 +402,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask SetNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         scope.Name = name;
 
@@ -476,10 +413,7 @@ public class OpenIddictMongoDbScopeStore<
     public virtual ValueTask SetPropertiesAsync(TScope scope,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (properties is not { Count: > 0 })
         {
@@ -514,10 +448,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual ValueTask SetResourcesAsync(TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (resources.IsDefaultOrEmpty)
         {
@@ -534,10 +465,7 @@ public class OpenIddictMongoDbScopeStore<
     /// <inheritdoc/>
     public virtual async ValueTask UpdateAsync(TScope scope, CancellationToken cancellationToken)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         // Generate a new concurrency token and attach it
         // to the scope before persisting the changes.

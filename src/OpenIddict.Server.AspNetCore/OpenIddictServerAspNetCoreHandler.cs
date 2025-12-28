@@ -29,7 +29,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictServerAspNetCoreHandler"/> class.
     /// </summary>
-#if SUPPORTS_TIME_PROVIDER
+#if SUPPORTS_AUTHENTICATION_HANDLER_TIME_PROVIDER_ARGUMENT
     public OpenIddictServerAspNetCoreHandler(
         IOpenIddictServerDispatcher dispatcher,
         IOpenIddictServerFactory factory,
@@ -448,10 +448,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
     /// <inheritdoc/>
     public async Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
     {
-        if (user is null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));

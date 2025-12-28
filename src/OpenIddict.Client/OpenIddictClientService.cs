@@ -68,10 +68,7 @@ public class OpenIddictClientService
     public virtual ValueTask<OpenIddictClientRegistration> GetClientRegistrationByIssuerAsync(
         Uri uri, CancellationToken cancellationToken = default)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (cancellationToken.IsCancellationRequested)
         {
@@ -108,10 +105,7 @@ public class OpenIddictClientService
     public virtual ValueTask<OpenIddictClientRegistration> GetClientRegistrationByProviderNameAsync(
         string name, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(name)), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         if (cancellationToken.IsCancellationRequested)
         {
@@ -146,10 +140,7 @@ public class OpenIddictClientService
     public virtual ValueTask<OpenIddictClientRegistration> GetClientRegistrationByIdAsync(
         string identifier, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(identifier)), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         if (cancellationToken.IsCancellationRequested)
         {
@@ -179,10 +170,7 @@ public class OpenIddictClientService
     public virtual async ValueTask<OpenIddictConfiguration> GetServerConfigurationByIssuerAsync(
         Uri uri, CancellationToken cancellationToken = default)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         var registration = await GetClientRegistrationByIssuerAsync(uri, cancellationToken);
         if (registration.ConfigurationManager is null)
@@ -212,10 +200,7 @@ public class OpenIddictClientService
     public virtual async ValueTask<OpenIddictConfiguration> GetServerConfigurationByProviderNameAsync(
         string name, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(name)), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         var registration = await GetClientRegistrationByProviderNameAsync(name, cancellationToken);
         if (registration.ConfigurationManager is null)
@@ -242,10 +227,7 @@ public class OpenIddictClientService
     public virtual async ValueTask<OpenIddictConfiguration> GetServerConfigurationByRegistrationIdAsync(
         string identifier, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.FormatID0366(nameof(identifier)), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var registration = await GetClientRegistrationByIdAsync(identifier, cancellationToken);
         if (registration.ConfigurationManager is null)
@@ -271,10 +253,7 @@ public class OpenIddictClientService
     /// <returns>The interactive authentication result.</returns>
     public async ValueTask<InteractiveAuthenticationResult> AuthenticateInteractivelyAsync(InteractiveAuthenticationRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -344,10 +323,7 @@ public class OpenIddictClientService
     /// <returns>The interactive challenge result.</returns>
     public async ValueTask<InteractiveChallengeResult> ChallengeInteractivelyAsync(InteractiveChallengeRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -430,10 +406,7 @@ public class OpenIddictClientService
     public async ValueTask<ClientCredentialsAuthenticationResult> AuthenticateWithClientCredentialsAsync(
         ClientCredentialsAuthenticationRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -515,10 +488,7 @@ public class OpenIddictClientService
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public async ValueTask<CustomGrantAuthenticationResult> AuthenticateWithCustomGrantAsync(CustomGrantAuthenticationRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         // Prevent well-known/non-custom grant types from being used with this API.
         if (request.GrantType is GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
@@ -608,10 +578,7 @@ public class OpenIddictClientService
     /// <returns>The device authentication result.</returns>
     public async ValueTask<DeviceAuthenticationResult> AuthenticateWithDeviceAsync(DeviceAuthenticationRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         using var source = CancellationTokenSource.CreateLinkedTokenSource(request.CancellationToken);
         source.CancelAfter(request.Timeout);
@@ -725,10 +692,7 @@ public class OpenIddictClientService
     /// <returns>The device challenge result.</returns>
     public async ValueTask<DeviceChallengeResult> ChallengeUsingDeviceAsync(DeviceChallengeRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -808,10 +772,7 @@ public class OpenIddictClientService
     /// <returns>The resource owner password credentials authentication result.</returns>
     public async ValueTask<PasswordAuthenticationResult> AuthenticateWithPasswordAsync(PasswordAuthenticationRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -897,10 +858,7 @@ public class OpenIddictClientService
     public async ValueTask<TokenExchangeAuthenticationResult> AuthenticateWithTokenExchangeAsync(
         TokenExchangeAuthenticationRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -986,10 +944,7 @@ public class OpenIddictClientService
     public async ValueTask<RefreshTokenAuthenticationResult> AuthenticateWithRefreshTokenAsync(
         RefreshTokenAuthenticationRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -1073,10 +1028,7 @@ public class OpenIddictClientService
     /// <returns>The introspection result.</returns>
     public async ValueTask<IntrospectionResult> IntrospectTokenAsync(IntrospectionRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -1136,10 +1088,7 @@ public class OpenIddictClientService
     /// <returns>The revocation result.</returns>
     public async ValueTask<RevocationResult> RevokeTokenAsync(RevocationRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -1201,15 +1150,8 @@ public class OpenIddictClientService
     internal async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(
         OpenIddictClientRegistration registration, Uri uri, CancellationToken cancellationToken = default)
     {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
@@ -1338,10 +1280,7 @@ public class OpenIddictClientService
     /// <returns>The interactive sign-out result.</returns>
     public async ValueTask<InteractiveSignOutResult> SignOutInteractivelyAsync(InteractiveSignOutRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -1407,15 +1346,8 @@ public class OpenIddictClientService
     internal async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(
         OpenIddictClientRegistration registration, Uri uri, CancellationToken cancellationToken = default)
     {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
@@ -1552,25 +1484,10 @@ public class OpenIddictClientService
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
@@ -1710,20 +1627,9 @@ public class OpenIddictClientService
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
@@ -1865,25 +1771,10 @@ public class OpenIddictClientService
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
@@ -2023,20 +1914,9 @@ public class OpenIddictClientService
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
@@ -2176,25 +2056,10 @@ public class OpenIddictClientService
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
     {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
@@ -2334,20 +2199,9 @@ public class OpenIddictClientService
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, HashSet<string> methods, CancellationToken cancellationToken = default)
     {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {

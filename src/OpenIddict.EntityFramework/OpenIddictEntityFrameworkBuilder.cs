@@ -39,10 +39,7 @@ public sealed class OpenIddictEntityFrameworkBuilder
     /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkBuilder Configure(Action<OpenIddictEntityFrameworkOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 

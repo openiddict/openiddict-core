@@ -25,10 +25,7 @@ public static class OpenIddictClientSystemNetHttpExtensions
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public static OpenIddictClientSystemNetHttpBuilder UseSystemNetHttp(this OpenIddictClientBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddHttpClient();
 
@@ -65,15 +62,8 @@ public static class OpenIddictClientSystemNetHttpExtensions
     public static OpenIddictClientBuilder UseSystemNetHttp(
         this OpenIddictClientBuilder builder, Action<OpenIddictClientSystemNetHttpBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseSystemNetHttp());
 

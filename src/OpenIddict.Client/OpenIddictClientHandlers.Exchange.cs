@@ -41,10 +41,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleTokenResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -107,10 +104,7 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleTokenResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // For more information, see https://datatracker.ietf.org/doc/html/rfc6749#section-5.2.
                 if (!string.IsNullOrEmpty(context.Response.Error))

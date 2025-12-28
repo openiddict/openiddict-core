@@ -75,10 +75,7 @@ public class OpenIddictMessage
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictMessage(JsonObject parameters)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentNullException.ThrowIfNull(parameters);
 
         foreach (var parameter in parameters)
         {
@@ -106,10 +103,7 @@ public class OpenIddictMessage
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictMessage(IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentNullException.ThrowIfNull(parameters);
 
         foreach (var parameter in parameters)
         {
@@ -130,10 +124,7 @@ public class OpenIddictMessage
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?>> parameters)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentNullException.ThrowIfNull(parameters);
 
         foreach (var parameter in parameters.GroupBy(parameter => parameter.Key))
         {
@@ -163,10 +154,7 @@ public class OpenIddictMessage
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictMessage(IEnumerable<KeyValuePair<string, ImmutableArray<string?>?>> parameters)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentNullException.ThrowIfNull(parameters);
 
         foreach (var parameter in parameters)
         {
@@ -196,10 +184,7 @@ public class OpenIddictMessage
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictMessage(IEnumerable<KeyValuePair<string, StringValues>> parameters)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentNullException.ThrowIfNull(parameters);
 
         foreach (var parameter in parameters)
         {
@@ -229,10 +214,7 @@ public class OpenIddictMessage
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictMessage(NameValueCollection parameters)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentNullException.ThrowIfNull(parameters);
 
         for (var index = 0; index < parameters.AllKeys.Length; index++)
         {
@@ -286,10 +268,7 @@ public class OpenIddictMessage
     /// <returns>The current instance, which allows chaining calls.</returns>
     public OpenIddictMessage AddParameter(string name, OpenIddictParameter value)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         if (Parameters.ContainsKey(name))
         {
@@ -323,10 +302,7 @@ public class OpenIddictMessage
     /// <returns><see langword="true"/> if the parameter is present, <see langword="false"/> otherwise.</returns>
     public bool HasParameter(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Parameters.ContainsKey(name);
     }
@@ -338,10 +314,7 @@ public class OpenIddictMessage
     /// <returns>The current instance, which allows chaining calls.</returns>
     public OpenIddictMessage RemoveParameter(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         Parameters.Remove(name);
 
@@ -357,10 +330,7 @@ public class OpenIddictMessage
     /// <returns>The current instance, which allows chaining calls.</returns>
     public OpenIddictMessage SetParameter(string name, OpenIddictParameter? value)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         // If the parameter value is null or empty, remove the corresponding entry from the collection.
         if (value is null || OpenIddictParameter.IsNullOrEmpty(value.GetValueOrDefault()))
@@ -384,10 +354,7 @@ public class OpenIddictMessage
     /// <returns><see langword="true"/> if the parameter could be found, <see langword="false"/> otherwise.</returns>
     public bool TryGetParameter(string name, out OpenIddictParameter value)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Parameters.TryGetValue(name, out value);
     }
@@ -445,10 +412,7 @@ public class OpenIddictMessage
     /// <param name="writer">The UTF-8 JSON writer.</param>
     public void WriteTo(Utf8JsonWriter writer)
     {
-        if (writer is null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
         writer.WriteStartObject();
 

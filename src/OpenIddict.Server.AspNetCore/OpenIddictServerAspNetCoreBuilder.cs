@@ -37,10 +37,7 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder Configure(Action<OpenIddictServerAspNetCoreOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -140,10 +137,7 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder SetRealm(string realm)
     {
-        if (string.IsNullOrEmpty(realm))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0107), nameof(realm));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(realm);
 
         return Configure(options => options.Realm = realm);
     }

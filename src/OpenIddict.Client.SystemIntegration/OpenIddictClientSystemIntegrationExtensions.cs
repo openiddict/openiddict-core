@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -26,18 +25,15 @@ public static class OpenIddictClientSystemIntegrationExtensions
     /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/>.</returns>
     public static OpenIddictClientSystemIntegrationBuilder UseSystemIntegration(this OpenIddictClientBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        // Ensure the operating system is supported.
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("android"))     &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios"))         &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Linux)                 &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")) &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)                   &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // Ensure the operating system version is supported.
+        if ((OperatingSystem.IsAndroid()     && !OperatingSystem.IsAndroidVersionAtLeast(21))        ||
+            (OperatingSystem.IsIOS()         && !OperatingSystem.IsIOSVersionAtLeast(12))            ||
+             OperatingSystem.IsLinux()                                                               ||
+            (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) ||
+            (OperatingSystem.IsMacOS()       && !OperatingSystem.IsMacOSVersionAtLeast(10, 15))      ||
+            (OperatingSystem.IsWindows()     && !OperatingSystem.IsWindowsVersionAtLeast(7)))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
@@ -47,34 +43,16 @@ public static class OpenIddictClientSystemIntegrationExtensions
         // is used to prevent the generic/non-OS specific TFM from being used as launching the system
         // browser cannot be done using Process.Start() and requires using OS-specific APIs that are
         // not available on the portable version of the OpenIddict.Client.SystemIntegration package.
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("android")))
+        if (OperatingSystem.IsAndroid())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
         }
 #endif
 
 #if !SUPPORTS_UIKIT
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ios")) ||
-            RuntimeInformation.IsOSPlatform(OSPlatform.Create("maccatalyst")))
+        if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
-        }
-#endif
-
-#if SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
-        // Ensure the operating system version is supported.
-        if ((OperatingSystem.IsAndroid()     && !OperatingSystem.IsAndroidVersionAtLeast(21))        ||
-            (OperatingSystem.IsIOS()         && !OperatingSystem.IsIOSVersionAtLeast(12))            ||
-            (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) ||
-            (OperatingSystem.IsMacOS()       && !OperatingSystem.IsMacOSVersionAtLeast(10, 15))      ||
-            (OperatingSystem.IsWindows()     && !OperatingSystem.IsWindowsVersionAtLeast(7)))
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
-        }
-#else
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsWindowsVersionAtLeast(7))
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 #endif
 
@@ -142,15 +120,8 @@ public static class OpenIddictClientSystemIntegrationExtensions
     public static OpenIddictClientBuilder UseSystemIntegration(
         this OpenIddictClientBuilder builder, Action<OpenIddictClientSystemIntegrationBuilder> configuration)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         configuration(builder.UseSystemIntegration());
 

@@ -673,10 +673,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <returns><see langword="true"/> if the parameter could be found, <see langword="false"/> otherwise.</returns>
     public bool TryGetNamedParameter(string name, out OpenIddictParameter value)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0192), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         var result = _value switch
         {
@@ -709,10 +706,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <returns><see langword="true"/> if the parameter could be found, <see langword="false"/> otherwise.</returns>
     public bool TryGetUnnamedParameter(int index, out OpenIddictParameter value)
     {
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID0193));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
 
         var result = _value switch
         {
@@ -746,10 +740,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="writer">The UTF-8 JSON writer.</param>
     public void WriteTo(Utf8JsonWriter writer)
     {
-        if (writer is null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
         switch (_value)
         {

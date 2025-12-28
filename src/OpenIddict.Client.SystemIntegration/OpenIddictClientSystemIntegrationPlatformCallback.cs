@@ -25,20 +25,14 @@ public sealed class OpenIddictClientSystemIntegrationPlatformCallback
     public OpenIddictClientSystemIntegrationPlatformCallback(
         Uri uri, IReadOnlyDictionary<string, OpenIddictParameter> parameters)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
 
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentNullException.ThrowIfNull(parameters);
 
         CallbackUri = uri;
         Parameters = parameters.ToImmutableDictionary();

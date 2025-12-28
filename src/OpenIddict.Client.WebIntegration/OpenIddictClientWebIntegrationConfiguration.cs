@@ -23,10 +23,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict client Web components.
         options.Handlers.AddRange(OpenIddictClientWebIntegrationHandlers.DefaultHandlers);
@@ -35,10 +32,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.Registrations.ForEach(static registration =>
         {
@@ -54,10 +48,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientSystemNetHttpOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Override the default/user-defined selectors to support attaching TLS client
         // certificates that don't meet the requirements enforced by default by OpenIddict.

@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -146,7 +145,7 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                 // non-Windows operating systems) and doesn't require running the application
                 // as an administrator or adding a namespace reservation/ACL rule on Windows.
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     // On Windows 10 1511 and higher, listening on 127.0.0.1 and ::1 is preferred
                     // to localhost as it allows ignoring requests that are sent by other machines
@@ -154,7 +153,7 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                     // configured to reject such requests) without requiring administrator rights.
                     //
                     // See https://www.rfc-editor.org/rfc/rfc8252#section-8.3 for more information.
-                    if (IsWindowsVersionAtLeast(10, 0, 10586))
+                    if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10586))
                     {
                         if (Socket.OSSupportsIPv4)
                         {

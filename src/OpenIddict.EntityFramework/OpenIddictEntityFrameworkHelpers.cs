@@ -52,10 +52,7 @@ public static class OpenIddictEntityFrameworkHelpers
         where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Configurations
             .Add(new OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
@@ -75,10 +72,7 @@ public static class OpenIddictEntityFrameworkHelpers
     /// <returns>The streamed async enumeration containing the results.</returns>
     internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         return ExecuteAsync(source, cancellationToken);
 
@@ -101,10 +95,7 @@ public static class OpenIddictEntityFrameworkHelpers
     /// <returns>The <see cref="DbContextTransaction"/> if it could be created, <see langword="null"/> otherwise.</returns>
     internal static DbContextTransaction? CreateTransaction(this DbContext context, IsolationLevel level)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         try
         {

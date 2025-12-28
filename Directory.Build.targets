@@ -55,30 +55,24 @@
   <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
     <DefineConstants>$(DefineConstants);SUPPORTS_APPLICATION_CONFIGURATION_INITIALIZATION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_HANDLER_SELECTION_FALLBACK</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_HANDLER_TIME_PROVIDER_ARGUMENT</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_AUTHORIZATION_MIDDLEWARE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_BCL_ASYNC_ENUMERABLE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_BULK_DBSET_OPERATIONS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_CHUNK_LINQ_EXTENSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_DBSET_VALUETASK_FINDASYNC</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ENDPOINT_ROUTING</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ENVIRONMENT_PROCESS_PATH</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_HEXADECIMAL_STRING_CONVERSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_RESILIENCE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_INT32_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_KEY_DERIVATION_METHODS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_PEM_ENCODED_KEY_IMPORT</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_REDIRECTION_ON_SIGN_IN</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_TASK_WAIT_ASYNC</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TEXT_ELEMENT_ENUMERATOR</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_TIME_PROVIDER</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_VALUETASK_COMPLETED_TASK</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_WINFORMS_TASK_DIALOG</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ZLIB_COMPRESSION</DefineConstants>
   </PropertyGroup>
@@ -98,7 +92,6 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_EPHEMERAL_KEY_SETS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_RSA_KEY_CREATION_WITH_SPECIFIED_SIZE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_TOHASHSET_LINQ_EXTENSION</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
@@ -107,8 +100,6 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_BROTLI_COMPRESSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_CURRENT_USER_ONLY_PIPE_OPTION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_STREAM_MEMORY_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TIME_CONSTANT_COMPARISONS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST</DefineConstants>
   </PropertyGroup>
@@ -162,6 +153,19 @@
 
                 ('$(TargetFrameworkIdentifier)' == '.NETFramework') ">
     <DefineConstants>$(DefineConstants);SUPPORTS_WINDOWS_RUNTIME</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7'))) ">
+    <!--
+      Note: Polyfill only generates the OperatingSystem APIs if the System.Runtime.InteropServices.RuntimeInformation
+      package is referenced. Yet, this package isn't necessary on UWP and .NET Framework 4.7+ and is deliberately not
+      referenced by OpenIddict due to its problematic dependencies graph. To ensure the OperatingSystem APIs are
+      still correctly generated, the FeatureRuntimeInformation compilation flag is manually added here.
+    -->
+
+    <DefineConstants>$(DefineConstants);FeatureRuntimeInformation</DefineConstants>
   </PropertyGroup>
 
   <!--
@@ -218,5 +222,22 @@
 
   <Target Name="_CalculateXbfSupport"
           Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' And '$(TargetPlatformIdentifier)' == 'UAP' " />
+
+  <!--
+    Note: Polyfill internally references RequiredMemberAttribute without using "global::", which collides with
+    the type of the same name exposed by the iOS/Mac Catalyst/macOS reference assemblies. To work around that,
+    the RequiredMemberAttribute.cs file imported by Polyfill is excluded from compilation on these platforms.
+  -->
+
+  <Target Name="RemoveRequiredMemberAttribute" BeforeTargets="CoreCompile">
+    <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                          ('$(TargetPlatformIdentifier)'  == 'iOS'         Or
+                           '$(TargetPlatformIdentifier)'  == 'MacCatalyst' Or
+                           '$(TargetPlatformIdentifier)'  == 'macOS' ) ">
+      <Compile Remove="@(Compile)"
+        Condition=" %(Compile.NuGetPackageId) == 'Polyfill' And
+                   '%(Compile.Filename)%(Compile.Extension)' == 'RequiredMemberAttribute.cs' " />
+    </ItemGroup>
+  </Target>
 
 </Project>

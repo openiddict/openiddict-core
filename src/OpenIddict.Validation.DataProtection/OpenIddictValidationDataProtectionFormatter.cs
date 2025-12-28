@@ -16,10 +16,7 @@ public sealed class OpenIddictValidationDataProtectionFormatter : IOpenIddictVal
 {
     public ClaimsPrincipal ReadToken(BinaryReader reader)
     {
-        if (reader is null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         var (principal, properties) = Read(reader);
 

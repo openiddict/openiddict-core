@@ -36,10 +36,7 @@ public sealed class OpenIddictValidationAspNetCoreBuilder
     /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictValidationAspNetCoreBuilder Configure(Action<OpenIddictValidationAspNetCoreOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
@@ -77,10 +74,7 @@ public sealed class OpenIddictValidationAspNetCoreBuilder
     /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictValidationAspNetCoreBuilder SetRealm(string realm)
     {
-        if (string.IsNullOrEmpty(realm))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0107), nameof(realm));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(realm);
 
         return Configure(options => options.Realm = realm);
     }

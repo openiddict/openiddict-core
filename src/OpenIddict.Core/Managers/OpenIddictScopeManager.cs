@@ -89,10 +89,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual ValueTask<long> CountAsync<TResult>(
         Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return Store.CountAsync(query, cancellationToken);
     }
@@ -107,10 +104,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual async ValueTask CreateAsync(TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         var results = await GetValidationResultsAsync(scope, cancellationToken);
         if (results.Any(result => result != ValidationResult.Success))
@@ -159,10 +153,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async ValueTask<TScope> CreateAsync(
         OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         var scope = await Store.InstantiateAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0223));
@@ -183,10 +174,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual async ValueTask DeleteAsync(TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         if (!Options.CurrentValue.DisableEntityCaching)
         {
@@ -207,10 +195,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual async ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         var scope = Options.CurrentValue.DisableEntityCaching ?
             await Store.FindByIdAsync(identifier, cancellationToken) :
@@ -244,10 +229,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual async ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         var scope = Options.CurrentValue.DisableEntityCaching ?
             await Store.FindByNameAsync(name, cancellationToken) :
@@ -322,10 +304,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual IAsyncEnumerable<TScope> FindByResourceAsync(
         string resource, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(resource))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(resource);
 
         var scopes = Options.CurrentValue.DisableEntityCaching ?
             Store.FindByResourceAsync(resource, cancellationToken) :
@@ -368,10 +347,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual ValueTask<TResult?> GetAsync<TResult>(
         Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return GetAsync(static (scopes, query) => query(scopes), query, cancellationToken);
     }
@@ -392,10 +368,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken = default)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return Store.GetAsync(query, state, cancellationToken);
     }
@@ -411,10 +384,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual ValueTask<string?> GetDescriptionAsync(TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return Store.GetDescriptionAsync(scope, cancellationToken);
     }
@@ -431,10 +401,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(
         TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
         if (descriptions is not { Count: > 0 })
@@ -456,10 +423,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return Store.GetDisplayNameAsync(scope, cancellationToken);
     }
@@ -476,10 +440,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(
         TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
         if (names is not { Count: > 0 })
@@ -501,10 +462,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual ValueTask<string?> GetIdAsync(TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return Store.GetIdAsync(scope, cancellationToken);
     }
@@ -538,15 +496,8 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async ValueTask<string?> GetLocalizedDisplayNameAsync(
         TScope scope, CultureInfo culture, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
-
-        if (culture is null)
-        {
-            throw new ArgumentNullException(nameof(culture));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentNullException.ThrowIfNull(culture);
 
         var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
         if (names is not { Count: > 0 })
@@ -598,15 +549,8 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async ValueTask<string?> GetLocalizedDescriptionAsync(
         TScope scope, CultureInfo culture, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
-
-        if (culture is null)
-        {
-            throw new ArgumentNullException(nameof(culture));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentNullException.ThrowIfNull(culture);
 
         var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
         if (descriptions is not { Count: > 0 })
@@ -640,10 +584,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual ValueTask<string?> GetNameAsync(TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return Store.GetNameAsync(scope, cancellationToken);
     }
@@ -660,10 +601,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(
         TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return Store.GetPropertiesAsync(scope, cancellationToken);
     }
@@ -680,10 +618,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(
         TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return Store.GetResourcesAsync(scope, cancellationToken);
     }
@@ -709,10 +644,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
         Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return ListAsync(static (scopes, query) => query(scopes), query, cancellationToken);
     }
@@ -730,10 +662,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken = default)
     {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         return Store.ListAsync(query, state, cancellationToken);
     }
@@ -773,15 +702,8 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async ValueTask PopulateAsync(TScope scope,
         OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
-
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         await Store.SetDescriptionAsync(scope, descriptor.Description, cancellationToken);
         await Store.SetDescriptionsAsync(scope, descriptor.Descriptions.ToImmutableDictionary(), cancellationToken);
@@ -805,15 +727,8 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         OpenIddictScopeDescriptor descriptor,
         TScope scope, CancellationToken cancellationToken = default)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
+        ArgumentNullException.ThrowIfNull(scope);
 
         descriptor.Description = await Store.GetDescriptionAsync(scope, cancellationToken);
         descriptor.DisplayName = await Store.GetDisplayNameAsync(scope, cancellationToken);
@@ -850,10 +765,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// </returns>
     public virtual async ValueTask UpdateAsync(TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         var results = await GetValidationResultsAsync(scope, cancellationToken);
         if (results.Any(result => result != ValidationResult.Success))
@@ -908,15 +820,8 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async ValueTask UpdateAsync(TScope scope,
         OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
-
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         await PopulateAsync(scope, descriptor, cancellationToken);
         await UpdateAsync(scope, cancellationToken);
@@ -930,10 +835,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     /// <returns>The validation error encountered when validating the scope.</returns>
     public virtual IAsyncEnumerable<ValidationResult> ValidateAsync(TScope scope, CancellationToken cancellationToken = default)
     {
-        if (scope is null)
-        {
-            throw new ArgumentNullException(nameof(scope));
-        }
+        ArgumentNullException.ThrowIfNull(scope);
 
         return ExecuteAsync(cancellationToken);
 

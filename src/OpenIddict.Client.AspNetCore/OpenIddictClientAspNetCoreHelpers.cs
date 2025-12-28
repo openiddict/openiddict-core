@@ -21,10 +21,7 @@ public static class OpenIddictClientAspNetCoreHelpers
     /// <returns>The <see cref="HttpRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static HttpRequest? GetHttpRequest(this OpenIddictClientTransaction transaction)
     {
-        if (transaction is null)
-        {
-            throw new ArgumentNullException(nameof(transaction));
-        }
+        ArgumentNullException.ThrowIfNull(transaction);
 
         if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
         {
@@ -46,10 +43,7 @@ public static class OpenIddictClientAspNetCoreHelpers
     /// <returns>The <see cref="OpenIddictClientEndpointType"/>.</returns>
     public static OpenIddictClientEndpointType GetOpenIddictClientEndpointType(this HttpContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction?.EndpointType ?? default;
     }
@@ -61,10 +55,7 @@ public static class OpenIddictClientAspNetCoreHelpers
     /// <returns>The <see cref="OpenIddictRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictRequest? GetOpenIddictClientRequest(this HttpContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction?.Request;
     }
@@ -76,10 +67,7 @@ public static class OpenIddictClientAspNetCoreHelpers
     /// <returns>The <see cref="OpenIddictResponse"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictResponse? GetOpenIddictClientResponse(this HttpContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction?.Response;
     }

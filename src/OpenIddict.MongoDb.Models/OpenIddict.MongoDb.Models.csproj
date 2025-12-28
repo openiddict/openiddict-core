@@ -7,7 +7,6 @@
       $(NetCoreTargetFrameworks);
       netstandard2.1
     </TargetFrameworks>
-    <DisablePolySharp>true</DisablePolySharp>
     <IncludeInternalExtensions>false</IncludeInternalExtensions>
   </PropertyGroup>
 

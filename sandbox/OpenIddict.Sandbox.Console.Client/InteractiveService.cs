@@ -436,7 +436,7 @@ public class InteractiveService : BackgroundService
                             select registration)
                 .UseConverter(registration => registration.ProviderDisplayName!)).ProviderName!;
 
-            return WaitAsync(Task.Run(PromptAsync, cancellationToken), cancellationToken);
+            return Task.Run(PromptAsync, cancellationToken).WaitAsync(cancellationToken);
         }
 
         Task<(string? GrantType, string? ResponseType)> GetSelectedFlowAsync(
@@ -557,7 +557,7 @@ public class InteractiveService : BackgroundService
                     .UseConverter(choice => choice.DisplayName)).Item1;
             }
 
-            return WaitAsync(Task.Run(() => Prompt(registration, configuration), cancellationToken), cancellationToken);
+            return Task.Run(() => Prompt(registration, configuration), cancellationToken).WaitAsync(cancellationToken);
         }
 
         Task<string> GetSelectedGrantTypeAsync(
@@ -608,7 +608,7 @@ public class InteractiveService : BackgroundService
                     .UseConverter(choice => choice.DisplayName)).GrantType;
             }
 
-            return WaitAsync(Task.Run(() => Prompt(registration, configuration), cancellationToken), cancellationToken);
+            return Task.Run(() => Prompt(registration, configuration), cancellationToken).WaitAsync(cancellationToken);
         }
 
         Task<bool> AuthenticateUserInteractivelyAsync(
@@ -632,7 +632,7 @@ public class InteractiveService : BackgroundService
                      registration.GrantTypes.Any(static type => type is not (
                     GrantTypes.AuthorizationCode or GrantTypes.Implicit or GrantTypes.RefreshToken))))
                 {
-                    return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+                    return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
                 }
 
                 return Task.FromResult(true);
@@ -647,7 +647,7 @@ public class InteractiveService : BackgroundService
                      registration.GrantTypes.Any(static type => type is not (
                     GrantTypes.AuthorizationCode or GrantTypes.Implicit or GrantTypes.RefreshToken))))
                 {
-                    return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+                    return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
                 }
 
                 return Task.FromResult(true);
@@ -664,7 +664,7 @@ public class InteractiveService : BackgroundService
                 IsSecret = false
             });
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
         Task<string> GetPasswordAsync(CancellationToken cancellationToken)
@@ -675,7 +675,7 @@ public class InteractiveService : BackgroundService
                 IsSecret = true
             });
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
         static Task<bool> RefreshTokenAsync(CancellationToken cancellationToken)
@@ -688,7 +688,7 @@ public class InteractiveService : BackgroundService
                 ShowDefaultValue = true
             });
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
         Task<string?> GetRequestedTokenTypeAsync(CancellationToken cancellationToken)
@@ -704,7 +704,7 @@ public class InteractiveService : BackgroundService
                 ])
                 .UseConverter(choice => choice.DisplayName)).TokenType;
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
         Task<(string TokenType, string Token)> GetSubjectTokenAsync(CancellationToken cancellationToken)
@@ -730,7 +730,7 @@ public class InteractiveService : BackgroundService
                 return (type, token);
             }
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
         Task<(string? TokenType, string? Token)> GetActorTokenAsync(CancellationToken cancellationToken)
@@ -760,7 +760,7 @@ public class InteractiveService : BackgroundService
                 }));
             }
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
         static Task<bool> IntrospectAccessTokenAsync(CancellationToken cancellationToken)
@@ -773,7 +773,7 @@ public class InteractiveService : BackgroundService
                 ShowDefaultValue = true
             });
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
         static Task<bool> LogOutAsync(CancellationToken cancellationToken)
@@ -785,7 +785,7 @@ public class InteractiveService : BackgroundService
                 ShowDefaultValue = true
             });
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
         static Task<bool> RevokeAccessTokenAsync(CancellationToken cancellationToken)
@@ -798,26 +798,7 @@ public class InteractiveService : BackgroundService
                 ShowDefaultValue = true
             });
 
-            return WaitAsync(Task.Run(Prompt, cancellationToken), cancellationToken);
-        }
-
-        static async Task<T> WaitAsync<T>(Task<T> task, CancellationToken cancellationToken)
-        {
-#if SUPPORTS_TASK_WAIT_ASYNC
-            return await task.WaitAsync(cancellationToken);
-#else
-            var source = new TaskCompletionSource<bool>(TaskCreationOptions.None);
-
-            using (cancellationToken.Register(static state => ((TaskCompletionSource<bool>) state!).SetResult(true), source))
-            {
-                if (await Task.WhenAny(task, source.Task) == source.Task)
-                {
-                    throw new OperationCanceledException(cancellationToken);
-                }
-
-                return await task;
-            }
-#endif
+            return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
     }
 }

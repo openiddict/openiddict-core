@@ -86,15 +86,8 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
     /// <returns>The OpenID Connect response returned by the server.</returns>
     public Task<OpenIddictResponse> GetAsync(string uri, OpenIddictRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("The URI cannot be null or empty.", nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrEmpty(uri);
 
         return GetAsync(new Uri(uri, UriKind.RelativeOrAbsolute), request);
     }
@@ -118,15 +111,8 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
     /// <returns>The OpenID Connect response returned by the server.</returns>
     public Task<OpenIddictResponse> PostAsync(string uri, OpenIddictRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("The URI cannot be null or empty.", nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrEmpty(uri);
 
         return PostAsync(new Uri(uri, UriKind.RelativeOrAbsolute), request);
     }
@@ -151,20 +137,9 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
     /// <returns>The OpenID Connect response returned by the server.</returns>
     public Task<OpenIddictResponse> SendAsync(string method, string uri, OpenIddictRequest request)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (string.IsNullOrEmpty(method))
-        {
-            throw new ArgumentException("The HTTP method cannot be null or empty.", nameof(method));
-        }
-
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("The URI cannot be null or empty.", nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrEmpty(method);
+        ArgumentException.ThrowIfNullOrEmpty(uri);
 
         return SendAsync(new HttpMethod(method), uri, request);
     }
@@ -179,20 +154,9 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
     /// <returns>The OpenID Connect response returned by the server.</returns>
     public Task<OpenIddictResponse> SendAsync(HttpMethod method, string uri, OpenIddictRequest request)
     {
-        if (method is null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("The URI cannot be null or empty.", nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrEmpty(uri);
 
         return SendAsync(method, new Uri(uri, UriKind.RelativeOrAbsolute), request);
     }
@@ -207,26 +171,9 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
     /// <returns>The OpenID Connect response returned by the server.</returns>
     public virtual async Task<OpenIddictResponse> SendAsync(HttpMethod method, Uri uri, OpenIddictRequest request)
     {
-        if (method is null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (HttpClient.BaseAddress is null && !uri.IsAbsoluteUri)
-        {
-            throw new ArgumentException("The URI cannot be a relative URI when no base URI " +
-                                        "is associated with the HTTP client.", nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(request);
 
         using var message = CreateRequestMessage(request, method, uri);
         using var response = await HttpClient.SendAsync(message);

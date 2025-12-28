@@ -318,10 +318,9 @@ public class OpenIddictCoreBuilderTests
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.SetEntityCacheLimit(limit));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetEntityCacheLimit(limit));
 
         Assert.Equal("limit", exception.ParamName);
-        Assert.StartsWith("The cache size cannot be less than 10.", exception.Message);
     }
 
     [Fact]

@@ -95,10 +95,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessRequestContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -149,10 +146,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessRequestContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -194,10 +188,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessRequestContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -239,10 +230,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -319,10 +307,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             if (context.GrantType is GrantTypes.DeviceCode)
             {
@@ -353,10 +338,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             if (!string.IsNullOrEmpty(context.Nonce))
             {
@@ -394,10 +376,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -511,10 +490,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             if (context.GrantType is GrantTypes.DeviceCode)
             {
@@ -546,10 +522,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -656,10 +629,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -695,10 +665,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // If an explicit response type was specified, don't overwrite it.
             if (!string.IsNullOrEmpty(context.ResponseMode))
@@ -795,10 +762,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Note: using a correlation cookie serves as an injection/antiforgery protection as the request
             // will always be rejected if a cookie corresponding to the request forgery protection claim
@@ -881,10 +845,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessSignOutContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -981,10 +942,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessSignOutContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -1027,10 +985,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessSignOutContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // Note: using a correlation cookie serves as an injection/antiforgery protection as the request
             // will always be rejected if a cookie corresponding to the request forgery protection claim
@@ -1115,10 +1070,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.SkipRequest();
 
@@ -1146,10 +1098,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -1189,10 +1138,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -1233,10 +1179,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
@@ -1273,10 +1216,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -1329,10 +1269,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -1403,10 +1340,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             context.Logger.LogInformation(6145, SR.GetResourceString(SR.ID6145));
             context.HandleRequest();

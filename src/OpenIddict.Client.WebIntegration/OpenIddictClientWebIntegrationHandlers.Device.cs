@@ -41,10 +41,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ExtractDeviceAuthorizationResponseContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 if (context.Response is null)
                 {
