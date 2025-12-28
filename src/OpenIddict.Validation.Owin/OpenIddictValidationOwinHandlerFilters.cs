@@ -28,10 +28,7 @@ public static class OpenIddictValidationOwinHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!_options.CurrentValue.DisableAccessTokenExtractionFromAuthorizationHeader);
         }
@@ -51,10 +48,7 @@ public static class OpenIddictValidationOwinHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!_options.CurrentValue.DisableAccessTokenExtractionFromBodyForm);
         }
@@ -74,10 +68,7 @@ public static class OpenIddictValidationOwinHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(!_options.CurrentValue.DisableAccessTokenExtractionFromQueryString);
         }
@@ -91,10 +82,7 @@ public static class OpenIddictValidationOwinHandlerFilters
         /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             return new(context.Transaction.GetOwinRequest() is not null);
         }

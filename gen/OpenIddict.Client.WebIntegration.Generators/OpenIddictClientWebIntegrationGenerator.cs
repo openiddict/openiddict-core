@@ -79,10 +79,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     {{~ end ~}}
     public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure<OpenIddictClientOptions>(options =>
         {
@@ -132,10 +129,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public {{ provider.name }} AddClientAuthenticationMethods(params string[] methods)
         {
-            if (methods is null)
-            {
-                throw new ArgumentNullException(nameof(methods));
-            }
+            ArgumentNullException.ThrowIfNull(methods);
 
             return Set(registration => registration.ClientAuthenticationMethods.UnionWith(methods));
         }
@@ -149,10 +143,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public {{ provider.name }} AddCodeChallengeMethods(params string[] methods)
         {
-            if (methods is null)
-            {
-                throw new ArgumentNullException(nameof(methods));
-            }
+            ArgumentNullException.ThrowIfNull(methods);
 
             return Set(registration => registration.CodeChallengeMethods.UnionWith(methods));
         }
@@ -166,10 +157,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public {{ provider.name }} AddGrantTypes(params string[] types)
         {
-            if (types is null)
-            {
-                throw new ArgumentNullException(nameof(types));
-            }
+            ArgumentNullException.ThrowIfNull(types);
 
             return Set(registration => registration.GrantTypes.UnionWith(types));
         }
@@ -183,10 +171,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public {{ provider.name }} AddResponseModes(params string[] modes)
         {
-            if (modes is null)
-            {
-                throw new ArgumentNullException(nameof(modes));
-            }
+            ArgumentNullException.ThrowIfNull(modes);
 
             return Set(registration => registration.ResponseModes.UnionWith(modes));
         }
@@ -200,10 +185,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public {{ provider.name }} AddResponseTypes(params string[] types)
         {
-            if (types is null)
-            {
-                throw new ArgumentNullException(nameof(types));
-            }
+            ArgumentNullException.ThrowIfNull(types);
 
             return Set(registration => registration.ResponseTypes.UnionWith(types));
         }
@@ -215,10 +197,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} AddScopes(params string[] scopes)
         {
-            if (scopes is null)
-            {
-                throw new ArgumentNullException(nameof(scopes));
-            }
+            ArgumentNullException.ThrowIfNull(scopes);
 
             return Set(registration => registration.Scopes.UnionWith(scopes));
         }

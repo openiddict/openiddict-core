@@ -18,10 +18,7 @@ public sealed class OpenIddictValidationOwinConfiguration : IConfigureOptions<Op
     /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict OWIN validation components.
         options.Handlers.AddRange(OpenIddictValidationOwinHandlers.DefaultHandlers);

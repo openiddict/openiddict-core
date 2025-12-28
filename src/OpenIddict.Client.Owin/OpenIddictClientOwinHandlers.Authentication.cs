@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using Microsoft.Extensions.Options;
 using Owin;
 
 namespace OpenIddict.Client.Owin;
@@ -61,10 +62,7 @@ public static partial class OpenIddictClientOwinHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+                ArgumentNullException.ThrowIfNull(context);
 
                 // This handler only applies to OWIN requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.

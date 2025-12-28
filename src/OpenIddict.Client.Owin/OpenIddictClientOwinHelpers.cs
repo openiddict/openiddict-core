@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using Microsoft.Extensions.Options;
 using OpenIddict.Client;
 using OpenIddict.Client.Owin;
 
@@ -23,10 +24,7 @@ public static class OpenIddictClientOwinHelpers
     /// <returns>The <see cref="IAppBuilder"/> instance.</returns>
     public static IAppBuilder UseOpenIddictClient(this IAppBuilder app)
     {
-        if (app is null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.Use<OpenIddictClientOwinMiddlewareFactory>();
     }
@@ -38,10 +36,7 @@ public static class OpenIddictClientOwinHelpers
     /// <returns>The <see cref="IOwinRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static IOwinRequest? GetOwinRequest(this OpenIddictClientTransaction transaction)
     {
-        if (transaction is null)
-        {
-            throw new ArgumentNullException(nameof(transaction));
-        }
+        ArgumentNullException.ThrowIfNull(transaction);
 
         if (!transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property))
         {
@@ -63,10 +58,7 @@ public static class OpenIddictClientOwinHelpers
     /// <returns>The <see cref="OpenIddictClientEndpointType"/>.</returns>
     public static OpenIddictClientEndpointType GetOpenIddictClientEndpointType(this IOwinContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName)?.EndpointType ?? default;
     }
@@ -78,10 +70,7 @@ public static class OpenIddictClientOwinHelpers
     /// <returns>The <see cref="OpenIddictRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictRequest? GetOpenIddictClientRequest(this IOwinContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName)?.Request;
     }
@@ -93,10 +82,7 @@ public static class OpenIddictClientOwinHelpers
     /// <returns>The <see cref="OpenIddictResponse"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictResponse? GetOpenIddictClientResponse(this IOwinContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName)?.Response;
     }

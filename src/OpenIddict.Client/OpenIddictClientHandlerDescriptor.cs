@@ -142,7 +142,7 @@ public sealed class OpenIddictClientHandlerDescriptor
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> SetType(OpenIddictClientHandlerType type)
         {
-            if (!Enum.IsDefined(typeof(OpenIddictClientHandlerType), type))
+            if (!Enum.IsDefined(type))
             {
                 throw new InvalidEnumArgumentException(nameof(type), (int) type, typeof(OpenIddictClientHandlerType));
             }

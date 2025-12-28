@@ -19,10 +19,7 @@ public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenId
     /// <inheritdoc/>
     public void Configure(OpenIddictServerOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict OWIN server components.
         options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
@@ -34,10 +31,7 @@ public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenId
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerOwinOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.AuthenticationMode is AuthenticationMode.Active)
         {

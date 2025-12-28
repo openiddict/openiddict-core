@@ -142,7 +142,7 @@ public sealed class OpenIddictValidationHandlerDescriptor
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> SetType(OpenIddictValidationHandlerType type)
         {
-            if (!Enum.IsDefined(typeof(OpenIddictValidationHandlerType), type))
+            if (!Enum.IsDefined(type))
             {
                 throw new InvalidEnumArgumentException(nameof(type), (int) type, typeof(OpenIddictValidationHandlerType));
             }

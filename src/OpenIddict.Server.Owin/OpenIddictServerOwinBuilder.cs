@@ -37,10 +37,7 @@ public sealed class OpenIddictServerOwinBuilder
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder Configure(Action<OpenIddictServerOwinOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 

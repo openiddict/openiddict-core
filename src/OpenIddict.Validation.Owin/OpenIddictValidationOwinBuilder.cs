@@ -36,10 +36,7 @@ public sealed class OpenIddictValidationOwinBuilder
     /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/> instance.</returns>
     public OpenIddictValidationOwinBuilder Configure(Action<OpenIddictValidationOwinOptions> configuration)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         Services.Configure(configuration);
 
