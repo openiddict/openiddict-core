@@ -21,7 +21,6 @@
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
-    <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <PolyUseEmbeddedAttribute>true</PolyUseEmbeddedAttribute>
     <PolyArgumentExceptions>true</PolyArgumentExceptions>
