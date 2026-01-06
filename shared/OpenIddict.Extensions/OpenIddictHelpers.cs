@@ -527,33 +527,14 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] ComputeSha256Hash(byte[] data)
     {
-        var algorithm = GetAlgorithmFromConfig() switch
+        using var algorithm = GetAlgorithmFromConfig() switch
         {
             SHA256 result => result,
             null => null,
             var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
         };
 
-        // If no custom algorithm was registered, use either the static/one-shot HashData() API
-        // on platforms that support it or create a default instance provided by the BCL.
-        if (algorithm is null)
-        {
-#if SUPPORTS_ONE_SHOT_HASHING_METHODS
-            return SHA256.HashData(data);
-#else
-            algorithm = SHA256.Create();
-#endif
-        }
-
-        try
-        {
-            return algorithm.ComputeHash(data);
-        }
-
-        finally
-        {
-            algorithm.Dispose();
-        }
+        return algorithm is not null ? algorithm.ComputeHash(data) : SHA256.HashData(data);
 
         [UnconditionalSuppressMessage("Trimming", "IL2026",
             Justification = "The default implementation is always used when no custom algorithm was registered.")]
@@ -570,33 +551,14 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] ComputeSha384Hash(byte[] data)
     {
-        var algorithm = GetAlgorithmFromConfig() switch
+        using var algorithm = GetAlgorithmFromConfig() switch
         {
             SHA384 result => result,
             null => null,
             var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
         };
 
-        // If no custom algorithm was registered, use either the static/one-shot HashData() API
-        // on platforms that support it or create a default instance provided by the BCL.
-        if (algorithm is null)
-        {
-#if SUPPORTS_ONE_SHOT_HASHING_METHODS
-            return SHA384.HashData(data);
-#else
-            algorithm = SHA384.Create();
-#endif
-        }
-
-        try
-        {
-            return algorithm.ComputeHash(data);
-        }
-
-        finally
-        {
-            algorithm.Dispose();
-        }
+        return algorithm is not null ? algorithm.ComputeHash(data) : SHA384.HashData(data);
 
         [UnconditionalSuppressMessage("Trimming", "IL2026",
             Justification = "The default implementation is always used when no custom algorithm was registered.")]
@@ -613,33 +575,14 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] ComputeSha512Hash(byte[] data)
     {
-        var algorithm = GetAlgorithmFromConfig() switch
+        using var algorithm = GetAlgorithmFromConfig() switch
         {
             SHA512 result => result,
             null => null,
             var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
         };
 
-        // If no custom algorithm was registered, use either the static/one-shot HashData() API
-        // on platforms that support it or create a default instance provided by the BCL.
-        if (algorithm is null)
-        {
-#if SUPPORTS_ONE_SHOT_HASHING_METHODS
-            return SHA512.HashData(data);
-#else
-            algorithm = SHA512.Create();
-#endif
-        }
-
-        try
-        {
-            return algorithm.ComputeHash(data);
-        }
-
-        finally
-        {
-            algorithm.Dispose();
-        }
+        return algorithm is not null ? algorithm.ComputeHash(data) : SHA512.HashData(data);
 
         [UnconditionalSuppressMessage("Trimming", "IL2026",
             Justification = "The default implementation is always used when no custom algorithm was registered.")]
@@ -663,17 +606,15 @@ internal static class OpenIddictHelpers
             var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
         };
 
-        // If no custom random number generator was registered, use either the static GetBytes() or
-        // Fill() APIs on platforms that support them or create a default instance provided by the BCL.
-        if (algorithm is null)
+        if (algorithm is not null)
         {
-            return RandomNumberGenerator.GetBytes(size / 8);
+            var array = new byte[size / 8];
+            algorithm.GetBytes(array);
+
+            return array;
         }
 
-        var array = new byte[size / 8];
-        algorithm.GetBytes(array);
-
-        return array;
+        return RandomNumberGenerator.GetBytes(size / 8);
 
         [UnconditionalSuppressMessage("Trimming", "IL2026",
             Justification = "The default implementation is always used when no custom algorithm was registered.")]

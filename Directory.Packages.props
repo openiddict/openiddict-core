@@ -52,7 +52,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"           />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"           />
   </ItemGroup>
 
   <!--
@@ -109,7 +109,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"           />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"           />
   </ItemGroup>
 
   <!--
@@ -201,7 +201,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"           />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"           />
   </ItemGroup>
 
   <!--
@@ -248,7 +248,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"   />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"   />
   </ItemGroup>
 
   <!--
@@ -294,7 +294,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"    />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"    />
   </ItemGroup>
 
   <!--
@@ -353,7 +353,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"  />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"  />
   </ItemGroup>
 
   <!--
@@ -404,7 +404,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"  />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"  />
   </ItemGroup>
 
   <!--
@@ -445,7 +445,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"  />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"  />
   </ItemGroup>
 
   <!--
@@ -467,7 +467,7 @@
       Note: OpenIddict uses Polyfill to dynamically generate pstring?[]olyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.5.0"  />
+    <GlobalPackageReference Include="Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="9.6.0"  />
   </ItemGroup>
 
 </Project>
