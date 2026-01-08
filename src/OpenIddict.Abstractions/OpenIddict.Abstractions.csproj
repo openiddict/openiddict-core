@@ -38,6 +38,11 @@
     <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
+  <ItemGroup
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '4.7.1')) ">
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
+  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" GenerateResourcesCodeAsConstants="true" />
   </ItemGroup>
