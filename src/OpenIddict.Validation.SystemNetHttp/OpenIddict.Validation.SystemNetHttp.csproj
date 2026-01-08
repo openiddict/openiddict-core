@@ -6,7 +6,6 @@
       $(NetCoreTargetFrameworks);
       $(NetStandardTargetFrameworks)
     </TargetFrameworks>
-    <DefineConstants>$(DefineConstants);FeatureRuntimeInformation</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
