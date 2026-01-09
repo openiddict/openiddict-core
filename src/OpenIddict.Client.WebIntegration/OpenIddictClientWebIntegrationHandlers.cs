@@ -626,7 +626,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             ArgumentNullException.ThrowIfNull(context);
 
             // osu! requires at least one scope to be set for client credentials grant, as tokens without
-            // scopes are not valid. If no scope is explicitly specified, use the default value `public`.
+            // scopes are not valid. If no scope is explicitly specified, use the default value "public".
             if (context.GrantType is GrantTypes.ClientCredentials &&
                 context.Registration.ProviderType is ProviderTypes.Osu &&
                 context.Scopes.Count is 0)
