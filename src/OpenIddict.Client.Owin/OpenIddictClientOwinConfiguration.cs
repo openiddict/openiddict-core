@@ -30,10 +30,7 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Register the built-in event handlers used by the OpenIddict OWIN Client components.
         options.Handlers.AddRange(OpenIddictClientOwinHandlers.DefaultHandlers);
@@ -42,10 +39,7 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOwinOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // If no cookie manager was explicitly configured but the OWIN application builder was registered as a service
         // (which is required when using Autofac with the built-in Katana authentication middleware, as they require

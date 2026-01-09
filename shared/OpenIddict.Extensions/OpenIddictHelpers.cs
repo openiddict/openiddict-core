@@ -656,7 +656,7 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static byte[] CreateRandomArray(int size)
     {
-        using var algorithm = GetAlgorithmFromConfig() switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             RandomNumberGenerator result => result,
             null => null,
@@ -665,13 +665,35 @@ internal static class OpenIddictHelpers
 
         // If no custom random number generator was registered, use either the static GetBytes() or
         // Fill() APIs on platforms that support them or create a default instance provided by the BCL.
+#if SUPPORTS_ONE_SHOT_RANDOM_NUMBER_GENERATOR_METHODS
         if (algorithm is null)
         {
-            return RandomNumberGenerator.GetBytes(size / 8);
+            var array = new byte[size / 8];
+            algorithm.GetBytes(array);
+
+            return array;
+        }
+#endif
+        var array = new byte[size / 8];
+
+#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
+        if (algorithm is null)
+        {
+            RandomNumberGenerator.Fill(array);
+            return array;
+        }
+#else
+        algorithm ??= RandomNumberGenerator.Create();
+#endif
+        try
+        {
+            algorithm.GetBytes(array);
         }
 
-        var array = new byte[size / 8];
-        algorithm.GetBytes(array);
+        finally
+        {
+            algorithm.Dispose();
+        }
 
         return array;
 
@@ -692,30 +714,40 @@ internal static class OpenIddictHelpers
     /// </exception>
     public static string CreateRandomString(ReadOnlySpan<string> charset, int count)
     {
-        using var algorithm = GetAlgorithmFromConfig() switch
+        var algorithm = GetAlgorithmFromConfig() switch
         {
             RandomNumberGenerator result => result,
             null => null,
             var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
         };
 
-        var builder = new StringBuilder();
-
-        for (var index = 0; index < count; index++)
+        try
         {
-            // Pick a character in the specified charset by generating a random index.
-            builder.Append(charset[index: algorithm switch
-            {
-                // If no custom random number generator was registered, use the static GetInt32() API.
-                null => RandomNumberGenerator.GetInt32(0, charset.Length),
+            var builder = new StringBuilder();
 
-                // Otherwise, create a default implementation if necessary
-                // and use the local function that achieves the same result.
-                _ => GetInt32(algorithm, 0..charset.Length)
-            }]);
+            for (var index = 0; index < count; index++)
+            {
+                // Pick a character in the specified charset by generating a random index.
+                builder.Append(charset[index: algorithm switch
+                {
+#if SUPPORTS_INT32_RANDOM_NUMBER_GENERATOR_METHODS
+                    // If no custom random number generator was registered, use
+                    // the static GetInt32() API on platforms that support it.
+                    null => RandomNumberGenerator.GetInt32(0, charset.Length),
+#endif
+                    // Otherwise, create a default implementation if necessary
+                    // and use the local function that achieves the same result.
+                    _ => GetInt32(algorithm ??= RandomNumberGenerator.Create(), 0..charset.Length)
+                }]);
+            }
+
+            return builder.ToString();
         }
 
-        return builder.ToString();
+        finally
+        {
+            algorithm?.Dispose();
+        }
 
         static int GetInt32(RandomNumberGenerator algorithm, Range range)
         {

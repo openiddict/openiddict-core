@@ -37,10 +37,7 @@ public sealed class OpenIddictClientOwinMiddlewareFactory : OwinMiddleware
     /// </returns>
     public override Task Invoke(IOwinContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var provider = context.Get<IServiceProvider>(typeof(IServiceProvider).FullName) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0316));

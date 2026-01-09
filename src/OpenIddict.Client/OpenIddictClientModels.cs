@@ -26,7 +26,7 @@ public static class OpenIddictClientModels
         public CancellationToken CancellationToken { get; init; }
 
         /// <summary>
-        /// Gets or sets the nonce that was returned during the challenge operation.
+        /// Gets or sets the nonce that was returned during the challenge or sign-out operation.
         /// </summary>
         public required string Nonce { get; init; }
 

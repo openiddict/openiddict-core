@@ -58,6 +58,8 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Op
     /// <inheritdoc/>
     public override async Task Invoke(IOwinContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         // Retrieve the existing authentication delegate.
         var function = context.Get<AuthenticateDelegate?>("security.Authenticate");
 

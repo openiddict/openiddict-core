@@ -849,7 +849,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2044));
             }
 
-            else if (name!.Contains(Separators.Space[0]))
+            else if (name.Contains(Separators.Space[0]))
             {
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2045));
             }

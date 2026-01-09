@@ -62,12 +62,9 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
         ArgumentNullException.ThrowIfNull(options);
 
         // Ensure the operating system version is supported.
-        if ((OperatingSystem.IsAndroid()     && !OperatingSystem.IsAndroidVersionAtLeast(21))        ||
-            (OperatingSystem.IsIOS()         && !OperatingSystem.IsIOSVersionAtLeast(12))            ||
-             OperatingSystem.IsLinux()                                                               ||
-            (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) ||
-            (OperatingSystem.IsMacOS()       && !OperatingSystem.IsMacOSVersionAtLeast(10, 15))      ||
-            (OperatingSystem.IsWindows()     && !OperatingSystem.IsWindowsVersionAtLeast(7)))
+        if (!OperatingSystem.IsAndroidVersionAtLeast(21)    && !OperatingSystem.IsIOSVersionAtLeast(12)            &&
+            !OperatingSystem.IsLinux()                      && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) &&
+            !OperatingSystem.IsMacOSVersionAtLeast(10, 15)  && !OperatingSystem.IsWindowsVersionAtLeast(7))
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }

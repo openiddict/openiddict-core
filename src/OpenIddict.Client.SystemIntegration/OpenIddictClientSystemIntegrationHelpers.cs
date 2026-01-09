@@ -77,7 +77,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatformGuard("maccatalyst13.1")]
     [SupportedOSPlatformGuard("macos10.15")]
     internal static bool IsASWebAuthenticationSessionSupported()
-#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+#if SUPPORTS_AUTHENTICATION_SERVICES
         => OperatingSystem.IsIOSVersionAtLeast(12)         ||
            OperatingSystem.IsMacCatalystVersionAtLeast(13) ||
            OperatingSystem.IsMacOSVersionAtLeast(10, 15);
@@ -92,7 +92,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SupportedOSPlatformGuard("android21.0")]
     internal static bool IsCustomTabsIntentSupported()
-#if SUPPORTS_ANDROIDX_BROWSER && SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+#if SUPPORTS_ANDROIDX_BROWSER
         => OperatingSystem.IsAndroidVersionAtLeast(21);
 #else
         => false;
