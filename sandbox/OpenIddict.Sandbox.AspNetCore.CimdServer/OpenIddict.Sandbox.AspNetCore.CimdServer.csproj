@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TypeScriptEnabled>false</TypeScriptEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIddict.Core\OpenIddict.Core.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Server.AspNetCore\OpenIddict.Server.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Server.DataProtection\OpenIddict.Server.DataProtection.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Validation.AspNetCore\OpenIddict.Validation.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Validation.ServerIntegration\OpenIddict.Validation.ServerIntegration.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+
+</Project>

@@ -35,6 +35,7 @@
   <Folder Name="/sandbox/">
     <Project Path="sandbox/OpenIddict.Sandbox.AspNet.Client/OpenIddict.Sandbox.AspNet.Client.csproj" />
     <Project Path="sandbox/OpenIddict.Sandbox.AspNet.Server/OpenIddict.Sandbox.AspNet.Server.csproj" />
+    <Project Path="sandbox/OpenIddict.Sandbox.AspNetCore.CimdServer/OpenIddict.Sandbox.AspNetCore.CimdServer.csproj" />
     <Project Path="sandbox/OpenIddict.Sandbox.AspNetCore.Client/OpenIddict.Sandbox.AspNetCore.Client.csproj" />
     <Project Path="sandbox/OpenIddict.Sandbox.AspNetCore.Server/OpenIddict.Sandbox.AspNetCore.Server.csproj" />
     <Project Path="sandbox/OpenIddict.Sandbox.Console.Client/OpenIddict.Sandbox.Console.Client.csproj" />
