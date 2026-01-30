@@ -9,6 +9,7 @@
     <ProjectReference Include="..\..\src\OpenIddict.Core\OpenIddict.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Server.AspNetCore\OpenIddict.Server.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Server.DataProtection\OpenIddict.Server.DataProtection.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Server.SystemNetHttp\OpenIddict.Server.SystemNetHttp.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Validation.AspNetCore\OpenIddict.Validation.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Validation.ServerIntegration\OpenIddict.Validation.ServerIntegration.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj" />

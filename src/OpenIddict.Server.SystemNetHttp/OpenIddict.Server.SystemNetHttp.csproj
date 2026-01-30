@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>
+      $(NetFrameworkTargetFrameworks);
+      $(NetCoreTargetFrameworks);
+      $(NetStandardTargetFrameworks)
+    </TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>System.Net.Http integration package for the OpenIddict server services.</Description>
+    <PackageTags>$(PackageTags);http;httpclient</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+    <PackageReference Include="System.Net.Http.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System.Net.Http.Json" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Server.OpenIddictServerEvents" Static="true" />
+    <Using Include="OpenIddict.Server.OpenIddictServerHandlers" Static="true" />
+    <Using Include="OpenIddict.Server.OpenIddictServerHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Server.SystemNetHttp.OpenIddictServerSystemNetHttpHandlers" Static="true" />
+    <Using Include="OpenIddict.Server.SystemNetHttp.OpenIddictServerSystemNetHttpHandlerFilters" Static="true" />
+  </ItemGroup>
+
+</Project>

@@ -371,6 +371,32 @@ public sealed class OpenIddictServerOptions
     public bool DisableScopeValidation { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether support for client ID metadata documents
+    /// (CIMD) is enabled. When enabled, the server accepts HTTPS URLs as client identifiers
+    /// and fetches the client metadata from the specified URL when the client is not
+    /// pre-registered. For more information, see draft-ietf-oauth-client-id-metadata-document.
+    /// </summary>
+    public bool EnableClientIdMetadataDocumentSupport { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum size, in bytes, of a client ID metadata document
+    /// that the server will accept. The default value is 5120 (5 KB).
+    /// </summary>
+    public int ClientIdMetadataDocumentSizeLimit { get; set; } = 5_120;
+
+    /// <summary>
+    /// Gets or sets the timeout for fetching a client ID metadata document.
+    /// The default value is 10 seconds.
+    /// </summary>
+    public TimeSpan ClientIdMetadataDocumentFetchTimeout { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// Gets or sets the default cache duration for client ID metadata documents
+    /// when no HTTP cache headers are present. The default value is 1 hour.
+    /// </summary>
+    public TimeSpan ClientIdMetadataDocumentDefaultCacheDuration { get; set; } = TimeSpan.FromHours(1);
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether requests received by the authorization
     /// endpoint should be stored in the token store, which allows flowing
     /// large payloads across requests. Enabling this option can be useful

@@ -1033,6 +1033,26 @@ public static partial class OpenIddictServerHandlers
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                 if (application is null)
                 {
+                    // If CIMD support is enabled and the client_id is a valid HTTPS URL,
+                    // flag the transaction for metadata document fetching instead of rejecting.
+                    if (context.Options.EnableClientIdMetadataDocumentSupport &&
+                        Uri.TryCreate(context.ClientId, UriKind.Absolute, out var clientUri) &&
+                        string.Equals(clientUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrEmpty(clientUri.AbsolutePath) &&
+                        clientUri.AbsolutePath is not "/" &&
+                        string.IsNullOrEmpty(clientUri.Fragment) &&
+                        string.IsNullOrEmpty(clientUri.UserInfo))
+                    {
+                        context.Logger.LogInformation(
+                            "The client_id '{ClientId}' was not found in the store but matches CIMD URL format. " +
+                            "A metadata document fetch will be attempted.", context.ClientId);
+
+                        // Flag the transaction so the CIMD fetch handler knows to process this request.
+                        context.Transaction.Properties[".ClientIdMetadataDocumentFetchRequired"] = true;
+
+                        return;
+                    }
+
                     context.Logger.LogInformation(6221, SR.GetResourceString(SR.ID6221), context.ClientId);
 
                     context.Reject(
@@ -1094,6 +1114,25 @@ public static partial class OpenIddictServerHandlers
                                         OpenIddictServerEndpointType.EndUserVerification or
                                         OpenIddictServerEndpointType.UserInfo)
             {
+                return;
+            }
+
+            // Skip client type validation for CIMD clients (they are treated as public clients).
+            if (context.Transaction.Properties.TryGetValue(
+                ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
+            {
+                // CIMD clients MUST NOT use client_secret_post, client_secret_basic, or client_secret_jwt.
+                // Reject requests containing a client_secret when the client is a CIMD client.
+                if (!string.IsNullOrEmpty(context.ClientSecret))
+                {
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: "CIMD clients cannot use client secret authentication.",
+                        uri: null);
+
+                    return;
+                }
+
                 return;
             }
 
@@ -3206,7 +3245,10 @@ public static partial class OpenIddictServerHandlers
             descriptor.Scopes.UnionWith(context.Principal.GetScopes());
 
             // If the client application is known, associate it to the authorization.
-            if (!string.IsNullOrEmpty(context.Request.ClientId))
+            // For CIMD clients, there is no pre-registered application entity.
+            if (!string.IsNullOrEmpty(context.Request.ClientId) &&
+                !(context.Transaction.Properties.TryGetValue(
+                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
             {
                 var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
@@ -3339,7 +3381,10 @@ public static partial class OpenIddictServerHandlers
             var lifetime = context.Principal.GetAccessTokenLifetime();
 
             // If the client to which the token is returned is known, use the attached setting if available.
-            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            // Skip for CIMD clients (no pre-registered application to look up).
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId) &&
+                !(context.Transaction.Properties.TryGetValue(
+                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
             {
                 if (_applicationManager is null)
                 {
@@ -3466,7 +3511,10 @@ public static partial class OpenIddictServerHandlers
             var lifetime = context.Principal.GetAuthorizationCodeLifetime();
 
             // If the client to which the token is returned is known, use the attached setting if available.
-            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            // Skip for CIMD clients (no pre-registered application to look up).
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId) &&
+                !(context.Transaction.Properties.TryGetValue(
+                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
             {
                 if (_applicationManager is null)
                 {
@@ -3595,7 +3643,10 @@ public static partial class OpenIddictServerHandlers
             var lifetime = context.Principal.GetDeviceCodeLifetime();
 
             // If the client to which the token is returned is known, use the attached setting if available.
-            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            // Skip for CIMD clients (no pre-registered application to look up).
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId) &&
+                !(context.Transaction.Properties.TryGetValue(
+                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
             {
                 if (_applicationManager is null)
                 {
@@ -3839,7 +3890,10 @@ public static partial class OpenIddictServerHandlers
             };
 
             // If the client to which the token is returned is known, use the attached setting if available.
-            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            // Skip for CIMD clients (no pre-registered application to look up).
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId) &&
+                !(context.Transaction.Properties.TryGetValue(
+                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
             {
                 if (_applicationManager is null)
                 {
@@ -3980,7 +4034,10 @@ public static partial class OpenIddictServerHandlers
             var lifetime = context.Principal.GetRequestTokenLifetime();
 
             // If the client to which the token is returned is known, use the attached setting if available.
-            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            // Skip for CIMD clients (no pre-registered application to look up).
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId) &&
+                !(context.Transaction.Properties.TryGetValue(
+                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
             {
                 if (_applicationManager is null)
                 {
@@ -4131,7 +4188,10 @@ public static partial class OpenIddictServerHandlers
                 var lifetime = context.Principal.GetRefreshTokenLifetime();
 
                 // If the client to which the token is returned is known, use the attached setting if available.
-                if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+                // Skip for CIMD clients (no pre-registered application to look up).
+                if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId) &&
+                    !(context.Transaction.Properties.TryGetValue(
+                        ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
                 {
                     if (_applicationManager is null)
                     {
@@ -4268,7 +4328,10 @@ public static partial class OpenIddictServerHandlers
             var lifetime = context.Principal.GetIdentityTokenLifetime();
 
             // If the client to which the token is returned is known, use the attached setting if available.
-            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            // Skip for CIMD clients (no pre-registered application to look up).
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId) &&
+                !(context.Transaction.Properties.TryGetValue(
+                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
             {
                 if (_applicationManager is null)
                 {
@@ -4398,7 +4461,10 @@ public static partial class OpenIddictServerHandlers
             var lifetime = context.Principal.GetUserCodeLifetime();
 
             // If the client to which the token is returned is known, use the attached setting if available.
-            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+            // Skip for CIMD clients (no pre-registered application to look up).
+            if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId) &&
+                !(context.Transaction.Properties.TryGetValue(
+                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
             {
                 if (_applicationManager is null)
                 {

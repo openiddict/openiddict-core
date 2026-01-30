@@ -66,9 +66,6 @@ public class AuthorizationController : Controller
         var userEntity = await _userManager.GetUserAsync(result.Principal) ??
             throw new InvalidOperationException("The user details cannot be retrieved.");
 
-        var application = await _applicationManager.FindByClientIdAsync(request.ClientId!) ??
-            throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
-
         // Auto-approve consent for this demonstrator.
         var identity = new ClaimsIdentity(
             authenticationType: TokenValidationParameters.DefaultAuthenticationType,
@@ -82,14 +79,21 @@ public class AuthorizationController : Controller
         identity.SetScopes(request.GetScopes());
         identity.SetResources(await _scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
 
-        var authorization = await _authorizationManager.CreateAsync(
-            identity: identity,
-            subject: await _userManager.GetUserIdAsync(userEntity),
-            client: (await _applicationManager.GetIdAsync(application))!,
-            type: AuthorizationTypes.Permanent,
-            scopes: identity.GetScopes());
+        // For CIMD clients (URL-based client_id with no pre-registration), skip
+        // the application lookup and authorization entry creation.
+        var application = await _applicationManager.FindByClientIdAsync(request.ClientId!);
+        if (application is not null)
+        {
+            var authorization = await _authorizationManager.CreateAsync(
+                identity: identity,
+                subject: await _userManager.GetUserIdAsync(userEntity),
+                client: (await _applicationManager.GetIdAsync(application))!,
+                type: AuthorizationTypes.Permanent,
+                scopes: identity.GetScopes());
 
-        identity.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
+            identity.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
+        }
+
         identity.SetDestinations(GetDestinations);
 
         return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);

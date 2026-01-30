@@ -73,6 +73,7 @@
     <Project Path="src/OpenIddict.Server.AspNetCore/OpenIddict.Server.AspNetCore.csproj" />
     <Project Path="src/OpenIddict.Server.DataProtection/OpenIddict.Server.DataProtection.csproj" />
     <Project Path="src/OpenIddict.Server.Owin/OpenIddict.Server.Owin.csproj" />
+    <Project Path="src/OpenIddict.Server.SystemNetHttp/OpenIddict.Server.SystemNetHttp.csproj" />
     <Project Path="src/OpenIddict.Server/OpenIddict.Server.csproj" />
     <Project Path="src/OpenIddict.Validation/OpenIddict.Validation.csproj" />
     <Project Path="src/OpenIddict.Validation.AspNetCore/OpenIddict.Validation.AspNetCore.csproj" />

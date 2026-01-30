@@ -1944,6 +1944,15 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.UseReferenceRefreshTokens = true);
 
     /// <summary>
+    /// Enables support for client ID metadata documents (CIMD), allowing clients
+    /// to use an HTTPS URL as their client identifier. The server will fetch the
+    /// metadata document from that URL when the client is not pre-registered.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableClientIdMetadataDocumentSupport()
+        => Configure(options => options.EnableClientIdMetadataDocumentSupport = true);
+
+    /// <summary>
     /// Enables authorization request storage, so that authorization requests
     /// are automatically stored in the token store, which allows flowing
     /// large payloads across requests. Enabling this option can be useful

@@ -286,6 +286,7 @@ public static class OpenIddictConstants
         public const string AcrValuesSupported = "acr_values_supported";
         public const string AuthorizationEndpoint = "authorization_endpoint";
         public const string AuthorizationResponseIssParameterSupported = "authorization_response_iss_parameter_supported";
+        public const string ClientIdMetadataDocumentSupported = "client_id_metadata_document_supported";
         public const string ClaimsLocalesSupported = "claims_locales_supported";
         public const string ClaimsParameterSupported = "claims_parameter_supported";
         public const string ClaimsSupported = "claims_supported";

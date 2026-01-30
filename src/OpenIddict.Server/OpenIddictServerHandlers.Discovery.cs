@@ -795,6 +795,12 @@ public static partial class OpenIddictServerHandlers
                 context.Metadata[Metadata.RequestUriParameterSupported] = false;
                 context.Metadata[Metadata.TlsClientCertificateBoundAccessTokens] = false;
 
+                // If CIMD (Client ID Metadata Document) support is enabled, advertise it in the discovery document.
+                if (context.Options.EnableClientIdMetadataDocumentSupport)
+                {
+                    context.Metadata[Metadata.ClientIdMetadataDocumentSupported] = true;
+                }
+
                 // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its identity as
                 // part of authorization responses to help clients mitigate mix-up attacks. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.
