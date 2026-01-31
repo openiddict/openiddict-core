@@ -36,7 +36,7 @@ builder.Services.AddOpenIddict()
 
         options.RequireProofKeyForCodeExchange();
 
-        options.RegisterScopes("openid", "profile", "email");
+        options.RegisterScopes("openid", "profile", "email", "offline_access");
 
         // Enable Client ID Metadata Document (CIMD) support.
         options.EnableClientIdMetadataDocumentSupport();
@@ -76,7 +76,7 @@ app.MapGet("/clients/cimd-test", () => Results.Json(new
     client_id = "https://localhost:7295/clients/cimd-test",
     client_name = "CIMD Test Client",
     redirect_uris = new[] { "http://localhost/callback" },
-    grant_types = new[] { "authorization_code" },
+    grant_types = new[] { "authorization_code", "refresh_token" },
     response_types = new[] { "code" },
     token_endpoint_auth_method = "none"
 }));

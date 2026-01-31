@@ -42,16 +42,29 @@ public class AuthorizationController : Controller
             throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
         // Try to retrieve the user principal stored in the authentication cookie.
+        // If the cookie is stale (e.g. database was recreated), sign out and re-authenticate.
         var result = await HttpContext.AuthenticateAsync();
+        if (result is { Succeeded: true })
+        {
+            var existing = await _userManager.GetUserAsync(result.Principal!);
+            if (existing is null)
+            {
+                // The cookie references a user that no longer exists. Sign out and retry.
+                await _signInManager.SignOutAsync();
+                result = AuthenticateResult.NoResult();
+            }
+        }
+
         if (result is not { Succeeded: true })
         {
-            // If the user is not logged in, redirect to login.
-            // For this demo, we auto-sign in the test user to simplify testing.
+            // For this demo, auto-sign in the test user to simplify testing.
             var user = await _userManager.FindByNameAsync("testuser");
             if (user is not null)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return Challenge();
+
+                // Redirect back to the same URL so the cookie is sent on the next request.
+                return Redirect(HttpContext.Request.PathBase + HttpContext.Request.Path + HttpContext.Request.QueryString);
             }
 
             return Forbid(
@@ -63,7 +76,7 @@ public class AuthorizationController : Controller
                 }));
         }
 
-        var userEntity = await _userManager.GetUserAsync(result.Principal) ??
+        var userEntity = await _userManager.GetUserAsync(result.Principal!) ??
             throw new InvalidOperationException("The user details cannot be retrieved.");
 
         // Auto-approve consent for this demonstrator.
@@ -188,6 +201,10 @@ public class AuthorizationController : Controller
             identity.SetClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
                     .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))
                     .SetClaim(Claims.Name, await _userManager.GetUserNameAsync(user));
+
+            // Preserve the scopes originally granted so refresh tokens continue to be issued.
+            identity.SetScopes(result.Principal!.GetScopes());
+            identity.SetResources(await _scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
 
             identity.SetDestinations(GetDestinations);
 
