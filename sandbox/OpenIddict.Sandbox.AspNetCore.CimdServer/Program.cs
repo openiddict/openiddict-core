@@ -44,6 +44,9 @@ builder.Services.AddOpenIddict()
         options.AddDevelopmentEncryptionCertificate()
                .AddDevelopmentSigningCertificate();
 
+        // Disable access token encryption so tokens can be inspected during development.
+        options.DisableAccessTokenEncryption();
+
         options.UseAspNetCore()
                .EnableAuthorizationEndpointPassthrough()
                .EnableTokenEndpointPassthrough();
