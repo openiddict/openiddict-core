@@ -1438,10 +1438,7 @@ public static partial class OpenIddictServerHandlers
                 };
 
                 // If the client application is known, associate it with the token.
-                // For CIMD clients, there is no pre-registered application entity.
-                if (!string.IsNullOrEmpty(context.ClientId) &&
-                    !(context.Transaction.Properties.TryGetValue(
-                        ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true))
+                if (!string.IsNullOrEmpty(context.ClientId))
                 {
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));

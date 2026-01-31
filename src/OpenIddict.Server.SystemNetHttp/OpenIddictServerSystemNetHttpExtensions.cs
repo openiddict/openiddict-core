@@ -7,6 +7,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
+using OpenIddict.Core;
 using OpenIddict.Server;
 using OpenIddict.Server.SystemNetHttp;
 
@@ -35,6 +36,16 @@ public static class OpenIddictServerSystemNetHttpExtensions
 
         // Register the built-in filters used by the default OpenIddict System.Net.Http event handlers.
         builder.Services.TryAddSingleton<RequireClientIdMetadataDocumentSupportEnabled>();
+
+        // Register the scoped CIMD context used to share metadata document state
+        // between the fetch handler and the CIMD application manager.
+        builder.Services.TryAddScoped<OpenIddictServerSystemNetHttpCimdContext>();
+
+        // Replace the application manager with the CIMD-aware version that can
+        // synthesize virtual applications from Client ID Metadata Documents.
+        builder.Services.Replace(ServiceDescriptor.Scoped(
+            typeof(OpenIddictApplicationManager<>),
+            typeof(OpenIddictServerSystemNetHttpApplicationManager<>)));
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

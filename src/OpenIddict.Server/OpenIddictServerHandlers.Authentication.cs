@@ -1391,13 +1391,6 @@ public static partial class OpenIddictServerHandlers
 
                 if (!context.Options.EnableDegradedMode)
                 {
-                    // Skip for CIMD clients (they are public, so the confidential-client downgrade check doesn't apply).
-                    if (context.Transaction.Properties.TryGetValue(
-                        ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                    {
-                        return;
-                    }
-
                     if (_applicationManager is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
@@ -1455,74 +1448,6 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                // For CIMD clients, validate the redirect_uri against the metadata document.
-                if (context.Transaction.Properties.TryGetValue(
-                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                {
-                    // A redirect_uri is always required for CIMD clients.
-                    if (string.IsNullOrEmpty(context.RedirectUri))
-                    {
-                        context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
-
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: SR.FormatID2029(Parameters.RedirectUri),
-                            uri: SR.FormatID8000(SR.ID2029));
-
-                        return;
-                    }
-
-                    // Retrieve the CIMD metadata document from the transaction properties.
-                    if (!context.Transaction.Properties.TryGetValue(
-                        ".ClientIdMetadataDocument", out var documentObj) ||
-                        documentObj is not System.Text.Json.JsonDocument document)
-                    {
-                        context.Reject(
-                            error: Errors.InvalidClient,
-                            description: "The client_id metadata document is not available.",
-                            uri: null);
-
-                        return;
-                    }
-
-                    // Validate that the redirect_uri matches one from the metadata document.
-                    if (!document.RootElement.TryGetProperty("redirect_uris", out var redirectUrisElement) ||
-                        redirectUrisElement.ValueKind != System.Text.Json.JsonValueKind.Array)
-                    {
-                        context.Reject(
-                            error: Errors.InvalidClient,
-                            description: "The client_id metadata document does not contain redirect_uris.",
-                            uri: null);
-
-                        return;
-                    }
-
-                    var redirectUriFound = false;
-                    foreach (var element in redirectUrisElement.EnumerateArray())
-                    {
-                        if (element.ValueKind == System.Text.Json.JsonValueKind.String &&
-                            string.Equals(element.GetString(), context.RedirectUri, StringComparison.Ordinal))
-                        {
-                            redirectUriFound = true;
-                            break;
-                        }
-                    }
-
-                    if (!redirectUriFound)
-                    {
-                        context.Logger.LogInformation(6046, SR.GetResourceString(SR.ID6046), context.RedirectUri);
-
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: SR.FormatID2043(Parameters.RedirectUri),
-                            uri: SR.FormatID8000(SR.ID2043));
-
-                        return;
-                    }
-
-                    return;
-                }
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
@@ -1713,12 +1638,6 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                // Skip for CIMD clients (no pre-registered application to look up).
-                if (context.Transaction.Properties.TryGetValue(
-                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                {
-                    return;
-                }
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
@@ -1770,12 +1689,6 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                // Skip for CIMD clients (no pre-registered application to look up).
-                if (context.Transaction.Properties.TryGetValue(
-                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                {
-                    return;
-                }
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
@@ -1872,12 +1785,6 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                // Skip for CIMD clients (no pre-registered application to look up).
-                if (context.Transaction.Properties.TryGetValue(
-                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                {
-                    return;
-                }
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
@@ -1954,12 +1861,6 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                // Skip for CIMD clients (no pre-registered application to look up).
-                if (context.Transaction.Properties.TryGetValue(
-                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                {
-                    return;
-                }
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
@@ -2022,12 +1923,6 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                // Skip for CIMD clients (no pre-registered application to look up).
-                if (context.Transaction.Properties.TryGetValue(
-                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                {
-                    return;
-                }
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
@@ -2082,12 +1977,6 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                // Skip for CIMD clients (no pre-registered application to look up).
-                if (context.Transaction.Properties.TryGetValue(
-                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                {
-                    return;
-                }
 
                 // If a request token principal with the correct type could be extracted, the request is always
                 // considered valid, whether the pushed authorization requests requirement is enforced or not.
@@ -2156,12 +2045,6 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                // Skip for CIMD clients (no pre-registered application to look up).
-                if (context.Transaction.Properties.TryGetValue(
-                    ".ClientIdMetadataDocumentFetchRequired", out var cimdFlag) && cimdFlag is true)
-                {
-                    return;
-                }
 
                 // If a code_challenge was provided or if no authorization code is requested, the request is always
                 // considered valid, whether the proof key for code exchange requirement is enforced or not.

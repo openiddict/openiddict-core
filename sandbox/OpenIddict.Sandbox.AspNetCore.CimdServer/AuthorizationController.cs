@@ -79,15 +79,19 @@ public class AuthorizationController : Controller
         identity.SetScopes(request.GetScopes());
         identity.SetResources(await _scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
 
-        // For CIMD clients (URL-based client_id with no pre-registration), skip
-        // the application lookup and authorization entry creation.
+        // Look up the application (for CIMD clients, this returns a virtual application
+        // synthesized from the metadata document by the CIMD application manager).
         var application = await _applicationManager.FindByClientIdAsync(request.ClientId!);
-        if (application is not null)
+        var applicationId = application is not null ? await _applicationManager.GetIdAsync(application) : null;
+
+        // Only create an authorization entry if the application has a database identity
+        // (CIMD virtual applications return null for GetIdAsync).
+        if (!string.IsNullOrEmpty(applicationId))
         {
             var authorization = await _authorizationManager.CreateAsync(
                 identity: identity,
                 subject: await _userManager.GetUserIdAsync(userEntity),
-                client: (await _applicationManager.GetIdAsync(application))!,
+                client: applicationId,
                 type: AuthorizationTypes.Permanent,
                 scopes: identity.GetScopes());
 
