@@ -171,3 +171,7 @@ artifacts/
 
 # Jetbrains IDE folders
 .idea/*
+
+# Claude Code
+.claude/
+CLAUDE.md

@@ -19,6 +19,10 @@ OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/s
 the **[client credentials/resource owner password grants](https://datatracker.ietf.org/doc/html/rfc6749)**,
 the [device authorization flow](https://datatracker.ietf.org/doc/html/rfc8628) and the **[token exchange grant](https://datatracker.ietf.org/doc/html/rfc8693)**.
 
+OpenIddict supports **[Client ID Metadata Document (CIMD)](docs/CIMD.md)** for dynamic client registration,
+enabling **MCP (Model Context Protocol) authentication** where clients identify themselves using HTTPS URLs
+instead of pre-registered credentials.
+
 OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/packages/OpenIddict.EntityFrameworkCore)**,
 **[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)**
 out-of-the-box and custom stores can be implemented to support other providers.
