@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
@@ -97,9 +98,9 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
         var now = options.TimeProvider.GetUtcNow().LocalDateTime;
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.Count is not 0 &&
-            options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
-                (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
+        if (options.EncryptionCredentials.Count is not 0 && options.EncryptionCredentials.TrueForAll(credentials =>
+            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+           (certificate.NotBefore > now || certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
         }

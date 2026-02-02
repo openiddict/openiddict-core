@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
 
@@ -15,12 +16,14 @@ namespace OpenIddict.Abstractions;
 
 /// <summary>
 /// Provides methods allowing to manage the applications stored in the store.
+/// </summary>
+/// <remarks>
 /// Note: this interface is not meant to be implemented by custom managers,
 /// that should inherit from the generic OpenIddictApplicationManager class.
 /// It is primarily intended to be used by services that cannot easily depend
 /// on the generic application manager. The actual application entity type
 /// is automatically determined at runtime based on the OpenIddict core options.
-/// </summary>
+/// </remarks>
 public interface IOpenIddictApplicationManager
 {
     /// <summary>
@@ -170,6 +173,19 @@ public interface IOpenIddictApplicationManager
     ValueTask<TResult?> GetAsync<TState, TResult>(
         Func<IQueryable<object>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the client certificate chain policy enforced for this application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="policy">The base policy from which the returned instance will be derived.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the client certificate chain policy enforced for this application.
+    /// </returns>
+    ValueTask<X509ChainPolicy?> GetClientCertificateChainPolicyAsync(
+        object application, X509ChainPolicy policy, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the client identifier associated with an application.
@@ -331,6 +347,19 @@ public interface IOpenIddictApplicationManager
     ValueTask<ImmutableArray<string>> GetRequirementsAsync(object application, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the self-signed client certificate chain policy enforced for this application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="policy">The base policy from which the returned instance will be derived.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose
+    /// result returns the self-signed client certificate chain policy enforced for this application.
+    /// </returns>
+    ValueTask<X509ChainPolicy?> GetSelfSignedClientCertificateChainPolicyAsync(
+        object application, X509ChainPolicy policy, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves the settings associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -476,6 +505,21 @@ public interface IOpenIddictApplicationManager
     ValueTask UpdateAsync(object application, string secret, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Validates the client certificate associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="certificate">The certificate that should be compared to the certificates associated with the application.</param>
+    /// <param name="policy">The chain policy used to validate the certificate.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns a boolean indicating whether the client certificate was valid.
+    /// </returns>
+    ValueTask<bool> ValidateClientCertificateAsync(object application,
+        X509Certificate2 certificate, X509ChainPolicy policy, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Validates the application to ensure it's in a consistent state.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -522,4 +566,20 @@ public interface IOpenIddictApplicationManager
     /// </returns>
     ValueTask<bool> ValidateRedirectUriAsync(object application,
         [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Validates the self-signed client certificate associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="certificate">The certificate that should be compared to the certificates associated with the application.</param>
+    /// <param name="policy">The chain policy used to validate the certificate.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose
+    /// result returns a boolean indicating whether the self-signed client certificate was valid.
+    /// </returns>
+    ValueTask<bool> ValidateSelfSignedClientCertificateAsync(
+        object application, X509Certificate2 certificate,
+        X509ChainPolicy policy, CancellationToken cancellationToken = default);
 }

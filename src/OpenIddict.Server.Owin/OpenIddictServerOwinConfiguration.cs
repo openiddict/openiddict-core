@@ -14,6 +14,7 @@ namespace OpenIddict.Server.Owin;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
+                                                        IPostConfigureOptions<OpenIddictServerOptions>,
                                                         IPostConfigureOptions<OpenIddictServerOwinOptions>
 {
     /// <inheritdoc/>
@@ -26,6 +27,24 @@ public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenId
 
         // Enable client_secret_basic support by default.
         options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
+    }
+
+    /// <inheritdoc/>
+    public void PostConfigure(string? name, OpenIddictServerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        // Enable tls_client_auth and self_signed_tls_client_auth support if the
+        // corresponding chain policies have been configured in the server options.
+        if (options.ClientCertificateChainPolicy is not null)
+        {
+            options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.TlsClientAuth);
+        }
+
+        if (options.SelfSignedClientCertificateChainPolicy is not null)
+        {
+            options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.SelfSignedTlsClientAuth);
+        }
     }
 
     /// <inheritdoc/>

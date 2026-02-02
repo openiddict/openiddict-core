@@ -568,7 +568,8 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the mTLS-enabled revocation endpoint URI from the discovery document.
+        /// Contains the logic responsible for extracting the mTLS-enabled
+        /// revocation endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractMtlsRevocationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -600,7 +601,8 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the mTLS-enabled token endpoint URI from the discovery document.
+        /// Contains the logic responsible for extracting the mTLS-enabled
+        /// token endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractMtlsTokenEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -632,7 +634,8 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the mTLS-enabled userinfo endpoint URI from the discovery document.
+        /// Contains the logic responsible for extracting the mTLS-enabled
+        /// userinfo endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractMtlsUserInfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {

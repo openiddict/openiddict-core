@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -164,6 +165,19 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 ClientAssertionTypes.JwtBearer, ClientAuthenticationMethods.ClientSecretJwt));
         }
 
+        // If the tls_client_auth or self_signed_tls_client_auth methods are enabled, ensure a chain policy has been set.
+        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
+            options.ClientCertificateChainPolicy is null)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0505));
+        }
+
+        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
+            options.SelfSignedClientCertificateChainPolicy is null)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0506));
+        }
+
         // Ensure at least one supported subject type is listed.
         if (options.SubjectTypes.Count is 0)
         {
@@ -246,17 +260,102 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         var now = options.TimeProvider.GetUtcNow().LocalDateTime;
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
-               (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
+        if (options.EncryptionCredentials.TrueForAll(credentials =>
+            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+           (certificate.NotBefore > now || certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
         }
 
         // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.SigningCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
-               (x509SecurityKey.Certificate.NotBefore > now || x509SecurityKey.Certificate.NotAfter < now)))
+        if (options.SigningCredentials.TrueForAll(credentials =>
+            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+           (certificate.NotBefore > now || certificate.NotAfter < now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0088));
+        }
+
+        // When set, the mTLS endpoint aliases MUST represent absolute HTTPS URLs.
+        if (!TryValidateMtlsEndpointAlias(options.MtlsDeviceAuthorizationEndpointAliasUri) ||
+            !TryValidateMtlsEndpointAlias(options.MtlsIntrospectionEndpointAliasUri)       ||
+            !TryValidateMtlsEndpointAlias(options.MtlsPushedAuthorizationEndpointAliasUri) ||
+            !TryValidateMtlsEndpointAlias(options.MtlsRevocationEndpointAliasUri)          ||
+            !TryValidateMtlsEndpointAlias(options.MtlsTokenEndpointAliasUri))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0499));
+        }
+
+        // Prevent the mTLS aliases from being configured if the corresponding endpoints haven't been enabled.
+        if ((options.MtlsDeviceAuthorizationEndpointAliasUri is not null && options.DeviceAuthorizationEndpointUris.Count is 0) ||
+            (options.MtlsIntrospectionEndpointAliasUri       is not null && options.IntrospectionEndpointUris.Count       is 0) ||
+            (options.MtlsPushedAuthorizationEndpointAliasUri is not null && options.PushedAuthorizationEndpointUris.Count is 0) ||
+            (options.MtlsRevocationEndpointAliasUri          is not null && options.RevocationEndpointUris.Count          is 0) ||
+            (options.MtlsTokenEndpointAliasUri               is not null && options.TokenEndpointUris.Count               is 0))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0510));
+        }
+
+        // If at least one mTLS endpoint alias was configured, require that the issuer be explicitly set
+        // to ensure it is not dynamically computed based on the current URI, as this would result in two
+        // different issuers being used (one pointing to the mTLS domain and one pointing to the regular one).
+        if (options.Issuer is null && (options.MtlsDeviceAuthorizationEndpointAliasUri is not null ||
+                                       options.MtlsIntrospectionEndpointAliasUri       is not null ||
+                                       options.MtlsPushedAuthorizationEndpointAliasUri is not null ||
+                                       options.MtlsRevocationEndpointAliasUri          is not null ||
+                                       options.MtlsTokenEndpointAliasUri               is not null))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0500));
+        }
+
+        // Ensure no end certificate was included in the PKI client certificate
+        // chain policy and that none of the certificates contains a private key.
+        if (options.ClientCertificateChainPolicy is not null)
+        {
+            if (options.ClientCertificateChainPolicy.ExtraStore.Cast<X509Certificate2>()
+                .Any(static certificate =>
+                    !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
+                    !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0501));
+            }
+
+            if (options.ClientCertificateChainPolicy.ExtraStore.Cast<X509Certificate2>()
+                .Any(static certificate => certificate.HasPrivateKey))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0511));
+            }
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE && SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
+            if (options.ClientCertificateChainPolicy.CustomTrustStore.Cast<X509Certificate2>()
+                .Any(static certificate =>
+                    !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
+                    !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0501));
+            }
+
+            if (options.ClientCertificateChainPolicy.CustomTrustStore.Cast<X509Certificate2>()
+                .Any(static certificate => certificate.HasPrivateKey))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0511));
+            }
+#endif
+        }
+
+        // Ensure the self-signed client certificate chain policy doesn't contain any certificate.
+        if (options.SelfSignedClientCertificateChainPolicy is not null)
+        {
+            if (options.SelfSignedClientCertificateChainPolicy.ExtraStore.Cast<X509Certificate2>().Any())
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
+            }
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE && SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
+            if (options.SelfSignedClientCertificateChainPolicy.CustomTrustStore.Cast<X509Certificate2>().Any())
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
+            }
+#endif
         }
 
         if (options.EnableDegradedMode)
@@ -529,5 +628,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
             return null;
         }
+
+        static bool TryValidateMtlsEndpointAlias(Uri? uri) => uri is null ||
+          (uri.IsAbsoluteUri && string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
     }
 }

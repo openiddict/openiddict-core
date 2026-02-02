@@ -180,6 +180,20 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no client authentication certificate is available.
+    /// </summary>
+    public sealed class RequireClientCertificate : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.ClientCertificate is not null);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers when no client identifier is received.
     /// </summary>
     public sealed class RequireClientIdParameter : IOpenIddictServerHandlerFilter<BaseContext>

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
@@ -157,8 +158,36 @@ public class Worker : IHostedService
                     {
                         Keys =
                         {
-                            // On supported platforms, this application authenticates by generating JWT client
-                            // assertions that are signed using a signing key instead of using a client secret.
+                            // On supported platforms, this application can authenticate by using a
+                            // self-signed client authentication certificate during the TLS handshake
+                            // (a method known as "mutual TLS" or mTLS).
+                            //
+                            // Note: while the client needs access to the private key, the server only needs
+                            // to know the public part to be able to validate the certificates it receives.
+                            JsonWebKeyConverter.ConvertFromX509SecurityKey(new X509SecurityKey(
+                                X509Certificate2.CreateFromPem($"""
+                                    -----BEGIN CERTIFICATE-----
+                                    MIIC8zCCAdugAwIBAgIJAIZ9BN3TUnZQMA0GCSqGSIb3DQEBCwUAMCIxIDAeBgNV
+                                    BAMTF1NlbGYtc2lnbmVkIGNlcnRpZmljYXRlMCAXDTI2MDIwMjE0MzM0OVoYDzIx
+                                    MjYwMjAyMTQzMzQ5WjAiMSAwHgYDVQQDExdTZWxmLXNpZ25lZCBjZXJ0aWZpY2F0
+                                    ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOtfKVPM7ghVFh4U/sz4
+                                    sTrpaNJGQ2NORqawYxAHwluhr101yIOW7rWvFlFncA64Lkq9SAbFFCVSAbo28c6B
+                                    2Mi41jyC4LHQU11jhv08K/3FUuckCuzEpzTnXUhxJHWxrRDVEuvKINGPs1VgVtTT
+                                    ra8rjP8s1YRAzCYnByxSx+8GXNGHprylLh0agpWKb2+2FYwDqY5ME2g3xTL9FTUu
+                                    FYWTcyspsvN0U1Eo1vlCeOxSYGPRct0MK0AS6eXEGBv+3kCYI7a5+UhQok0WvErF
+                                    pjIVo7USISDgKhW9GhTsWN+WywwdG4Kx4V6SB8ZLAHFSBSR3gjWS3TGOyqAWoBXc
+                                    znkCAwEAAaMqMCgwDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoGCCsGAQUF
+                                    BwMCMA0GCSqGSIb3DQEBCwUAA4IBAQBf5i/S7shmNalVxMuP8/Mk8cOhRRZjnAXd
+                                    zz3eOuXu0CH8iY/DwCgss04O2NTxuz87rKiuNKOrtY0oN/G4aFjWPvbgoQ+N1XP1
+                                    zvbhqbyo3fQr07FyjWkrIUoHYFQ3JRfL+GPGjWizJsgdpdCRJSK6G9VX8eU3Akjv
+                                    YhMRLmbkrH5etOURqFtLpZlxNmLzCpqWIvzRiYyyj74iOipA2I0acgcvkakWn6rE
+                                    Wio7luBAZ3dXlukEfHTOg+ft4k0nOlRXPTtASOmyFQBOs6iYJeztHDz6MQnknAPe
+                                    +W53US8kLWktspcOQmxhVVH1g1/T4ynl9iX7tzqvUbdYwZNi92+x
+                                    -----END CERTIFICATE-----
+                                    """))),
+
+                            // On supported platforms, this application can also authenticate by
+                            // generating JWT client assertions that are signed using a signing key.
                             //
                             // Note: while the client needs access to the private key, the server only needs
                             // to know the public key to be able to validate the client assertions it receives.
@@ -171,7 +200,7 @@ public class Worker : IHostedService
                         }
                     },
 #else
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                    ClientSecret = "emCimpdc9SeOaZzN5jzm4_eek-STF6VenfVlKO1_qt0",
 #endif
                     RedirectUris =
                     {
@@ -306,7 +335,7 @@ public class Worker : IHostedService
                 var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ClientId = "resource_server",
-                    ClientSecret = "80B552BB-4CD8-48DA-946E-0815E0147DD2",
+                    ClientSecret = "vVQ-yjr42sXP5VHj6AswkXuS7MU1i2gFjvJjY0TdGMk",
                     ClientType = ClientTypes.Confidential,
                     Permissions =
                     {

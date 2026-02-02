@@ -336,6 +336,20 @@ public static class OpenIddictConstants
         public const string UserInfoSigningAlgValuesSupported = "userinfo_signing_alg_values_supported";
     }
 
+    public static class ObjectIdentifiers
+    {
+        public static class CertificateExtensions
+        {
+            public const string AuthorityInfoAccess = "1.3.6.1.5.5.7.1.1";
+            public const string CrlDistributionPoints = "2.5.29.31";
+        }
+
+        public static class ExtendedKeyUsages
+        {
+            public const string ClientAuthentication = "1.3.6.1.5.5.7.3.2";
+        }
+    }
+
     public static class Parameters
     {
         public const string AccessToken = "access_token";

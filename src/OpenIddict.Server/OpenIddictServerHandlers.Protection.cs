@@ -627,7 +627,7 @@ public static partial class OpenIddictServerHandlers
                 // To achieve that, all the "scope" claims are combined into a single one containg all the values.
                 // Visit https://datatracker.ietf.org/doc/html/rfc9068 for more information.
                 var scopes = context.Principal.GetClaims(Claims.Scope);
-                if (scopes.Length > 1)
+                if (scopes.Length is > 1)
                 {
                     context.Principal.SetClaim(Claims.Scope, string.Join(" ", scopes));
                 }

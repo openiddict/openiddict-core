@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Server;
@@ -763,6 +764,15 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the principal extracted from the client assertion, if applicable.
         /// </summary>
         public ClaimsPrincipal? ClientAssertionPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client certificate (typically obtained via mTLS), if applicable.
+        /// </summary>
+        public X509Certificate2? ClientCertificate
+        {
+            get => Transaction.ClientCertificate;
+            set => Transaction.ClientCertificate = value;
+        }
 
         /// <summary>
         /// Gets or sets the device code to validate, if applicable.

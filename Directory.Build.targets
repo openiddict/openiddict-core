@@ -68,6 +68,7 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_RESILIENCE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_INT32_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_KESTREL_TLS_HANDSHAKE_CALLBACK_OPTIONS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
@@ -78,6 +79,9 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_TEXT_ELEMENT_ENUMERATOR</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_VALUETASK_COMPLETED_TASK</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_WINFORMS_TASK_DIALOG</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_DOWNLOAD_MODE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ZLIB_COMPRESSION</DefineConstants>
   </PropertyGroup>
 
@@ -114,6 +118,8 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_DEEP_EQUALS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_CLONING</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_VERIFICATION_TIME_MODE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup

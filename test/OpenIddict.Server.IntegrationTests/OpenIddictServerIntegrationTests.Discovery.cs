@@ -265,9 +265,10 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             options.SetAuthorizationEndpointUris("https://www.fabrikam.com/path/authorization_endpoint")
                    .SetJsonWebKeySetEndpointUris("https://www.fabrikam.com/path/cryptography_endpoint")
-                   .SetDeviceAuthorizationEndpointUris("https://www.fabrikam.com/path/device_endpoint")
+                   .SetDeviceAuthorizationEndpointUris("https://www.fabrikam.com/path/device_authorization_endpoint")
                    .SetIntrospectionEndpointUris("https://www.fabrikam.com/path/introspection_endpoint")
-                   .SetEndSessionEndpointUris("https://www.fabrikam.com/path/logout_endpoint")
+                   .SetEndSessionEndpointUris("https://www.fabrikam.com/path/end_session_endpoint")
+                   .SetPushedAuthorizationEndpointUris("https://www.fabrikam.com/path/pushed_authorization_endpoint")
                    .SetRevocationEndpointUris("https://www.fabrikam.com/path/revocation_endpoint")
                    .SetTokenEndpointUris("https://www.fabrikam.com/path/token_endpoint")
                    .SetUserInfoEndpointUris("https://www.fabrikam.com/path/userinfo_endpoint");
@@ -288,14 +289,17 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("https://www.fabrikam.com/path/authorization_endpoint",
             (string?) response[Metadata.AuthorizationEndpoint]);
 
-        Assert.Equal("https://www.fabrikam.com/path/device_endpoint",
+        Assert.Equal("https://www.fabrikam.com/path/device_authorization_endpoint",
             (string?) response[Metadata.DeviceAuthorizationEndpoint]);
 
         Assert.Equal("https://www.fabrikam.com/path/introspection_endpoint",
             (string?) response[Metadata.IntrospectionEndpoint]);
 
-        Assert.Equal("https://www.fabrikam.com/path/logout_endpoint",
+        Assert.Equal("https://www.fabrikam.com/path/end_session_endpoint",
             (string?) response[Metadata.EndSessionEndpoint]);
+
+        Assert.Equal("https://www.fabrikam.com/path/pushed_authorization_endpoint",
+            (string?) response[Metadata.PushedAuthorizationRequestEndpoint]);
 
         Assert.Equal("https://www.fabrikam.com/path/revocation_endpoint",
             (string?) response[Metadata.RevocationEndpoint]);
@@ -315,9 +319,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             options.SetAuthorizationEndpointUris("path/authorization_endpoint")
                    .SetJsonWebKeySetEndpointUris("path/cryptography_endpoint")
-                   .SetDeviceAuthorizationEndpointUris("path/device_endpoint")
+                   .SetDeviceAuthorizationEndpointUris("path/device_authorization_endpoint")
                    .SetIntrospectionEndpointUris("path/introspection_endpoint")
-                   .SetEndSessionEndpointUris("path/logout_endpoint")
+                   .SetEndSessionEndpointUris("path/end_session_endpoint")
                    .SetPushedAuthorizationEndpointUris("path/pushed_authorization_endpoint")
                    .SetRevocationEndpointUris("path/revocation_endpoint")
                    .SetTokenEndpointUris("path/token_endpoint")
@@ -332,9 +336,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.Equal("http://localhost/path/authorization_endpoint", (string?) response[Metadata.AuthorizationEndpoint]);
         Assert.Equal("http://localhost/path/cryptography_endpoint", (string?) response[Metadata.JwksUri]);
-        Assert.Equal("http://localhost/path/device_endpoint", (string?) response[Metadata.DeviceAuthorizationEndpoint]);
+        Assert.Equal("http://localhost/path/device_authorization_endpoint", (string?) response[Metadata.DeviceAuthorizationEndpoint]);
         Assert.Equal("http://localhost/path/introspection_endpoint", (string?) response[Metadata.IntrospectionEndpoint]);
-        Assert.Equal("http://localhost/path/logout_endpoint", (string?) response[Metadata.EndSessionEndpoint]);
+        Assert.Equal("http://localhost/path/end_session_endpoint", (string?) response[Metadata.EndSessionEndpoint]);
         Assert.Equal("http://localhost/path/pushed_authorization_endpoint", (string?) response[Metadata.PushedAuthorizationRequestEndpoint]);
         Assert.Equal("http://localhost/path/revocation_endpoint", (string?) response[Metadata.RevocationEndpoint]);
         Assert.Equal("http://localhost/path/token_endpoint", (string?) response[Metadata.TokenEndpoint]);
@@ -349,9 +353,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             options.SetAuthorizationEndpointUris("path/authorization_endpoint")
                    .SetJsonWebKeySetEndpointUris("path/cryptography_endpoint")
-                   .SetDeviceAuthorizationEndpointUris("path/device_endpoint")
+                   .SetDeviceAuthorizationEndpointUris("path/device_authorization_endpoint")
                    .SetIntrospectionEndpointUris("path/introspection_endpoint")
-                   .SetEndSessionEndpointUris("path/logout_endpoint")
+                   .SetEndSessionEndpointUris("path/end_session_endpoint")
                    .SetPushedAuthorizationEndpointUris("path/pushed_authorization_endpoint")
                    .SetRevocationEndpointUris("path/revocation_endpoint")
                    .SetTokenEndpointUris("path/token_endpoint")
@@ -378,9 +382,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.Equal("https://contoso.com/issuer/path/authorization_endpoint", (string?) response[Metadata.AuthorizationEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/cryptography_endpoint", (string?) response[Metadata.JwksUri]);
-        Assert.Equal("https://contoso.com/issuer/path/device_endpoint", (string?) response[Metadata.DeviceAuthorizationEndpoint]);
+        Assert.Equal("https://contoso.com/issuer/path/device_authorization_endpoint", (string?) response[Metadata.DeviceAuthorizationEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/introspection_endpoint", (string?) response[Metadata.IntrospectionEndpoint]);
-        Assert.Equal("https://contoso.com/issuer/path/logout_endpoint", (string?) response[Metadata.EndSessionEndpoint]);
+        Assert.Equal("https://contoso.com/issuer/path/end_session_endpoint", (string?) response[Metadata.EndSessionEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/pushed_authorization_endpoint", (string?) response[Metadata.PushedAuthorizationRequestEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/revocation_endpoint", (string?) response[Metadata.RevocationEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/token_endpoint", (string?) response[Metadata.TokenEndpoint]);
@@ -975,6 +979,43 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.False((bool?) response[Metadata.ClaimsParameterSupported]);
         Assert.False((bool?) response[Metadata.RequestParameterSupported]);
         Assert.False((bool?) response[Metadata.RequestUriParameterSupported]);
+    }
+
+    [Fact]
+    public async Task HandleConfigurationRequest_MtlsAliasesAreReturned()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetIssuer("https://mtls.fabrikam.com/");
+
+            options.SetMtlsDeviceAuthorizationEndpointAliasUri("https://mtls.fabrikam.com/path/device_authorization_endpoint")
+                   .SetMtlsIntrospectionEndpointAliasUri("https://mtls.fabrikam.com/path/introspection_endpoint")
+                   .SetMtlsPushedAuthorizationEndpointAliasUri("https://mtls.fabrikam.com/path/pushed_authorization_endpoint")
+                   .SetMtlsRevocationEndpointAliasUri("https://mtls.fabrikam.com/path/revocation_endpoint")
+                   .SetMtlsTokenEndpointAliasUri("https://mtls.fabrikam.com/path/token_endpoint");
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+
+        // Assert
+        Assert.Equal("https://mtls.fabrikam.com/path/device_authorization_endpoint",
+            (string?) response[Metadata.MtlsEndpointAliases]?[Metadata.DeviceAuthorizationEndpoint]);
+
+        Assert.Equal("https://mtls.fabrikam.com/path/introspection_endpoint",
+            (string?) response[Metadata.MtlsEndpointAliases]?[Metadata.IntrospectionEndpoint]);
+
+        Assert.Equal("https://mtls.fabrikam.com/path/pushed_authorization_endpoint",
+            (string?) response[Metadata.MtlsEndpointAliases]?[Metadata.PushedAuthorizationRequestEndpoint]);
+
+        Assert.Equal("https://mtls.fabrikam.com/path/revocation_endpoint",
+            (string?) response[Metadata.MtlsEndpointAliases]?[Metadata.RevocationEndpoint]);
+
+        Assert.Equal("https://mtls.fabrikam.com/path/token_endpoint",
+            (string?) response[Metadata.MtlsEndpointAliases]?[Metadata.TokenEndpoint]);
     }
 
     [Theory]

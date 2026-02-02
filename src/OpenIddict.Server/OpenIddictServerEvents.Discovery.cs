@@ -137,6 +137,31 @@ public static partial class OpenIddictServerEvents
         public Uri? UserInfoEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the mTLS device authorization endpoint alias URI.
+        /// </summary>
+        public Uri? MtlsDeviceAuthorizationEndpointAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mTLS-specific introspection endpoint alias URI.
+        /// </summary>
+        public Uri? MtlsIntrospectionEndpointAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mTLS pushed authorization endpoint alias URI.
+        /// </summary>
+        public Uri? MtlsPushedAuthorizationEndpointAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mTLS revocation endpoint alias URI.
+        /// </summary>
+        public Uri? MtlsRevocationEndpointAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mTLS token endpoint alias URI.
+        /// </summary>
+        public Uri? MtlsTokenEndpointAlias { get; set; }
+
+        /// <summary>
         /// Gets the list of claims supported by the authorization server.
         /// </summary>
         public HashSet<string> Claims { get; } = new(StringComparer.Ordinal);

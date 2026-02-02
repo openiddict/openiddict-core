@@ -253,10 +253,12 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
             foreach (var credentials in _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>()
                 .CurrentValue.SigningCredentials)
             {
+                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
+                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
                 if (credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-                    certificate.Version is >= 3 && IsSelfIssuedCertificate(certificate) &&
-                    HasDigitalSignatureKeyUsage(certificate) &&
-                    HasClientAuthenticationExtendedKeyUsage(certificate))
+                    certificate.Version is >= 3 && OpenIddictHelpers.IsSelfIssuedCertificate(certificate) &&
+                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.DigitalSignature) &&
+                    OpenIddictHelpers.HasExtendedKeyUsage(certificate, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication))
                 {
                     return certificate;
                 }
@@ -270,10 +272,12 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
             foreach (var credentials in _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>()
                 .CurrentValue.SigningCredentials)
             {
+                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
+                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
                 if (credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-                    certificate.Version is >= 3 && !IsSelfIssuedCertificate(certificate) &&
-                    HasDigitalSignatureKeyUsage(certificate) &&
-                    HasClientAuthenticationExtendedKeyUsage(certificate))
+                    certificate.Version is >= 3 && !OpenIddictHelpers.IsSelfIssuedCertificate(certificate) &&
+                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.DigitalSignature) &&
+                    OpenIddictHelpers.HasExtendedKeyUsage(certificate, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication))
                 {
                     return certificate;
                 }
@@ -281,51 +285,5 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
 
             return null;
         };
-
-        static bool HasClientAuthenticationExtendedKeyUsage(X509Certificate2 certificate)
-        {
-            for (var index = 0; index < certificate.Extensions.Count; index++)
-            {
-                if (certificate.Extensions[index] is X509EnhancedKeyUsageExtension extension &&
-                    HasOid(extension.EnhancedKeyUsages, "1.3.6.1.5.5.7.3.2"))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-
-            static bool HasOid(OidCollection collection, string value)
-            {
-                for (var index = 0; index < collection.Count; index++)
-                {
-                    if (collection[index] is Oid oid && string.Equals(oid.Value, value, StringComparison.Ordinal))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }
-
-        static bool HasDigitalSignatureKeyUsage(X509Certificate2 certificate)
-        {
-            for (var index = 0; index < certificate.Extensions.Count; index++)
-            {
-                if (certificate.Extensions[index] is X509KeyUsageExtension extension &&
-                    extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
-        // of this check, a certificate is always assumed to be self-signed when it is self-issued.
-        static bool IsSelfIssuedCertificate(X509Certificate2 certificate)
-            => certificate.SubjectName.RawData.AsSpan().SequenceEqual(certificate.IssuerName.RawData);
     }
 }

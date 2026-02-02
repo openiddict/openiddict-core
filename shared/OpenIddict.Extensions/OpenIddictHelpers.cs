@@ -11,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -196,7 +197,7 @@ internal static class OpenIddictHelpers
         ArgumentNullException.ThrowIfNull(uri);
 
         var builder = new StringBuilder(uri.Query);
-        if (builder.Length > 0)
+        if (builder.Length is > 0)
         {
             builder.Append('&');
         }
@@ -238,7 +239,7 @@ internal static class OpenIddictHelpers
             // only append the parameter key to the query string.
             if (parameter.Value.Count is 0)
             {
-                if (builder.Length > 0)
+                if (builder.Length is > 0)
                 {
                     builder.Append('&');
                 }
@@ -252,7 +253,7 @@ internal static class OpenIddictHelpers
             {
                 foreach (var value in parameter.Value)
                 {
-                    if (builder.Length > 0)
+                    if (builder.Length is > 0)
                     {
                         builder.Append('&');
                     }
@@ -286,7 +287,7 @@ internal static class OpenIddictHelpers
             .Select(static parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
             .Select(static parts => (
                 Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
-                Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
+                Value: parts.Length is > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
             .Where(static pair => !string.IsNullOrEmpty(pair.Key))
             .GroupBy(static pair => pair.Key)
             .ToDictionary(static pair => pair.Key!, static pair => new StringValues([.. pair.Select(parts => parts.Value)]));
@@ -307,7 +308,7 @@ internal static class OpenIddictHelpers
             .Select(static parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
             .Select(static parts => (
                 Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
-                Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
+                Value: parts.Length is > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
             .Where(static pair => !string.IsNullOrEmpty(pair.Key))
             .GroupBy(static pair => pair.Key)
             .ToDictionary(static pair => pair.Key!, static pair => new StringValues([.. pair.Select(parts => parts.Value)]));
@@ -998,7 +999,7 @@ internal static class OpenIddictHelpers
     /// </summary>
     /// <param name="node">The <see cref="JsonNode"/>.</param>
     /// <returns>
-    /// <see langword="true"/> if the JSON node is null or empty <see langword="false"/> otherwise.
+    /// <see langword="true"/> if the JSON node is null or empty, <see langword="false"/> otherwise.
     /// </returns>
     public static bool IsNullOrEmpty([NotNullWhen(false)] JsonNode? node) => node switch
     {
@@ -1014,6 +1015,94 @@ internal static class OpenIddictHelpers
         // a JsonElement instance and infer the corresponding claim value type.
         JsonNode value => IsNullOrEmpty(value.Deserialize(OpenIddictSerializer.Default.JsonElement))
     };
+
+    /// <summary>
+    /// Determines whether the specified <paramref name="certificate"/> is a certificate authority.
+    /// </summary>
+    /// <param name="certificate">The <see cref="X509Certificate2"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the certificate is a certificate authority, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsCertificateAuthority(X509Certificate2 certificate)
+    {
+        ArgumentNullException.ThrowIfNull(certificate);
+
+        return certificate.Extensions.OfType<X509BasicConstraintsExtension>()
+            .Any(static extension => extension.CertificateAuthority);
+    }
+
+    /// <summary>
+    /// Determines whether the specified <paramref name="certificate"/> has the specified extended key usage.
+    /// </summary>
+    /// <param name="certificate">The <see cref="X509Certificate2"/>.</param>
+    /// <param name="usage">The extended key usage.</param>
+    /// <returns>
+    /// <see langword="true"/> if the certificate has the specified extended key usage, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool HasExtendedKeyUsage(X509Certificate2 certificate, string usage)
+    {
+        for (var index = 0; index < certificate.Extensions.Count; index++)
+        {
+            if (certificate.Extensions[index] is X509EnhancedKeyUsageExtension extension &&
+                HasOid(extension.EnhancedKeyUsages, usage))
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+        static bool HasOid(OidCollection collection, string value)
+        {
+            for (var index = 0; index < collection.Count; index++)
+            {
+                if (collection[index] is Oid oid && string.Equals(oid.Value, value, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Determines whether the specified <paramref name="certificate"/> has the specified key usage.
+    /// </summary>
+    /// <param name="certificate">The <see cref="X509Certificate2"/>.</param>
+    /// <param name="usage">The <see cref="X509KeyUsageFlags"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the certificate has the specified key usage, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool HasKeyUsage(X509Certificate2 certificate, X509KeyUsageFlags usage)
+    {
+        ArgumentNullException.ThrowIfNull(certificate);
+
+        for (var index = 0; index < certificate.Extensions.Count; index++)
+        {
+            if (certificate.Extensions[index] is X509KeyUsageExtension extension &&
+                extension.KeyUsages.HasFlag(usage))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether the specified <paramref name="certificate"/> is self-issued.
+    /// </summary>
+    /// <param name="certificate">The <see cref="X509Certificate2"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the certificate is self-issued, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsSelfIssuedCertificate(X509Certificate2 certificate)
+    {
+        ArgumentNullException.ThrowIfNull(certificate);
+
+        return certificate.SubjectName.RawData.AsSpan().SequenceEqual(certificate.IssuerName.RawData);
+    }
 
     /// <summary>
     /// Determines whether the items contained in <paramref name="element"/>

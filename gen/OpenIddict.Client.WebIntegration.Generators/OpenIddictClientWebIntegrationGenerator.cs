@@ -628,7 +628,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 store.Open(OpenFlags.ReadOnly);
 
                 return store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                    .OfType<X509Certificate2>()
+                    .Cast<X509Certificate2>()
                     .SingleOrDefault();
             }
         }
@@ -652,7 +652,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
             return Set{{ setting.property_name }}(
                 store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                    .OfType<X509Certificate2>()
+                    .Cast<X509Certificate2>()
                     .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
         }
         {{~ else if setting.clr_type == 'bool' ~}}
@@ -1163,8 +1163,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             if (settings.{{ setting.property_name }} is not null)
             {
                 // If the signing key is an asymmetric security key, ensure it has a private key.
-                if (settings.{{ setting.property_name }} is AsymmetricSecurityKey asymmetricSecurityKey &&
-                    asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+                if (settings.{{ setting.property_name }} is AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
                 }

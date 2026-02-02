@@ -135,8 +135,7 @@ public sealed class OpenIddictClientBuilder
         ArgumentNullException.ThrowIfNull(key);
 
         // If the encryption key is an asymmetric security key, ensure it has a private key.
-        if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+        if (key is AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0055));
         }
@@ -202,7 +201,7 @@ public sealed class OpenIddictClientBuilder
             // If no valid existing certificate was found, create a new encryption certificate.
             var certificates = store.Certificates
                 .Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .ToList();
 
             if (!certificates.Exists(certificate => certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
@@ -318,7 +317,7 @@ public sealed class OpenIddictClientBuilder
 
         // If the certificate is a X.509v3 certificate that specifies at least one
         // key usage, ensure that the certificate key can be used for key encryption.
-        if (certificate.Version >= 3)
+        if (certificate.Version is >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
             if (extensions.Count is not 0 && !extensions.Exists(static extension =>
@@ -437,7 +436,7 @@ public sealed class OpenIddictClientBuilder
             store.Open(OpenFlags.ReadOnly);
 
             return store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .SingleOrDefault();
         }
     }
@@ -458,7 +457,7 @@ public sealed class OpenIddictClientBuilder
 
         return AddEncryptionCertificate(
             store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
     }
     
@@ -496,8 +495,7 @@ public sealed class OpenIddictClientBuilder
         ArgumentNullException.ThrowIfNull(key);
 
         // If the signing key is an asymmetric security key, ensure it has a private key.
-        if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+        if (key is AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
         }
@@ -581,7 +579,7 @@ public sealed class OpenIddictClientBuilder
             // If no valid existing certificate was found, create a new signing certificate.
             var certificates = store.Certificates
                 .Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .ToList();
 
             if (!certificates.Exists(certificate => certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
@@ -725,7 +723,7 @@ public sealed class OpenIddictClientBuilder
 
         // If the certificate is a X.509v3 certificate that specifies at least
         // one key usage, ensure that the certificate key can be used for signing.
-        if (certificate.Version >= 3)
+        if (certificate.Version is >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
             if (extensions.Count is not 0 && !extensions.Exists(static extension =>
@@ -844,7 +842,7 @@ public sealed class OpenIddictClientBuilder
             store.Open(OpenFlags.ReadOnly);
 
             return store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .SingleOrDefault();
         }
     }
@@ -865,7 +863,7 @@ public sealed class OpenIddictClientBuilder
 
         return AddSigningCertificate(
             store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
     }
     
