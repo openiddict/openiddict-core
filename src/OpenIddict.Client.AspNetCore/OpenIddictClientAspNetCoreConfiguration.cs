@@ -125,7 +125,7 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
         // on invalid endpoints. To opt out this undesirable behavior, a fake entry
         // is dynamically added if one of the default schemes properties is not set
         // and less than 2 handlers were registered in the authentication options.
-        if (options.SchemeMap.Count < 2 && string.IsNullOrEmpty(options.DefaultScheme) &&
+        if (options.SchemeMap.Count is < 2 && string.IsNullOrEmpty(options.DefaultScheme) &&
            (string.IsNullOrEmpty(options.DefaultAuthenticateScheme) ||
             string.IsNullOrEmpty(options.DefaultSignInScheme) ||
             string.IsNullOrEmpty(options.DefaultSignOutScheme)))

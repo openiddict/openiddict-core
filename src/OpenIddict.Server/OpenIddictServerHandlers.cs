@@ -8,7 +8,9 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,13 +38,14 @@ public static partial class OpenIddictServerHandlers
         EvaluateValidatedTokens.Descriptor,
         ResolveValidatedTokens.Descriptor,
         ValidateRequiredTokens.Descriptor,
-        ValidateClientId.Descriptor,
-        ValidateClientType.Descriptor,
-        ValidateClientSecret.Descriptor,
         ValidateClientAssertion.Descriptor,
         ValidateClientAssertionWellknownClaims.Descriptor,
         ValidateClientAssertionIssuer.Descriptor,
         ValidateClientAssertionAudience.Descriptor,
+        ValidateClientId.Descriptor,
+        ValidateClientType.Descriptor,
+        ValidateClientSecret.Descriptor,
+        ValidateClientCertificate.Descriptor,
         ValidateRequestToken.Descriptor,
         ValidateRequestTokenType.Descriptor,
         ValidateAccessToken.Descriptor,
@@ -1116,6 +1119,19 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
+                // Reject requests containing a TLS client certificate when the client is a public application.
+                if (context.ClientCertificate is not null)
+                {
+                    context.Logger.LogInformation(6282, SR.GetResourceString(SR.ID6282), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: SR.GetResourceString(SR.ID2196),
+                        uri: SR.FormatID8000(SR.ID2196));
+
+                    return;
+                }
+
                 // Reject requests containing a client_assertion when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientAssertion))
                 {
@@ -1145,15 +1161,16 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
-            if (context.ClientAssertionPrincipal is null && string.IsNullOrEmpty(context.ClientSecret))
+            // Confidential applications MUST authenticate to protect them from impersonation attacks.
+            if (context.ClientAssertionPrincipal is null &&
+                context.ClientCertificate is null && string.IsNullOrEmpty(context.ClientSecret))
             {
                 context.Logger.LogInformation(6224, SR.GetResourceString(SR.ID6224), context.ClientId);
 
                 context.Reject(
                     error: Errors.InvalidClient,
-                    description: SR.FormatID2054(Parameters.ClientSecret),
-                    uri: SR.FormatID8000(SR.ID2054));
+                    description: SR.GetResourceString(SR.ID2198),
+                    uri: SR.FormatID8000(SR.ID2198));
 
                 return;
             }
@@ -1227,6 +1244,107 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for validating the TLS client certificate used for client authentication, if applicable.
+    /// </summary>
+    public sealed class ValidateClientCertificate : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        private readonly IOpenIddictApplicationManager _applicationManager;
+
+        public ValidateClientCertificate() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+        public ValidateClientCertificate(IOpenIddictApplicationManager applicationManager)
+            => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireClientIdParameter>()
+                .AddFilter<RequireClientCertificate>()
+                .AddFilter<RequireDegradedModeDisabled>()
+                .UseScopedHandler<ValidateClientCertificate>()
+                .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+            Debug.Assert(context.ClientCertificate is not null, SR.GetResourceString(SR.ID4020));
+
+            // Don't validate the client secret on endpoints that don't support client authentication.
+            if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
+                                        OpenIddictServerEndpointType.EndSession          or
+                                        OpenIddictServerEndpointType.EndUserVerification or
+                                        OpenIddictServerEndpointType.UserInfo)
+            {
+                return;
+            }
+
+            var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+            // If the application is a public client, don't validate the client certificate.
+            if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+            {
+                return;
+            }
+
+            // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
+            // of this check, a certificate is always assumed to be self-signed when it is self-issued.
+            //
+            // A second pass is internally performed by the default implementations of the
+            // ValidateSelfSignedClientCertificateAsync() and ValidateClientCertificateAsync() APIs
+            // once the chain is built to validate whether the certificate is self-signed or not.
+            if (OpenIddictHelpers.IsSelfIssuedCertificate(context.ClientCertificate))
+            {
+                if (context.Options.SelfSignedClientCertificateChainPolicy is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0506));
+                }
+
+                var policy = await _applicationManager.GetSelfSignedClientCertificateChainPolicyAsync(application, context.Options.SelfSignedClientCertificateChainPolicy);
+                if (policy is null || !await _applicationManager.ValidateSelfSignedClientCertificateAsync(application, context.ClientCertificate, policy))
+                {
+                    context.Logger.LogInformation(6283, SR.GetResourceString(SR.ID6283), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: SR.GetResourceString(SR.ID2197),
+                        uri: SR.FormatID8000(SR.ID2197));
+
+                    return;
+                }
+            }
+
+            else
+            {
+                if (context.Options.ClientCertificateChainPolicy is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0505));
+                }
+
+                var policy = await _applicationManager.GetClientCertificateChainPolicyAsync(application, context.Options.ClientCertificateChainPolicy);
+                if (policy is null || !await _applicationManager.ValidateClientCertificateAsync(application, context.ClientCertificate, policy))
+                {
+                    context.Logger.LogInformation(6284, SR.GetResourceString(SR.ID6284), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: SR.GetResourceString(SR.ID2197),
+                        uri: SR.FormatID8000(SR.ID2197));
+
+                    return;
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for validating the request token resolved from the context.
     /// </summary>
     public sealed class ValidateRequestToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
@@ -1243,7 +1361,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireRequestTokenValidated>()
                 .UseScopedHandler<ValidateRequestToken>()
-                .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
+                .SetOrder(ValidateClientCertificate.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

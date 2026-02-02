@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Server;
@@ -25,6 +26,11 @@ public sealed class OpenIddictServerTransaction
     /// recommended to use this property only for user-dependent operations.
     /// </remarks>
     public CancellationToken CancellationToken { get; set; }
+
+    /// <summary>
+    /// Gets or sets the X.509 client certificate, if available.
+    /// </summary>
+    public X509Certificate2? ClientCertificate { get; set; }
 
     /// <summary>
     /// Gets or sets the type of the endpoint processing the current request.

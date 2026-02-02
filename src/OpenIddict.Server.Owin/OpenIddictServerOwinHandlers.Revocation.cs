@@ -19,6 +19,7 @@ public static partial class OpenIddictServerOwinHandlers
              */
             ExtractPostRequest<ExtractRevocationRequestContext>.Descriptor,
             ValidateClientAuthenticationMethod<ExtractRevocationRequestContext>.Descriptor,
+            ExtractClientAuthenticationCertificate<ExtractRevocationRequestContext>.Descriptor,
             ExtractBasicAuthenticationCredentials<ExtractRevocationRequestContext>.Descriptor,
 
             /*

@@ -12,12 +12,14 @@ namespace OpenIddict.Abstractions;
 
 /// <summary>
 /// Provides methods allowing to manage the tokens stored in the store.
+/// </summary>
+/// <remarks>
 /// Note: this interface is not meant to be implemented by custom managers,
 /// that should inherit from the generic OpenIddictTokenManager class.
 /// It is primarily intended to be used by services that cannot easily
 /// depend on the generic token manager. The actual token entity type is
 /// automatically determined at runtime based on the OpenIddict core options.
-/// </summary>
+/// </remarks>
 public interface IOpenIddictTokenManager
 {
     /// <summary>

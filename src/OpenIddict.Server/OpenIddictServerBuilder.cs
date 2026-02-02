@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -11,6 +12,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
 
@@ -144,8 +146,7 @@ public sealed class OpenIddictServerBuilder
         ArgumentNullException.ThrowIfNull(key);
 
         // If the encryption key is an asymmetric security key, ensure it has a private key.
-        if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+        if (key is AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0055));
         }
@@ -211,7 +212,7 @@ public sealed class OpenIddictServerBuilder
             // If no valid existing certificate was found, create a new encryption certificate.
             var certificates = store.Certificates
                 .Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .ToList();
 
             if (!certificates.Exists(certificate => certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
@@ -327,7 +328,7 @@ public sealed class OpenIddictServerBuilder
 
         // If the certificate is a X.509v3 certificate that specifies at least one
         // key usage, ensure that the certificate key can be used for key encryption.
-        if (certificate.Version >= 3)
+        if (certificate.Version is >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
             if (extensions.Count is not 0 && !extensions.Exists(static extension =>
@@ -446,7 +447,7 @@ public sealed class OpenIddictServerBuilder
             store.Open(OpenFlags.ReadOnly);
 
             return store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .SingleOrDefault();
         }
     }
@@ -467,7 +468,7 @@ public sealed class OpenIddictServerBuilder
 
         return AddEncryptionCertificate(
             store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
     }
     
@@ -505,8 +506,7 @@ public sealed class OpenIddictServerBuilder
         ArgumentNullException.ThrowIfNull(key);
 
         // If the signing key is an asymmetric security key, ensure it has a private key.
-        if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+        if (key is AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
         }
@@ -590,7 +590,7 @@ public sealed class OpenIddictServerBuilder
             // If no valid existing certificate was found, create a new signing certificate.
             var certificates = store.Certificates
                 .Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .ToList();
 
             if (!certificates.Exists(certificate =>
@@ -735,7 +735,7 @@ public sealed class OpenIddictServerBuilder
 
         // If the certificate is a X.509v3 certificate that specifies at least
         // one key usage, ensure that the certificate key can be used for signing.
-        if (certificate.Version >= 3)
+        if (certificate.Version is >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
             if (extensions.Count is not 0 && !extensions.Exists(static extension =>
@@ -854,7 +854,7 @@ public sealed class OpenIddictServerBuilder
             store.Open(OpenFlags.ReadOnly);
 
             return store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .SingleOrDefault();
         }
     }
@@ -875,7 +875,7 @@ public sealed class OpenIddictServerBuilder
 
         return AddSigningCertificate(
             store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-                .OfType<X509Certificate2>()
+                .Cast<X509Certificate2>()
                 .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
     }
     
@@ -1893,7 +1893,7 @@ public sealed class OpenIddictServerBuilder
     /// Sets the issuer URI, which is used as the value of the "issuer" claim and
     /// is returned from the discovery endpoint to identify the authorization server.
     /// </summary>
-    /// <param name="uri">The issuer uri.</param>
+    /// <param name="uri">The issuer URI.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetIssuer(Uri uri)
     {
@@ -1906,7 +1906,7 @@ public sealed class OpenIddictServerBuilder
     /// Sets the issuer URI, which is used as the value of the "issuer" claim and
     /// is returned from the discovery endpoint to identify the authorization server.
     /// </summary>
-    /// <param name="uri">The issuer uri.</param>
+    /// <param name="uri">The issuer URI.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetIssuer(
         [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
@@ -1919,6 +1919,256 @@ public sealed class OpenIddictServerBuilder
         }
 
         return SetIssuer(value);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS device authorization
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsDeviceAuthorizationEndpointAliasUri(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        if (uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uri));
+        }
+
+        return Configure(options => options.MtlsDeviceAuthorizationEndpointAliasUri = uri);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS device authorization
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsDeviceAuthorizationEndpointAliasUri(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(uri);
+
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        return SetMtlsDeviceAuthorizationEndpointAliasUri(value);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS introspection
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsIntrospectionEndpointAliasUri(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        if (uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uri));
+        }
+
+        return Configure(options => options.MtlsIntrospectionEndpointAliasUri = uri);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS introspection endpoint
+    /// alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsIntrospectionEndpointAliasUri(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(uri);
+
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        return SetMtlsIntrospectionEndpointAliasUri(value);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS pushed authorization
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsPushedAuthorizationEndpointAliasUri(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        if (uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uri));
+        }
+
+        return Configure(options => options.MtlsPushedAuthorizationEndpointAliasUri = uri);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS pushed authorization
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsPushedAuthorizationEndpointAliasUri(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(uri);
+
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        return SetMtlsPushedAuthorizationEndpointAliasUri(value);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS revocation endpoint
+    /// alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsRevocationEndpointAliasUri(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        if (uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uri));
+        }
+
+        return Configure(options => options.MtlsRevocationEndpointAliasUri = uri);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS revocation endpoint
+    /// alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsRevocationEndpointAliasUri(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(uri);
+
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        return SetMtlsRevocationEndpointAliasUri(value);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS token endpoint
+    /// alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsTokenEndpointAliasUri(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        if (uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uri));
+        }
+
+        return Configure(options => options.MtlsTokenEndpointAliasUri = uri);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS token endpoint
+    /// alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsTokenEndpointAliasUri(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(uri);
+
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        return SetMtlsTokenEndpointAliasUri(value);
     }
 
     /// <summary>
@@ -1961,6 +2211,171 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder EnableEndSessionRequestCaching()
         => Configure(options => options.EnableEndSessionRequestCaching = true);
+
+    /// <summary>
+    /// Configures OpenIddict to enable PKI client certificate authentication (mTLS) and trust
+    /// the specified root and intermediate certificates when validating client certificates.
+    /// </summary>
+    /// <param name="certificates">The store containing the root and intermediate certificates to trust.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictServerBuilder EnablePublicKeyInfrastructureClientCertificateAuthentication(X509Certificate2Collection certificates)
+        => EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates, static policy => { });
+
+    /// <summary>
+    /// Configures OpenIddict to enable PKI client certificate authentication (mTLS) and trust
+    /// the specified root and intermediate certificates when validating client certificates.
+    /// </summary>
+    /// <param name="certificates">The store containing the root and intermediate certificates to trust.</param>
+    /// <param name="configuration">The delegate used to amend the created X.509 chain policy.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictServerBuilder EnablePublicKeyInfrastructureClientCertificateAuthentication(
+        X509Certificate2Collection certificates, Action<X509ChainPolicy> configuration)
+    {
+        ArgumentNullException.ThrowIfNull(certificates);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+        // Ensure at least one root certificate authority was included in the certificate collection.
+        if (!certificates.Cast<X509Certificate2>().Any(static certificate =>
+            OpenIddictHelpers.IsCertificateAuthority(certificate) &&
+            OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign) &&
+            OpenIddictHelpers.IsSelfIssuedCertificate(certificate)))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0507), nameof(certificates));
+        }
+
+        // Ensure no end certificate was included in the certificate collection.
+        if (certificates.Cast<X509Certificate2>().Any(static certificate =>
+            !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
+            !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0501), nameof(certificates));
+        }
+
+        // Ensure none of the certificates contains a private key.
+        if (certificates.Cast<X509Certificate2>().Any(static certificate => certificate.HasPrivateKey))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0511), nameof(certificates));
+        }
+
+        var policy = new X509ChainPolicy
+        {
+            // Note: by default, OpenIddict requires that end certificates used for authentication
+            // explicitly list client authentication as an allowed extended key usage.
+            ApplicationPolicy = { new Oid(ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication) },
+            TrustMode = X509ChainTrustMode.CustomRootTrust
+        };
+
+        policy.CustomTrustStore.AddRange(certificates);
+
+        // If one of the root certificates doesn't include a CRL or AIA
+        // extension, ignore root revocation unknown status errors by default. 
+        if (certificates.Cast<X509Certificate2>()
+            .Where(static certificate =>
+                OpenIddictHelpers.IsCertificateAuthority(certificate) &&
+                OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign) &&
+                OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+            .Any(static certificate =>
+                certificate.Extensions[ObjectIdentifiers.CertificateExtensions.CrlDistributionPoints] is null &&
+                certificate.Extensions[ObjectIdentifiers.CertificateExtensions.AuthorityInfoAccess]   is null))
+        {
+            policy.VerificationFlags |= X509VerificationFlags.IgnoreRootRevocationUnknown;
+        }
+
+        // If one of the intermediate certificates doesn't include a CRL or AIA
+        // extension, ignore root revocation unknown status errors by default. 
+        if (certificates.Cast<X509Certificate2>()
+            .Where(static certificate =>
+                OpenIddictHelpers.IsCertificateAuthority(certificate) &&
+                OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign) &&
+               !OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+            .Any(static certificate =>
+                certificate.Extensions[ObjectIdentifiers.CertificateExtensions.CrlDistributionPoints] is null &&
+                certificate.Extensions[ObjectIdentifiers.CertificateExtensions.AuthorityInfoAccess]   is null))
+        {
+            policy.VerificationFlags |= X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown;
+        }
+
+        // If the root or intermediate certificates doesn't include a CRL or AIA, assume
+        // by default that the end certificates won't have a CRL or AIA extension either.
+        if (certificates.Cast<X509Certificate2>()
+            .Where(static certificate =>
+                OpenIddictHelpers.IsCertificateAuthority(certificate) &&
+                OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign))
+            .Any(static certificate =>
+                certificate.Extensions[ObjectIdentifiers.CertificateExtensions.CrlDistributionPoints] is null &&
+                certificate.Extensions[ObjectIdentifiers.CertificateExtensions.AuthorityInfoAccess]   is null))
+        {
+            policy.VerificationFlags |= X509VerificationFlags.IgnoreEndRevocationUnknown;
+        }
+
+        // Run the user-provided configuration delegate and ensure the trust mode wasn't accidentally changed to
+        // prevent spoofing attacks (i.e attacks that consist in using a client certificate issued by a certificate
+        // authority trusted by the operating system but that isn't the one expected by the authorization server
+        // for client authentication). While discouraged, applications that need to use the system root store
+        // (e.g applications running on .NET Framework) can manually attach a custom policy to the server options.
+        configuration(policy);
+
+        if (policy.TrustMode is not X509ChainTrustMode.CustomRootTrust)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0509));
+        }
+
+        return Configure(options => options.ClientCertificateChainPolicy = policy);
+#else
+        throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0508));
+#endif
+    }
+
+    /// <summary>
+    /// Configures OpenIddict to enable self-signed client certificate authentication (mTLS).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictServerBuilder EnableSelfSignedClientCertificateAuthentication()
+        => EnableSelfSignedClientCertificateAuthentication(static policy => { });
+
+    /// <summary>
+    /// Configures OpenIddict to enable self-signed client certificate authentication (mTLS).
+    /// </summary>
+    /// <param name="configuration">The delegate used to amend the created X.509 chain policy.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictServerBuilder EnableSelfSignedClientCertificateAuthentication(Action<X509ChainPolicy> configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+        var policy = new X509ChainPolicy
+        {
+            // Note: by default, OpenIddict requires that end certificates used for authentication
+            // explicitly list client authentication as an allowed extended key usage.
+            ApplicationPolicy = { new Oid(ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication) },
+            // Note: self-signed certificates used for client authentication typically never include revocation
+            // information (CRL or AIA) and are "revoked" by simply being removed from the JSON Web Key Set.
+            RevocationMode = X509RevocationMode.NoCheck,
+            TrustMode = X509ChainTrustMode.CustomRootTrust
+        };
+
+        // Run the user-provided configuration delegate and ensure the trust mode wasn't accidentally changed to
+        // prevent spoofing attacks (i.e attacks that consist in using a client certificate issued by a certificate
+        // authority trusted by the operating system but that isn't the one expected by the authorization server
+        // for client authentication). While discouraged, applications that need to use the system root store
+        // (e.g applications running on .NET Framework) can manually attach a custom policy to the server options.
+        configuration(policy);
+
+        if (policy.TrustMode is not X509ChainTrustMode.CustomRootTrust)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0509));
+        }
+
+        return Configure(options => options.SelfSignedClientCertificateChainPolicy = policy);
+#else
+        throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0508));
+#endif
+    }
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]

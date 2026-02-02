@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
@@ -235,6 +236,7 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.UserInfoEndpoint] = notification.UserInfoEndpoint?.AbsoluteUri,
                     [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceAuthorizationEndpoint?.AbsoluteUri,
                     [Metadata.PushedAuthorizationRequestEndpoint] = notification.PushedAuthorizationEndpoint?.AbsoluteUri,
+                    [Metadata.MtlsEndpointAliases] = CreateMtlsEndpointAliases(notification),
                     [Metadata.JwksUri] = notification.JsonWebKeySetEndpoint?.AbsoluteUri,
                     [Metadata.GrantTypesSupported] = notification.GrantTypes.ToImmutableArray<string?>(),
                     [Metadata.ResponseTypesSupported] = notification.ResponseTypes.ToImmutableArray<string?>(),
@@ -259,6 +261,38 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 context.Transaction.Response = response;
+
+                static JsonObject CreateMtlsEndpointAliases(HandleConfigurationRequestContext context)
+                {
+                    var node = new JsonObject();
+
+                    if (context.MtlsDeviceAuthorizationEndpointAlias is not null)
+                    {
+                        node.Add(Metadata.DeviceAuthorizationEndpoint, context.MtlsDeviceAuthorizationEndpointAlias.AbsoluteUri);
+                    }
+
+                    if (context.MtlsIntrospectionEndpointAlias is not null)
+                    {
+                        node.Add(Metadata.IntrospectionEndpoint, context.MtlsIntrospectionEndpointAlias.AbsoluteUri);
+                    }
+
+                    if (context.MtlsPushedAuthorizationEndpointAlias is not null)
+                    {
+                        node.Add(Metadata.PushedAuthorizationRequestEndpoint, context.MtlsPushedAuthorizationEndpointAlias.AbsoluteUri);
+                    }
+
+                    if (context.MtlsRevocationEndpointAlias is not null)
+                    {
+                        node.Add(Metadata.RevocationEndpoint, context.MtlsRevocationEndpointAlias.AbsoluteUri);
+                    }
+
+                    if (context.MtlsTokenEndpointAlias is not null)
+                    {
+                        node.Add(Metadata.TokenEndpoint, context.MtlsTokenEndpointAlias.AbsoluteUri);
+                    }
+
+                    return node;
+                }
             }
         }
 
@@ -376,6 +410,21 @@ public static partial class OpenIddictServerHandlers
 
                 context.JsonWebKeySetEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.JsonWebKeySetEndpointUris.FirstOrDefault());
+
+                context.MtlsDeviceAuthorizationEndpointAlias ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.MtlsDeviceAuthorizationEndpointAliasUri);
+
+                context.MtlsIntrospectionEndpointAlias ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.MtlsIntrospectionEndpointAliasUri);
+
+                context.MtlsPushedAuthorizationEndpointAlias ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.MtlsPushedAuthorizationEndpointAliasUri);
+
+                context.MtlsRevocationEndpointAlias ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.MtlsRevocationEndpointAliasUri);
+
+                context.MtlsTokenEndpointAlias ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.MtlsTokenEndpointAliasUri);
 
                 context.PushedAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.PushedAuthorizationEndpointUris.FirstOrDefault());

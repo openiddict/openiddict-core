@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace OpenIddict.Extensions;
 
@@ -303,4 +305,54 @@ internal static class OpenIddictPolyfills
         return currentRevision >= revision;
     }
 #endif
+
+    extension(X509ChainPolicy policy)
+    {
+#if !SUPPORTS_X509_CHAIN_POLICY_CLONING
+        public X509ChainPolicy Clone()
+        {
+            var clone = new X509ChainPolicy
+            {
+#if SUPPORTS_X509_CHAIN_POLICY_DOWNLOAD_MODE
+                DisableCertificateDownloads = policy.DisableCertificateDownloads,
+#endif
+                RevocationMode = policy.RevocationMode,
+                RevocationFlag = policy.RevocationFlag,
+#if SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
+                TrustMode = policy.TrustMode,
+#endif
+                UrlRetrievalTimeout = policy.UrlRetrievalTimeout,
+                VerificationFlags = policy.VerificationFlags,
+                VerificationTime = policy.VerificationTime,
+#if SUPPORTS_X509_CHAIN_POLICY_VERIFICATION_TIME_MODE
+                VerificationTimeIgnored = policy.VerificationTimeIgnored
+#endif
+            };
+
+            if (policy.ApplicationPolicy.Count is > 0)
+            {
+                for (var index = 0; index < policy.ApplicationPolicy.Count; index++)
+                {
+                    clone.ApplicationPolicy.Add(policy.ApplicationPolicy[index]);
+                }
+            }
+
+            if (policy.CertificatePolicy.Count is > 0)
+            {
+                for (var index = 0; index < policy.CertificatePolicy.Count; index++)
+                {
+                    clone.CertificatePolicy.Add(policy.CertificatePolicy[index]);
+                }
+            }
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+            clone.CustomTrustStore.AddRange(policy.CustomTrustStore);
+#endif
+
+            clone.ExtraStore.AddRange(policy.ExtraStore);
+
+            return clone;
+        }
+#endif
+    }
 }

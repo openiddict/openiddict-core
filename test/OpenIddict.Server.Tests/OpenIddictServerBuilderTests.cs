@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -309,9 +311,9 @@ public class OpenIddictServerBuilderTests
         builder.AddDevelopmentEncryptionCertificate(
             subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)));
 
-        var serviceProvider = services.BuildServiceProvider();
+        var provider = services.BuildServiceProvider();
 
-        var options = serviceProvider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+        var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
 
         // Act and assert
         var exception = Assert.Throws<PlatformNotSupportedException>(() => options.Value);
@@ -365,9 +367,9 @@ public class OpenIddictServerBuilderTests
         builder.AddDevelopmentSigningCertificate(
             subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)));
 
-        var serviceProvider = services.BuildServiceProvider();
+        var provider = services.BuildServiceProvider();
 
-        var options = serviceProvider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+        var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
 
         // Act and assert
         var exception = Assert.Throws<PlatformNotSupportedException>(() => options.Value);
@@ -783,6 +785,412 @@ public class OpenIddictServerBuilderTests
         // Assert
         Assert.True(options.DisableTokenStorage);
     }
+
+    [Fact]
+    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_ThrowsAnExceptionForNullCertificates()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates: null!));
+
+        Assert.Equal("certificates", exception.ParamName);
+    }
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+    [Fact]
+    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_ThrowsAnExceptionWhenNoRootCertificateProvided()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var certificates = new X509Certificate2Collection
+        {
+            // Intermediate certificate:
+            X509Certificate2.CreateFromPem($"""
+                -----BEGIN CERTIFICATE-----
+                MIIFRDCCAyygAwIBAgIRALpTKvDtz6lGPaqNaK8aULowDQYJKoZIhvcNAQELBQAw
+                EjEQMA4GA1UEAxMHUm9vdCBDQTAgFw0yNjAxMzAxNzM4NTVaGA8yMTI2MDEzMTE3
+                Mzg1NVowGjEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMIICIjANBgkqhkiG9w0B
+                AQEFAAOCAg8AMIICCgKCAgEAvHiS4aNz7vL5mOJNjbpybcK75RhH1sXifLwKW8Zg
+                nHm+KjdRENf3X9yp7c+xNrtpHhG4/gp8M++0G1Cz4Yvq8idZu8IpMiqk9/KT447b
+                VocaRPCFC4NIC9U6g4s3rwHLUr2wMCAWiM9yjWcbXcvIlnSuA/i/lSAfAUPjrn8X
+                LLDgqlEkInmWRvYvDmdmw7vdqfDobFTDh0YRWB/y/LuDvkPFBDg3cfY8+AyrDkha
+                y3m1Ot3NTsg0O/HOL6MXMN9HRd4vX37XBV88kZtFE+vyHdYDs2NzGjAbfz4JZ6xz
+                4+weUjklOc9ucAEgfAnwijH9w4KFBJEHAqtOMsbrIy74MvPTFj3LeayLo5nhLeqp
+                GbqvJcEX1UM83vFt+JUaDVbXDUG2ECHMDe6W5r5eYQtZW1ErKkRYNTJu++I0vDZr
+                EeZdYDYp15dbksMXUDyzhJ0WS0N23b7s57S6YAbok97UD/d+aGMtY3kJ/wIiftYY
+                Sel/MO/QXrgNchnVtUbShgE2oFvAJUYRvlZarG9/egp3Jb3B4WNjwIyzaT6SFtnG
+                Tg+IEXYPE2s5x4YZ8GINygWKrDbV7UuANRjKvoBlGmcrW/iz2Aaa+H5696p1HLVA
+                k7gXTw7WlJxzP6JPs2ZjWu27k88oAUV8HJjzFzGUsRPIjkf8KcJuxAqwLPoqFelh
+                uNECAwEAAaOBijCBhzASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIB
+                BjAdBgNVHQ4EFgQUq7mtVl4BCJyLWTHEpSCqokobTCcwQgYDVR0jBDswOYAUKv1o
+                4gZNED0vspeWdqb0WeS3N06hFqQUMBIxEDAOBgNVBAMTB1Jvb3QgQ0GCCQDNRQQ8
+                F7il/DANBgkqhkiG9w0BAQsFAAOCAgEArlp0WSTwHgv8wgI+XT/QNxUQBiVyrHql
+                SHIMCBA7rDPPsl2RURWzQDE7zqovA3r7fnrYMfVXAAdgzXhDLQwL15RdaeoZUsjH
+                xN4y5Mtn0zv1yp7PPtZUc0mZ4Q0xWo4MPve82IfhiqWXretUxvcZ4NKY3sni0s8W
+                hViZdHH77vVIWWcWK414cpRwvsDtaKkgS4h8yHiUOtlgKgTViyUd0ovphR0boLtF
+                Ddw+jmLGM9c5keIs87RCTqCcHD4nP81kHHUaE60NDMtHH5UONSA5ecsHo11tC1am
+                9U2TRs5+zwyBnwy4oOE/EZxXslcz27XyAX7MOhZppue+xtEDyex4gjiS27Nl8Va1
+                R1I1vkI5A209OQQ4JXzJZcAtgWep/ez0hu8TOkdtn0l/6aGkj2l3iwVG8edjiwSz
+                nVSPaBFKRtrHPuk9uEqu1xtP2klMeJEs7a5bVOyBOzZksafDwVTSPdRnDJDxo/Rx
+                bGzSWWYqKNsDxyV9aVMZ1iABW2O7qh6eXbioICzWAWQyplLeihnZ1d0o0h9gk/Kt
+                dPuLATo/WSXBA3oDfdEjjEWhmEdj6mR92KrOTQUF7JkOM74ZGs/lCxXsCOva7Z0N
+                kZmmpiU3Dewr11+SUxGx8g/4Ba1FhW9pXI9jSYguzY1KY210nF2P5YLsz/HgIM2r
+                SVA+QXhvcj0=
+                -----END CERTIFICATE-----
+                """)
+        };
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates));
+
+        Assert.Equal("certificates", exception.ParamName);
+    }
+
+    [Fact]
+    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_ThrowsAnExceptionWhenEndCertificateProvided()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var certificates = new X509Certificate2Collection
+        {
+            // Root certificate:
+            X509Certificate2.CreateFromPem($"""
+                -----BEGIN CERTIFICATE-----
+                MIIE7jCCAtagAwIBAgIJAM1FBDwXuKX8MA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
+                BAMTB1Jvb3QgQ0EwIBcNMjYwMTMwMTczODU1WhgPMjEyNjAxMzExNzM4NTVaMBIx
+                EDAOBgNVBAMTB1Jvb3QgQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoIC
+                AQDt/Nz3V5bKbYrJoITYrk3dL9CF+rDcMM6VyJ1pj33feXMTCcRJXkydKDc25sX+
+                2C/yrx75zxcUBRoWzsg++YdHJffcZI0+6Q7XBOndNKflCL8lBihvT/EUO9MQYRWV
+                495ie3deXoVGebrl6XbGAfm755Ml8KikYFryU6WOxApfQxjcKxnQLNLCTkIyn3WE
+                lzce9awtECPgdQfjDzCmE32xXMQcn/0HQUDxiyGvBQbBf8ZM9h3iJz4VGGVQkE7m
+                Ix15CwjAyrPc7jGAnUx00QGOCGzfT4bQaHOAZMgEJ8/KJhmx0Fmd6KR1fNJDqDvx
+                JYW683y1P512QZgN16e2ZEOdg9fsuXV/PaS6NmHOh7s/hwZsoIf3CJ5dX/M1h1BA
+                4buxlvRfeZdANQHJLuQFPC4DQ8SWgbxXhL8KCo0jS9rUPTaxikL7+prFK/t39YFt
+                LzowUL8d+sMvUrn3v9yXb363wBB7fja1ZG1EOl7r2YO1uGleRR1ztymfRVziQ/Np
+                wRjDeBb9rWL9srPPilvo+5VsJe2a/XtfZuxMoH6vNEl04W6/iyYE4cVizwRC8GTW
+                hSHdhk2vT2/eyGSK3Cj5U74x+orHD+3XS6xHd63qB1oo+hJl2Ln/7pBAm9qFnNed
+                u6Wn/++Oi7M7nMU/ngEkbPKUfwrR/fEKQuweJaXTgiqj3QIDAQABo0UwQzASBgNV
+                HRMBAf8ECDAGAQH/AgEBMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUKv1o4gZN
+                ED0vspeWdqb0WeS3N04wDQYJKoZIhvcNAQELBQADggIBACLp5z1zaemqoFPtQ5Sr
+                Ii2ijs03Gc52Y/Pbg1V83xg1nMa+vI4aQYc90FZnNOv7I4VAmR6I3cI5bA3tnrzB
+                /yCMOkdxiFt6W0OQPMlmlVdCbPtUqXWM3tLilRn90XYEEWZB8I1sOrk2WH7oEHmu
+                W7BC2I3igjhUDug2bl7VwdBXzRJrWFgYdhVsjRU9rx3AbZqbD/3pC9B3PcwZxTGz
+                k8wRMP/9cF49VvUFVWhp01Bol1StwgX3r6IbaamDdIJd0MvHp0ctgqL6PLRzgRRY
+                adzWX8SPlgARVCixSOkXmAGNeuNWT/Ulo0W1xaNVTvOssfx58v3lwnjoaMLi7UFA
+                tCPrLZtZYvScB0+0AjUwfIfKrHqRdP5OqJZi7PhahR39tTh9pQX63INQvKYKO583
+                iidiNDau4HU+e+ujnXR5xJdgNWtuehKRdZFlLBH0lKKXrrnPyW9YtIjCVf1zhc+L
+                VSyo/aajWKBGqyTTbM1zetGe1rah97i7/0snoh97sWHlenmSX3BQUnajLkp9ZMh0
+                vY4koR1fxIlxHnOQ7SebZ23QiWUjdmJoOXW6Bub6VhWMDY96EpMr17QiGtexbUHD
+                1nm2Z0xGwyWeyg2QSnNEAIZ6F2EeaZ6jmD/5ASXujcutNGyPwsSGkog4/Ir5Ol15
+                +3OP4DTt75BHxzMUxB6XmbYN
+                -----END CERTIFICATE-----
+                """),
+
+            // Intermediate certificate:
+            X509Certificate2.CreateFromPem($"""
+                -----BEGIN CERTIFICATE-----
+                MIIFRDCCAyygAwIBAgIRALpTKvDtz6lGPaqNaK8aULowDQYJKoZIhvcNAQELBQAw
+                EjEQMA4GA1UEAxMHUm9vdCBDQTAgFw0yNjAxMzAxNzM4NTVaGA8yMTI2MDEzMTE3
+                Mzg1NVowGjEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMIICIjANBgkqhkiG9w0B
+                AQEFAAOCAg8AMIICCgKCAgEAvHiS4aNz7vL5mOJNjbpybcK75RhH1sXifLwKW8Zg
+                nHm+KjdRENf3X9yp7c+xNrtpHhG4/gp8M++0G1Cz4Yvq8idZu8IpMiqk9/KT447b
+                VocaRPCFC4NIC9U6g4s3rwHLUr2wMCAWiM9yjWcbXcvIlnSuA/i/lSAfAUPjrn8X
+                LLDgqlEkInmWRvYvDmdmw7vdqfDobFTDh0YRWB/y/LuDvkPFBDg3cfY8+AyrDkha
+                y3m1Ot3NTsg0O/HOL6MXMN9HRd4vX37XBV88kZtFE+vyHdYDs2NzGjAbfz4JZ6xz
+                4+weUjklOc9ucAEgfAnwijH9w4KFBJEHAqtOMsbrIy74MvPTFj3LeayLo5nhLeqp
+                GbqvJcEX1UM83vFt+JUaDVbXDUG2ECHMDe6W5r5eYQtZW1ErKkRYNTJu++I0vDZr
+                EeZdYDYp15dbksMXUDyzhJ0WS0N23b7s57S6YAbok97UD/d+aGMtY3kJ/wIiftYY
+                Sel/MO/QXrgNchnVtUbShgE2oFvAJUYRvlZarG9/egp3Jb3B4WNjwIyzaT6SFtnG
+                Tg+IEXYPE2s5x4YZ8GINygWKrDbV7UuANRjKvoBlGmcrW/iz2Aaa+H5696p1HLVA
+                k7gXTw7WlJxzP6JPs2ZjWu27k88oAUV8HJjzFzGUsRPIjkf8KcJuxAqwLPoqFelh
+                uNECAwEAAaOBijCBhzASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIB
+                BjAdBgNVHQ4EFgQUq7mtVl4BCJyLWTHEpSCqokobTCcwQgYDVR0jBDswOYAUKv1o
+                4gZNED0vspeWdqb0WeS3N06hFqQUMBIxEDAOBgNVBAMTB1Jvb3QgQ0GCCQDNRQQ8
+                F7il/DANBgkqhkiG9w0BAQsFAAOCAgEArlp0WSTwHgv8wgI+XT/QNxUQBiVyrHql
+                SHIMCBA7rDPPsl2RURWzQDE7zqovA3r7fnrYMfVXAAdgzXhDLQwL15RdaeoZUsjH
+                xN4y5Mtn0zv1yp7PPtZUc0mZ4Q0xWo4MPve82IfhiqWXretUxvcZ4NKY3sni0s8W
+                hViZdHH77vVIWWcWK414cpRwvsDtaKkgS4h8yHiUOtlgKgTViyUd0ovphR0boLtF
+                Ddw+jmLGM9c5keIs87RCTqCcHD4nP81kHHUaE60NDMtHH5UONSA5ecsHo11tC1am
+                9U2TRs5+zwyBnwy4oOE/EZxXslcz27XyAX7MOhZppue+xtEDyex4gjiS27Nl8Va1
+                R1I1vkI5A209OQQ4JXzJZcAtgWep/ez0hu8TOkdtn0l/6aGkj2l3iwVG8edjiwSz
+                nVSPaBFKRtrHPuk9uEqu1xtP2klMeJEs7a5bVOyBOzZksafDwVTSPdRnDJDxo/Rx
+                bGzSWWYqKNsDxyV9aVMZ1iABW2O7qh6eXbioICzWAWQyplLeihnZ1d0o0h9gk/Kt
+                dPuLATo/WSXBA3oDfdEjjEWhmEdj6mR92KrOTQUF7JkOM74ZGs/lCxXsCOva7Z0N
+                kZmmpiU3Dewr11+SUxGx8g/4Ba1FhW9pXI9jSYguzY1KY210nF2P5YLsz/HgIM2r
+                SVA+QXhvcj0=
+                -----END CERTIFICATE-----
+                """),
+
+            // End certificate:
+            X509Certificate2.CreateFromPem($"""
+                -----BEGIN CERTIFICATE-----
+                MIIEfDCCAmSgAwIBAgIRAMrgbbME5gBGSu3XfBUTMZAwDQYJKoZIhvcNAQELBQAw
+                GjEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMCAXDTI2MDEzMDE3Mzg1NVoYDzIx
+                MjYwMTMxMTczODU1WjAaMRgwFgYDVQQDEw9FbmQgY2VydGlmaWNhdGUwggEiMA0G
+                CSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDY5UyMDT2evGgOXTzuH6adZmLcjLbv
+                9u1cdpfYc2jgdA+jXm0hvQmhwmQMosu0KDFtMX0okZ4xM0H5XEDbxmKBY7WwAdFF
+                Morz7tu/UzRLYXUJp/SRk6/zXKb4qkvtWaEcKBujlLA7jUEDcrCmTaoyU0Zz9ZzG
+                zrJc59UceXSH3gAoAkoQesNKUBsdgdk8Na3h+U8nLl4rHXWkSYi/VwKkROaDfnT2
+                mgpsJfBVyQtuAJDXsLFRhtmsPnR3KoutJUh69WnlC7mRrTVI2rhUPKFny1gGxk1W
+                rsI9vzkIIiLkc+tsAR76DNnoVkXhuqEQ9SMnl5CxV2GFWEX/TOLhteVVAgMBAAGj
+                gbowgbcwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAww
+                CgYIKwYBBQUHAwIwHQYDVR0OBBYEFCRF8sJJqhgyr/A8RnsP/JUE06dGMEoGA1Ud
+                IwRDMEGAFKu5rVZeAQici1kxxKUgqqJKG0wnoRakFDASMRAwDgYDVQQDEwdSb290
+                IENBghEAulMq8O3PqUY9qo1orxpQujAUBgNVHREEDTALgglsb2NhbGhvc3QwDQYJ
+                KoZIhvcNAQELBQADggIBACW7bCe7KpuAVZO4jIjtMLwKJ+1QZ7551FIsvBLDCFF+
+                fX2zND0ne+8hv1qemHdzDBED6WeurOQqGtgI+adj7HrXAfAXKihBaCjq2U6U3sR5
+                fqyYY5of1gvJhvJK+TEY3Fb55PvA+j38GwI52hKSkRdunPpCjRI1d/+Jvb+voUOa
+                kzLsARgOaMhJtYQeMebKr7uSLezFoOaRfc5rqpiVTA7xXO8dHkz2p49bxfIRj1Tq
+                2Lgx9uAE4omwzxSB/cwZiG1tNgpVVvn2Tb20SgCIBGl7Oqave+LRm1Eztl0Q8e8C
+                iz6bLMiCcesRRFxU8TE2mhmNOeNUsBIP730+ZOnP2rgX3Zs93gTFX/omPuQS8Kj3
+                ly5+v+PZkuN3xZ56mLXURlDRmWI1gqNRgNYl1jwYyQ0ll05yk3JFIyUvxdg3klRK
+                9/+MoKw8PVGbSKntzoHiqVUHnrB1lemJqZ91Dx+h8K58eaRs3/aL0lUEli7NpNXR
+                5Q6Tl7cCVe5ZjtR7Z56IQLmswq/TNJVXQSBjLLwLCkaJvTXWwojkG5ETU/t/ikCG
+                c2bH6ICUizzz2gdJNdcIP8wc7SsxONdpPmK3ED3KQBlTVDRUJ/w9Q4HYztXEFiyg
+                xkNzboe3SYq92mqVilBTiY51SNZuOr8zRZp9gcMKoQgmxgfl7j6JiRVpZzoxb54Y
+                -----END CERTIFICATE-----
+                """)
+        };
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates));
+
+        Assert.Equal("certificates", exception.ParamName);
+    }
+
+    [Fact]
+    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_PolicyIsCorrectlyConfigured()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var certificates = new X509Certificate2Collection
+        {
+            // Root certificate:
+            X509Certificate2.CreateFromPem($"""
+                -----BEGIN CERTIFICATE-----
+                MIIE7jCCAtagAwIBAgIJAM1FBDwXuKX8MA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
+                BAMTB1Jvb3QgQ0EwIBcNMjYwMTMwMTczODU1WhgPMjEyNjAxMzExNzM4NTVaMBIx
+                EDAOBgNVBAMTB1Jvb3QgQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoIC
+                AQDt/Nz3V5bKbYrJoITYrk3dL9CF+rDcMM6VyJ1pj33feXMTCcRJXkydKDc25sX+
+                2C/yrx75zxcUBRoWzsg++YdHJffcZI0+6Q7XBOndNKflCL8lBihvT/EUO9MQYRWV
+                495ie3deXoVGebrl6XbGAfm755Ml8KikYFryU6WOxApfQxjcKxnQLNLCTkIyn3WE
+                lzce9awtECPgdQfjDzCmE32xXMQcn/0HQUDxiyGvBQbBf8ZM9h3iJz4VGGVQkE7m
+                Ix15CwjAyrPc7jGAnUx00QGOCGzfT4bQaHOAZMgEJ8/KJhmx0Fmd6KR1fNJDqDvx
+                JYW683y1P512QZgN16e2ZEOdg9fsuXV/PaS6NmHOh7s/hwZsoIf3CJ5dX/M1h1BA
+                4buxlvRfeZdANQHJLuQFPC4DQ8SWgbxXhL8KCo0jS9rUPTaxikL7+prFK/t39YFt
+                LzowUL8d+sMvUrn3v9yXb363wBB7fja1ZG1EOl7r2YO1uGleRR1ztymfRVziQ/Np
+                wRjDeBb9rWL9srPPilvo+5VsJe2a/XtfZuxMoH6vNEl04W6/iyYE4cVizwRC8GTW
+                hSHdhk2vT2/eyGSK3Cj5U74x+orHD+3XS6xHd63qB1oo+hJl2Ln/7pBAm9qFnNed
+                u6Wn/++Oi7M7nMU/ngEkbPKUfwrR/fEKQuweJaXTgiqj3QIDAQABo0UwQzASBgNV
+                HRMBAf8ECDAGAQH/AgEBMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUKv1o4gZN
+                ED0vspeWdqb0WeS3N04wDQYJKoZIhvcNAQELBQADggIBACLp5z1zaemqoFPtQ5Sr
+                Ii2ijs03Gc52Y/Pbg1V83xg1nMa+vI4aQYc90FZnNOv7I4VAmR6I3cI5bA3tnrzB
+                /yCMOkdxiFt6W0OQPMlmlVdCbPtUqXWM3tLilRn90XYEEWZB8I1sOrk2WH7oEHmu
+                W7BC2I3igjhUDug2bl7VwdBXzRJrWFgYdhVsjRU9rx3AbZqbD/3pC9B3PcwZxTGz
+                k8wRMP/9cF49VvUFVWhp01Bol1StwgX3r6IbaamDdIJd0MvHp0ctgqL6PLRzgRRY
+                adzWX8SPlgARVCixSOkXmAGNeuNWT/Ulo0W1xaNVTvOssfx58v3lwnjoaMLi7UFA
+                tCPrLZtZYvScB0+0AjUwfIfKrHqRdP5OqJZi7PhahR39tTh9pQX63INQvKYKO583
+                iidiNDau4HU+e+ujnXR5xJdgNWtuehKRdZFlLBH0lKKXrrnPyW9YtIjCVf1zhc+L
+                VSyo/aajWKBGqyTTbM1zetGe1rah97i7/0snoh97sWHlenmSX3BQUnajLkp9ZMh0
+                vY4koR1fxIlxHnOQ7SebZ23QiWUjdmJoOXW6Bub6VhWMDY96EpMr17QiGtexbUHD
+                1nm2Z0xGwyWeyg2QSnNEAIZ6F2EeaZ6jmD/5ASXujcutNGyPwsSGkog4/Ir5Ol15
+                +3OP4DTt75BHxzMUxB6XmbYN
+                -----END CERTIFICATE-----
+                """),
+
+            // Intermediate certificate:
+            X509Certificate2.CreateFromPem($"""
+                -----BEGIN CERTIFICATE-----
+                MIIFRDCCAyygAwIBAgIRALpTKvDtz6lGPaqNaK8aULowDQYJKoZIhvcNAQELBQAw
+                EjEQMA4GA1UEAxMHUm9vdCBDQTAgFw0yNjAxMzAxNzM4NTVaGA8yMTI2MDEzMTE3
+                Mzg1NVowGjEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMIICIjANBgkqhkiG9w0B
+                AQEFAAOCAg8AMIICCgKCAgEAvHiS4aNz7vL5mOJNjbpybcK75RhH1sXifLwKW8Zg
+                nHm+KjdRENf3X9yp7c+xNrtpHhG4/gp8M++0G1Cz4Yvq8idZu8IpMiqk9/KT447b
+                VocaRPCFC4NIC9U6g4s3rwHLUr2wMCAWiM9yjWcbXcvIlnSuA/i/lSAfAUPjrn8X
+                LLDgqlEkInmWRvYvDmdmw7vdqfDobFTDh0YRWB/y/LuDvkPFBDg3cfY8+AyrDkha
+                y3m1Ot3NTsg0O/HOL6MXMN9HRd4vX37XBV88kZtFE+vyHdYDs2NzGjAbfz4JZ6xz
+                4+weUjklOc9ucAEgfAnwijH9w4KFBJEHAqtOMsbrIy74MvPTFj3LeayLo5nhLeqp
+                GbqvJcEX1UM83vFt+JUaDVbXDUG2ECHMDe6W5r5eYQtZW1ErKkRYNTJu++I0vDZr
+                EeZdYDYp15dbksMXUDyzhJ0WS0N23b7s57S6YAbok97UD/d+aGMtY3kJ/wIiftYY
+                Sel/MO/QXrgNchnVtUbShgE2oFvAJUYRvlZarG9/egp3Jb3B4WNjwIyzaT6SFtnG
+                Tg+IEXYPE2s5x4YZ8GINygWKrDbV7UuANRjKvoBlGmcrW/iz2Aaa+H5696p1HLVA
+                k7gXTw7WlJxzP6JPs2ZjWu27k88oAUV8HJjzFzGUsRPIjkf8KcJuxAqwLPoqFelh
+                uNECAwEAAaOBijCBhzASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIB
+                BjAdBgNVHQ4EFgQUq7mtVl4BCJyLWTHEpSCqokobTCcwQgYDVR0jBDswOYAUKv1o
+                4gZNED0vspeWdqb0WeS3N06hFqQUMBIxEDAOBgNVBAMTB1Jvb3QgQ0GCCQDNRQQ8
+                F7il/DANBgkqhkiG9w0BAQsFAAOCAgEArlp0WSTwHgv8wgI+XT/QNxUQBiVyrHql
+                SHIMCBA7rDPPsl2RURWzQDE7zqovA3r7fnrYMfVXAAdgzXhDLQwL15RdaeoZUsjH
+                xN4y5Mtn0zv1yp7PPtZUc0mZ4Q0xWo4MPve82IfhiqWXretUxvcZ4NKY3sni0s8W
+                hViZdHH77vVIWWcWK414cpRwvsDtaKkgS4h8yHiUOtlgKgTViyUd0ovphR0boLtF
+                Ddw+jmLGM9c5keIs87RCTqCcHD4nP81kHHUaE60NDMtHH5UONSA5ecsHo11tC1am
+                9U2TRs5+zwyBnwy4oOE/EZxXslcz27XyAX7MOhZppue+xtEDyex4gjiS27Nl8Va1
+                R1I1vkI5A209OQQ4JXzJZcAtgWep/ez0hu8TOkdtn0l/6aGkj2l3iwVG8edjiwSz
+                nVSPaBFKRtrHPuk9uEqu1xtP2klMeJEs7a5bVOyBOzZksafDwVTSPdRnDJDxo/Rx
+                bGzSWWYqKNsDxyV9aVMZ1iABW2O7qh6eXbioICzWAWQyplLeihnZ1d0o0h9gk/Kt
+                dPuLATo/WSXBA3oDfdEjjEWhmEdj6mR92KrOTQUF7JkOM74ZGs/lCxXsCOva7Z0N
+                kZmmpiU3Dewr11+SUxGx8g/4Ba1FhW9pXI9jSYguzY1KY210nF2P5YLsz/HgIM2r
+                SVA+QXhvcj0=
+                -----END CERTIFICATE-----
+                """)
+        };
+
+        // Act
+        builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.NotNull(options.ClientCertificateChainPolicy);
+        Assert.Equal(X509ChainTrustMode.CustomRootTrust, options.ClientCertificateChainPolicy.TrustMode);
+        Assert.Contains(options.ClientCertificateChainPolicy.ApplicationPolicy.Cast<Oid>(),
+            oid => oid.Value == ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication);
+    }
+
+    [Fact]
+    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_ThrowsAnExceptionWhenTrustModeIsChanged()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var certificates = new X509Certificate2Collection
+        {
+            // Root certificate:
+            X509Certificate2.CreateFromPem($"""
+                -----BEGIN CERTIFICATE-----
+                MIIE7jCCAtagAwIBAgIJAM1FBDwXuKX8MA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
+                BAMTB1Jvb3QgQ0EwIBcNMjYwMTMwMTczODU1WhgPMjEyNjAxMzExNzM4NTVaMBIx
+                EDAOBgNVBAMTB1Jvb3QgQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoIC
+                AQDt/Nz3V5bKbYrJoITYrk3dL9CF+rDcMM6VyJ1pj33feXMTCcRJXkydKDc25sX+
+                2C/yrx75zxcUBRoWzsg++YdHJffcZI0+6Q7XBOndNKflCL8lBihvT/EUO9MQYRWV
+                495ie3deXoVGebrl6XbGAfm755Ml8KikYFryU6WOxApfQxjcKxnQLNLCTkIyn3WE
+                lzce9awtECPgdQfjDzCmE32xXMQcn/0HQUDxiyGvBQbBf8ZM9h3iJz4VGGVQkE7m
+                Ix15CwjAyrPc7jGAnUx00QGOCGzfT4bQaHOAZMgEJ8/KJhmx0Fmd6KR1fNJDqDvx
+                JYW683y1P512QZgN16e2ZEOdg9fsuXV/PaS6NmHOh7s/hwZsoIf3CJ5dX/M1h1BA
+                4buxlvRfeZdANQHJLuQFPC4DQ8SWgbxXhL8KCo0jS9rUPTaxikL7+prFK/t39YFt
+                LzowUL8d+sMvUrn3v9yXb363wBB7fja1ZG1EOl7r2YO1uGleRR1ztymfRVziQ/Np
+                wRjDeBb9rWL9srPPilvo+5VsJe2a/XtfZuxMoH6vNEl04W6/iyYE4cVizwRC8GTW
+                hSHdhk2vT2/eyGSK3Cj5U74x+orHD+3XS6xHd63qB1oo+hJl2Ln/7pBAm9qFnNed
+                u6Wn/++Oi7M7nMU/ngEkbPKUfwrR/fEKQuweJaXTgiqj3QIDAQABo0UwQzASBgNV
+                HRMBAf8ECDAGAQH/AgEBMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUKv1o4gZN
+                ED0vspeWdqb0WeS3N04wDQYJKoZIhvcNAQELBQADggIBACLp5z1zaemqoFPtQ5Sr
+                Ii2ijs03Gc52Y/Pbg1V83xg1nMa+vI4aQYc90FZnNOv7I4VAmR6I3cI5bA3tnrzB
+                /yCMOkdxiFt6W0OQPMlmlVdCbPtUqXWM3tLilRn90XYEEWZB8I1sOrk2WH7oEHmu
+                W7BC2I3igjhUDug2bl7VwdBXzRJrWFgYdhVsjRU9rx3AbZqbD/3pC9B3PcwZxTGz
+                k8wRMP/9cF49VvUFVWhp01Bol1StwgX3r6IbaamDdIJd0MvHp0ctgqL6PLRzgRRY
+                adzWX8SPlgARVCixSOkXmAGNeuNWT/Ulo0W1xaNVTvOssfx58v3lwnjoaMLi7UFA
+                tCPrLZtZYvScB0+0AjUwfIfKrHqRdP5OqJZi7PhahR39tTh9pQX63INQvKYKO583
+                iidiNDau4HU+e+ujnXR5xJdgNWtuehKRdZFlLBH0lKKXrrnPyW9YtIjCVf1zhc+L
+                VSyo/aajWKBGqyTTbM1zetGe1rah97i7/0snoh97sWHlenmSX3BQUnajLkp9ZMh0
+                vY4koR1fxIlxHnOQ7SebZ23QiWUjdmJoOXW6Bub6VhWMDY96EpMr17QiGtexbUHD
+                1nm2Z0xGwyWeyg2QSnNEAIZ6F2EeaZ6jmD/5ASXujcutNGyPwsSGkog4/Ir5Ol15
+                +3OP4DTt75BHxzMUxB6XmbYN
+                -----END CERTIFICATE-----
+                """),
+
+            // Intermediate certificate:
+            X509Certificate2.CreateFromPem($"""
+                -----BEGIN CERTIFICATE-----
+                MIIFRDCCAyygAwIBAgIRALpTKvDtz6lGPaqNaK8aULowDQYJKoZIhvcNAQELBQAw
+                EjEQMA4GA1UEAxMHUm9vdCBDQTAgFw0yNjAxMzAxNzM4NTVaGA8yMTI2MDEzMTE3
+                Mzg1NVowGjEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMIICIjANBgkqhkiG9w0B
+                AQEFAAOCAg8AMIICCgKCAgEAvHiS4aNz7vL5mOJNjbpybcK75RhH1sXifLwKW8Zg
+                nHm+KjdRENf3X9yp7c+xNrtpHhG4/gp8M++0G1Cz4Yvq8idZu8IpMiqk9/KT447b
+                VocaRPCFC4NIC9U6g4s3rwHLUr2wMCAWiM9yjWcbXcvIlnSuA/i/lSAfAUPjrn8X
+                LLDgqlEkInmWRvYvDmdmw7vdqfDobFTDh0YRWB/y/LuDvkPFBDg3cfY8+AyrDkha
+                y3m1Ot3NTsg0O/HOL6MXMN9HRd4vX37XBV88kZtFE+vyHdYDs2NzGjAbfz4JZ6xz
+                4+weUjklOc9ucAEgfAnwijH9w4KFBJEHAqtOMsbrIy74MvPTFj3LeayLo5nhLeqp
+                GbqvJcEX1UM83vFt+JUaDVbXDUG2ECHMDe6W5r5eYQtZW1ErKkRYNTJu++I0vDZr
+                EeZdYDYp15dbksMXUDyzhJ0WS0N23b7s57S6YAbok97UD/d+aGMtY3kJ/wIiftYY
+                Sel/MO/QXrgNchnVtUbShgE2oFvAJUYRvlZarG9/egp3Jb3B4WNjwIyzaT6SFtnG
+                Tg+IEXYPE2s5x4YZ8GINygWKrDbV7UuANRjKvoBlGmcrW/iz2Aaa+H5696p1HLVA
+                k7gXTw7WlJxzP6JPs2ZjWu27k88oAUV8HJjzFzGUsRPIjkf8KcJuxAqwLPoqFelh
+                uNECAwEAAaOBijCBhzASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIB
+                BjAdBgNVHQ4EFgQUq7mtVl4BCJyLWTHEpSCqokobTCcwQgYDVR0jBDswOYAUKv1o
+                4gZNED0vspeWdqb0WeS3N06hFqQUMBIxEDAOBgNVBAMTB1Jvb3QgQ0GCCQDNRQQ8
+                F7il/DANBgkqhkiG9w0BAQsFAAOCAgEArlp0WSTwHgv8wgI+XT/QNxUQBiVyrHql
+                SHIMCBA7rDPPsl2RURWzQDE7zqovA3r7fnrYMfVXAAdgzXhDLQwL15RdaeoZUsjH
+                xN4y5Mtn0zv1yp7PPtZUc0mZ4Q0xWo4MPve82IfhiqWXretUxvcZ4NKY3sni0s8W
+                hViZdHH77vVIWWcWK414cpRwvsDtaKkgS4h8yHiUOtlgKgTViyUd0ovphR0boLtF
+                Ddw+jmLGM9c5keIs87RCTqCcHD4nP81kHHUaE60NDMtHH5UONSA5ecsHo11tC1am
+                9U2TRs5+zwyBnwy4oOE/EZxXslcz27XyAX7MOhZppue+xtEDyex4gjiS27Nl8Va1
+                R1I1vkI5A209OQQ4JXzJZcAtgWep/ez0hu8TOkdtn0l/6aGkj2l3iwVG8edjiwSz
+                nVSPaBFKRtrHPuk9uEqu1xtP2klMeJEs7a5bVOyBOzZksafDwVTSPdRnDJDxo/Rx
+                bGzSWWYqKNsDxyV9aVMZ1iABW2O7qh6eXbioICzWAWQyplLeihnZ1d0o0h9gk/Kt
+                dPuLATo/WSXBA3oDfdEjjEWhmEdj6mR92KrOTQUF7JkOM74ZGs/lCxXsCOva7Z0N
+                kZmmpiU3Dewr11+SUxGx8g/4Ba1FhW9pXI9jSYguzY1KY210nF2P5YLsz/HgIM2r
+                SVA+QXhvcj0=
+                -----END CERTIFICATE-----
+                """)
+        };
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates,
+                policy => policy.TrustMode = X509ChainTrustMode.System));
+
+        Assert.Equal(SR.GetResourceString(SR.ID0509), exception.Message);
+    }
+#endif
+
+    [Fact]
+    public void EnableSelfSignedClientCertificateAuthentication_ThrowsAnExceptionForNullConfiguration()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            builder.EnableSelfSignedClientCertificateAuthentication(configuration: null!));
+
+        Assert.Equal("configuration", exception.ParamName);
+    }
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+    [Fact]
+    public void EnableSelfSignedClientCertificateAuthentication_PolicyIsCorrectlyConfigured()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.EnableSelfSignedClientCertificateAuthentication();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.NotNull(options.SelfSignedClientCertificateChainPolicy);
+        Assert.Equal(X509ChainTrustMode.CustomRootTrust, options.SelfSignedClientCertificateChainPolicy.TrustMode);
+        Assert.Equal(X509RevocationMode.NoCheck, options.SelfSignedClientCertificateChainPolicy.RevocationMode);
+        Assert.Contains(options.SelfSignedClientCertificateChainPolicy.ApplicationPolicy.Cast<Oid>(),
+            oid => oid.Value == ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication);
+    }
+
+    [Fact]
+    public void EnableSelfSignedClientCertificateAuthentication_ThrowsAnExceptionWhenTrustModeIsChanged()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            builder.EnableSelfSignedClientCertificateAuthentication(
+                policy => policy.TrustMode = X509ChainTrustMode.System));
+
+        Assert.Equal(SR.GetResourceString(SR.ID0509), exception.Message);
+    }
+#endif
 
     [Fact]
     public void IgnoreAudiencePermissions_AudiencePermissionsAreIgnored()
@@ -1298,6 +1706,346 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.Contains(new Uri("http://localhost/endpoint-path"), options.EndSessionEndpointUris);
+    }
+
+    [Fact]
+    public void SetMtlsDeviceAuthorizationEndpointAliasUri_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsDeviceAuthorizationEndpointAliasUri(uri: (null as Uri)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetMtlsDeviceAuthorizationEndpointAliasUri_String_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsDeviceAuthorizationEndpointAliasUri(uri: (null as string)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(@"C:\")]
+    public void SetMtlsDeviceAuthorizationEndpointAliasUri_ThrowsExceptionForMalformedUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsDeviceAuthorizationEndpointAliasUri(new Uri(uri)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+    }
+
+    [Theory]
+    [InlineData("~/path")]
+    public void SetMtlsDeviceAuthorizationEndpointAliasUri_ThrowsExceptionForInvalidRelativeUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsDeviceAuthorizationEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+    }
+
+    [Fact]
+    public void SetMtlsDeviceAuthorizationEndpointAliasUri_AddsUri()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetMtlsDeviceAuthorizationEndpointAliasUri("http://localhost/endpoint-path");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(new Uri("http://localhost/endpoint-path"), options.MtlsDeviceAuthorizationEndpointAliasUri);
+    }
+
+    [Fact]
+    public void SetMtlsIntrospectionEndpointAliasUri_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsIntrospectionEndpointAliasUri(uri: (null as Uri)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetMtlsIntrospectionEndpointAliasUri_String_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsIntrospectionEndpointAliasUri(uri: (null as string)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(@"C:\")]
+    public void SetMtlsIntrospectionEndpointAliasUri_ThrowsExceptionForMalformedUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsIntrospectionEndpointAliasUri(new Uri(uri)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+    }
+
+    [Theory]
+    [InlineData("~/path")]
+    public void SetMtlsIntrospectionEndpointAliasUri_ThrowsExceptionForInvalidRelativeUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsIntrospectionEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+    }
+
+    [Fact]
+    public void SetMtlsIntrospectionEndpointAliasUri_AddsUri()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetMtlsIntrospectionEndpointAliasUri("http://localhost/endpoint-path");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(new Uri("http://localhost/endpoint-path"), options.MtlsIntrospectionEndpointAliasUri);
+    }
+
+    [Fact]
+    public void SetMtlsPushedAuthorizationEndpointAliasUri_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsPushedAuthorizationEndpointAliasUri(uri: (null as Uri)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetMtlsPushedAuthorizationEndpointAliasUri_String_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsPushedAuthorizationEndpointAliasUri(uri: (null as string)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(@"C:\")]
+    public void SetMtlsPushedAuthorizationEndpointAliasUri_ThrowsExceptionForMalformedUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsPushedAuthorizationEndpointAliasUri(new Uri(uri)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+    }
+
+    [Theory]
+    [InlineData("~/path")]
+    public void SetMtlsPushedAuthorizationEndpointAliasUri_ThrowsExceptionForInvalidRelativeUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsPushedAuthorizationEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+    }
+
+    [Fact]
+    public void SetMtlsPushedAuthorizationEndpointAliasUri_AddsUri()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetMtlsPushedAuthorizationEndpointAliasUri("http://localhost/endpoint-path");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(new Uri("http://localhost/endpoint-path"), options.MtlsPushedAuthorizationEndpointAliasUri);
+    }
+
+    [Fact]
+    public void SetMtlsRevocationEndpointAliasUri_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsRevocationEndpointAliasUri(uri: (null as Uri)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetMtlsRevocationEndpointAliasUri_String_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsRevocationEndpointAliasUri(uri: (null as string)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(@"C:\")]
+    public void SetMtlsRevocationEndpointAliasUri_ThrowsExceptionForMalformedUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsRevocationEndpointAliasUri(new Uri(uri)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+    }
+
+    [Theory]
+    [InlineData("~/path")]
+    public void SetMtlsRevocationEndpointAliasUri_ThrowsExceptionForInvalidRelativeUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsRevocationEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+    }
+
+    [Fact]
+    public void SetMtlsRevocationEndpointAliasUri_AddsUri()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetMtlsRevocationEndpointAliasUri("http://localhost/endpoint-path");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(new Uri("http://localhost/endpoint-path"), options.MtlsRevocationEndpointAliasUri);
+    }
+
+    [Fact]
+    public void SetMtlsTokenEndpointAliasUri_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsTokenEndpointAliasUri(uri: (null as Uri)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetMtlsTokenEndpointAliasUri_String_ThrowsExceptionWhenUriIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetMtlsTokenEndpointAliasUri(uri: (null as string)!));
+        Assert.Equal("uri", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(@"C:\")]
+    public void SetMtlsTokenEndpointAliasUri_ThrowsExceptionForMalformedUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsTokenEndpointAliasUri(new Uri(uri)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+    }
+
+    [Theory]
+    [InlineData("~/path")]
+    public void SetMtlsTokenEndpointAliasUri_ThrowsExceptionForInvalidRelativeUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsTokenEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+    }
+
+    [Fact]
+    public void SetMtlsTokenEndpointAliasUri_AddsUri()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetMtlsTokenEndpointAliasUri("http://localhost/endpoint-path");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(new Uri("http://localhost/endpoint-path"), options.MtlsTokenEndpointAliasUri);
     }
 
     [Fact]

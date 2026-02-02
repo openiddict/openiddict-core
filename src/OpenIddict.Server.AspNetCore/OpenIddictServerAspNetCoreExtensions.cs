@@ -45,7 +45,7 @@ public static class OpenIddictServerAspNetCoreExtensions
         builder.Services.TryAddSingleton<RequireUserInfoEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireVerificationEndpointPassthroughEnabled>();
 
-        // Register the option initializer used by the OpenIddict ASP.NET Core server integration services.
+        // Register the option initializers used by the OpenIddict ASP.NET Core server integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IConfigureOptions<AuthenticationOptions>, OpenIddictServerAspNetCoreConfiguration>());
@@ -58,6 +58,9 @@ public static class OpenIddictServerAspNetCoreExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>, OpenIddictServerAspNetCoreConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerAspNetCoreConfiguration>());
 
         return new OpenIddictServerAspNetCoreBuilder(builder.Services);
     }

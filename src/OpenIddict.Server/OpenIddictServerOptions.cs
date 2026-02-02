@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -126,6 +127,56 @@ public sealed class OpenIddictServerOptions
     {
         SetDefaultTimesOnTokenCreation = false
     };
+
+    /// <summary>
+    /// Gets or sets the URI listed as the mTLS device authorization
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    public Uri? MtlsDeviceAuthorizationEndpointAliasUri { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI listed as the mTLS introspection
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    public Uri? MtlsIntrospectionEndpointAliasUri { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI listed as the mTLS pushed authorization
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    public Uri? MtlsPushedAuthorizationEndpointAliasUri { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI listed as the mTLS revocation
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    public Uri? MtlsRevocationEndpointAliasUri { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI listed as the mTLS token
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    public Uri? MtlsTokenEndpointAliasUri { get; set; }
 
     /// <summary>
     /// Gets the token validation parameters used by the OpenIddict server services.
@@ -605,4 +656,42 @@ public sealed class OpenIddictServerOptions
     /// If no service can be found, <see cref="TimeProvider.System"/> is used.
     /// </remarks>
     public TimeProvider TimeProvider { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the chain policy used when validating client certificates
+    /// used for client authentication (typically, via mTLS).
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>
+    /// Note: this instance serves as a base policy and is merged with
+    /// the per-client policies resolved using the application manager.
+    /// </item>
+    /// <item>
+    /// Note: while it is possible to use a policy configured to use the
+    /// the system certificates store, doing is so is strongly discouraged.
+    /// </item>
+    /// </list>
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public X509ChainPolicy? ClientCertificateChainPolicy { get; set; }
+
+    /// <summary>
+    /// Gets or sets the chain policy used when validating self-signed client
+    /// certificates used for client authentication (typically, via mTLS).
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>
+    /// Note: this instance serves as a base policy and is merged with
+    /// the per-client policies resolved using the application manager.
+    /// </item>
+    /// <item>
+    /// Note: while it is possible to use a policy configured to use the
+    /// the system certificates store, doing is so is strongly discouraged.
+    /// </item>
+    /// </list>
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public X509ChainPolicy? SelfSignedClientCertificateChainPolicy { get; set; }
 }

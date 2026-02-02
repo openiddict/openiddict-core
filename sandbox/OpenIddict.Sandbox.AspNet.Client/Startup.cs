@@ -71,7 +71,7 @@ public class Startup
                     ProviderDisplayName = "Local OIDC server",
 
                     ClientId = "mvc",
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                    ClientSecret = "emCimpdc9SeOaZzN5jzm4_eek-STF6VenfVlKO1_qt0",
                     Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" },
 
                     RedirectUri = new Uri("callback/login/local", UriKind.Relative),

@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -626,7 +627,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
+        public async ValueTask HandleAsync(TContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
 
@@ -648,13 +649,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretPost),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return ValueTask.CompletedTask;
+                return;
             }
 
             // Reject requests that use client_secret_basic if support was explicitly disabled in the options.
-            //
-            // Note: the client_secret_jwt authentication method is not supported by OpenIddict out-of-the-box but
-            // is specified here to account for custom implementations that explicitly add client_secret_jwt support.
             string? header = request.Headers[HeaderNames.Authorization];
             if (!string.IsNullOrEmpty(header) && header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase) &&
                 !context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.ClientSecretBasic))
@@ -666,10 +664,82 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretBasic),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return ValueTask.CompletedTask;
+                return;
             }
 
-            return ValueTask.CompletedTask;
+            // If the request was sent using HTTPS, reject requests that use mTLS-based client authentication
+            // (self_signed_tls_client_auth or tls_client_auth) if support was not enabled in the server options.
+            if (request.IsHttps && await request.HttpContext.Connection.GetClientCertificateAsync(
+                request.HttpContext.RequestAborted) is X509Certificate2 certificate)
+            {
+                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
+                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
+                if (OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                {
+                    if (!context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth))
+                    {
+                        context.Logger.LogInformation(6227, SR.GetResourceString(SR.ID6227), ClientAuthenticationMethods.SelfSignedTlsClientAuth);
+
+                        context.Reject(
+                            error: Errors.InvalidClient,
+                            description: SR.FormatID2174(ClientAuthenticationMethods.SelfSignedTlsClientAuth),
+                            uri: SR.FormatID8000(SR.ID2174));
+
+                        return;
+                    }
+                }
+
+                else if (!context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.TlsClientAuth))
+                {
+                    context.Logger.LogInformation(6227, SR.GetResourceString(SR.ID6227), ClientAuthenticationMethods.TlsClientAuth);
+
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: SR.FormatID2174(ClientAuthenticationMethods.TlsClientAuth),
+                        uri: SR.FormatID8000(SR.ID2174));
+
+                    return;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for extracting a client authentication certificate from the request context.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ExtractClientAuthenticationCertificate<TContext> : IOpenIddictServerHandler<TContext>
+        where TContext : BaseValidatingContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ExtractClientAuthenticationCertificate<TContext>>()
+                .SetOrder(ValidateClientAuthenticationMethod<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(TContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            // If a client certificate was used during the TLS handshake, attach it to the context.
+            if (request.IsHttps && await request.HttpContext.Connection.GetClientCertificateAsync(
+                request.HttpContext.RequestAborted) is X509Certificate2 certificate)
+            {
+                context.Transaction.ClientCertificate = certificate;
+            }
         }
     }
 
@@ -687,7 +757,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ExtractBasicAuthenticationCredentials<TContext>>()
-                .SetOrder(ValidateClientAuthenticationMethod<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(ExtractClientAuthenticationCertificate<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -730,7 +800,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 var data = Encoding.ASCII.GetString(Convert.FromBase64String(value));
 
                 var index = data.IndexOf(':');
-                if (index < 0)
+                if (index is < 0)
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,

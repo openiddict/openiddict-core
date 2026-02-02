@@ -199,7 +199,7 @@ public class Startup
                 {
                     ApplicationType = ApplicationTypes.Web,
                     ClientId = "mvc",
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                    ClientSecret = "emCimpdc9SeOaZzN5jzm4_eek-STF6VenfVlKO1_qt0",
                     ClientType = ClientTypes.Confidential,
                     ConsentType = ConsentTypes.Systematic,
                     DisplayName = "MVC client application",

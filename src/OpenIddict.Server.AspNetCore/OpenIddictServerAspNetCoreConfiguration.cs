@@ -16,7 +16,8 @@ namespace OpenIddict.Server.AspNetCore;
 public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
                                                               IConfigureOptions<OpenIddictServerOptions>,
                                                               IPostConfigureOptions<AuthenticationOptions>,
-                                                              IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>
+                                                              IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>,
+                                                              IPostConfigureOptions<OpenIddictServerOptions>
 {
     /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
@@ -71,7 +72,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
         // on invalid endpoints. To opt out this undesirable behavior, a fake entry
         // is dynamically added if one of the default schemes properties is not set
         // and less than 2 handlers were registered in the authentication options.
-        if (options.SchemeMap.Count < 2 && string.IsNullOrEmpty(options.DefaultScheme) &&
+        if (options.SchemeMap.Count is < 2 && string.IsNullOrEmpty(options.DefaultScheme) &&
            (string.IsNullOrEmpty(options.DefaultAuthenticateScheme) ||
             string.IsNullOrEmpty(options.DefaultChallengeScheme) ||
             string.IsNullOrEmpty(options.DefaultForbidScheme) ||
@@ -102,6 +103,24 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
         if (options.EnableErrorPassthrough && options.EnableStatusCodePagesIntegration)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0110));
+        }
+    }
+
+    /// <inheritdoc/>
+    public void PostConfigure(string? name, OpenIddictServerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        // Enable tls_client_auth and self_signed_tls_client_auth support if the
+        // corresponding chain policies have been configured in the server options.
+        if (options.ClientCertificateChainPolicy is not null)
+        {
+            options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.TlsClientAuth);
+        }
+
+        if (options.SelfSignedClientCertificateChainPolicy is not null)
+        {
+            options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.SelfSignedTlsClientAuth);
         }
     }
 }
