@@ -218,7 +218,7 @@ public sealed class OpenIddictServerBuilder
             if (!certificates.Exists(certificate => certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
             {
 #if SUPPORTS_CERTIFICATE_GENERATION
-                using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
+                using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 4096);
 
                 var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
@@ -310,7 +310,7 @@ public sealed class OpenIddictServerBuilder
             SecurityAlgorithms.RsaOAEP or
             SecurityAlgorithms.RsaOaepKeyWrap
                 => AddEncryptionCredentials(new EncryptingCredentials(
-                    new RsaSecurityKey(OpenIddictHelpers.CreateRsaKey(size: 2048)),
+                    new RsaSecurityKey(OpenIddictHelpers.CreateRsaKey(size: 4096)),
                     algorithm, SecurityAlgorithms.Aes256CbcHmacSha512)),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058))
@@ -593,11 +593,10 @@ public sealed class OpenIddictServerBuilder
                 .Cast<X509Certificate2>()
                 .ToList();
 
-            if (!certificates.Exists(certificate =>
-                    certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
+            if (!certificates.Exists(certificate => certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
             {
 #if SUPPORTS_CERTIFICATE_GENERATION
-                using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
+                using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 4096);
 
                 var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
@@ -693,7 +692,7 @@ public sealed class OpenIddictServerBuilder
             SecurityAlgorithms.RsaSsaPssSha384Signature or
             SecurityAlgorithms.RsaSsaPssSha512Signature
                 => AddSigningCredentials(new SigningCredentials(new RsaSecurityKey(
-                    OpenIddictHelpers.CreateRsaKey(size: 2048)), algorithm)),
+                    OpenIddictHelpers.CreateRsaKey(size: 4096)), algorithm)),
 
 #if SUPPORTS_ECDSA
             SecurityAlgorithms.EcdsaSha256 or
