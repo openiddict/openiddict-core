@@ -28,6 +28,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         OverrideTokenEndpointClientAuthenticationMethod.Descriptor,
         OverrideTokenEndpoint.Descriptor,
         AttachNonStandardClientAssertionClaims.Descriptor,
+        OverrideScopes.Descriptor,
         AttachAdditionalTokenRequestParameters.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
         AdjustRedirectUriInTokenRequest.Descriptor,
@@ -604,6 +605,40 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for overriding the scopes for the providers that require it.
+    /// </summary>
+    public sealed class OverrideScopes : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<OverrideScopes>()
+                .SetOrder(AttachTokenRequestParameters.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc />
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // osu! requires at least one scope to be set for client credentials grant, as tokens without
+            // scopes are not valid. If no scope is explicitly specified, use the default value "public".
+            if (context.GrantType is GrantTypes.ClientCredentials &&
+                context.Registration.ProviderType is ProviderTypes.Osu &&
+                context.Scopes.Count is 0)
+            {
+                context.Scopes.Add("public");
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching additional parameters
     /// to the token request for the providers that require it.
     /// </summary>
@@ -887,7 +922,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Note: these providers don't have a static userinfo endpoint attached to their configuration
                 // so OpenIddict doesn't, by default, send a userinfo request. Since a dynamic endpoint is later
                 // computed and attached to the context, the default value MUST be overridden to send a request.
-                ProviderTypes.Dailymotion or ProviderTypes.HubSpot or
+                ProviderTypes.Dailymotion or ProviderTypes.HubSpot or ProviderTypes.Osu or
                 ProviderTypes.SuperOffice or ProviderTypes.Zoho
                     when context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or
                                               GrantTypes.Implicit          or GrantTypes.Password   or
@@ -1016,6 +1051,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => OpenIddictHelpers.CreateAbsoluteUri(
                         left : new Uri("https://api.hubapi.com/oauth/v1/access-tokens", UriKind.Absolute),
                         right: new Uri(token, UriKind.Relative)),
+
+                // osu! supports specifying a game mode when querying the userinfo endpoint.
+                ProviderTypes.Osu => context.Properties.GetValueOrDefault(Osu.Properties.GameMode) switch
+                {
+                    { Length: > 0 } mode => OpenIddictHelpers.CreateAbsoluteUri(
+                        left : new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute),
+                        right: new Uri(mode, UriKind.Relative)),
+
+                    _ => new Uri("https://osu.ppy.sh/api/v2/me", UriKind.Absolute)
+                },
 
                 // SuperOffice doesn't expose a static OpenID Connect userinfo endpoint but offers an API whose
                 // absolute URI needs to be computed based on a special claim returned in the identity token.
@@ -1387,7 +1432,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.DeviantArt or
                 ProviderTypes.Discord      or ProviderTypes.Disqus      or ProviderTypes.Kook       or
                 ProviderTypes.Lichess      or ProviderTypes.Mastodon    or ProviderTypes.Mixcloud   or
-                ProviderTypes.Trakt        or ProviderTypes.WordPress
+                ProviderTypes.Osu          or ProviderTypes.Trakt       or ProviderTypes.WordPress
                     => (string?) context.UserInfoResponse?["username"],
 
                 // These providers don't return a username so one is created using the "first_name" and "last_name" nodes:
@@ -1482,17 +1527,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Airtable    or ProviderTypes.Basecamp  or ProviderTypes.Box           or
-                ProviderTypes.Dailymotion or ProviderTypes.Deezer    or ProviderTypes.Discord       or
-                ProviderTypes.Disqus      or ProviderTypes.Facebook  or ProviderTypes.Figma         or
-                ProviderTypes.Genesys     or ProviderTypes.Gitee     or ProviderTypes.GitHub        or
-                ProviderTypes.Harvest     or ProviderTypes.Kook      or ProviderTypes.Kroger        or
-                ProviderTypes.Lichess     or ProviderTypes.Linear    or ProviderTypes.Mastodon      or
-                ProviderTypes.Meetup      or ProviderTypes.Miro      or ProviderTypes.Nextcloud     or
-                ProviderTypes.Patreon     or ProviderTypes.Pipedrive or ProviderTypes.Reddit        or
-                ProviderTypes.Smartsheet  or ProviderTypes.Spotify   or ProviderTypes.SubscribeStar or
-                ProviderTypes.Todoist     or ProviderTypes.Twitter   or ProviderTypes.Webflow       or
-                ProviderTypes.Weibo       or ProviderTypes.Yandex    or ProviderTypes.Zoom
+                ProviderTypes.Airtable      or ProviderTypes.Basecamp   or ProviderTypes.Box       or
+                ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or ProviderTypes.Discord   or
+                ProviderTypes.Disqus        or ProviderTypes.Facebook   or ProviderTypes.Figma     or
+                ProviderTypes.Genesys       or ProviderTypes.Gitee      or ProviderTypes.GitHub    or
+                ProviderTypes.Harvest       or ProviderTypes.Kook       or ProviderTypes.Kroger    or
+                ProviderTypes.Lichess       or ProviderTypes.Linear     or ProviderTypes.Mastodon  or
+                ProviderTypes.Meetup        or ProviderTypes.Miro       or ProviderTypes.Nextcloud or
+                ProviderTypes.Osu           or ProviderTypes.Patreon    or ProviderTypes.Pipedrive or
+                ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify   or
+                ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter   or
+                ProviderTypes.Webflow       or ProviderTypes.Weibo      or ProviderTypes.Yandex    or
+                ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
