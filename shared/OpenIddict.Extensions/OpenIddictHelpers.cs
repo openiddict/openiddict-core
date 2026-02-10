@@ -1193,7 +1193,7 @@ internal static class OpenIddictHelpers
             ReadNextPairImpl();
             if (ReadSucceeded())
             {
-                return new KeyValuePair<string, string>(_currentKey, _currentValue);
+                return KeyValuePair.Create(_currentKey, _currentValue);
             }
             return null;
         }
@@ -1220,7 +1220,7 @@ internal static class OpenIddictHelpers
             await ReadNextPairAsyncImpl(cancellationToken);
             if (ReadSucceeded())
             {
-                return new KeyValuePair<string, string>(_currentKey, _currentValue);
+                return KeyValuePair.Create(_currentKey, _currentValue);
             }
             return null;
         }

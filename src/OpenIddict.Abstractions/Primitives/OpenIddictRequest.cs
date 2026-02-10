@@ -80,6 +80,17 @@ public class OpenIddictRequest : OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The request parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
+    public OpenIddictRequest(IEnumerable<KeyValuePair<string, ImmutableArray<string?>>> parameters)
+        : base(parameters)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new OpenIddict request.
+    /// </summary>
+    /// <param name="parameters">The request parameters.</param>
+    /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
+    [Obsolete("This constructor is obsolete and will be removed in a future version.")]
     public OpenIddictRequest(IEnumerable<KeyValuePair<string, ImmutableArray<string?>?>> parameters)
         : base(parameters)
     {

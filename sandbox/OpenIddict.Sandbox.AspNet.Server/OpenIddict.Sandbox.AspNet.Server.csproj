@@ -7,7 +7,6 @@
     <MvcBuildViews>false</MvcBuildViews>
     <ImplicitUsings>disable</ImplicitUsings>
     <NoWarn>CA3147</NoWarn>
-    <IncludePolyfills>false</IncludePolyfills>
   </PropertyGroup>
 
   <ItemGroup>
