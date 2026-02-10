@@ -170,8 +170,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
                     }
 
                     var claims = result.Identity.Claims.GroupBy(claim => claim.Type)
-                        .Select(group => new KeyValuePair<string, ImmutableArray<string?>?>(
-                            group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
+                        .Select(group => KeyValuePair.Create(group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
 
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(claims)));

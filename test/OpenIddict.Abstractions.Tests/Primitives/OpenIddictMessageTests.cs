@@ -36,8 +36,8 @@ public class OpenIddictMessageTests
         {
             return new OpenIddictMessage(
             [
-                new KeyValuePair<string, OpenIddictParameter>("parameter", "Fabrikam"),
-                new KeyValuePair<string, OpenIddictParameter>("parameter", "Contoso")
+                KeyValuePair.Create("parameter", new OpenIddictParameter("Fabrikam")),
+                KeyValuePair.Create("parameter", new OpenIddictParameter("Contoso"))
             ]);
         });
 
@@ -51,7 +51,7 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, OpenIddictParameter>("parameter", 42)
+            KeyValuePair.Create("parameter", new OpenIddictParameter(42))
         ]);
 
         // Assert
@@ -66,7 +66,7 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, OpenIddictParameter>(name!, "Fabrikam")
+            KeyValuePair.Create(name!, new OpenIddictParameter("Fabrikam"))
         ]);
 
         // Assert
@@ -79,8 +79,8 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, OpenIddictParameter>("null-parameter", (string?) null),
-            new KeyValuePair<string, OpenIddictParameter>("empty-parameter", string.Empty)
+            KeyValuePair.Create("null-parameter", new OpenIddictParameter((string?) null)),
+            KeyValuePair.Create("empty-parameter", new OpenIddictParameter(string.Empty))
         ]);
 
         // Assert
@@ -93,8 +93,8 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, string?>("parameter", "Fabrikam"),
-            new KeyValuePair<string, string?>("parameter", "Contoso")
+            KeyValuePair.Create<string, string?>("parameter", "Fabrikam"),
+            KeyValuePair.Create<string, string?>("parameter", "Contoso")
         ]);
 
         // Assert
@@ -109,7 +109,7 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, ImmutableArray<string?>?>("parameter", ["Fabrikam", "Contoso"])
+            KeyValuePair.Create<string, ImmutableArray<string?>>("parameter", ["Fabrikam", "Contoso"])
         ]);
 
         // Assert
@@ -124,7 +124,7 @@ public class OpenIddictMessageTests
         // Arrange and act
         var message = new OpenIddictMessage(
         [
-            new KeyValuePair<string, ImmutableArray<string?>?>("parameter", ["Fabrikam"])
+            KeyValuePair.Create<string, ImmutableArray<string?>>("parameter", ["Fabrikam"])
         ]);
 
         // Assert

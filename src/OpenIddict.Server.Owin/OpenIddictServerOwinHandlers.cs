@@ -493,7 +493,7 @@ public static partial class OpenIddictServerOwinHandlers
                 context.Transaction.Request = new OpenIddictRequest(
                     from parameter in request.Query
                     let values = new StringValues(parameter.Value)
-                    select new KeyValuePair<string, StringValues>(parameter.Key, values));
+                    select KeyValuePair.Create(parameter.Key, values));
             }
 
             else
@@ -544,7 +544,7 @@ public static partial class OpenIddictServerOwinHandlers
                 context.Transaction.Request = new OpenIddictRequest(
                     from parameter in request.Query
                     let values = new StringValues(parameter.Value)
-                    select new KeyValuePair<string, StringValues>(parameter.Key, values));
+                    select KeyValuePair.Create(parameter.Key, values));
             }
 
             else if (string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
@@ -578,7 +578,7 @@ public static partial class OpenIddictServerOwinHandlers
                 context.Transaction.Request = new OpenIddictRequest(
                     from parameter in await request.ReadFormAsync()
                     let values = new StringValues(parameter.Value)
-                    select new KeyValuePair<string, StringValues>(parameter.Key, values));
+                    select KeyValuePair.Create(parameter.Key, values));
             }
 
             else
@@ -653,7 +653,7 @@ public static partial class OpenIddictServerOwinHandlers
                 context.Transaction.Request = new OpenIddictRequest(
                     from parameter in await request.ReadFormAsync()
                     let values = new StringValues(parameter.Value)
-                    select new KeyValuePair<string, StringValues>(parameter.Key, values));
+                    select KeyValuePair.Create(parameter.Key, values));
             }
 
             else

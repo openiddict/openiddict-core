@@ -1148,7 +1148,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     let values = (ImmutableArray<string?>?) parameter.Value
                     where values is not null
                     from value in values.GetValueOrDefault()
-                    select new KeyValuePair<string?, string?>(parameter.Key, value));
+                    select KeyValuePair.Create(parameter.Key, value));
             }
 
             return ValueTask.CompletedTask;
@@ -1590,7 +1590,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                         value = parameter[start..index].Trim();
                     }
 
-                    yield return new KeyValuePair<string, string?>(key, value);
+                    yield return KeyValuePair.Create<string, string?>(key, value);
                 }
             }
         }

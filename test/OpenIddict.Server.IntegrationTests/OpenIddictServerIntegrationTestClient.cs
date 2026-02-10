@@ -204,7 +204,7 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
                 let values = (ImmutableArray<string?>?) parameter.Value
                 where values is not null
                 from value in values.GetValueOrDefault()
-                select new KeyValuePair<string?, string?>(parameter.Key, value));
+                select KeyValuePair.Create(parameter.Key, value));
         }
 
         return message;
@@ -295,7 +295,7 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
                         value = parameter[start..index].Trim();
                     }
 
-                    yield return new KeyValuePair<string, string?>(key, value);
+                    yield return KeyValuePair.Create<string, string?>(key, value);
                 }
             }
         }
@@ -356,14 +356,14 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
 
                 var value = UnescapeDataString(segment.Substring(index + 1, segment.Length - (index + 1)));
 
-                parameters.Add(new KeyValuePair<string, string?>(name, value));
+                parameters.Add(KeyValuePair.Create(name, value));
             }
 
             return new OpenIddictResponse(
                 from parameter in parameters
                 group parameter by parameter.Key into grouping
                 let values = grouping.Select(parameter => parameter.Value)
-                select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
+                select KeyValuePair.Create(grouping.Key, new StringValues(values.ToArray())));
         }
 
         else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
@@ -399,14 +399,14 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
 
                 var value = element.GetAttribute("value");
 
-                parameters.Add(new KeyValuePair<string, string?>(name, value));
+                parameters.Add(KeyValuePair.Create(name, value));
             }
 
             return new OpenIddictResponse(
                 from parameter in parameters
                 group parameter by parameter.Key into grouping
                 let values = grouping.Select(parameter => parameter.Value)
-                select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
+                select KeyValuePair.Create(grouping.Key, new StringValues(values.ToArray())));
         }
 
         else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
@@ -438,14 +438,14 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
 
                 var value = line[(index + 1)..];
 
-                parameters.Add(new KeyValuePair<string, string>(name, value));
+                parameters.Add(KeyValuePair.Create(name, value));
             }
 
             return new OpenIddictResponse(
                 from parameter in parameters
                 group parameter by parameter.Key into grouping
                 let values = grouping.Select(parameter => parameter.Value)
-                select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
+                select KeyValuePair.Create(grouping.Key, new StringValues(values.ToArray())));
         }
 
         return new OpenIddictResponse();

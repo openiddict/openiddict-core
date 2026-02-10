@@ -258,16 +258,6 @@ internal static class OpenIddictPolyfills
 #endif
     }
 
-    extension(ValueTask)
-    {
-#if !SUPPORTS_VALUETASK_COMPLETED_TASK
-        /// <summary>
-        /// Gets a task that has already completed successfully.
-        /// </summary>
-        public static ValueTask CompletedTask => default;
-#endif
-    }
-
     extension<TResult>(ValueTask<TResult>)
     {
 #if !SUPPORTS_VALUETASK_COMPLETED_TASK
