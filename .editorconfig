@@ -167,3 +167,7 @@ indent_size = 2
 indent_style = space
 insert_final_newline = false
 tab_width = 2
+
+[*.csproj]
+indent_size = 2
+indent_style = space
