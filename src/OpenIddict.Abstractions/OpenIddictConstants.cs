@@ -245,6 +245,7 @@ public static class OpenIddictConstants
         public const string UnsupportedGrantType = "unsupported_grant_type";
         public const string UnsupportedResponseType = "unsupported_response_type";
         public const string UnsupportedTokenType = "unsupported_token_type";
+        public const string UnmetAuthenticationRequirements = "unmet_authentication_requirements";
     }
 
     public static class GrantTypes
