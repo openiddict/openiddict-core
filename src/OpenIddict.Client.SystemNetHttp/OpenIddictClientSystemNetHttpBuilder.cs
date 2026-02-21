@@ -300,6 +300,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// client authentication key usages to be automatically selected by OpenIddict).
     /// </remarks>
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
+    [Obsolete("This option is no longer supported and will be removed in a future version.")]
     public OpenIddictClientSystemNetHttpBuilder SetSelfSignedTlsClientAuthenticationCertificateSelector(
         Func<OpenIddictClientRegistration, X509Certificate2?> selector)
     {
@@ -321,6 +322,7 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     /// client authentication key usages to be automatically selected by OpenIddict).
     /// </remarks>
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
+    [Obsolete("This option is no longer supported and will be removed in a future version.")]
     public OpenIddictClientSystemNetHttpBuilder SetTlsClientAuthenticationCertificateSelector(
         Func<OpenIddictClientRegistration, X509Certificate2?> selector)
     {

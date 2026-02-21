@@ -19,14 +19,19 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     private readonly ConcurrentDictionary<string, Lazy<(
         string RequestForgeryProtection,
         SemaphoreSlim Semaphore,
-        TaskCompletionSource<ProcessAuthenticationContext> TaskCompletionSource)>> _operations = new();
+        TaskCompletionSource<ProcessAuthenticationContext> TaskCompletionSource)>> _tracker = new();
 
     /// <summary>
     /// Determines whether the authentication demand corresponding to the specified nonce is tracked.
     /// </summary>
     /// <param name="nonce">The nonce, used as a unique identifier.</param>
     /// <returns><see langword="true"/> if the operation is tracked, <see langword="false"/> otherwise.</returns>
-    internal bool IsTracked(string nonce) => _operations.ContainsKey(nonce);
+    internal bool IsTracked(string nonce)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
+
+        return _tracker.ContainsKey(nonce);
+    }
 
     /// <summary>
     /// Tries to add the specified authentication demand to the list of tracked operations.
@@ -34,10 +39,16 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     /// <param name="nonce">The nonce, used as a unique identifier.</param>
     /// <param name="protection">The request forgery protection associated with the specified authentication demand.</param>
     /// <returns><see langword="true"/> if the operation could be added, <see langword="false"/> otherwise.</returns>
-    internal bool TryAdd(string nonce, string protection) => _operations.TryAdd(nonce, new(() => (
-        RequestForgeryProtection: protection,
-        Semaphore: new SemaphoreSlim(initialCount: 1, maxCount: 1),
-        TaskCompletionSource: new(TaskCreationOptions.RunContinuationsAsynchronously))));
+    internal bool TryAdd(string nonce, string protection)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
+        ArgumentException.ThrowIfNullOrEmpty(protection);
+
+        return _tracker.TryAdd(nonce, new(() => (
+            RequestForgeryProtection: protection,
+            Semaphore: new SemaphoreSlim(initialCount: 1, maxCount: 1),
+            TaskCompletionSource: new(TaskCreationOptions.RunContinuationsAsynchronously))));
+    }
 
     /// <summary>
     /// Tries to acquire a lock on the authentication demand corresponding to the specified nonce.
@@ -47,8 +58,12 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     /// <returns><see langword="true"/> if the lock could be taken, <see langword="false"/> otherwise.</returns>
     /// <exception cref="OperationCanceledException">The operation was canceled by the user.</exception>
     internal async Task<bool> TryAcquireLockAsync(string nonce, CancellationToken cancellationToken)
-        => _operations.TryGetValue(nonce, out var operation) &&
-        await operation.Value.Semaphore.WaitAsync(TimeSpan.Zero, cancellationToken);
+    {
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
+
+        return _tracker.TryGetValue(nonce, out var operation) &&
+            await operation.Value.Semaphore.WaitAsync(TimeSpan.Zero, cancellationToken);
+    }
 
     /// <summary>
     /// Tries to resolve the authentication context associated with the specified nonce.
@@ -58,7 +73,9 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     /// <returns><see langword="true"/> if the context could be resolved, <see langword="false"/> otherwise.</returns>
     internal bool TryGetResult(string nonce, [NotNullWhen(true)] out ProcessAuthenticationContext? context)
     {
-        if (!_operations.TryGetValue(nonce, out var operation))
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
+
+        if (!_tracker.TryGetValue(nonce, out var operation))
         {
             context = null;
             return false;
@@ -83,7 +100,9 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     /// <exception cref="OperationCanceledException">The operation was canceled by the user.</exception>
     internal async Task<bool> TryWaitForCompletionAsync(string nonce, CancellationToken cancellationToken)
     {
-        if (!_operations.TryGetValue(nonce, out var operation))
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
+
+        if (!_tracker.TryGetValue(nonce, out var operation))
         {
             return false;
         }
@@ -100,7 +119,9 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     /// <returns><see langword="true"/> if the operation could be validated, <see langword="false"/> otherwise.</returns>
     internal bool TryGetRequestForgeryProtection(string nonce, [NotNullWhen(true)] out string? protection)
     {
-        if (_operations.TryGetValue(nonce, out var operation))
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
+
+        if (_tracker.TryGetValue(nonce, out var operation))
         {
             protection = operation.Value.RequestForgeryProtection;
             return true;
@@ -117,12 +138,21 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     /// <param name="context">The authentication context that will be returned to the caller.</param>
     /// <returns><see langword="true"/> if the operation could be completed, <see langword="false"/> otherwise.</returns>
     internal bool TryComplete(string nonce, ProcessAuthenticationContext context)
-        => _operations.TryGetValue(nonce, out var operation) && operation.Value.TaskCompletionSource.TrySetResult(context);
+    {
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
+
+        return _tracker.TryGetValue(nonce, out var operation) && operation.Value.TaskCompletionSource.TrySetResult(context);
+    }
 
     /// <summary>
     /// Tries to remove the specified authentication operation from the list of tracked operations.
     /// </summary>
     /// <param name="nonce">The nonce, used as a unique identifier.</param>
     /// <returns><see langword="true"/> if the operation could be removed, <see langword="false"/> otherwise.</returns>
-    internal bool TryRemove(string nonce) => _operations.TryRemove(nonce, out _);
+    internal bool TryRemove(string nonce)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
+
+        return _tracker.TryRemove(nonce, out _);
+    }
 }

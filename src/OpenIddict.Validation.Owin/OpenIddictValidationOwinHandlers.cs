@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -35,6 +36,7 @@ public static partial class OpenIddictValidationOwinHandlers
         ExtractAccessTokenFromAuthorizationHeader.Descriptor,
         ExtractAccessTokenFromBodyForm.Descriptor,
         ExtractAccessTokenFromQueryString.Descriptor,
+        ExtractClientCertificate.Descriptor,
 
         /*
          * Challenge processing:
@@ -301,6 +303,55 @@ public static partial class OpenIddictValidationOwinHandlers
             }
 
             return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for extracting a client certificate from the request context.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public sealed class ExtractClientCertificate : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<ExtractClientCertificate>()
+                .SetOrder(ExtractAccessTokenFromQueryString.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            // If a client certificate was used during the TLS handshake, attach it to the context.
+            if (request.IsSecure && await GetClientCertificateAsync(request.Context) is X509Certificate2 certificate)
+            {
+                context.Transaction.RemoteCertificate = certificate;
+            }
+
+            static async ValueTask<X509Certificate2?> GetClientCertificateAsync(IOwinContext context)
+            {
+                // If a loading function was provided by the OWIN host, always invoke it before trying
+                // to resolve the certificate to ensure it is present in the environment dictionary.
+                if (context.Get<Func<Task>>("ssl.LoadClientCertAsync") is Func<Task> loader)
+                {
+                    await loader();
+                }
+
+                return context.Get<X509Certificate>("ssl.ClientCertificate") is X509Certificate certificate
+                    ? certificate as X509Certificate2 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0498))
+                    : null;
+            }
         }
     }
 

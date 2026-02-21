@@ -5,7 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using Microsoft.Extensions.Options;
 using Owin;
 
 namespace OpenIddict.Client.Owin;

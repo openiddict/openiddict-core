@@ -787,7 +787,7 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_ThrowsAnExceptionForNullCertificates()
+    public void EnablePublicKeyInfrastructureTlsClientAuthentication_ThrowsAnExceptionForNullCertificates()
     {
         // Arrange
         var services = CreateServices();
@@ -795,14 +795,14 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
-            builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates: null!));
+            builder.EnablePublicKeyInfrastructureTlsClientAuthentication(certificates: null!));
 
         Assert.Equal("certificates", exception.ParamName);
     }
 
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
     [Fact]
-    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_ThrowsAnExceptionWhenNoRootCertificateProvided()
+    public void EnablePublicKeyInfrastructureTlsClientAuthentication_ThrowsAnExceptionWhenNoRootCertificateProvided()
     {
         // Arrange
         var services = CreateServices();
@@ -847,13 +847,13 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() =>
-            builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates));
+            builder.EnablePublicKeyInfrastructureTlsClientAuthentication(certificates));
 
         Assert.Equal("certificates", exception.ParamName);
     }
 
     [Fact]
-    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_ThrowsAnExceptionWhenEndCertificateProvided()
+    public void EnablePublicKeyInfrastructureTlsClientAuthentication_ThrowsAnExceptionWhenEndCertificateProvided()
     {
         // Arrange
         var services = CreateServices();
@@ -961,13 +961,13 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() =>
-            builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates));
+            builder.EnablePublicKeyInfrastructureTlsClientAuthentication(certificates));
 
         Assert.Equal("certificates", exception.ParamName);
     }
 
     [Fact]
-    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_PolicyIsCorrectlyConfigured()
+    public void EnablePublicKeyInfrastructureTlsClientAuthentication_PolicyIsCorrectlyConfigured()
     {
         // Arrange
         var services = CreateServices();
@@ -1044,19 +1044,19 @@ public class OpenIddictServerBuilderTests
         };
 
         // Act
-        builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates);
+        builder.EnablePublicKeyInfrastructureTlsClientAuthentication(certificates);
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.NotNull(options.ClientCertificateChainPolicy);
-        Assert.Equal(X509ChainTrustMode.CustomRootTrust, options.ClientCertificateChainPolicy.TrustMode);
-        Assert.Contains(options.ClientCertificateChainPolicy.ApplicationPolicy.Cast<Oid>(),
+        Assert.NotNull(options.PublicKeyInfrastructureTlsClientAuthenticationPolicy);
+        Assert.Equal(X509ChainTrustMode.CustomRootTrust, options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.TrustMode);
+        Assert.Contains(options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.ApplicationPolicy.Cast<Oid>(),
             oid => oid.Value == ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication);
     }
 
     [Fact]
-    public void EnablePublicKeyInfrastructureClientCertificateAuthentication_ThrowsAnExceptionWhenTrustModeIsChanged()
+    public void EnablePublicKeyInfrastructureTlsClientAuthentication_ThrowsAnExceptionWhenTrustModeIsChanged()
     {
         // Arrange
         var services = CreateServices();
@@ -1134,7 +1134,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            builder.EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates,
+            builder.EnablePublicKeyInfrastructureTlsClientAuthentication(certificates,
                 policy => policy.TrustMode = X509ChainTrustMode.System));
 
         Assert.Equal(SR.GetResourceString(SR.ID0509), exception.Message);
@@ -1142,7 +1142,7 @@ public class OpenIddictServerBuilderTests
 #endif
 
     [Fact]
-    public void EnableSelfSignedClientCertificateAuthentication_ThrowsAnExceptionForNullConfiguration()
+    public void EnableSelfSignedTlsClientAuthentication_ThrowsAnExceptionForNullConfiguration()
     {
         // Arrange
         var services = CreateServices();
@@ -1150,34 +1150,34 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
-            builder.EnableSelfSignedClientCertificateAuthentication(configuration: null!));
+            builder.EnableSelfSignedTlsClientAuthentication(configuration: null!));
 
         Assert.Equal("configuration", exception.ParamName);
     }
 
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
     [Fact]
-    public void EnableSelfSignedClientCertificateAuthentication_PolicyIsCorrectlyConfigured()
+    public void EnableSelfSignedTlsClientAuthentication_PolicyIsCorrectlyConfigured()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act
-        builder.EnableSelfSignedClientCertificateAuthentication();
+        builder.EnableSelfSignedTlsClientAuthentication();
 
         var options = GetOptions(services);
 
         // Assert
-        Assert.NotNull(options.SelfSignedClientCertificateChainPolicy);
-        Assert.Equal(X509ChainTrustMode.CustomRootTrust, options.SelfSignedClientCertificateChainPolicy.TrustMode);
-        Assert.Equal(X509RevocationMode.NoCheck, options.SelfSignedClientCertificateChainPolicy.RevocationMode);
-        Assert.Contains(options.SelfSignedClientCertificateChainPolicy.ApplicationPolicy.Cast<Oid>(),
+        Assert.NotNull(options.SelfSignedTlsClientAuthenticationPolicy);
+        Assert.Equal(X509ChainTrustMode.CustomRootTrust, options.SelfSignedTlsClientAuthenticationPolicy.TrustMode);
+        Assert.Equal(X509RevocationMode.NoCheck, options.SelfSignedTlsClientAuthenticationPolicy.RevocationMode);
+        Assert.Contains(options.SelfSignedTlsClientAuthenticationPolicy.ApplicationPolicy.Cast<Oid>(),
             oid => oid.Value == ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication);
     }
 
     [Fact]
-    public void EnableSelfSignedClientCertificateAuthentication_ThrowsAnExceptionWhenTrustModeIsChanged()
+    public void EnableSelfSignedTlsClientAuthentication_ThrowsAnExceptionWhenTrustModeIsChanged()
     {
         // Arrange
         var services = CreateServices();
@@ -1185,7 +1185,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            builder.EnableSelfSignedClientCertificateAuthentication(
+            builder.EnableSelfSignedTlsClientAuthentication(
                 policy => policy.TrustMode = X509ChainTrustMode.System));
 
         Assert.Equal(SR.GetResourceString(SR.ID0509), exception.Message);
@@ -2046,6 +2046,36 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.Equal(new Uri("http://localhost/endpoint-path"), options.MtlsTokenEndpointAliasUri);
+    }
+
+    [Theory]
+    [InlineData("~/path")]
+    public void SetMtlsUserInfoEndpointAliasUri_ThrowsExceptionForInvalidRelativeUri(string uri)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsUserInfoEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
+        Assert.Equal("uri", exception.ParamName);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+    }
+
+    [Fact]
+    public void SetMtlsUserInfoEndpointAliasUri_AddsUri()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetMtlsUserInfoEndpointAliasUri("http://localhost/endpoint-path");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(new Uri("http://localhost/endpoint-path"), options.MtlsUserInfoEndpointAliasUri);
     }
 
     [Fact]
@@ -3147,6 +3177,38 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.True(options.UseReferenceRefreshTokens);
+    }
+
+    [Fact]
+    public void UseClientCertificateBoundAccessTokens_CertificateBoundTokensAreEnabled()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.UseClientCertificateBoundAccessTokens();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.UseClientCertificateBoundAccessTokens);
+    }
+
+    [Fact]
+    public void UseClientCertificateBoundRefreshTokens_CertificateBoundTokensAreEnabled()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.UseClientCertificateBoundRefreshTokens();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.UseClientCertificateBoundRefreshTokens);
     }
 
     private static IServiceCollection CreateServices()

@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 
 namespace OpenIddict.Client;
 
@@ -177,6 +178,15 @@ public static class OpenIddictClientModels
         public string? IdentityTokenHint { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the optional login hint that will be sent to the authorization server, if applicable.
         /// </summary>
         public string? LoginHint { get; init; }
@@ -231,15 +241,6 @@ public static class OpenIddictClientModels
         /// Gets the scopes that will be sent to the authorization server.
         /// </summary>
         public List<string>? Scopes { get; init; }
-
-        /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
-        /// </summary>
-        /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
-        /// </remarks>
-        public Uri? Issuer { get; init; }
     }
 
     /// <summary>
@@ -286,6 +287,15 @@ public static class OpenIddictClientModels
         public string? IdentityTokenHint { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the optional login hint that will be sent to the authorization server, if applicable.
         /// </summary>
         public string? LoginHint { get; init; }
@@ -318,15 +328,6 @@ public static class OpenIddictClientModels
         /// Gets the scopes that will be sent to the authorization server.
         /// </summary>
         public List<string>? Scopes { get; init; }
-
-        /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
-        /// </summary>
-        /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
-        /// </remarks>
-        public Uri? Issuer { get; init; }
     }
 
     /// <summary>
@@ -367,6 +368,15 @@ public static class OpenIddictClientModels
         public CancellationToken CancellationToken { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -396,13 +406,21 @@ public static class OpenIddictClientModels
         public List<string>? Scopes { get; init; }
 
         /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable.
         /// </summary>
         /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// <para>
+        /// Note: when mTLs is also used for OAuth 2.0 client authentication, the
+        /// certificate set here replaces the client certificate chosen by OpenIddict.
+        /// </para>
+        /// <para>
+        /// Note: if a certificate-based client authentication or token binding method is
+        /// negotiated, the type of the certificate must match the negotiated methods.
+        /// </para>
         /// </remarks>
-        public Uri? Issuer { get; init; }
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
     }
 
     /// <summary>
@@ -514,6 +532,15 @@ public static class OpenIddictClientModels
         public required string GrantType { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -543,13 +570,21 @@ public static class OpenIddictClientModels
         public List<string>? Scopes { get; init; }
 
         /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable.
         /// </summary>
         /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// <para>
+        /// Note: when mTLs is also used for OAuth 2.0 client authentication, the
+        /// certificate set here replaces the client certificate chosen by OpenIddict.
+        /// </para>
+        /// <para>
+        /// Note: if a certificate-based client authentication or token binding method is
+        /// negotiated, the type of the certificate must match the negotiated methods.
+        /// </para>
         /// </remarks>
-        public Uri? Issuer { get; init; }
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
     }
 
     /// <summary>
@@ -656,6 +691,15 @@ public static class OpenIddictClientModels
         public required TimeSpan Interval { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -685,13 +729,21 @@ public static class OpenIddictClientModels
         public List<string>? Scopes { get; init; }
 
         /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable.
         /// </summary>
         /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// <para>
+        /// Note: when mTLs is also used for OAuth 2.0 client authentication, the
+        /// certificate set here replaces the client certificate chosen by OpenIddict.
+        /// </para>
+        /// <para>
+        /// Note: if a certificate-based client authentication or token binding method is
+        /// negotiated, the type of the certificate must match the negotiated methods.
+        /// </para>
         /// </remarks>
-        public Uri? Issuer { get; init; }
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
     }
 
     /// <summary>
@@ -776,6 +828,15 @@ public static class OpenIddictClientModels
         public CancellationToken CancellationToken { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -803,15 +864,6 @@ public static class OpenIddictClientModels
         /// Gets the scopes that will be sent to the authorization server.
         /// </summary>
         public List<string>? Scopes { get; init; }
-
-        /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
-        /// </summary>
-        /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
-        /// </remarks>
-        public Uri? Issuer { get; init; }
     }
 
     /// <summary>
@@ -877,6 +929,15 @@ public static class OpenIddictClientModels
         public CancellationToken CancellationToken { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -904,15 +965,6 @@ public static class OpenIddictClientModels
         /// Gets the token type hint that will be sent to the authorization server.
         /// </summary>
         public string? TokenTypeHint { get; init; }
-
-        /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
-        /// </summary>
-        /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
-        /// </remarks>
-        public Uri? Issuer { get; init; }
     }
 
     /// <summary>
@@ -968,6 +1020,15 @@ public static class OpenIddictClientModels
         public bool DisableUserInfo { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the password that will be sent to the authorization server.
         /// </summary>
         public required string Password { get; init; }
@@ -1007,13 +1068,21 @@ public static class OpenIddictClientModels
         public required string Username { get; init; }
 
         /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable.
         /// </summary>
         /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// <para>
+        /// Note: when mTLs is also used for OAuth 2.0 client authentication, the
+        /// certificate set here replaces the client certificate chosen by OpenIddict.
+        /// </para>
+        /// <para>
+        /// Note: if a certificate-based client authentication or token binding method is
+        /// negotiated, the type of the certificate must match the negotiated methods.
+        /// </para>
         /// </remarks>
-        public Uri? Issuer { get; init; }
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
     }
 
     /// <summary>
@@ -1103,6 +1172,15 @@ public static class OpenIddictClientModels
         public bool DisableUserInfo { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -1137,13 +1215,21 @@ public static class OpenIddictClientModels
         public required string RefreshToken { get; init; }
 
         /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable.
         /// </summary>
         /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// <para>
+        /// Note: when mTLs is also used for OAuth 2.0 client authentication, the
+        /// certificate set here replaces the client certificate chosen by OpenIddict.
+        /// </para>
+        /// <para>
+        /// Note: if a certificate-based client authentication or token binding method is
+        /// negotiated, the type of the certificate must match the negotiated methods.
+        /// </para>
         /// </remarks>
-        public Uri? Issuer { get; init; }
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
     }
 
     /// <summary>
@@ -1246,6 +1332,15 @@ public static class OpenIddictClientModels
         public bool DisableUserInfo { get; init; }
 
         /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -1290,13 +1385,21 @@ public static class OpenIddictClientModels
         public required string SubjectTokenType { get; init; }
 
         /// <summary>
-        /// Gets or sets the issuer used to resolve the client registration.
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable.
         /// </summary>
         /// <remarks>
-        /// Note: if multiple client registrations point to the same issuer,
-        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// <para>
+        /// Note: when mTLs is also used for OAuth 2.0 client authentication, the
+        /// certificate set here replaces the client certificate chosen by OpenIddict.
+        /// </para>
+        /// <para>
+        /// Note: if a certificate-based client authentication or token binding method is
+        /// negotiated, the type of the certificate must match the negotiated methods.
+        /// </para>
         /// </remarks>
-        public Uri? Issuer { get; init; }
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
     }
 
     /// <summary>

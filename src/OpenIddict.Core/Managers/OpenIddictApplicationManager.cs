@@ -472,25 +472,6 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
-    /// Retrieves the client certificate chain policy enforced for this application.
-    /// </summary>
-    /// <param name="application">The application.</param>
-    /// <param name="policy">The base policy from which the returned instance will be derived.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>
-    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-    /// whose result returns the client certificate chain policy enforced for this application.
-    /// </returns>
-    public virtual ValueTask<X509ChainPolicy?> GetClientCertificateChainPolicyAsync(
-        TApplication application, X509ChainPolicy policy, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(application);
-
-        // Always clone the X.509 chain policy to ensure the original instance is never mutated.
-        return new(policy.Clone());
-    }
-
-    /// <summary>
     /// Retrieves the client identifier associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -725,6 +706,69 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
+    /// Retrieves the PKI client certificate authentication policy enforced for this application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="policy">The base policy from which the returned instance will be derived.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose
+    /// result returns the PKI client certificate authentication policy enforced for this application.
+    /// </returns>
+    public virtual async ValueTask<X509ChainPolicy?> GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(
+        TApplication application, X509ChainPolicy policy, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(application);
+
+        // Always clone the X.509 chain policy to ensure the original instance is never mutated.
+        policy = policy.Clone();
+
+        // If a JSON Web Key Set was associated to the client application, extract the intermediate X.509
+        // certificates (suitable for signing other X.509 certificates) and attach them to the chain policy.
+        //
+        // Doing that is essential to support advanced scenarios where an authorization server allows clients
+        // to authenticate using end certificates signed by the organizations owning them rather than by the
+        // organization operating the authorization server (e.g clients running on provisioned IoT devices).
+        if (await GetJsonWebKeySetAsync(application, cancellationToken) is { Keys: [_, ..] keys })
+        {
+            X509Certificate2Collection certificates = [];
+
+            for (var index = 0; index < keys.Count; index++)
+            {
+                if (keys[index] is { Use: JsonWebKeyUseNames.Sig or null or { Length: 0 } } &&
+                    JsonWebKeyConverter.TryConvertToSecurityKey(keys[index], out SecurityKey key) &&
+                    key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+                    OpenIddictHelpers.IsCertificateAuthority(certificate) &&
+                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign) &&
+                   !OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                {
+                    certificates.Add(certificate);
+                }
+            }
+
+            // If one of the intermediate certificates doesn't include a CRL or AIA
+            // extension, ignore root revocation unknown status errors by default.
+            //
+            // This matches the logic used for the base chain policy in the server stack.
+            if (certificates.Cast<X509Certificate2>()
+                .Where(static certificate =>
+                    OpenIddictHelpers.IsCertificateAuthority(certificate) &&
+                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign) &&
+                   !OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                .Any(static certificate =>
+                    certificate.Extensions[ObjectIdentifiers.CertificateExtensions.CrlDistributionPoints] is null &&
+                    certificate.Extensions[ObjectIdentifiers.CertificateExtensions.AuthorityInfoAccess]   is null))
+            {
+                policy.VerificationFlags |= X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown;
+            }
+
+            policy.ExtraStore.AddRange(certificates);
+        }
+
+        return policy;
+    }
+
+    /// <summary>
     /// Retrieves the redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -759,16 +803,16 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
-    /// Retrieves the self-signed client certificate chain policy enforced for this application.
+    /// Retrieves the self-signed client certificate authentication policy enforced for this application.
     /// </summary>
     /// <param name="application">The application.</param>
     /// <param name="policy">The base policy from which the returned instance will be derived.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose
-    /// result returns the self-signed client certificate chain policy enforced for this application.
+    /// result returns the self-signed client certificate authentication policy enforced for this application.
     /// </returns>
-    public virtual async ValueTask<X509ChainPolicy?> GetSelfSignedClientCertificateChainPolicyAsync(
+    public virtual async ValueTask<X509ChainPolicy?> GetSelfSignedTlsClientAuthenticationPolicyAsync(
         TApplication application, X509ChainPolicy policy, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(application);
@@ -776,17 +820,17 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         // Always clone the X.509 chain policy to ensure the original instance is never mutated.
         policy = policy.Clone();
 
-        // If a JSON Web Key Set was associated to the client application, extract the signing keys containing
-        // a X.509 certificate suitable for signing and client authentication and attach them to the chain policy.
+        // If a JSON Web Key Set was associated to the client application, extract the end X.509 certificates
+        // (suitable for digital signing and client authentication) and attach them to the chain policy.
         if (await GetJsonWebKeySetAsync(application, cancellationToken) is { Keys: [_, ..] keys })
         {
             for (var index = 0; index < keys.Count; index++)
             {
-                if (JsonWebKeyConverter.TryConvertToSecurityKey(keys[index], out SecurityKey key) &&
+                if (keys[index] is { Use: JsonWebKeyUseNames.Sig or null or { Length: 0 } } &&
+                    JsonWebKeyConverter.TryConvertToSecurityKey(keys[index], out SecurityKey key) &&
                     key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-                    certificate.Version is >= 3 &&
-                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.DigitalSignature) &&
-                    OpenIddictHelpers.HasExtendedKeyUsage(certificate, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication))
+                    OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                    OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
                 {
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
                     policy.CustomTrustStore.Add(certificate);
@@ -1288,114 +1332,6 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
-    /// Validates the client certificate associated with an application.
-    /// </summary>
-    /// <param name="application">The application.</param>
-    /// <param name="certificate">The certificate that should be compared to the certificates associated with the application.</param>
-    /// <param name="policy">The chain policy used to validate the certificate.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-    /// whose result returns a boolean indicating whether the client certificate was valid.
-    /// </returns>
-    public virtual async ValueTask<bool> ValidateClientCertificateAsync(
-        TApplication application, X509Certificate2 certificate,
-        X509ChainPolicy policy, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(application);
-        ArgumentNullException.ThrowIfNull(certificate);
-        ArgumentNullException.ThrowIfNull(policy);
-
-        // Important: the certificate and policy instances MUST NOT be mutated in this method.
-
-        if (OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0503), nameof(certificate));
-        }
-
-        // Note: using a policy relying on the default system trust store
-        // is strongly discouraged but deliberately not prevented here.
-
-        if (await HasClientTypeAsync(application, ClientTypes.Public, cancellationToken))
-        {
-            Logger.LogWarning(6159, SR.GetResourceString(SR.ID6159));
-
-            return false;
-        }
-
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
-        var uris = await GetRedirectUrisAsync(application, cancellationToken);
-        if (uris.IsDefaultOrEmpty)
-        {
-            Logger.LogInformation(6285, SR.GetResourceString(SR.ID6285), await GetClientIdAsync(application, cancellationToken));
-
-            return false;
-        }
-
-        using var chain = new X509Chain()
-        {
-            ChainPolicy = policy
-        };
-
-        try
-        {
-            // Ensure the specified certificate is valid based on the chain policy.
-            if (!chain.Build(certificate))
-            {
-                Logger.LogInformation(6286, SR.GetResourceString(SR.ID6286),
-                    await GetClientIdAsync(application, cancellationToken),
-                    chain.ChainStatus.Select(static status => status.Status).ToArray());
-
-                return false;
-            }
-
-            // Note: this method MUST NOT be used with self-signed certificates. While self-issued
-            // certificates are immediately rejected by this method, determining whether a certificate
-            // is actually self-signed can only be done after building and validating the chain.
-            if (chain.ChainElements.Count is not > 1)
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0503), nameof(certificate));
-            }
-
-            // By default, OpenIddict requires that certificates issued by PKIs be valid for one of the domains
-            // used in redirect URIs. Implementations that need a different logic can override this method.
-            for (var index = 0; index < uris.Length; index++)
-            {
-                if (Uri.TryCreate(uris[index], UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri) &&
-                    uri.HostNameType is UriHostNameType.Dns or UriHostNameType.IPv4 or UriHostNameType.IPv6 &&
-                    certificate.MatchesHostname(hostname: uri.IdnHost, allowWildcards: true, allowCommonName: true))
-                {
-                    return true;
-                }
-            }
-
-            Logger.LogInformation(6287, SR.GetResourceString(SR.ID6287), await GetClientIdAsync(application, cancellationToken));
-
-            return false;
-        }
-
-        catch (CryptographicException exception) when (!OpenIddictHelpers.IsFatal(exception))
-        {
-            Logger.LogWarning(6288, exception, SR.GetResourceString(SR.ID6288));
-
-            return false;
-        }
-
-        finally
-        {
-            // Dispose the certificates instantiated internally while building the chain.
-            for (var index = 0; index < chain.ChainElements.Count; index++)
-            {
-                chain.ChainElements[index].Certificate.Dispose();
-            }
-        }
-#else
-        throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0508));
-#endif
-    }
-
-    /// <summary>
     /// Validates the client_secret associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -1503,6 +1439,107 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
+    /// Validates the PKI client certificate to ensure it can be used by the specified application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="certificate">The certificate that should be compared to the certificates associated with the application.</param>
+    /// <param name="policy">The chain policy used to validate the certificate.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns a boolean indicating whether the client certificate was valid.
+    /// </returns>
+    public virtual async ValueTask<bool> ValidatePublicKeyInfrastructureTlsClientCertificateAsync(
+        TApplication application, X509Certificate2 certificate,
+        X509ChainPolicy policy, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(application);
+        ArgumentNullException.ThrowIfNull(certificate);
+        ArgumentNullException.ThrowIfNull(policy);
+
+        // Important: the certificate and policy instances MUST NOT be mutated in this method.
+
+        if (OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0503), nameof(certificate));
+        }
+
+        // Note: using a policy relying on the default system trust store
+        // is strongly discouraged but deliberately not prevented here.
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+        var uris = await GetRedirectUrisAsync(application, cancellationToken);
+        if (uris.IsDefaultOrEmpty)
+        {
+            Logger.LogInformation(6285, SR.GetResourceString(SR.ID6285), await GetClientIdAsync(application, cancellationToken));
+
+            return false;
+        }
+
+        using var chain = new X509Chain()
+        {
+            ChainPolicy = policy
+        };
+
+        try
+        {
+            // Ensure the specified certificate is valid based on the chain policy.
+            if (!chain.Build(certificate))
+            {
+                Logger.LogInformation(6286, SR.GetResourceString(SR.ID6286),
+                    await GetClientIdAsync(application, cancellationToken),
+                    chain.ChainStatus.Select(static status => status.Status).ToArray());
+
+                return false;
+            }
+
+            // Note: this method MUST NOT be used with self-signed certificates. While self-issued
+            // certificates are immediately rejected by this method, determining whether a certificate
+            // is actually self-signed can only be done after building and validating the chain.
+            if (chain.ChainElements.Count is not > 1)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0503), nameof(certificate));
+            }
+
+            // By default, OpenIddict requires that certificates issued by PKIs be valid for one of the domains
+            // used in redirect URIs. Implementations that need a different logic can override this method.
+            for (var index = 0; index < uris.Length; index++)
+            {
+                if (Uri.TryCreate(uris[index], UriKind.Absolute, out Uri? uri) && !OpenIddictHelpers.IsImplicitFileUri(uri) &&
+                    uri.HostNameType is UriHostNameType.Dns or UriHostNameType.IPv4 or UriHostNameType.IPv6 &&
+                    certificate.MatchesHostname(hostname: uri.IdnHost, allowWildcards: true, allowCommonName: true))
+                {
+                    return true;
+                }
+            }
+
+            Logger.LogInformation(6287, SR.GetResourceString(SR.ID6287), await GetClientIdAsync(application, cancellationToken));
+
+            return false;
+        }
+
+        catch (CryptographicException exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            Logger.LogWarning(6288, exception, SR.GetResourceString(SR.ID6288));
+
+            return false;
+        }
+
+        finally
+        {
+            // Dispose the certificates instantiated internally while building the chain.
+            for (var index = 0; index < chain.ChainElements.Count; index++)
+            {
+                chain.ChainElements[index].Certificate.Dispose();
+            }
+        }
+#else
+        throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0508));
+#endif
+    }
+
+    /// <summary>
     /// Validates the redirect_uri to ensure it's associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -1569,7 +1606,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
-    /// Validates the self-signed client certificate associated with an application.
+    /// Validates the self-signed client certificate to ensure it can be used by the specified application.
     /// </summary>
     /// <param name="application">The application.</param>
     /// <param name="certificate">The certificate that should be compared to the certificates associated with the application.</param>
@@ -1580,7 +1617,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose
     /// result returns a boolean indicating whether the self-signed client certificate was valid.
     /// </returns>
-    public virtual async ValueTask<bool> ValidateSelfSignedClientCertificateAsync(
+    public virtual async ValueTask<bool> ValidateSelfSignedTlsClientCertificateAsync(
         TApplication application, X509Certificate2 certificate,
         X509ChainPolicy policy, CancellationToken cancellationToken = default)
     {
@@ -1597,13 +1634,6 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
         // Note: using a policy relying on the default system trust store
         // is strongly discouraged but deliberately not prevented here.
-
-        if (await HasClientTypeAsync(application, ClientTypes.Public, cancellationToken))
-        {
-            Logger.LogWarning(6159, SR.GetResourceString(SR.ID6159));
-
-            return false;
-        }
 
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
         using var chain = new X509Chain()
@@ -1870,10 +1900,6 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => GetAsync(query, state, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<X509ChainPolicy?> IOpenIddictApplicationManager.GetClientCertificateChainPolicyAsync(object application, X509ChainPolicy policy, CancellationToken cancellationToken)
-        => GetClientCertificateChainPolicyAsync((TApplication) application, policy, cancellationToken);
-
-    /// <inheritdoc/>
     ValueTask<string?> IOpenIddictApplicationManager.GetClientIdAsync(object application, CancellationToken cancellationToken)
         => GetClientIdAsync((TApplication) application, cancellationToken);
 
@@ -1922,6 +1948,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => GetPropertiesAsync((TApplication) application, cancellationToken);
 
     /// <inheritdoc/>
+    ValueTask<X509ChainPolicy?> IOpenIddictApplicationManager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(object application, X509ChainPolicy policy, CancellationToken cancellationToken)
+        => GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync((TApplication) application, policy, cancellationToken);
+
+    /// <inheritdoc/>
     ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRedirectUrisAsync(object application, CancellationToken cancellationToken)
         => GetRedirectUrisAsync((TApplication) application, cancellationToken);
 
@@ -1930,8 +1960,8 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => GetRequirementsAsync((TApplication) application, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<X509ChainPolicy?> IOpenIddictApplicationManager.GetSelfSignedClientCertificateChainPolicyAsync(object application, X509ChainPolicy policy, CancellationToken cancellationToken)
-        => GetSelfSignedClientCertificateChainPolicyAsync((TApplication) application, policy, cancellationToken);
+    ValueTask<X509ChainPolicy?> IOpenIddictApplicationManager.GetSelfSignedTlsClientAuthenticationPolicyAsync(object application, X509ChainPolicy policy, CancellationToken cancellationToken)
+        => GetSelfSignedTlsClientAuthenticationPolicyAsync((TApplication) application, policy, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<ImmutableDictionary<string, string>> IOpenIddictApplicationManager.GetSettingsAsync(object application, CancellationToken cancellationToken)
@@ -1994,10 +2024,6 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => ValidateAsync((TApplication) application, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<bool> IOpenIddictApplicationManager.ValidateClientCertificateAsync(object application, X509Certificate2 certificate, X509ChainPolicy policy, CancellationToken cancellationToken)
-        => ValidateClientCertificateAsync((TApplication) application, certificate, policy, cancellationToken);
-
-    /// <inheritdoc/>
     ValueTask<bool> IOpenIddictApplicationManager.ValidateClientSecretAsync(object application, string secret, CancellationToken cancellationToken)
         => ValidateClientSecretAsync((TApplication) application, secret, cancellationToken);
 
@@ -2006,10 +2032,14 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => ValidatePostLogoutRedirectUriAsync((TApplication) application, uri, cancellationToken);
 
     /// <inheritdoc/>
+    ValueTask<bool> IOpenIddictApplicationManager.ValidatePublicKeyInfrastructureTlsClientCertificateAsync(object application, X509Certificate2 certificate, X509ChainPolicy policy, CancellationToken cancellationToken)
+        => ValidatePublicKeyInfrastructureTlsClientCertificateAsync((TApplication) application, certificate, policy, cancellationToken);
+
+    /// <inheritdoc/>
     ValueTask<bool> IOpenIddictApplicationManager.ValidateRedirectUriAsync(object application, [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
         => ValidateRedirectUriAsync((TApplication) application, uri, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<bool> IOpenIddictApplicationManager.ValidateSelfSignedClientCertificateAsync(object application, X509Certificate2 certificate, X509ChainPolicy policy, CancellationToken cancellationToken)
-        => ValidateSelfSignedClientCertificateAsync((TApplication) application, certificate, policy, cancellationToken);
+    ValueTask<bool> IOpenIddictApplicationManager.ValidateSelfSignedTlsClientCertificateAsync(object application, X509Certificate2 certificate, X509ChainPolicy policy, CancellationToken cancellationToken)
+        => ValidateSelfSignedTlsClientCertificateAsync((TApplication) application, certificate, policy, cancellationToken);
 }

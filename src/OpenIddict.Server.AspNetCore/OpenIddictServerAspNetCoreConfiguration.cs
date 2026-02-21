@@ -113,12 +113,12 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
 
         // Enable tls_client_auth and self_signed_tls_client_auth support if the
         // corresponding chain policies have been configured in the server options.
-        if (options.ClientCertificateChainPolicy is not null)
+        if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is not null)
         {
             options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.TlsClientAuth);
         }
 
-        if (options.SelfSignedClientCertificateChainPolicy is not null)
+        if (options.SelfSignedTlsClientAuthenticationPolicy is not null)
         {
             options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.SelfSignedTlsClientAuth);
         }

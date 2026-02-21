@@ -76,6 +76,7 @@ public static class OpenIddictConstants
         public const string Birthdate = "birthdate";
         public const string ClientId = "client_id";
         public const string CodeHash = "c_hash";
+        public const string Confirmation = "cnf";
         public const string Country = "country";
         public const string Email = "email";
         public const string EmailVerified = "email_verified";

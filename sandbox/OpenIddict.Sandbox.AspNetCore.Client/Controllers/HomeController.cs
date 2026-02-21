@@ -39,9 +39,9 @@ public class HomeController : Controller
         // authentication options shouldn't be used, a specific scheme can be specified here.
         var token = await HttpContext.GetTokenAsync(Tokens.BackchannelAccessToken);
 
-        using var client = _httpClientFactory.CreateClient();
+        using var client = _httpClientFactory.CreateClient("ApiClient");
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:44395/api/message");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "api/message");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         using var response = await client.SendAsync(request, cancellationToken);

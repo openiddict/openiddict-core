@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -38,6 +39,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         ExtractAccessTokenFromAuthorizationHeader.Descriptor,
         ExtractAccessTokenFromBodyForm.Descriptor,
         ExtractAccessTokenFromQueryString.Descriptor,
+        ExtractClientCertificate.Descriptor,
 
         /*
          * Challenge processing:
@@ -298,6 +300,42 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             }
 
             return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for extracting a client certificate from the request context.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ExtractClientCertificate : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ExtractClientCertificate>()
+                .SetOrder(ExtractAccessTokenFromQueryString.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            // If a client certificate was used during the TLS handshake, attach it to the context.
+            if (request.IsHttps && await request.HttpContext.Connection.GetClientCertificateAsync(
+                request.HttpContext.RequestAborted) is X509Certificate2 certificate)
+            {
+                context.Transaction.RemoteCertificate = certificate;
+            }
         }
     }
 

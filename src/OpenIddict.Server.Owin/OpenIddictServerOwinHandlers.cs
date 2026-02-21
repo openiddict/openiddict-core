@@ -689,7 +689,7 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
 
@@ -711,7 +711,7 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretPost),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return;
+                return ValueTask.CompletedTask;
             }
 
             // Reject requests that use client_secret_basic if support was explicitly disabled in the options.
@@ -726,69 +726,22 @@ public static partial class OpenIddictServerOwinHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretBasic),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return;
+                return ValueTask.CompletedTask;
             }
 
-            // If the request was sent using HTTPS, reject requests that use mTLS-based client authentication
-            // (self_signed_tls_client_auth or tls_client_auth) if support was not enabled in the server options.
-            if (request.IsSecure && await GetClientCertificateAsync(request.Context) is X509Certificate2 certificate)
-            {
-                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
-                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
-                if (OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
-                {
-                    if (!context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth))
-                    {
-                        context.Logger.LogInformation(6227, SR.GetResourceString(SR.ID6227), ClientAuthenticationMethods.SelfSignedTlsClientAuth);
+            // Note: requests containing a TLS client certificate are never rejected here to support advanced
+            // scenarios like mTLS token binding without client authentication (in this case, the certificate
+            // is only used as a proof-of-possession mechanism and not as a client authentication method).
 
-                        context.Reject(
-                            error: Errors.InvalidClient,
-                            description: SR.FormatID2174(ClientAuthenticationMethods.SelfSignedTlsClientAuth),
-                            uri: SR.FormatID8000(SR.ID2174));
-
-                        return;
-                    }
-                }
-
-                else if (!context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.TlsClientAuth))
-                {
-                    context.Logger.LogInformation(6227, SR.GetResourceString(SR.ID6227), ClientAuthenticationMethods.TlsClientAuth);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2174(ClientAuthenticationMethods.TlsClientAuth),
-                        uri: SR.FormatID8000(SR.ID2174));
-
-                    return;
-                }
-            }
-
-            static async ValueTask<X509Certificate2?> GetClientCertificateAsync(IOwinContext context)
-            {
-                // If a loading function was provided by the OWIN host, always invoke it before trying
-                // to resolve the certificate to ensure it is present in the environment dictionary.
-                if (context.Get<Func<Task>>("ssl.LoadClientCertAsync") is Func<Task> loader)
-                {
-                    await loader();
-                }
-
-                if (context.Get<Exception>("ssl.ClientCertificateErrors") is not null)
-                {
-                    return null;
-                }
-
-                return context.Get<X509Certificate>("ssl.ClientCertificate") is X509Certificate certificate
-                    ? certificate as X509Certificate2 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0498))
-                    : null;
-            }
+            return ValueTask.CompletedTask;
         }
     }
 
     /// <summary>
-    /// Contains the logic responsible for extracting a client authentication certificate from the request context.
+    /// Contains the logic responsible for extracting a client certificate from the request context.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public sealed class ExtractClientAuthenticationCertificate<TContext> : IOpenIddictServerHandler<TContext>
+    public sealed class ExtractClientCertificate<TContext> : IOpenIddictServerHandler<TContext>
         where TContext : BaseValidatingContext
     {
         /// <summary>
@@ -797,7 +750,7 @@ public static partial class OpenIddictServerOwinHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireOwinRequest>()
-                .UseSingletonHandler<ExtractClientAuthenticationCertificate<TContext>>()
+                .UseSingletonHandler<ExtractClientCertificate<TContext>>()
                 .SetOrder(ValidateClientAuthenticationMethod<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -807,8 +760,6 @@ public static partial class OpenIddictServerOwinHandlers
         {
             ArgumentNullException.ThrowIfNull(context);
 
-            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
-
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetOwinRequest() ??
@@ -817,7 +768,7 @@ public static partial class OpenIddictServerOwinHandlers
             // If a client certificate was used during the TLS handshake, attach it to the context.
             if (request.IsSecure && await GetClientCertificateAsync(request.Context) is X509Certificate2 certificate)
             {
-                context.Transaction.ClientCertificate = certificate;
+                context.Transaction.RemoteCertificate = certificate;
             }
 
             static async ValueTask<X509Certificate2?> GetClientCertificateAsync(IOwinContext context)
@@ -827,11 +778,6 @@ public static partial class OpenIddictServerOwinHandlers
                 if (context.Get<Func<Task>>("ssl.LoadClientCertAsync") is Func<Task> loader)
                 {
                     await loader();
-                }
-
-                if (context.Get<Exception>("ssl.ClientCertificateErrors") is not null)
-                {
-                    return null;
                 }
 
                 return context.Get<X509Certificate>("ssl.ClientCertificate") is X509Certificate certificate
@@ -855,7 +801,7 @@ public static partial class OpenIddictServerOwinHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<ExtractBasicAuthenticationCredentials<TContext>>()
-                .SetOrder(ExtractClientAuthenticationCertificate<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(ExtractClientCertificate<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

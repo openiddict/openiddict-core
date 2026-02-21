@@ -7,7 +7,10 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
@@ -33,6 +36,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateExpirationDate.Descriptor,
             ValidatePresenters.Descriptor,
             ValidateAudiences.Descriptor,
+            ValidateProofOfPossession.Descriptor,
             ValidateTokenEntry.Descriptor,
             ValidateAuthorizationEntry.Descriptor,
 
@@ -783,6 +787,88 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting tokens for which no valid proof of possession was received.
+        /// </summary>
+        public sealed class ValidateProofOfPossession : IOpenIddictValidationHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .AddFilter<RequireTokenProofOfPossessionValidationEnabled>()
+                    .UseSingletonHandler<ValidateProofOfPossession>()
+                    .SetOrder(ValidateAudiences.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                // Try to resolve the confirmation claim from the principal. If no such claim can be found,
+                // this indicates that the token is a bearer token and doesn't require a proof of possession.
+                var confirmation = context.Principal.GetClaim(Claims.Confirmation);
+                if (string.IsNullOrEmpty(confirmation))
+                {
+                    return ValueTask.CompletedTask;
+                }
+
+                if (JsonObject.Parse(confirmation) is not JsonObject node)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID2199));
+                }
+
+                if (node.ContainsKey(JsonWebKeyParameterNames.X5tS256))
+                {
+                    var thumbprint = (string?) node[JsonWebKeyParameterNames.X5tS256];
+                    if (string.IsNullOrEmpty(thumbprint))
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID2200));
+                    }
+
+                    // If no client certificate was provided, return an error as no
+                    // proof-of-possession can be validated without the client certificate.
+                    if (context.Transaction.RemoteCertificate is not X509Certificate2 certificate)
+                    {
+                        context.Logger.LogInformation(6282, SR.GetResourceString(SR.ID6282));
+
+                        context.Reject(
+                            error: Errors.InvalidToken,
+                            description: SR.GetResourceString(SR.ID2203),
+                            uri: SR.FormatID8000(SR.ID2203));
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    // If the thumbprint of the certificate doesn't match the hash
+                    // resolved from the confirmation claim, return an error.
+                    var hash = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(certificate.RawData));
+                    if (!OpenIddictHelpers.FixedTimeEquals(
+                        left : MemoryMarshal.AsBytes<char>(hash),
+                        right: MemoryMarshal.AsBytes<char>(thumbprint)))
+                    {
+                        context.Logger.LogInformation(6289, SR.GetResourceString(SR.ID6289));
+
+                        context.Reject(
+                            error: Errors.InvalidToken,
+                            description: SR.GetResourceString(SR.ID2204),
+                            uri: SR.FormatID8000(SR.ID2204));
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    return ValueTask.CompletedTask;
+                }
+
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID2196));
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting tokens whose
         /// associated token entry is no longer valid (e.g was revoked).
         /// </summary>
@@ -803,7 +889,7 @@ public static partial class OpenIddictValidationHandlers
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .AddFilter<RequireTokenIdResolved>()
                     .UseScopedHandler<ValidateTokenEntry>()
-                    .SetOrder(ValidateAudiences.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateProofOfPossession.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 

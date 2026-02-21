@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -234,6 +235,11 @@ public static partial class OpenIddictServerHandlers
                     [Claims.TokenUsage] = notification.TokenUsage,
                     [Claims.ClientId] = notification.ClientId
                 };
+
+                if (notification.Confirmation is not null)
+                {
+                    response[Claims.Confirmation] = notification.Confirmation;
+                }
 
                 if (notification.IssuedAt is not null)
                 {
@@ -724,6 +730,17 @@ public static partial class OpenIddictServerHandlers
                     _ => null
                 };
 
+                context.Confirmation = context.GenericTokenPrincipal.GetTokenType() switch
+                {
+                    // For access tokens that contain a confirmation claim, return it to the caller so
+                    // that resource servers can verify the proof-of-possession when the token is used.
+                    TokenTypeIdentifiers.AccessToken when context.GenericTokenPrincipal.GetClaim(
+                        Claims.Confirmation) is { Length: > 0 } value => JsonObject.Parse(value) as JsonObject ??
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID2199)),
+
+                    _ => null
+                };
+
                 context.IssuedAt = context.NotBefore = context.GenericTokenPrincipal.GetCreationDate();
                 context.ExpiresAt = context.GenericTokenPrincipal.GetExpirationDate();
 
@@ -732,13 +749,20 @@ public static partial class OpenIddictServerHandlers
                 context.ClientId = context.GenericTokenPrincipal.GetClaim(Claims.ClientId) ??
                                    context.GenericTokenPrincipal.FindFirst(Claims.Private.Presenter)?.Value;
 
-                // Note: only set "token_type" when the received token is an access token.
-                // See https://tools.ietf.org/html/rfc7662#section-2.2
-                // and https://tools.ietf.org/html/rfc6749#section-5.1 for more information.
-                if (context.GenericTokenPrincipal.HasTokenType(TokenTypeIdentifiers.AccessToken))
+                context.TokenType = context.GenericTokenPrincipal.GetTokenType() switch
                 {
-                    context.TokenType = TokenTypes.Bearer;
-                }
+                    // Note: only set "token_type" when the received token is an access token and doesn't
+                    // require using a proof-of-possession: while specifications like DPoP define a specific
+                    // token type for DPoP-protected access tokens, the mTLS specification doesn't define one
+                    // for mutual TLS-bound access tokens. And in this case, not returning a "token_type" node is
+                    // a better option than always returning "Bearer" even when the token is not a bearer token.
+                    //
+                    // See https://tools.ietf.org/html/rfc7662#section-2.2
+                    // and https://tools.ietf.org/html/rfc6749#section-5.1 for more information.
+                    TokenTypeIdentifiers.AccessToken when context.Confirmation is null => TokenTypes.Bearer,
+
+                    _ => null
+                };
 
                 return ValueTask.CompletedTask;
             }
@@ -811,9 +835,9 @@ public static partial class OpenIddictServerHandlers
                     // Exclude standard claims, that are already handled via strongly-typed properties.
                     // Make sure to always update this list when adding new built-in claim properties.
                     var type = group.Key;
-                    if (type is Claims.Audience or Claims.ExpiresAt or Claims.IssuedAt or
-                                Claims.Issuer   or Claims.NotBefore or Claims.Scope or
-                                Claims.Subject  or Claims.TokenType or Claims.TokenUsage)
+                    if (type is Claims.Audience  or Claims.Confirmation or Claims.ExpiresAt or Claims.IssuedAt or
+                                Claims.Issuer    or Claims.NotBefore    or Claims.Scope     or Claims.Subject  or
+                                Claims.TokenType or Claims.TokenUsage)
                     {
                         continue;
                     }

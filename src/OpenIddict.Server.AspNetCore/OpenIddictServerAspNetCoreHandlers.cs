@@ -627,7 +627,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
 
@@ -649,7 +649,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretPost),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return;
+                return ValueTask.CompletedTask;
             }
 
             // Reject requests that use client_secret_basic if support was explicitly disabled in the options.
@@ -664,51 +664,22 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     description: SR.FormatID2174(ClientAuthenticationMethods.ClientSecretBasic),
                     uri: SR.FormatID8000(SR.ID2174));
 
-                return;
+                return ValueTask.CompletedTask;
             }
 
-            // If the request was sent using HTTPS, reject requests that use mTLS-based client authentication
-            // (self_signed_tls_client_auth or tls_client_auth) if support was not enabled in the server options.
-            if (request.IsHttps && await request.HttpContext.Connection.GetClientCertificateAsync(
-                request.HttpContext.RequestAborted) is X509Certificate2 certificate)
-            {
-                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
-                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
-                if (OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
-                {
-                    if (!context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth))
-                    {
-                        context.Logger.LogInformation(6227, SR.GetResourceString(SR.ID6227), ClientAuthenticationMethods.SelfSignedTlsClientAuth);
+            // Note: requests containing a TLS client certificate are never rejected here to support advanced
+            // scenarios like mTLS token binding without client authentication (in this case, the certificate
+            // is only used as a proof-of-possession mechanism and not as a client authentication method).
 
-                        context.Reject(
-                            error: Errors.InvalidClient,
-                            description: SR.FormatID2174(ClientAuthenticationMethods.SelfSignedTlsClientAuth),
-                            uri: SR.FormatID8000(SR.ID2174));
-
-                        return;
-                    }
-                }
-
-                else if (!context.Options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.TlsClientAuth))
-                {
-                    context.Logger.LogInformation(6227, SR.GetResourceString(SR.ID6227), ClientAuthenticationMethods.TlsClientAuth);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.FormatID2174(ClientAuthenticationMethods.TlsClientAuth),
-                        uri: SR.FormatID8000(SR.ID2174));
-
-                    return;
-                }
-            }
+            return ValueTask.CompletedTask;
         }
     }
 
     /// <summary>
-    /// Contains the logic responsible for extracting a client authentication certificate from the request context.
+    /// Contains the logic responsible for extracting a client certificate from the request context.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public sealed class ExtractClientAuthenticationCertificate<TContext> : IOpenIddictServerHandler<TContext>
+    public sealed class ExtractClientCertificate<TContext> : IOpenIddictServerHandler<TContext>
         where TContext : BaseValidatingContext
     {
         /// <summary>
@@ -717,7 +688,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpRequest>()
-                .UseSingletonHandler<ExtractClientAuthenticationCertificate<TContext>>()
+                .UseSingletonHandler<ExtractClientCertificate<TContext>>()
                 .SetOrder(ValidateClientAuthenticationMethod<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -726,8 +697,6 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         public async ValueTask HandleAsync(TContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -738,7 +707,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             if (request.IsHttps && await request.HttpContext.Connection.GetClientCertificateAsync(
                 request.HttpContext.RequestAborted) is X509Certificate2 certificate)
             {
-                context.Transaction.ClientCertificate = certificate;
+                context.Transaction.RemoteCertificate = certificate;
             }
         }
     }
@@ -757,7 +726,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ExtractBasicAuthenticationCredentials<TContext>>()
-                .SetOrder(ExtractClientAuthenticationCertificate<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(ExtractClientCertificate<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

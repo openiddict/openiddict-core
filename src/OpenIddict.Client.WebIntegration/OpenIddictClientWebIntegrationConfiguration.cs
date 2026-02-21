@@ -5,10 +5,8 @@
  */
 
 using System.ComponentModel;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client.SystemNetHttp;
-using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
 
@@ -34,7 +32,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        options.Registrations.ForEach(static registration =>
+        foreach (var registration in options.Registrations)
         {
             // If the client registration has a provider type attached, apply
             // the configuration logic corresponding to the specified provider.
@@ -42,37 +40,13 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
             {
                 ConfigureProvider(registration);
             }
-        });
+        }
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is no longer supported and will be removed in a future version.")]
     public void PostConfigure(string? name, OpenIddictClientSystemNetHttpOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        // Override the default/user-defined selectors to support attaching TLS client
-        // certificates that don't meet the requirements enforced by default by OpenIddict.
-        options.SelfSignedTlsClientAuthenticationCertificateSelector = CreateSelector(options.SelfSignedTlsClientAuthenticationCertificateSelector);
-        options.TlsClientAuthenticationCertificateSelector = CreateSelector(options.TlsClientAuthenticationCertificateSelector);
-
-        static Func<OpenIddictClientRegistration, X509Certificate2?> CreateSelector(Func<OpenIddictClientRegistration, X509Certificate2?> selector)
-            => registration =>
-            {
-                var certificate = registration.ProviderType switch
-                {
-                    ProviderTypes.ProSantéConnect => registration.GetProSantéConnectSettings().SigningCertificate,
-
-                    _ => null
-                };
-
-                if (certificate is not null)
-                {
-                    return certificate;
-                }
-
-                return selector(registration);
-            };
-    }
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
     /// <summary>
     /// Amends the registration with the provider-specific configuration logic.

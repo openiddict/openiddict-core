@@ -11,7 +11,6 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Polly;
 
 #if SUPPORTS_HTTP_CLIENT_RESILIENCE
@@ -50,6 +49,9 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
         options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.SelfSignedTlsClientAuth);
         options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.TlsClientAuth);
+
+        options.TokenBindingMethods.Add(TokenBindingMethods.Private.SelfSignedTlsClientCertificate);
+        options.TokenBindingMethods.Add(TokenBindingMethods.Private.TlsClientCertificate);
     }
 
     /// <inheritdoc/>
@@ -73,26 +75,10 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         // to dynamically amend the resulting HttpClient or HttpClientHandler instance.
         //
         // To work around this limitation, the OpenIddict System.Net.Http integration uses
-        // dynamic client names and supports appending a list of key-value pairs to the client
-        // name to flow per-instance properties (e.g the negotiated client authentication method).
-        var properties = name.Length >= assembly.Name!.Length + 1 && name[assembly.Name.Length] is ':' ?
-            name[(assembly.Name.Length + 1)..]
-                .Split(['\u001f'], StringSplitOptions.RemoveEmptyEntries)
-                .Select(static property => property.Split(['\u001e'], StringSplitOptions.RemoveEmptyEntries))
-                .Where(static values => values is [{ Length: > 0 }, { Length: > 0 }])
-                .ToDictionary(static values => values[0], static values => values[1]) : [];
-
-        if (!properties.TryGetValue("RegistrationId", out string? identifier) || string.IsNullOrEmpty(identifier))
-        {
-            return;
-        }
-
-        var service = _provider.GetRequiredService<OpenIddictClientService>();
-
-        // Note: while the client registration should be returned synchronously in most cases,
-        // the retrieval is always offloaded to the thread pool to help prevent deadlocks when
-        // the waiting is blocking and the operation is executed in a synchronization context.
-        var registration = Task.Run(async () => await service.GetClientRegistrationByIdAsync(identifier)).GetAwaiter().GetResult();
+        // an async-local context to flow per-instance properties and uses dynamic client
+        // names to ensure the inner HttpClientHandler is not reused if the context differs.
+        var context = OpenIddictClientSystemNetHttpContext.Current ??
+            throw new InvalidOperationException(SR.FormatID2202(nameof(OpenIddictClientSystemNetHttpContext)));
 
         var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientSystemNetHttpOptions>>().CurrentValue;
 
@@ -108,7 +94,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         // Register the user-defined HTTP client actions.
         foreach (var action in settings.HttpClientActions)
         {
-            options.HttpClientActions.Add(client => action(registration, client));
+            options.HttpClientActions.Add(client => action(context.Registration, client));
         }
 
         options.HttpMessageHandlerBuilderActions.Add(builder =>
@@ -139,31 +125,25 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
 
             handler.ClientCertificateOptions = ClientCertificateOption.Manual;
 
-            if (properties.TryGetValue("AttachTlsClientCertificate", out string? value) &&
-                bool.TryParse(value, out bool result) && result)
+            if (context.LocalCertificate is X509Certificate2 certificate)
             {
-                var certificate = options.CurrentValue.TlsClientAuthenticationCertificateSelector(registration);
-                if (certificate is not null)
+                // If a certificate was specified, immediately throw an excecption if it doesn't have
+                // a private key attached to ensure it won't be silently discarded when initiating the
+                // TLS handshake (which would result in a hard-to-debug scenario where the certificate
+                // would be attached to the HTTP handler but would not be sent to the remote peer).
+                if (!certificate.HasPrivateKey)
                 {
-                    handler.ClientCertificates.Add(certificate);
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0514));
                 }
-            }
 
-            else if (properties.TryGetValue("AttachSelfSignedTlsClientCertificate", out value) &&
-                bool.TryParse(value, out result) && result)
-            {
-                var certificate = options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector(registration);
-                if (certificate is not null)
-                {
-                    handler.ClientCertificates.Add(certificate);
-                }
+                handler.ClientCertificates.Add(certificate);
             }
         });
 
         // Register the user-defined HTTP client handler actions.
         foreach (var action in settings.HttpClientHandlerActions)
         {
-            options.HttpMessageHandlerBuilderActions.Add(builder => action(registration,
+            options.HttpMessageHandlerBuilderActions.Add(builder => action(context.Registration,
                 builder.PrimaryHandler as HttpClientHandler ??
                     throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
         }
@@ -178,25 +158,6 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
 
         // Only amend the HTTP client factory options if the instance is managed by OpenIddict.
         if (string.IsNullOrEmpty(name) || !name.StartsWith(assembly.Name!, StringComparison.Ordinal))
-        {
-            return;
-        }
-
-        // Note: HttpClientFactory doesn't support flowing a list of properties that can be
-        // accessed from the HttpClientAction or HttpMessageHandlerBuilderAction delegates
-        // to dynamically amend the resulting HttpClient or HttpClientHandler instance.
-        //
-        // To work around this limitation, the OpenIddict System.Net.Http integration uses dynamic
-        // client names and supports appending a list of key-value pairs to the client name to flow
-        // per-instance properties (e.g a flag indicating whether a client certificate should be used).
-        var properties = name.Length >= assembly.Name!.Length + 1 && name[assembly.Name.Length] is ':' ?
-            name[(assembly.Name.Length + 1)..]
-                .Split(['\u001f'], StringSplitOptions.RemoveEmptyEntries)
-                .Select(static property => property.Split(['\u001e'], StringSplitOptions.RemoveEmptyEntries))
-                .Where(static values => values is [{ Length: > 0 }, { Length: > 0 }])
-                .ToDictionary(static values => values[0], static values => values[1]) : [];
-
-        if (!properties.TryGetValue("RegistrationId", out string? identifier) || string.IsNullOrEmpty(identifier))
         {
             return;
         }
@@ -258,48 +219,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is no longer supported and will be removed in a future version.")]
     public void PostConfigure(string? name, OpenIddictClientSystemNetHttpOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        // If no client authentication certificate selector was provided, use fallback delegates that
-        // automatically use the first X.509 signing certificate attached to the client registration
-        // that is suitable for both digital signature and client authentication.
-
-        options.SelfSignedTlsClientAuthenticationCertificateSelector ??= static registration =>
-        {
-            foreach (var credentials in registration.SigningCredentials)
-            {
-                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
-                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
-                if (credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-                    certificate.Version is >= 3 && OpenIddictHelpers.IsSelfIssuedCertificate(certificate) &&
-                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.DigitalSignature) &&
-                    OpenIddictHelpers.HasExtendedKeyUsage(certificate, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication))
-                {
-                    return certificate;
-                }
-            }
-
-            return null;
-        };
-
-        options.TlsClientAuthenticationCertificateSelector ??= static registration =>
-        {
-            foreach (var credentials in registration.SigningCredentials)
-            {
-                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
-                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
-                if (credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-                    certificate.Version is >= 3 && !OpenIddictHelpers.IsSelfIssuedCertificate(certificate) &&
-                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.DigitalSignature) &&
-                    OpenIddictHelpers.HasExtendedKeyUsage(certificate, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication))
-                {
-                    return certificate;
-                }
-            }
-
-            return null;
-        };
-    }
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 }

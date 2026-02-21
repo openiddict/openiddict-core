@@ -14,7 +14,6 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
 namespace OpenIddict.Client.SystemNetHttp;
@@ -24,28 +23,6 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 {
     public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
     [
-        /*
-         * Authentication processing:
-         */
-        AttachNonDefaultTokenEndpointClientAuthenticationMethod.Descriptor,
-        AttachNonDefaultUserInfoEndpointTokenBindingMethods.Descriptor,
-
-        /*
-         * Challenge processing:
-         */
-        AttachNonDefaultDeviceAuthorizationEndpointClientAuthenticationMethod.Descriptor,
-        AttachNonDefaultPushedAuthorizationEndpointClientAuthenticationMethod.Descriptor,
-
-        /*
-         * Introspection processing:
-         */
-        AttachNonDefaultIntrospectionEndpointClientAuthenticationMethod.Descriptor,
-
-        /*
-         * Revocation processing:
-         */
-        AttachNonDefaultRevocationEndpointClientAuthenticationMethod.Descriptor,
-
         .. Authorization.DefaultHandlers,
         .. Device.DefaultHandlers,
         .. Discovery.DefaultHandlers,
@@ -59,14 +36,9 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// Contains the logic responsible for negotiating the best token endpoint client
     /// authentication method supported by both the client and the authorization server.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachNonDefaultTokenEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
-
-        public AttachNonDefaultTokenEndpointClientAuthenticationMethod(
-            IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -79,113 +51,16 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            // If an explicit client authentication method was attached, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.TokenEndpointClientAuthenticationMethod))
-            {
-                return ValueTask.CompletedTask;
-            }
-
-            context.TokenEndpointClientAuthenticationMethod = (
-                // Note: if client authentication methods are explicitly listed in the client registration, only use
-                // the client authentication methods that are both listed and enabled in the global client options.
-                // Otherwise, always default to the client authentication methods that have been enabled globally.
-                Client: context.Registration.ClientAuthenticationMethods.Count switch
-                {
-                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
-                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
-                },
-
-                Server: context.Configuration.TokenEndpointAuthMethodsSupported) switch
-            {
-                // If a TLS client authentication certificate could be resolved and both the
-                // client and the server explicitly support tls_client_auth, always prefer it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    (context.Configuration.MtlsTokenEndpoint ?? context.Configuration.TokenEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.TlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.TlsClientAuth,
-
-                // If a self-signed TLS client authentication certificate could be resolved and both
-                // the client and the server explicitly support self_signed_tls_client_auth, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    (context.Configuration.MtlsTokenEndpoint ?? context.Configuration.TokenEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
-
-                // If at least one asymmetric signing key was attached to the client registration
-                // and both the client and the server explicitly support private_key_jwt, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    context.Registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey)
-                    => ClientAuthenticationMethods.PrivateKeyJwt,
-
-                // If a client secret was attached to the client registration and both the client and
-                // the server explicitly support client_secret_post, prefer it to basic authentication.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
-                    => ClientAuthenticationMethods.ClientSecretPost,
-
-                // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                // However, this authentication method is known to have severe compatibility/interoperability issues:
-                //
-                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
-                //     specification, basic authentication is also sometimes required by server implementations for
-                //     public clients that don't have a client secret: in this case, an empty password is used and
-                //     the client identifier is sent alone in the Authorization header (instead of being sent using
-                //     the standard "client_id" parameter present in the request body).
-                //
-                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
-                //     before being base64-encoded, many implementations are known to implement a non-standard
-                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
-                //
-                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
-                // basic authentication is only used when a client secret is present and the server configuration
-                // doesn't list any supported client authentication method or doesn't support client_secret_post.
-                //
-                // If client_secret_post is not listed or if the server returned an empty methods list,
-                // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
-                //
-                // See https://tools.ietf.org/html/rfc8414#section-2
-                // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                ({ Count: > 0 } client, { Count: 0 }) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                _ => null
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for negotiating the best token binding
     /// methods supported by both the client and the authorization server.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachNonDefaultUserInfoEndpointTokenBindingMethods : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
-
-        public AttachNonDefaultUserInfoEndpointTokenBindingMethods(
-            IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -198,56 +73,16 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            // Unlike DPoP, the mTLS specification doesn't use a specific token type to represent
-            // certificate-bound tokens. As such, most implementations (e.g Keycloak) simply return
-            // the "Bearer" value even if the access token is - by definition - not a bearer token
-            // and requires using the same X.509 certificate that was used for client authentication.
-            //
-            // Since the token type cannot be trusted in this case, OpenIddict assumes that the access
-            // token used in the userinfo request is certificate-bound if the server configuration
-            // indicates that the server supports certificate-bound access tokens and if either
-            // tls_client_auth or self_signed_tls_client_auth was used for the token request.
-
-            if (context.Configuration.TlsClientCertificateBoundAccessTokens is not true ||
-               !context.SendTokenRequest || string.IsNullOrEmpty(context.BackchannelAccessToken) ||
-               (context.Configuration.MtlsUserInfoEndpoint ?? context.Configuration.UserInfoEndpoint) is not Uri endpoint ||
-               !string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-            {
-                return ValueTask.CompletedTask;
-            }
-
-            if (context.TokenEndpointClientAuthenticationMethod is ClientAuthenticationMethods.TlsClientAuth &&
-                _options.CurrentValue.TlsClientAuthenticationCertificateSelector(context.Registration) is not null)
-            {
-                context.UserInfoEndpointTokenBindingMethods.Add(TokenBindingMethods.Private.TlsClientCertificate);
-            }
-
-            else if (context.TokenEndpointClientAuthenticationMethod is ClientAuthenticationMethods.SelfSignedTlsClientAuth &&
-                     _options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector(context.Registration) is not null)
-            {
-                context.UserInfoEndpointTokenBindingMethods.Add(TokenBindingMethods.Private.SelfSignedTlsClientCertificate);
-            }
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for negotiating the best device authorization endpoint
     /// client authentication method supported by both the client and the authorization server.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachNonDefaultDeviceAuthorizationEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessChallengeContext>
     {
-        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
-
-        public AttachNonDefaultDeviceAuthorizationEndpointClientAuthenticationMethod(
-            IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -260,121 +95,16 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            // If an explicit client authentication method was attached, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.DeviceAuthorizationEndpointClientAuthenticationMethod))
-            {
-                return ValueTask.CompletedTask;
-            }
-
-            context.DeviceAuthorizationEndpointClientAuthenticationMethod = (
-                // Note: if client authentication methods are explicitly listed in the client registration, only use
-                // the client authentication methods that are both listed and enabled in the global client options.
-                // Otherwise, always default to the client authentication methods that have been enabled globally.
-                Client: context.Registration.ClientAuthenticationMethods.Count switch
-                {
-                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
-                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
-                },
-
-                // Note: if the authorization server doesn't support the OpenIddict-specific
-                // "device_authorization_request_endpoint_auth_methods_supported" node,
-                // fall back to the "token_endpoint_auth_methods_supported" node,
-                // which is the same logic as for the pushed authorization endpoint.
-                Server: context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Count switch
-                {
-                    0 => context.Configuration.TokenEndpointAuthMethodsSupported,
-                    _ => context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported,
-                }) switch
-            {
-                // If a TLS client authentication certificate could be resolved and both the
-                // client and the server explicitly support tls_client_auth, always prefer it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    (context.Configuration.MtlsDeviceAuthorizationEndpoint ?? context.Configuration.DeviceAuthorizationEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.TlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.TlsClientAuth,
-
-                // If a self-signed TLS client authentication certificate could be resolved and both
-                // the client and the server explicitly support self_signed_tls_client_auth, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    (context.Configuration.MtlsDeviceAuthorizationEndpoint ?? context.Configuration.DeviceAuthorizationEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
-
-                // If at least one asymmetric signing key was attached to the client registration
-                // and both the client and the server explicitly support private_key_jwt, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    context.Registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey)
-                    => ClientAuthenticationMethods.PrivateKeyJwt,
-
-                // If a client secret was attached to the client registration and both the client and
-                // the server explicitly support client_secret_post, prefer it to basic authentication.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
-                    => ClientAuthenticationMethods.ClientSecretPost,
-
-                // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                // However, this authentication method is known to have severe compatibility/interoperability issues:
-                //
-                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
-                //     specification, basic authentication is also sometimes required by server implementations for
-                //     public clients that don't have a client secret: in this case, an empty password is used and
-                //     the client identifier is sent alone in the Authorization header (instead of being sent using
-                //     the standard "client_id" parameter present in the request body).
-                //
-                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
-                //     before being base64-encoded, many implementations are known to implement a non-standard
-                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
-                //
-                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
-                // basic authentication is only used when a client secret is present and the server configuration
-                // doesn't list any supported client authentication method or doesn't support client_secret_post.
-                //
-                // If client_secret_post is not listed or if the server returned an empty methods list,
-                // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
-                //
-                // See https://tools.ietf.org/html/rfc8414#section-2
-                // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                ({ Count: > 0 } client, { Count: 0 }) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                _ => null
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessChallengeContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for negotiating the best pushed authorization endpoint
     /// client authentication method supported by both the client and the authorization server.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachNonDefaultPushedAuthorizationEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessChallengeContext>
     {
-        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
-
-        public AttachNonDefaultPushedAuthorizationEndpointClientAuthenticationMethod(
-            IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -387,122 +117,16 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            // If an explicit client authentication method was attached, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.PushedAuthorizationEndpointClientAuthenticationMethod))
-            {
-                return ValueTask.CompletedTask;
-            }
-
-            context.PushedAuthorizationEndpointClientAuthenticationMethod = (
-                // Note: if client authentication methods are explicitly listed in the client registration, only use
-                // the client authentication methods that are both listed and enabled in the global client options.
-                // Otherwise, always default to the client authentication methods that have been enabled globally.
-                Client: context.Registration.ClientAuthenticationMethods.Count switch
-                {
-                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
-                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
-                },
-
-                // Note: if the authorization server doesn't support the OpenIddict-specific
-                // "pushed_authorization_request_endpoint_auth_methods_supported" node, fall back to
-                // the "token_endpoint_auth_methods_supported" node, as required by the specification.
-                //
-                // See https://datatracker.ietf.org/doc/html/rfc9126#section-2 for more information.
-                Server: context.Configuration.PushedAuthorizationEndpointAuthMethodsSupported.Count switch
-                {
-                    0 => context.Configuration.TokenEndpointAuthMethodsSupported,
-                    _ => context.Configuration.PushedAuthorizationEndpointAuthMethodsSupported,
-                }) switch
-            {
-                // If a TLS client authentication certificate could be resolved and both the
-                // client and the server explicitly support tls_client_auth, always prefer it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    (context.Configuration.MtlsPushedAuthorizationEndpoint ?? context.Configuration.PushedAuthorizationEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.TlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.TlsClientAuth,
-
-                // If a self-signed TLS client authentication certificate could be resolved and both
-                // the client and the server explicitly support self_signed_tls_client_auth, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    (context.Configuration.MtlsPushedAuthorizationEndpoint ?? context.Configuration.PushedAuthorizationEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
-
-                // If at least one asymmetric signing key was attached to the client registration
-                // and both the client and the server explicitly support private_key_jwt, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    context.Registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey)
-                    => ClientAuthenticationMethods.PrivateKeyJwt,
-
-                // If a client secret was attached to the client registration and both the client and
-                // the server explicitly support client_secret_post, prefer it to basic authentication.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
-                    => ClientAuthenticationMethods.ClientSecretPost,
-
-                // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                // However, this authentication method is known to have severe compatibility/interoperability issues:
-                //
-                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
-                //     specification, basic authentication is also sometimes required by server implementations for
-                //     public clients that don't have a client secret: in this case, an empty password is used and
-                //     the client identifier is sent alone in the Authorization header (instead of being sent using
-                //     the standard "client_id" parameter present in the request body).
-                //
-                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
-                //     before being base64-encoded, many implementations are known to implement a non-standard
-                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
-                //
-                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
-                // basic authentication is only used when a client secret is present and the server configuration
-                // doesn't list any supported client authentication method or doesn't support client_secret_post.
-                //
-                // If client_secret_post is not listed or if the server returned an empty methods list,
-                // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
-                //
-                // See https://tools.ietf.org/html/rfc8414#section-2
-                // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                ({ Count: > 0 } client, { Count: 0 }) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                _ => null
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessChallengeContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for negotiating the best introspection endpoint client
     /// authentication method supported by both the client and the authorization server.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachNonDefaultIntrospectionEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessIntrospectionContext>
     {
-        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
-
-        public AttachNonDefaultIntrospectionEndpointClientAuthenticationMethod(
-            IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -515,113 +139,16 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessIntrospectionContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            // If an explicit client authentication method was attached, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.IntrospectionEndpointClientAuthenticationMethod))
-            {
-                return ValueTask.CompletedTask;
-            }
-
-            context.IntrospectionEndpointClientAuthenticationMethod = (
-                // Note: if client authentication methods are explicitly listed in the client registration, only use
-                // the client authentication methods that are both listed and enabled in the global client options.
-                // Otherwise, always default to the client authentication methods that have been enabled globally.
-                Client: context.Registration.ClientAuthenticationMethods.Count switch
-                {
-                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
-                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
-                },
-
-                Server: context.Configuration.IntrospectionEndpointAuthMethodsSupported) switch
-            {
-                // If a TLS client authentication certificate could be resolved and both the
-                // client and the server explicitly support tls_client_auth, always prefer it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    (context.Configuration.MtlsIntrospectionEndpoint ?? context.Configuration.IntrospectionEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.TlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.TlsClientAuth,
-
-                // If a self-signed TLS client authentication certificate could be resolved and both
-                // the client and the server explicitly support self_signed_tls_client_auth, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    (context.Configuration.MtlsIntrospectionEndpoint ?? context.Configuration.IntrospectionEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
-
-                // If at least one asymmetric signing key was attached to the client registration
-                // and both the client and the server explicitly support private_key_jwt, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    context.Registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey)
-                    => ClientAuthenticationMethods.PrivateKeyJwt,
-
-                // If a client secret was attached to the client registration and both the client and
-                // the server explicitly support client_secret_post, prefer it to basic authentication.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
-                    => ClientAuthenticationMethods.ClientSecretPost,
-
-                // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                // However, this authentication method is known to have severe compatibility/interoperability issues:
-                //
-                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
-                //     specification, basic authentication is also sometimes required by server implementations for
-                //     public clients that don't have a client secret: in this case, an empty password is used and
-                //     the client identifier is sent alone in the Authorization header (instead of being sent using
-                //     the standard "client_id" parameter present in the request body).
-                //
-                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
-                //     before being base64-encoded, many implementations are known to implement a non-standard
-                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
-                //
-                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
-                // basic authentication is only used when a client secret is present and the server configuration
-                // doesn't list any supported client authentication method or doesn't support client_secret_post.
-                //
-                // If client_secret_post is not listed or if the server returned an empty methods list,
-                // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
-                //
-                // See https://tools.ietf.org/html/rfc8414#section-2
-                // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                ({ Count: > 0 } client, { Count: 0 }) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                _ => null
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessIntrospectionContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for negotiating the best revocation endpoint client
     /// authentication method supported by both the client and the authorization server.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachNonDefaultRevocationEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessRevocationContext>
     {
-        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
-
-        public AttachNonDefaultRevocationEndpointClientAuthenticationMethod(
-            IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -634,99 +161,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessRevocationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            // If an explicit client authentication method was attached, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.RevocationEndpointClientAuthenticationMethod))
-            {
-                return ValueTask.CompletedTask;
-            }
-
-            context.RevocationEndpointClientAuthenticationMethod = (
-                // Note: if client authentication methods are explicitly listed in the client registration, only use
-                // the client authentication methods that are both listed and enabled in the global client options.
-                // Otherwise, always default to the client authentication methods that have been enabled globally.
-                Client: context.Registration.ClientAuthenticationMethods.Count switch
-                {
-                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
-                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
-                },
-
-                Server: context.Configuration.RevocationEndpointAuthMethodsSupported) switch
-            {
-                // If a TLS client authentication certificate could be resolved and both the
-                // client and the server explicitly support tls_client_auth, always prefer it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    (context.Configuration.MtlsRevocationEndpoint ?? context.Configuration.RevocationEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.TlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.TlsClientAuth,
-
-                // If a self-signed TLS client authentication certificate could be resolved and both
-                // the client and the server explicitly support self_signed_tls_client_auth, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    (context.Configuration.MtlsRevocationEndpoint ?? context.Configuration.RevocationEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector(context.Registration) is not null
-                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
-
-                // If at least one asymmetric signing key was attached to the client registration
-                // and both the client and the server explicitly support private_key_jwt, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    context.Registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey)
-                    => ClientAuthenticationMethods.PrivateKeyJwt,
-
-                // If a client secret was attached to the client registration and both the client and
-                // the server explicitly support client_secret_post, prefer it to basic authentication.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
-                    => ClientAuthenticationMethods.ClientSecretPost,
-
-                // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                // However, this authentication method is known to have severe compatibility/interoperability issues:
-                //
-                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
-                //     specification, basic authentication is also sometimes required by server implementations for
-                //     public clients that don't have a client secret: in this case, an empty password is used and
-                //     the client identifier is sent alone in the Authorization header (instead of being sent using
-                //     the standard "client_id" parameter present in the request body).
-                //
-                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
-                //     before being base64-encoded, many implementations are known to implement a non-standard
-                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
-                //
-                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
-                // basic authentication is only used when a client secret is present and the server configuration
-                // doesn't list any supported client authentication method or doesn't support client_secret_post.
-                //
-                // If client_secret_post is not listed or if the server returned an empty methods list,
-                // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
-                //
-                // See https://tools.ietf.org/html/rfc8414#section-2
-                // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                ({ Count: > 0 } client, { Count: 0 }) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                _ => null
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessRevocationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
@@ -759,57 +194,40 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // accessed from the HttpClientAction or HttpMessageHandlerBuilderAction delegates
             // to dynamically amend the resulting HttpClient or HttpClientHandler instance.
             //
-            // To work around this limitation, the OpenIddict System.Net.Http integration
-            // uses dynamic client names and supports appending a list of key-value pairs
-            // to the client name to flow per-instance properties.
+            // To work around this limitation, the OpenIddict System.Net.Http integration uses
+            // an async-local context to flow per-instance properties and uses dynamic client
+            // names to ensure the inner HttpClientHandler is not reused if the context differs.
 
-            var builder = new StringBuilder();
-
-            // Always prefix the HTTP client name with the assembly name of the System.Net.Http package.
-            builder.Append(typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName().Name);
-
-            builder.Append(':');
-
-            // Attach the registration identifier.
-            builder.Append("RegistrationId")
-                   .Append('\u001e')
-                   .Append(context.Registration.RegistrationId);
-
-            // If both a client authentication method and one or multiple token binding methods were negotiated,
-            // make sure they are compatible (e.g that they all use a CA-issued or self-signed X.509 certificate).
-            if ((context.ClientAuthenticationMethod is ClientAuthenticationMethods.TlsClientAuth &&
-                 context.TokenBindingMethods.Contains(TokenBindingMethods.Private.SelfSignedTlsClientCertificate)) ||
-                (context.ClientAuthenticationMethod is ClientAuthenticationMethods.SelfSignedTlsClientAuth &&
-                 context.TokenBindingMethods.Contains(TokenBindingMethods.Private.TlsClientCertificate)))
+            if (OpenIddictClientSystemNetHttpContext.Current is not null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0456));
+                throw new InvalidOperationException(SR.FormatID2201(nameof(OpenIddictClientSystemNetHttpContext)));
             }
 
-            // Attach a flag indicating that a client certificate should be used in the TLS handshake.
-            if (context.ClientAuthenticationMethod is ClientAuthenticationMethods.TlsClientAuth ||
-                context.TokenBindingMethods.Contains(TokenBindingMethods.Private.TlsClientCertificate))
+            try
             {
-                builder.Append('\u001f');
+                OpenIddictClientSystemNetHttpContext.Current = new()
+                {
+                    Registration = context.Registration,
+                    LocalCertificate = context.LocalCertificate
+                };
 
-                builder.Append("AttachTlsClientCertificate")
-                       .Append('\u001e')
-                       .Append(bool.TrueString);
+                // Generate a stable identifier representing the current context to ensure the inner
+                // HttpClientHandler instances are not reused for different operations if the properties
+                // attached to the context are not identical (e.g different TLS client certificates).
+                var identifier = OpenIddictClientSystemNetHttpContext.ComputeStableId(OpenIddictClientSystemNetHttpContext.Current);
+
+                var client = _factory.CreateClient(
+                    $"{typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName().Name}:{identifier}") ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0174));
+
+                // Create and store the HttpClient in the transaction properties.
+                context.Transaction.SetProperty(typeof(HttpClient).FullName!, client);
             }
 
-            // Attach a flag indicating that a self-signed client certificate should be used in the TLS handshake.
-            else if (context.ClientAuthenticationMethod is ClientAuthenticationMethods.SelfSignedTlsClientAuth ||
-                     context.TokenBindingMethods.Contains(TokenBindingMethods.Private.SelfSignedTlsClientCertificate))
+            finally
             {
-                builder.Append('\u001f');
-
-                builder.Append("AttachSelfSignedTlsClientCertificate")
-                       .Append('\u001e')
-                       .Append(bool.TrueString);
+                OpenIddictClientSystemNetHttpContext.Current = null;
             }
-
-            // Create and store the HttpClient in the transaction properties.
-            context.Transaction.SetProperty(typeof(HttpClient).FullName!, _factory.CreateClient(builder.ToString()) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0174)));
 
             return ValueTask.CompletedTask;
         }

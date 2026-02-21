@@ -48,7 +48,7 @@ public static partial class OpenIddictServerOwinHandlers
              */
             ExtractPostRequest<ExtractPushedAuthorizationRequestContext>.Descriptor,
             ValidateClientAuthenticationMethod<ExtractPushedAuthorizationRequestContext>.Descriptor,
-            ExtractClientAuthenticationCertificate<ExtractPushedAuthorizationRequestContext>.Descriptor,
+            ExtractClientCertificate<ExtractPushedAuthorizationRequestContext>.Descriptor,
             ExtractBasicAuthenticationCredentials<ExtractPushedAuthorizationRequestContext>.Descriptor,
 
             /*

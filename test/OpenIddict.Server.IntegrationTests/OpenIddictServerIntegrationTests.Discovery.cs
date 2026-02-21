@@ -993,7 +993,8 @@ public abstract partial class OpenIddictServerIntegrationTests
                    .SetMtlsIntrospectionEndpointAliasUri("https://mtls.fabrikam.com/path/introspection_endpoint")
                    .SetMtlsPushedAuthorizationEndpointAliasUri("https://mtls.fabrikam.com/path/pushed_authorization_endpoint")
                    .SetMtlsRevocationEndpointAliasUri("https://mtls.fabrikam.com/path/revocation_endpoint")
-                   .SetMtlsTokenEndpointAliasUri("https://mtls.fabrikam.com/path/token_endpoint");
+                   .SetMtlsTokenEndpointAliasUri("https://mtls.fabrikam.com/path/token_endpoint")
+                   .SetMtlsUserInfoEndpointAliasUri("https://mtls.fabrikam.com/path/userinfo_endpoint");
         });
 
         await using var client = await server.CreateClientAsync();
@@ -1016,6 +1017,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         Assert.Equal("https://mtls.fabrikam.com/path/token_endpoint",
             (string?) response[Metadata.MtlsEndpointAliases]?[Metadata.TokenEndpoint]);
+
+        Assert.Equal("https://mtls.fabrikam.com/path/userinfo_endpoint",
+            (string?) response[Metadata.MtlsEndpointAliases]?[Metadata.UserInfoEndpoint]);
     }
 
     [Theory]
@@ -1036,6 +1040,26 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal(value, (bool?) response[Metadata.RequirePushedAuthorizationRequests]);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task HandleConfigurationRequest_TlsClientCertificateBoundAccessTokensIsReflected(bool value)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.Configure(options =>
+        {
+            options.UseClientCertificateBoundAccessTokens = value;
+        }));
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+
+        // Assert
+        Assert.Equal(value, (bool?) response[Metadata.TlsClientCertificateBoundAccessTokens]);
     }
 
     [Theory]

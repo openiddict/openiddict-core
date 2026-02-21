@@ -180,7 +180,7 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if no client authentication certificate is available.
+    /// Represents a filter that excludes the associated handlers if no client certificate is available.
     /// </summary>
     public sealed class RequireClientCertificate : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
@@ -189,7 +189,7 @@ public static class OpenIddictServerHandlerFilters
         {
             ArgumentNullException.ThrowIfNull(context);
 
-            return new(context.ClientCertificate is not null);
+            return new(context.Transaction.RemoteCertificate is not null);
         }
     }
 
@@ -764,6 +764,20 @@ public static class OpenIddictServerHandlerFilters
             ArgumentNullException.ThrowIfNull(context);
 
             return new(!context.DisablePresenterValidation);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if token proof-of-possession validation was disabled.
+    /// </summary>
+    public sealed class RequireTokenProofOfPossessionValidationEnabled : IOpenIddictServerHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(!context.DisableProofOfPossessionValidation);
         }
     }
 

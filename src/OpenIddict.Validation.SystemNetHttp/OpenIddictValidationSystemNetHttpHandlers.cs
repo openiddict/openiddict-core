@@ -14,7 +14,6 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpConstants;
 
 namespace OpenIddict.Validation.SystemNetHttp;
@@ -24,11 +23,6 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 {
     public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } =
     [
-        /*
-         * Authentication processing:
-         */
-        AttachNonDefaultIntrospectionEndpointClientAuthenticationMethod.Descriptor,
-
         .. Discovery.DefaultHandlers,
         .. Introspection.DefaultHandlers
     ];
@@ -37,14 +31,9 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     /// Contains the logic responsible for negotiating the best introspection endpoint client
     /// authentication method supported by both the client and the authorization server.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class AttachNonDefaultIntrospectionEndpointClientAuthenticationMethod : IOpenIddictValidationHandler<ProcessAuthenticationContext>
     {
-        private readonly IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions> _options;
-
-        public AttachNonDefaultIntrospectionEndpointClientAuthenticationMethod(
-            IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -56,94 +45,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            // If an explicit client authentication method was attached, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.IntrospectionEndpointClientAuthenticationMethod))
-            {
-                return ValueTask.CompletedTask;
-            }
-
-            context.IntrospectionEndpointClientAuthenticationMethod = (
-                // Note: if client authentication methods are explicitly listed in the validation options, only use
-                // the client authentication methods that are both listed and enabled in the global client options.
-                // Otherwise, always default to the client authentication methods that have been enabled globally.
-                Client: context.Options.ClientAuthenticationMethods,
-                Server: context.Configuration.IntrospectionEndpointAuthMethodsSupported) switch
-            {
-                // If a TLS client authentication certificate could be resolved and both the
-                // client and the server explicitly support tls_client_auth, always prefer it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-                    (context.Configuration.MtlsIntrospectionEndpoint ?? context.Configuration.IntrospectionEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.TlsClientAuthenticationCertificateSelector() is not null
-                    => ClientAuthenticationMethods.TlsClientAuth,
-
-                // If a self-signed TLS client authentication certificate could be resolved and both
-                // the client and the server explicitly support self_signed_tls_client_auth, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-                    (context.Configuration.MtlsIntrospectionEndpoint ?? context.Configuration.IntrospectionEndpoint) is Uri endpoint &&
-                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    _options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector() is not null
-                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
-
-                // If at least one asymmetric signing key was attached to the validation options
-                // and both the client and the server explicitly support private_key_jwt, use it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    context.Options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey)
-                    => ClientAuthenticationMethods.PrivateKeyJwt,
-
-                // If a client secret was attached to the validation options and both the client and
-                // the server explicitly support client_secret_post, prefer it to basic authentication.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Options.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
-                    => ClientAuthenticationMethods.ClientSecretPost,
-
-                // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                // However, this authentication method is known to have severe compatibility/interoperability issues:
-                //
-                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
-                //     specification, basic authentication is also sometimes required by server implementations for
-                //     public clients that don't have a client secret: in this case, an empty password is used and
-                //     the client identifier is sent alone in the Authorization header (instead of being sent using
-                //     the standard "client_id" parameter present in the request body).
-                //
-                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
-                //     before being base64-encoded, many implementations are known to implement a non-standard
-                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
-                //
-                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
-                // basic authentication is only used when a client secret is present and the server configuration
-                // doesn't list any supported client authentication method or doesn't support client_secret_post.
-                //
-                // If client_secret_post is not listed or if the server returned an empty methods list,
-                // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
-                //
-                // See https://tools.ietf.org/html/rfc8414#section-2
-                // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Options.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
-                    server.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                ({ Count: > 0 } client, { Count: 0 }) when !string.IsNullOrEmpty(context.Options.ClientSecret) &&
-                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic)
-                    => ClientAuthenticationMethods.ClientSecretBasic,
-
-                _ => null
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
@@ -176,38 +78,39 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // accessed from the HttpClientAction or HttpMessageHandlerBuilderAction delegates
             // to dynamically amend the resulting HttpClient or HttpClientHandler instance.
             //
-            // To work around this limitation, the OpenIddict System.Net.Http integration
-            // uses dynamic client names and supports appending a list of key-value pairs
-            // to the client name to flow per-instance properties.
+            // To work around this limitation, the OpenIddict System.Net.Http integration uses
+            // an async-local context to flow per-instance properties and uses dynamic client
+            // names to ensure the inner HttpClientHandler is not reused if the context differs.
 
-            var builder = new StringBuilder();
-
-            // Always prefix the HTTP client name with the assembly name of the System.Net.Http package.
-            builder.Append(typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName().Name);
-
-            // Attach a flag indicating that a client certificate should be used in the TLS handshake.
-            if (context.ClientAuthenticationMethod is ClientAuthenticationMethods.TlsClientAuth)
+            if (OpenIddictValidationSystemNetHttpContext.Current is not null)
             {
-                builder.Append(':');
-
-                builder.Append("AttachTlsClientCertificate")
-                       .Append('\u001e')
-                       .Append(bool.TrueString);
+                throw new InvalidOperationException(SR.FormatID2201(nameof(OpenIddictValidationSystemNetHttpContext)));
             }
 
-            // Attach a flag indicating that a self-signed client certificate should be used in the TLS handshake.
-            else if (context.ClientAuthenticationMethod is ClientAuthenticationMethods.SelfSignedTlsClientAuth)
+            try
             {
-                builder.Append(':');
+                OpenIddictValidationSystemNetHttpContext.Current = new()
+                {
+                    LocalCertificate = context.LocalCertificate
+                };
 
-                builder.Append("AttachSelfSignedTlsClientCertificate")
-                       .Append('\u001e')
-                       .Append(bool.TrueString);
+                // Generate a stable identifier representing the current context to ensure the inner
+                // HttpClientHandler instances are not reused for different operations if the properties
+                // attached to the context are not identical (e.g different TLS client certificates).
+                var identifier = OpenIddictValidationSystemNetHttpContext.ComputeStableId(OpenIddictValidationSystemNetHttpContext.Current);
+
+                var client = _factory.CreateClient(
+                    $"{typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName().Name}:{identifier}") ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0174));
+
+                // Create and store the HttpClient in the transaction properties.
+                context.Transaction.SetProperty(typeof(HttpClient).FullName!, client);
             }
 
-            // Create and store the HttpClient in the transaction properties.
-            context.Transaction.SetProperty(typeof(HttpClient).FullName!, _factory.CreateClient(builder.ToString()) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0174)));
+            finally
+            {
+                OpenIddictValidationSystemNetHttpContext.Current = null;
+            }
 
             return ValueTask.CompletedTask;
         }

@@ -6,6 +6,7 @@
 
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -318,11 +319,12 @@ public class OpenIddictValidationService
     /// <param name="request">The token request.</param>
     /// <param name="uri">The uri of the remote token endpoint.</param>
     /// <param name="method">The client authentication method, if applicable.</param>
+    /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the introspection response.</returns>
     internal async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> SendIntrospectionRequestAsync(
         OpenIddictConfiguration configuration, OpenIddictRequest request,
-        Uri uri, string? method, CancellationToken cancellationToken = default)
+        Uri uri, string? method, X509Certificate2? certificate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(request);
@@ -357,9 +359,10 @@ public class OpenIddictValidationService
             {
                 CancellationToken = cancellationToken,
                 ClientAuthenticationMethod = method,
-                RemoteUri = uri,
                 Configuration = configuration,
-                Request = request
+                RemoteUri = uri,
+                Request = request,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);

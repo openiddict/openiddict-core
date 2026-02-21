@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Validation;
@@ -154,6 +155,12 @@ public static partial class OpenIddictValidationEvents
         /// when communicating with the external endpoint, if applicable.
         /// </summary>
         public string? ClientAuthenticationMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate that will be used to authenticate
+        /// this peer when communicating with the external endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? LocalCertificate { get; set; }
     }
 
     /// <summary>
@@ -304,6 +311,12 @@ public static partial class OpenIddictValidationEvents
         /// communicating with the introspection endpoint, if applicable.
         /// </summary>
         public string? IntrospectionEndpointClientAuthenticationMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate used when
+        /// communicating with the introspection endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? IntrospectionEndpointClientCertificate { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an introspection request should be sent.

@@ -7,7 +7,10 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
@@ -27,6 +30,7 @@ public static partial class OpenIddictValidationHandlers
         ResolveServerConfiguration.Descriptor,
         EvaluateIntrospectionRequest.Descriptor,
         AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor,
+        AttachIntrospectionEndpointClientCertificate.Descriptor,
         ResolveIntrospectionEndpoint.Descriptor,
         AttachIntrospectionRequestParameters.Descriptor,
         EvaluateGeneratedClientAssertion.Descriptor,
@@ -36,6 +40,7 @@ public static partial class OpenIddictValidationHandlers
         SendIntrospectionRequest.Descriptor,
         ValidateIntrospectedTokenUsage.Descriptor,
         ValidateIntrospectedTokenAudiences.Descriptor,
+        ValidateIntrospectedTokenProofOfPossession.Descriptor,
         ValidateAccessToken.Descriptor,
 
         /*
@@ -241,11 +246,56 @@ public static partial class OpenIddictValidationHandlers
                 Client: context.Options.ClientAuthenticationMethods,
                 Server: context.Configuration.IntrospectionEndpointAuthMethodsSupported) switch
             {
-                // If at least one signing key was attached to the validation options and both
-                // the client and the server explicitly support private_key_jwt, always prefer it.
-                ({ Count: > 0 } client, { Count: > 0 } server) when context.Options.SigningCredentials.Count is not 0 &&
+                // If a TLS client authentication certificate could be resolved and both the
+                // client and the server explicitly support tls_client_auth, always prefer it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
+                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
+                    (context.Configuration.MtlsIntrospectionEndpoint ?? context.Configuration.IntrospectionEndpoint) is Uri endpoint &&
+                    context.IntrospectionEndpointClientCertificate is X509Certificate2 certificate &&
+                    OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                   !OpenIddictHelpers.IsSelfIssuedCertificate(certificate)
+                    => ClientAuthenticationMethods.TlsClientAuth,
+
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
+                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
+                    (context.Configuration.MtlsIntrospectionEndpoint ?? context.Configuration.IntrospectionEndpoint) is Uri endpoint &&
+                    context.IntrospectionEndpointClientCertificate is null &&
+                    context.Options.SigningCredentials.Exists(static credentials =>
+                        credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+                        OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                       !OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                    => ClientAuthenticationMethods.TlsClientAuth,
+
+                // If a self-signed TLS client authentication certificate could be resolved and both
+                // the client and the server explicitly support self_signed_tls_client_auth, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
+                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
+                    (context.Configuration.MtlsIntrospectionEndpoint ?? context.Configuration.IntrospectionEndpoint) is Uri endpoint &&
+                    context.IntrospectionEndpointClientCertificate is X509Certificate2 certificate &&
+                    OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                    OpenIddictHelpers.IsSelfIssuedCertificate(certificate)
+                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
+
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
+                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
+                    (context.Configuration.MtlsIntrospectionEndpoint ?? context.Configuration.IntrospectionEndpoint) is Uri endpoint &&
+                    context.IntrospectionEndpointClientCertificate is null &&
+                    context.Options.SigningCredentials.Exists(static credentials =>
+                        credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+                        OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                        OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
+
+                // If at least one asymmetric signing key was attached to the validation options
+                // and both the client and the server explicitly support private_key_jwt, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
                     client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt)
+                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    context.Options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey)
                     => ClientAuthenticationMethods.PrivateKeyJwt,
 
                 // If a client secret was attached to the validation options and both the client and
@@ -254,6 +304,84 @@ public static partial class OpenIddictValidationHandlers
                     client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
                     server.Contains(ClientAuthenticationMethods.ClientSecretPost)
                     => ClientAuthenticationMethods.ClientSecretPost,
+
+                // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
+                // However, this authentication method is known to have severe compatibility/interoperability issues:
+                //
+                //   - While restricted to clients that have been given a secret (i.e confidential clients) by the
+                //     specification, basic authentication is also sometimes required by server implementations for
+                //     public clients that don't have a client secret: in this case, an empty password is used and
+                //     the client identifier is sent alone in the Authorization header (instead of being sent using
+                //     the standard "client_id" parameter present in the request body).
+                //
+                //   - While the OAuth 2.0 specification requires that the client credentials be formURL-encoded
+                //     before being base64-encoded, many implementations are known to implement a non-standard
+                //     encoding scheme, where neither the client_id nor the client_secret are formURL-encoded.
+                //
+                // To guarantee that the OpenIddict implementation can be used with most servers implementions,
+                // basic authentication is only used when a client secret is present and the server configuration
+                // doesn't list any supported client authentication method or doesn't support client_secret_post.
+                //
+                // If client_secret_post is not listed or if the server returned an empty methods list,
+                // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
+                //
+                // See https://tools.ietf.org/html/rfc8414#section-2
+                // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Options.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretBasic)
+                    => ClientAuthenticationMethods.ClientSecretBasic,
+
+                ({ Count: > 0 } client, { Count: 0 }) when !string.IsNullOrEmpty(context.Options.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic)
+                    => ClientAuthenticationMethods.ClientSecretBasic,
+
+                _ => null
+            };
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the client certificate used for
+    /// the introspection endpoint to the authentication context, if applicable.
+    /// </summary>
+    public sealed class AttachIntrospectionEndpointClientCertificate : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<AttachIntrospectionEndpointClientCertificate>()
+                .SetOrder(AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // If a certificate-based client authentication method was negotiated and
+            // no certificate was explicitly attached by the application, try to find a
+            // valid certificate in the client registration and attach it to the context.
+            context.IntrospectionEndpointClientCertificate ??= context.IntrospectionEndpointClientAuthenticationMethod switch
+            {
+                ClientAuthenticationMethods.TlsClientAuth => context.Options.SigningCredentials
+                    .Select(static credentials => (credentials.Key as X509SecurityKey)?.Certificate)
+                    .FirstOrDefault(static certificate => certificate is not null &&
+                        OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                       !OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0512)),
+
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth => context.Options.SigningCredentials
+                    .Select(static credentials => (credentials.Key as X509SecurityKey)?.Certificate)
+                    .FirstOrDefault(static certificate => certificate is not null &&
+                        OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                        OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0512)),
 
                 _ => null
             };
@@ -274,7 +402,7 @@ public static partial class OpenIddictValidationHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireIntrospectionRequest>()
                 .UseSingletonHandler<ResolveIntrospectionEndpoint>()
-                .SetOrder(AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor.Order + 1_000)
+                .SetOrder(AttachIntrospectionEndpointClientCertificate.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -283,12 +411,9 @@ public static partial class OpenIddictValidationHandlers
         {
             ArgumentNullException.ThrowIfNull(context);
 
-            // If the URI of the introspection endpoint endpoint wasn't explicitly
-            // set at this stage, try to extract it from the server configuration.
             context.IntrospectionEndpoint ??= context.IntrospectionEndpointClientAuthenticationMethod switch
             {
-                // When TLS client certificate authentication was negotiated,
-                // always favor the mTLS-specific endpoint if available.
+                // If a TLS client authentication certificate is going to be used, always favor the mTLS alias if available.
                 ClientAuthenticationMethods.SelfSignedTlsClientAuth or ClientAuthenticationMethods.TlsClientAuth
                     when context.Configuration.MtlsIntrospectionEndpoint is { IsAbsoluteUri: true } uri &&
                     !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
@@ -582,12 +707,27 @@ public static partial class OpenIddictValidationHandlers
                 throw new InvalidOperationException(SR.FormatID0301(Metadata.IntrospectionEndpoint));
             }
 
+            var certificate = context.IntrospectionEndpointClientAuthenticationMethod switch
+            {
+                ClientAuthenticationMethods.TlsClientAuth when context.IntrospectionEndpointClientCertificate is not null =>
+                    OpenIddictHelpers.IsSelfIssuedCertificate(context.IntrospectionEndpointClientCertificate)
+                        ? throw new InvalidOperationException(SR.GetResourceString(SR.ID0513))
+                        : context.IntrospectionEndpointClientCertificate,
+
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth when context.IntrospectionEndpointClientCertificate is not null =>
+                    OpenIddictHelpers.IsSelfIssuedCertificate(context.IntrospectionEndpointClientCertificate)
+                        ? context.IntrospectionEndpointClientCertificate
+                        : throw new InvalidOperationException(SR.GetResourceString(SR.ID0513)),
+
+                _ => null
+            };
+
             try
             {
                 (context.IntrospectionResponse, context.AccessTokenPrincipal) =
                     await _service.SendIntrospectionRequestAsync(
                         context.Configuration, context.IntrospectionRequest, context.IntrospectionEndpoint,
-                        context.IntrospectionEndpointClientAuthenticationMethod, context.CancellationToken);
+                        context.IntrospectionEndpointClientAuthenticationMethod, certificate, context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -720,6 +860,89 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for validating the proof of possession
+    /// of the introspected token returned by the server, if applicable.
+    /// </summary>
+    public sealed class ValidateIntrospectedTokenProofOfPossession : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireIntrospectionRequest>()
+                .UseSingletonHandler<ValidateIntrospectedTokenProofOfPossession>()
+                .SetOrder(ValidateIntrospectedTokenAudiences.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(context.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Try to resolve the confirmation claim from the principal. If no such claim can be found,
+            // this indicates that the token is a bearer token and doesn't require a proof of possession.
+            var confirmation = context.AccessTokenPrincipal.GetClaim(Claims.Confirmation);
+            if (string.IsNullOrEmpty(confirmation))
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            if (JsonObject.Parse(confirmation) is not JsonObject node)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID2199));
+            }
+
+            if (node.ContainsKey(JsonWebKeyParameterNames.X5tS256))
+            {
+                var thumbprint = (string?) node[JsonWebKeyParameterNames.X5tS256];
+                if (string.IsNullOrEmpty(thumbprint))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID2200));
+                }
+
+                // If no client certificate was provided, return an error as no
+                // proof-of-possession can be validated without the client certificate.
+                if (context.Transaction.RemoteCertificate is not X509Certificate2 certificate)
+                {
+                    context.Logger.LogInformation(6282, SR.GetResourceString(SR.ID6282));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2203),
+                        uri: SR.FormatID8000(SR.ID2203));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // If the thumbprint of the certificate doesn't match the hash
+                // resolved from the confirmation claim, return an error.
+                var hash = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(certificate.RawData));
+                if (!OpenIddictHelpers.FixedTimeEquals(
+                    left : MemoryMarshal.AsBytes<char>(hash),
+                    right: MemoryMarshal.AsBytes<char>(thumbprint)))
+                {
+                    context.Logger.LogInformation(6289, SR.GetResourceString(SR.ID6289));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2204),
+                        uri: SR.FormatID8000(SR.ID2204));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                return ValueTask.CompletedTask;
+            }
+
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID2196));
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for ensuring a token was correctly resolved from the context.
     /// </summary>
     public sealed class ValidateAccessToken : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -736,7 +959,7 @@ public static partial class OpenIddictValidationHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAccessTokenValidated>()
                 .UseScopedHandler<ValidateAccessToken>()
-                .SetOrder(ValidateIntrospectedTokenUsage.Descriptor.Order + 1_000)
+                .SetOrder(ValidateIntrospectedTokenProofOfPossession.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 

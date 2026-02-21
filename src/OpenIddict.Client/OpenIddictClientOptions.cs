@@ -218,4 +218,9 @@ public sealed class OpenIddictClientOptions
     /// If no service can be found, <see cref="TimeProvider.System"/> is used.
     /// </remarks>
     public TimeProvider TimeProvider { get; set; } = default!;
+
+    /// <summary>
+    /// Gets the OAuth 2.0 token binding methods enabled for this application.
+    /// </summary>
+    public HashSet<string> TokenBindingMethods { get; } = new(StringComparer.Ordinal);
 }

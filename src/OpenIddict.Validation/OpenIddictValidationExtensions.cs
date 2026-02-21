@@ -51,6 +51,7 @@ public static class OpenIddictValidationExtensions
         builder.Services.TryAddSingleton<RequireTokenIdResolved>();
         builder.Services.TryAddSingleton<RequireTokenLifetimeValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenPresenterValidationEnabled>();
+        builder.Services.TryAddSingleton<RequireTokenProofOfPossessionValidationEnabled>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

@@ -91,6 +91,7 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireTokenLifetimeValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenPayloadPersisted>();
         builder.Services.TryAddSingleton<RequireTokenPresenterValidationEnabled>();
+        builder.Services.TryAddSingleton<RequireTokenProofOfPossessionValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenRequest>();
         builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
         builder.Services.TryAddSingleton<RequireUserCodeGenerated>();
