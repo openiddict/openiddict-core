@@ -242,6 +242,7 @@ public static class OpenIddictConstants
         public const string SlowDown = "slow_down";
         public const string TemporarilyUnavailable = "temporarily_unavailable";
         public const string UnauthorizedClient = "unauthorized_client";
+        public const string UnmetAuthenticationRequirements = "unmet_authentication_requirements";
         public const string UnsupportedGrantType = "unsupported_grant_type";
         public const string UnsupportedResponseType = "unsupported_response_type";
         public const string UnsupportedTokenType = "unsupported_token_type";
