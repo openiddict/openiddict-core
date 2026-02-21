@@ -95,6 +95,7 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// client authentication key usages to be automatically selected by OpenIddict).
     /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [Obsolete("This option is no longer supported and will be removed in a future version.")]
     public Func<OpenIddictClientRegistration, X509Certificate2?> SelfSignedTlsClientAuthenticationCertificateSelector { get; set; } = default!;
 
     /// <summary>
@@ -109,5 +110,6 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// client authentication key usages to be automatically selected by OpenIddict).
     /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [Obsolete("This option is no longer supported and will be removed in a future version.")]
     public Func<OpenIddictClientRegistration, X509Certificate2?> TlsClientAuthenticationCertificateSelector { get; set; } = default!;
 }

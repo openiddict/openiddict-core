@@ -1105,6 +1105,22 @@ internal static class OpenIddictHelpers
     }
 
     /// <summary>
+    /// Determines whether the specified <paramref name="certificate"/> is suitable for client authentication.
+    /// </summary>
+    /// <param name="certificate">The <see cref="X509Certificate2"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the certificate is suitable for client authentication, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsClientAuthenticationCertificate(X509Certificate2 certificate)
+    {
+        ArgumentNullException.ThrowIfNull(certificate);
+
+        return certificate.Version is >= 3 &&
+            OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.DigitalSignature) &&
+            OpenIddictHelpers.HasExtendedKeyUsage(certificate, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication);
+    }
+
+    /// <summary>
     /// Determines whether the items contained in <paramref name="element"/>
     /// are of the specified <paramref name="kind"/>.
     /// </summary>

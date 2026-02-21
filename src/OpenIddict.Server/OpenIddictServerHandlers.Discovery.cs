@@ -252,7 +252,8 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.RevocationEndpointAuthMethodsSupported] = notification.RevocationEndpointAuthenticationMethods.ToImmutableArray<string?>(),
                     [Metadata.DeviceAuthorizationEndpointAuthMethodsSupported] = notification.DeviceAuthorizationEndpointAuthenticationMethods.ToImmutableArray<string?>(),
                     [Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported] = notification.PushedAuthorizationEndpointAuthenticationMethods.ToImmutableArray<string?>(),
-                    [Metadata.RequirePushedAuthorizationRequests] = notification.RequirePushedAuthorizationRequests
+                    [Metadata.RequirePushedAuthorizationRequests] = notification.RequirePushedAuthorizationRequests,
+                    [Metadata.TlsClientCertificateBoundAccessTokens] = notification.TlsClientCertificateBoundAccessTokens
                 };
 
                 foreach (var metadata in notification.Metadata)
@@ -289,6 +290,11 @@ public static partial class OpenIddictServerHandlers
                     if (context.MtlsTokenEndpointAlias is not null)
                     {
                         node.Add(Metadata.TokenEndpoint, context.MtlsTokenEndpointAlias.AbsoluteUri);
+                    }
+
+                    if (context.MtlsUserInfoEndpointAlias is not null)
+                    {
+                        node.Add(Metadata.UserInfoEndpoint, context.MtlsUserInfoEndpointAlias.AbsoluteUri);
                     }
 
                     return node;
@@ -425,6 +431,9 @@ public static partial class OpenIddictServerHandlers
 
                 context.MtlsTokenEndpointAlias ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.MtlsTokenEndpointAliasUri);
+
+                context.MtlsUserInfoEndpointAlias ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.MtlsUserInfoEndpointAliasUri);
 
                 context.PushedAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.PushedAuthorizationEndpointUris.FirstOrDefault());
@@ -812,6 +821,7 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 context.RequirePushedAuthorizationRequests = context.Options.RequirePushedAuthorizationRequests;
+                context.TlsClientCertificateBoundAccessTokens = context.Options.UseClientCertificateBoundAccessTokens;
 
                 return ValueTask.CompletedTask;
             }
@@ -842,7 +852,6 @@ public static partial class OpenIddictServerHandlers
                 context.Metadata[Metadata.ClaimsParameterSupported] = false;
                 context.Metadata[Metadata.RequestParameterSupported] = false;
                 context.Metadata[Metadata.RequestUriParameterSupported] = false;
-                context.Metadata[Metadata.TlsClientCertificateBoundAccessTokens] = false;
 
                 // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its identity as
                 // part of authorization responses to help clients mitigate mix-up attacks. For more information,

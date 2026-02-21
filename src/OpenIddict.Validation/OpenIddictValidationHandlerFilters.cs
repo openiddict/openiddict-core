@@ -192,4 +192,18 @@ public static class OpenIddictValidationHandlerFilters
             return new(!context.DisablePresenterValidation);
         }
     }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if token proof-of-possession validation was disabled.
+    /// </summary>
+    public sealed class RequireTokenProofOfPossessionValidationEnabled : IOpenIddictValidationHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(!context.DisableProofOfPossessionValidation);
+        }
+    }
 }

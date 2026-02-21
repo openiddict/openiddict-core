@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -426,6 +427,7 @@ public class OpenIddictClientService
             Issuer = request.Issuer,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
+            TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
@@ -517,6 +519,7 @@ public class OpenIddictClientService
             GrantType = request.GrantType,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
+            TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
@@ -611,6 +614,7 @@ public class OpenIddictClientService
                     Issuer = request.Issuer,
                     ProviderName = request.ProviderName,
                     RegistrationId = request.RegistrationId,
+                    TokenEndpointClientCertificate = request.TokenBindingCertificate,
                     TokenRequest = request.AdditionalTokenRequestParameters
                         is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
                 };
@@ -795,6 +799,7 @@ public class OpenIddictClientService
             Password = request.Password,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
+            TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
             Username = request.Username
@@ -885,6 +890,7 @@ public class OpenIddictClientService
             RequestedTokenType = request.RequestedTokenType,
             SubjectToken = request.SubjectToken,
             SubjectTokenType = request.SubjectTokenType,
+            TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
@@ -967,6 +973,7 @@ public class OpenIddictClientService
             ProviderName = request.ProviderName,
             RefreshToken = request.RefreshToken,
             RegistrationId = request.RegistrationId,
+            TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
@@ -1478,11 +1485,13 @@ public class OpenIddictClientService
     /// <param name="request">The device authorization request.</param>
     /// <param name="uri">The uri of the remote device authorization endpoint.</param>
     /// <param name="method">The client authentication method, if applicable.</param>
+    /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendDeviceAuthorizationRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method,
+        X509Certificate2? certificate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -1518,10 +1527,11 @@ public class OpenIddictClientService
             {
                 CancellationToken = cancellationToken,
                 ClientAuthenticationMethod = method,
-                RemoteUri = uri,
                 Configuration = configuration,
+                RemoteUri = uri,
                 Registration = registration,
-                Request = request
+                Request = request,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);
@@ -1621,11 +1631,13 @@ public class OpenIddictClientService
     /// <param name="request">The token request.</param>
     /// <param name="uri">The uri of the remote token endpoint.</param>
     /// <param name="method">The client authentication method, if applicable.</param>
+    /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the introspection response.</returns>
     internal async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> SendIntrospectionRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method,
+        X509Certificate2? certificate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(request);
@@ -1663,7 +1675,8 @@ public class OpenIddictClientService
                 Configuration = configuration,
                 Registration = registration,
                 RemoteUri = uri,
-                Request = request
+                Request = request,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);
@@ -1698,7 +1711,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(6192, SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6190, SR.GetResourceString(SR.ID6190), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -1725,7 +1738,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(6193, SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6191, SR.GetResourceString(SR.ID6191), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -1765,11 +1778,13 @@ public class OpenIddictClientService
     /// <param name="request">The pushed authorization request.</param>
     /// <param name="uri">The uri of the remote pushed authorization endpoint.</param>
     /// <param name="method">The client authentication method, if applicable.</param>
+    /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendPushedAuthorizationRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method,
+        X509Certificate2? certificate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -1808,7 +1823,8 @@ public class OpenIddictClientService
                 RemoteUri = uri,
                 Configuration = configuration,
                 Registration = registration,
-                Request = request
+                Request = request,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);
@@ -1908,11 +1924,13 @@ public class OpenIddictClientService
     /// <param name="request">The token request.</param>
     /// <param name="uri">The uri of the remote token endpoint.</param>
     /// <param name="method">The client authentication method, if applicable.</param>
+    /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response extracted from the revocation response.</returns>
     internal async ValueTask<OpenIddictResponse> SendRevocationRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method,
+        X509Certificate2? certificate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(request);
@@ -1950,7 +1968,8 @@ public class OpenIddictClientService
                 Configuration = configuration,
                 Registration = registration,
                 RemoteUri = uri,
-                Request = request
+                Request = request,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);
@@ -1985,7 +2004,7 @@ public class OpenIddictClientService
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 
-            context.Logger.LogInformation(6192, SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+            context.Logger.LogInformation(6290, SR.GetResourceString(SR.ID6290), context.RemoteUri, context.Request);
 
             return context.Request;
         }
@@ -2012,7 +2031,7 @@ public class OpenIddictClientService
 
             Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            context.Logger.LogInformation(6193, SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+            context.Logger.LogInformation(6291, SR.GetResourceString(SR.ID6291), context.RemoteUri, context.Response);
 
             return context.Response;
         }
@@ -2050,11 +2069,13 @@ public class OpenIddictClientService
     /// <param name="request">The token request.</param>
     /// <param name="uri">The uri of the remote token endpoint.</param>
     /// <param name="method">The client authentication method, if applicable.</param>
+    /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri, string? method,
+        X509Certificate2? certificate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -2093,7 +2114,8 @@ public class OpenIddictClientService
                 Configuration = configuration,
                 Registration = registration,
                 RemoteUri = uri,
-                Request = request
+                Request = request,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);
@@ -2116,7 +2138,8 @@ public class OpenIddictClientService
                 Configuration = configuration,
                 Registration = registration,
                 RemoteUri = uri,
-                Request = request
+                Request = request,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);
@@ -2141,7 +2164,8 @@ public class OpenIddictClientService
                 Configuration = configuration,
                 Registration = registration,
                 RemoteUri = uri,
-                Request = request
+                Request = request,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);
@@ -2169,7 +2193,8 @@ public class OpenIddictClientService
                 Registration = registration,
                 RemoteUri = uri,
                 Request = request,
-                Response = response
+                Response = response,
+                LocalCertificate = certificate
             };
 
             await dispatcher.DispatchAsync(context);
@@ -2192,12 +2217,13 @@ public class OpenIddictClientService
     /// <param name="configuration">The server configuration.</param>
     /// <param name="request">The userinfo request.</param>
     /// <param name="uri">The uri of the remote userinfo endpoint.</param>
-    /// <param name="methods">The token binding methods to use, if applicable.</param>
+    /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
     internal async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserInfoRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
-        OpenIddictRequest request, Uri uri, HashSet<string> methods, CancellationToken cancellationToken = default)
+        OpenIddictRequest request, Uri uri,
+        X509Certificate2? certificate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -2234,10 +2260,9 @@ public class OpenIddictClientService
                 Configuration = configuration,
                 RemoteUri = uri,
                 Registration = registration,
-                Request = request
+                Request = request,
+                LocalCertificate = certificate
             };
-
-            context.TokenBindingMethods.UnionWith(methods);
 
             await dispatcher.DispatchAsync(context);
 

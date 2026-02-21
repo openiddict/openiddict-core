@@ -168,7 +168,7 @@ public class Startup
                 // to authenticate using either PKI certificates or self-signed certificates.
                 //
                 // Note: PKI and self-signed certificate authentication can be enabled independently.
-                options.EnablePublicKeyInfrastructureClientCertificateAuthentication(
+                options.EnablePublicKeyInfrastructureTlsClientAuthentication(
                 [
                     // Root certificate:
                     X509Certificate2.CreateFromPem($"""
@@ -239,12 +239,11 @@ public class Startup
                         """)
                 ]);
 
-                options.EnableSelfSignedClientCertificateAuthentication();
+                options.EnableSelfSignedTlsClientAuthentication();
 
-                // Note: setting a static issuer is mandatory when using mTLS aliases
-                // to ensure it is not dynamically computed based on the request URI,
-                // as this would result in two different issuers being used (one
-                // pointing to the mTLS domain and one pointing to the regular one).
+                // Note: setting a static issuer is mandatory when using mTLS aliases to ensure it not
+                // dynamically computed based on the request URI, as this would result in two different
+                // issuers being used (one pointing to the mTLS domain and one pointing to the regular one).
                 options.SetIssuer("https://localhost:44395/");
 
                 // Configure the mTLS endpoint aliases that will be used by client applications opting
@@ -260,7 +259,20 @@ public class Startup
                        .SetMtlsIntrospectionEndpointAliasUri("https://mtls.dev.localhost:44395/connect/introspect")
                        .SetMtlsPushedAuthorizationEndpointAliasUri("https://mtls.dev.localhost:44395/connect/par")
                        .SetMtlsRevocationEndpointAliasUri("https://mtls.dev.localhost:44395/connect/revoke")
-                       .SetMtlsTokenEndpointAliasUri("https://mtls.dev.localhost:44395/connect/token");
+                       .SetMtlsTokenEndpointAliasUri("https://mtls.dev.localhost:44395/connect/token")
+                       .SetMtlsUserInfoEndpointAliasUri("https://mtls.dev.localhost:44395/connect/userinfo");
+
+                // While public client applications cannot use mTLS for client authentication, they can use
+                // mTLS purely as a token binding mechanism: in this case, the refresh tokens issued to
+                // public clients sending a client certificate are automatically bound to the certificate,
+                // which requires sending the same certificate when using them to get new access tokens.
+                options.UseClientCertificateBoundRefreshTokens();
+
+                // Optionally, the server stack can be configured to issue client certificate-bound access tokens.
+                //
+                // When doing so, the standard "cnf" claim is automatically added to access tokens to inform
+                // resource servers that a proof of possession derived from the certificate must be provided.
+                options.UseClientCertificateBoundAccessTokens();
 #endif
             })
 

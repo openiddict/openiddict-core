@@ -179,6 +179,16 @@ public sealed class OpenIddictServerOptions
     public Uri? MtlsTokenEndpointAliasUri { get; set; }
 
     /// <summary>
+    /// Gets or sets the URI listed as the mTLS token
+    /// endpoint alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    public Uri? MtlsUserInfoEndpointAliasUri { get; set; }
+
+    /// <summary>
     /// Gets the token validation parameters used by the OpenIddict server services.
     /// </summary>
     public TokenValidationParameters TokenValidationParameters { get; } = new()
@@ -648,6 +658,24 @@ public sealed class OpenIddictServerOptions
     public bool UseReferenceRefreshTokens { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether access tokens should be bound to the
+    /// client certificate sent by public or confidential clients in the TLS handshake
+    /// of token requests.
+    /// </summary>
+    public bool UseClientCertificateBoundAccessTokens { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether access tokens should be bound to the
+    /// client certificate sent by public clients in the TLS handshake of token requests.
+    /// </summary>
+    /// <remarks>
+    /// Note: refresh tokens are only bound to the client certificate when the client
+    /// is a public application, as refresh tokens issued to confidential applications
+    /// are already sender-constrained via standard client authentication.
+    /// </remarks>
+    public bool UseClientCertificateBoundRefreshTokens { get; set; }
+
+    /// <summary>
     /// Gets or sets the time provider.
     /// </summary>
     /// <remarks>
@@ -658,40 +686,36 @@ public sealed class OpenIddictServerOptions
     public TimeProvider TimeProvider { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the chain policy used when validating client certificates
-    /// used for client authentication (typically, via mTLS).
+    /// Gets or sets the chain policy used when validating PKI
+    /// client certificates used for OAuth 2.0 client authentication.
     /// </summary>
     /// <remarks>
-    /// <list type="bullet">
-    /// <item>
+    /// <para>
     /// Note: this instance serves as a base policy and is merged with
     /// the per-client policies resolved using the application manager.
-    /// </item>
-    /// <item>
+    /// </para>
+    /// <para>
     /// Note: while it is possible to use a policy configured to use the
-    /// the system certificates store, doing is so is strongly discouraged.
-    /// </item>
-    /// </list>
+    /// the system certificates store, doing so is strongly discouraged.
+    /// </para>
     /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public X509ChainPolicy? ClientCertificateChainPolicy { get; set; }
+    public X509ChainPolicy? PublicKeyInfrastructureTlsClientAuthenticationPolicy { get; set; }
 
     /// <summary>
     /// Gets or sets the chain policy used when validating self-signed client
-    /// certificates used for client authentication (typically, via mTLS).
+    /// certificates used for OAuth 2.0 client authentication and/or token binding.
     /// </summary>
     /// <remarks>
-    /// <list type="bullet">
-    /// <item>
+    /// <para>
     /// Note: this instance serves as a base policy and is merged with
     /// the per-client policies resolved using the application manager.
-    /// </item>
-    /// <item>
+    /// </para>
+    /// <para>
     /// Note: while it is possible to use a policy configured to use the
-    /// the system certificates store, doing is so is strongly discouraged.
-    /// </item>
-    /// </list>
+    /// the system certificates store, doing so is strongly discouraged.
+    /// </para>
     /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public X509ChainPolicy? SelfSignedClientCertificateChainPolicy { get; set; }
+    public X509ChainPolicy? SelfSignedTlsClientAuthenticationPolicy { get; set; }
 }

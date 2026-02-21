@@ -19,6 +19,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
              */
             ExtractGetOrPostRequest<ExtractUserInfoRequestContext>.Descriptor,
             ExtractAccessToken<ExtractUserInfoRequestContext>.Descriptor,
+            ExtractClientCertificate<ExtractUserInfoRequestContext>.Descriptor,
 
             /*
              * UserInfo request handling:

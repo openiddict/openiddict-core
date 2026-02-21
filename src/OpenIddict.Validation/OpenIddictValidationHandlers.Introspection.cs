@@ -84,7 +84,7 @@ public static partial class OpenIddictValidationHandlers
                     Claims.Active => ((JsonElement) value).ValueKind is JsonValueKind.True or JsonValueKind.False,
 
                     // The following claims MUST be formatted as unique strings:
-                    Claims.JwtId or Claims.Issuer or Claims.Scope or Claims.TokenUsage
+                    Claims.Issuer or Claims.JwtId or Claims.Scope or Claims.TokenUsage
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following claims MUST be formatted as strings or arrays of strings:
@@ -99,6 +99,9 @@ public static partial class OpenIddictValidationHandlers
                     Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
                         => (JsonElement) value is { ValueKind: JsonValueKind.Number } element &&
                         element.TryGetDecimal(out decimal result) && result is >= 0,
+
+                    // The following claims MUST be formatted as JSON objects:
+                    Claims.Confirmation => ((JsonElement) value).ValueKind is JsonValueKind.Object,
 
                     // Claims that are not in the well-known list can be of any type.
                     _ => true

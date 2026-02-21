@@ -286,6 +286,18 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         }
 
         /// <summary>
+        /// Sets the client type (typically, ""public"" or ""confidential"").
+        /// </summary>
+        /// <param name=""type"">The client type.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} SetClientType(string type)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(type);
+
+            return Set(registration => registration.ClientType = type);
+        }
+
+        /// <summary>
         /// Sets the post-logout redirection URI, if applicable.
         /// </summary>
         /// <remarks>

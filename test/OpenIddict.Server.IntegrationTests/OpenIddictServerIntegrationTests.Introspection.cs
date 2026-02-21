@@ -8,8 +8,10 @@ using System.Collections.Immutable;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -764,6 +766,99 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(1483228800, (long) response[Claims.ExpiresAt]);
         Assert.Equal("Fabrikam", (string?) response[Claims.Audience]);
         Assert.Equal("AdventureWorks Cycles", (string?) response[Claims.ClientId]);
+    }
+
+    [Fact]
+    public async Task HandleIntrospectionRequest_TokenTypeIsNotReturnedForProofOfPossessionToken()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetClaim(Claims.Subject, "Bob le Magnifique")
+                        .SetClaim(Claims.Confirmation, new JsonObject
+                        {
+                            [JsonWebKeyParameterNames.X5tS256] = "P6DKnG90blx5LFI_It2ZAwe6TVJt43YaPiCCErpLx9s"
+                        });
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.RemoveEventHandler(ValidateExpirationDate.Descriptor);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+        {
+            Token = "2YotnFZFEjr1zCsicMWpAA",
+            TokenTypeHint = TokenTypeHints.AccessToken
+        });
+
+        // Assert
+        Assert.True((bool) response[Claims.Active]);
+        Assert.Null((string?) response[Claims.TokenType]);
+    }
+
+    [Fact]
+    public async Task HandleIntrospectionRequest_ConfirmationClaimIsReturnedForProofOfPossessionToken()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetClaim(Claims.Subject, "Bob le Magnifique")
+                        .SetClaim(Claims.Confirmation, new JsonObject
+                        {
+                            [JsonWebKeyParameterNames.X5tS256] = "P6DKnG90blx5LFI_It2ZAwe6TVJt43YaPiCCErpLx9s",
+                            ["custom_property"] = "custom_value"
+                        });
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.RemoveEventHandler(ValidateExpirationDate.Descriptor);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+        {
+            Token = "2YotnFZFEjr1zCsicMWpAA",
+            TokenTypeHint = TokenTypeHints.AccessToken
+        });
+
+        // Assert
+        Assert.True((bool) response[Claims.Active]);
+        Assert.Equal(2, response[Claims.Confirmation]?.Count);
+        Assert.Equal("P6DKnG90blx5LFI_It2ZAwe6TVJt43YaPiCCErpLx9s", (string?) response[Claims.Confirmation]?[JsonWebKeyParameterNames.X5tS256]);
+        Assert.Equal("custom_value", (string?) response[Claims.Confirmation]?["custom_property"]);
     }
 
     [Fact]

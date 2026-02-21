@@ -766,15 +766,6 @@ public static partial class OpenIddictServerEvents
         public ClaimsPrincipal? ClientAssertionPrincipal { get; set; }
 
         /// <summary>
-        /// Gets or sets the client certificate (typically obtained via mTLS), if applicable.
-        /// </summary>
-        public X509Certificate2? ClientCertificate
-        {
-            get => Transaction.ClientCertificate;
-            set => Transaction.ClientCertificate = value;
-        }
-
-        /// <summary>
         /// Gets or sets the device code to validate, if applicable.
         /// </summary>
         public string? DeviceCode { get; set; }

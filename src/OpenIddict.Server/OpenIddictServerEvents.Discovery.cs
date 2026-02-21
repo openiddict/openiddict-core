@@ -162,6 +162,11 @@ public static partial class OpenIddictServerEvents
         public Uri? MtlsTokenEndpointAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the mTLS userinfo endpoint alias URI.
+        /// </summary>
+        public Uri? MtlsUserInfoEndpointAlias { get; set; }
+
+        /// <summary>
         /// Gets the list of claims supported by the authorization server.
         /// </summary>
         public HashSet<string> Claims { get; } = new(StringComparer.Ordinal);
@@ -247,6 +252,11 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets a boolean indicating whether pushed authorization requests are required.
         /// </summary>
         public bool RequirePushedAuthorizationRequests { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether access tokens are bound to client certificates.
+        /// </summary>
+        public bool TlsClientCertificateBoundAccessTokens { get; set; }
     }
 
     /// <summary>

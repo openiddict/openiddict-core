@@ -84,6 +84,12 @@ public sealed class OpenIddictClientRegistration
     public HashSet<string> ClientAuthenticationMethods { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets or sets the type of the client. If no value is explicitly set, the client is assumed to be
+    /// "confidential" if a client secret or a signing key/certificate was assigned ("public" otherwise).
+    /// </summary>
+    public string? ClientType { get; set; }
+
+    /// <summary>
     /// Gets the code challenge methods allowed by the client instance.
     /// If no value is explicitly set, all the methods enabled in the client options can be used.
     /// </summary>
@@ -122,6 +128,16 @@ public sealed class OpenIddictClientRegistration
     /// the client options, the server configuration and the values registered in this property.
     /// </remarks>
     public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets the token binding methods allowed by the client instance.
+    /// If no value is explicitly set, all the methods enabled in the client options can be used.
+    /// </summary>
+    /// <remarks>
+    /// The final token binding method used in backchannel requests is chosen by OpenIddict based
+    /// on the client options, the server configuration and the values registered in this property.
+    /// </remarks>
+    public HashSet<string> TokenBindingMethods { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets or sets the issuer that will be attached to the <see cref="Claim"/>

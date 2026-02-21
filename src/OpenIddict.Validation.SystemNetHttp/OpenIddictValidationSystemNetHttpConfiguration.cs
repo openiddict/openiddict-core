@@ -7,12 +7,10 @@
 using System.ComponentModel;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Polly;
 
 #if SUPPORTS_HTTP_CLIENT_RESILIENCE
@@ -74,14 +72,10 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
         // to dynamically amend the resulting HttpClient or HttpClientHandler instance.
         //
         // To work around this limitation, the OpenIddict System.Net.Http integration uses
-        // dynamic client names and supports appending a list of key-value pairs to the client
-        // name to flow per-instance properties (e.g the negotiated client authentication method).
-        var properties = name.Length >= assembly.Name!.Length + 1 && name[assembly.Name.Length] is ':' ?
-            name[(assembly.Name.Length + 1)..]
-                .Split(['\u001f'], StringSplitOptions.RemoveEmptyEntries)
-                .Select(static property => property.Split(['\u001e'], StringSplitOptions.RemoveEmptyEntries))
-                .Where(static values => values is [{ Length: > 0 }, { Length: > 0 }])
-                .ToDictionary(static values => values[0], static values => values[1]) : [];
+        // an async-local context to flow per-instance properties and uses dynamic client
+        // names to ensure the inner HttpClientHandler is not reused if the context differs.
+        var context = OpenIddictValidationSystemNetHttpContext.Current ??
+            throw new InvalidOperationException(SR.FormatID2202(nameof(OpenIddictValidationSystemNetHttpContext)));
 
         var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>().CurrentValue;
 
@@ -128,24 +122,18 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
 
             handler.ClientCertificateOptions = ClientCertificateOption.Manual;
 
-            if (properties.TryGetValue("AttachTlsClientCertificate", out string? value) &&
-                bool.TryParse(value, out bool result) && result)
+            if (context.LocalCertificate is X509Certificate2 certificate)
             {
-                var certificate = options.CurrentValue.TlsClientAuthenticationCertificateSelector();
-                if (certificate is not null)
+                // If a certificate was specified, immediately throw an excecption if it doesn't have
+                // a private key attached to ensure it won't be silently discarded when initiating the
+                // TLS handshake (which would result in a hard-to-debug scenario where the certificate
+                // would be attached to the HTTP handler but would not be sent to the remote peer).
+                if (!certificate.HasPrivateKey)
                 {
-                    handler.ClientCertificates.Add(certificate);
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0514));
                 }
-            }
 
-            else if (properties.TryGetValue("AttachSelfSignedTlsClientCertificate", out value) &&
-                bool.TryParse(value, out result) && result)
-            {
-                var certificate = options.CurrentValue.SelfSignedTlsClientAuthenticationCertificateSelector();
-                if (certificate is not null)
-                {
-                    handler.ClientCertificates.Add(certificate);
-                }
+                handler.ClientCertificates.Add(certificate);
             }
         });
 
@@ -169,20 +157,6 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
         {
             return;
         }
-
-        // Note: HttpClientFactory doesn't support flowing a list of properties that can be
-        // accessed from the HttpClientAction or HttpMessageHandlerBuilderAction delegates
-        // to dynamically amend the resulting HttpClient or HttpClientHandler instance.
-        //
-        // To work around this limitation, the OpenIddict System.Net.Http integration uses dynamic
-        // client names and supports appending a list of key-value pairs to the client name to flow
-        // per-instance properties (e.g a flag indicating whether a client certificate should be used).
-        var properties = name.Length >= assembly.Name!.Length + 1 && name[assembly.Name.Length] is ':' ?
-            name[(assembly.Name.Length + 1)..]
-                .Split(['\u001f'], StringSplitOptions.RemoveEmptyEntries)
-                .Select(static property => property.Split(['\u001e'], StringSplitOptions.RemoveEmptyEntries))
-                .Where(static values => values is [{ Length: > 0 }, { Length: > 0 }])
-                .ToDictionary(static values => values[0], static values => values[1]) : [];
 
         options.HttpMessageHandlerBuilderActions.Insert(0, static builder =>
         {
@@ -240,50 +214,8 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
         });
     }
 
+    /// <inheritdoc/>
+    [Obsolete("This method is no longer supported and will be removed in a future version.")]
     public void PostConfigure(string? name, OpenIddictValidationSystemNetHttpOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        // If no client authentication certificate selector was provided, use fallback delegates that
-        // automatically use the first X.509 signing certificate attached to the client registration
-        // that is suitable for both digital signature and client authentication.
-
-        options.SelfSignedTlsClientAuthenticationCertificateSelector ??= () =>
-        {
-            foreach (var credentials in _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>()
-                .CurrentValue.SigningCredentials)
-            {
-                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
-                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
-                if (credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-                    certificate.Version is >= 3 && OpenIddictHelpers.IsSelfIssuedCertificate(certificate) &&
-                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.DigitalSignature) &&
-                    OpenIddictHelpers.HasExtendedKeyUsage(certificate, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication))
-                {
-                    return certificate;
-                }
-            }
-
-            return null;
-        };
-
-        options.TlsClientAuthenticationCertificateSelector ??= () =>
-        {
-            foreach (var credentials in _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>()
-                .CurrentValue.SigningCredentials)
-            {
-                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
-                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
-                if (credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-                    certificate.Version is >= 3 && !OpenIddictHelpers.IsSelfIssuedCertificate(certificate) &&
-                    OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.DigitalSignature) &&
-                    OpenIddictHelpers.HasExtendedKeyUsage(certificate, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication))
-                {
-                    return certificate;
-                }
-            }
-
-            return null;
-        };
-    }
+        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 }

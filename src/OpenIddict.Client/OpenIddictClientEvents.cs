@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Client;
@@ -166,8 +167,15 @@ public static partial class OpenIddictClientEvents
         public string? ClientAuthenticationMethod { get; set; }
 
         /// <summary>
+        /// Gets or sets the X.509 client certificate that will be used to authenticate
+        /// this peer when communicating with the external endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? LocalCertificate { get; set; }
+
+        /// <summary>
         /// Gets or sets the token binding method used when communicating with the external endpoint, if applicable.
         /// </summary>
+        [Obsolete("This property is no longer used and will be removed in a future version.")]
         public HashSet<string> TokenBindingMethods { get; } = new(StringComparer.Ordinal);
     }
 
@@ -398,14 +406,39 @@ public static partial class OpenIddictClientEvents
         public string? TokenEndpointClientAuthenticationMethod { get; set; }
 
         /// <summary>
+        /// Gets or sets the X.509 client certificate used when
+        /// communicating with the token endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? TokenEndpointClientCertificate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the token binding method used when
+        /// communicating with the token endpoint, if applicable.
+        /// </summary>
+        public string? TokenEndpointTokenBindingMethod { get; set; }
+
+        /// <summary>
         /// Gets or sets the URI of the userinfo endpoint, if applicable.
         /// </summary>
         public Uri? UserInfoEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the token binding method used when
+        /// communicating with the userinfo endpoint, if applicable.
+        /// </summary>
+        public string? UserInfoEndpointTokenBindingMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate used when
+        /// communicating with the userinfo endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? UserInfoEndpointClientCertificate { get; set; }
+
+        /// <summary>
         /// Gets or sets the token binding methods used when
         /// communicating with the userinfo endpoint, if applicable.
         /// </summary>
+        [Obsolete("This property is no longer used and will be removed in a future version.")]
         public HashSet<string> UserInfoEndpointTokenBindingMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
@@ -1154,6 +1187,12 @@ public static partial class OpenIddictClientEvents
         public string? DeviceAuthorizationEndpointClientAuthenticationMethod { get; set; }
 
         /// <summary>
+        /// Gets or sets the X.509 client certificate used when communicating
+        /// with the device authorization endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? DeviceAuthorizationEndpointClientCertificate { get; set; }
+
+        /// <summary>
         /// Gets or sets the URI of the pushed authorization endpoint, if applicable.
         /// </summary>
         public Uri? PushedAuthorizationEndpoint { get; set; }
@@ -1163,6 +1202,12 @@ public static partial class OpenIddictClientEvents
         /// with the pushed authorization endpoint, if applicable.
         /// </summary>
         public string? PushedAuthorizationEndpointClientAuthenticationMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate used when communicating
+        /// with the pushed authorization endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? PushedAuthorizationEndpointClientCertificate { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a state token
@@ -1462,6 +1507,12 @@ public static partial class OpenIddictClientEvents
         public string? IntrospectionEndpointClientAuthenticationMethod { get; set; }
 
         /// <summary>
+        /// Gets or sets the X.509 client certificate used when
+        /// communicating with the introspection endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? IntrospectionEndpointClientCertificate { get; set; }
+
+        /// <summary>
         /// Gets or sets the client identifier that will be used for the introspection demand.
         /// </summary>
         public string? ClientId { get; set; }
@@ -1593,6 +1644,12 @@ public static partial class OpenIddictClientEvents
         /// communicating with the revocation endpoint, if applicable.
         /// </summary>
         public string? RevocationEndpointClientAuthenticationMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate used when
+        /// communicating with the revocation endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? RevocationEndpointClientCertificate { get; set; }
 
         /// <summary>
         /// Gets or sets the client identifier that will be used for the revocation demand.

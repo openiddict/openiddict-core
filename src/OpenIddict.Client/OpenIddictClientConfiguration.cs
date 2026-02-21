@@ -82,6 +82,17 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0455));
             }
 
+            // If no client type was explicitly set, assume the client is confidential if a client secret
+            // or a signing key/certificate (typically used with private_key_jwt, tls_client_auth or
+            // self_signed_tls_client_auth) has been attached to the client registration.
+            if (string.IsNullOrEmpty(registration.ClientType))
+            {
+                registration.ClientType =
+                    !string.IsNullOrEmpty(registration.ClientSecret) || registration.SigningCredentials.Count is > 0
+                    ? ClientTypes.Confidential
+                    : ClientTypes.Public;
+            }
+
             if (registration.ConfigurationManager is null)
             {
                 if (registration.Configuration is not null)

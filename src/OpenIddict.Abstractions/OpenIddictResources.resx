@@ -546,7 +546,7 @@ Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.A
     <value>The client identifier cannot be null or empty when using introspection.</value>
   </data>
   <data name="ID0132" xml:space="preserve">
-    <value>The client secret cannot be null or empty when using introspection. Alternatively, one or multiple signing credentials can be registered and used to produce client assertions if the authorization server supports this client authentication method.</value>
+    <value>The client secret cannot be null or empty when using introspection. Alternatively, one or multiple signing credentials can be registered and used as TLS client certificates or to produce client assertions if the authorization server supports it.</value>
   </data>
   <data name="ID0133" xml:space="preserve">
     <value>Authorization entry validation cannot be enabled when using introspection.</value>
@@ -1813,12 +1813,12 @@ Alternatively, any value respecting the '[region]-[subregion]-[identifier]' patt
 To set a static issuer, use 'services.AddOpenIddict().AddServer().SetIssuer()'.</value>
   </data>
   <data name="ID0501" xml:space="preserve">
-    <value>End certificates are not allowed in the client certificate chain base policies attached to the server options.
-To attach an end certificate to a specific client, override the 'OpenIddictApplicationManager.GetClientCertificateChainPolicyAsync()' method.</value>
+    <value>End certificates are not allowed in the Public Key Infrastructure client certificate chain base policies attached to the server options.
+To attach an end certificate to a specific client, override the 'OpenIddictApplicationManager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync()' method.</value>
   </data>
   <data name="ID0502" xml:space="preserve">
     <value>Certificates are not allowed in the self-signed client certificate chain base policies attached to the server options.
-To attach a self-signed certificate to a specific client, override the 'OpenIddictApplicationManager.GetSelfSignedClientCertificateChainPolicyAsync()' method.</value>
+To attach a self-signed certificate to a specific client, override the 'OpenIddictApplicationManager.GetSelfSignedTlsClientAuthenticationPolicyAsync()' method.</value>
   </data>
   <data name="ID0503" xml:space="preserve">
     <value>Public Key Infrastructure-based client authentication cannot be used with self-signed certificates.</value>
@@ -1827,29 +1827,38 @@ To attach a self-signed certificate to a specific client, override the 'OpenIddi
     <value>Self-signed client authentication can only be used with self-signed certificates.</value>
   </data>
   <data name="ID0505" xml:space="preserve">
-    <value>A certificate chain policy must be configured when enabling the 'tls_client_auth' authentication method.
-To configure a policy, use 'services.AddOpenIddict().AddServer().EnablePublicKeyInfrastructureClientCertificateAuthentication()'.</value>
+    <value>A Public Key Infrastructure certificate chain policy must be configured when enabling the 'tls_client_auth' authentication method.
+To configure a policy, use 'services.AddOpenIddict().AddServer().EnablePublicKeyInfrastructureTlsClientAuthentication()'.</value>
   </data>
   <data name="ID0506" xml:space="preserve">
     <value>A self-signed certificate chain policy must be configured when enabling the 'self_signed_tls_client_auth' authentication method.
-To configure a policy, use 'services.AddOpenIddict().AddServer().EnableSelfSignedClientCertificateAuthentication()'.</value>
+To configure a policy, use 'services.AddOpenIddict().AddServer().EnableSelfSignedTlsClientAuthentication()'.</value>
   </data>
   <data name="ID0507" xml:space="preserve">
     <value>At least one certificate authority must be added to the certificate collection.</value>
   </data>
   <data name="ID0508" xml:space="preserve">
     <value>X.509 custom trust stores are not supported on this platform.
-While not recommended, certificate-based client authentication can be manually implemented on unsupported platforms by setting 'OpenIddictServerOptions.ClientCertificateChainPolicy'/'OpenIddictServerOptions.SelfSignedClientCertificateChainPolicy' and overriding the the 'OpenIddictApplicationManager.ValidateClientCertificateAsync()'/'OpenIddictApplicationManager.ValidateSelfSignedClientCertificateAsync()' methods.</value>
+While not recommended, TLS client authentication can be manually implemented on unsupported platforms by setting 'OpenIddictServerOptions.PublicKeyInfrastructureTlsClientAuthenticationPolicy'/'OpenIddictServerOptions.SelfSignedTlsClientAuthenticationPolicy' and overriding the the 'OpenIddictApplicationManager.ValidatePublicKeyInfrastructureTlsClientCertificateAsync()'/'OpenIddictApplicationManager.ValidateSelfSignedTlsClientCertificateAsync()' methods.</value>
   </data>
   <data name="ID0509" xml:space="preserve">
-    <value>Changing the trust mode of the X.509 chain policy used for client authentication is not allowed by default for security reasons.
-To use a custom policy relying on the system store, set 'OpenIddictServerOptions.ClientCertificateChainPolicy' or 'OpenIddictServerOptions.SelfSignedClientCertificateChainPolicy' manually.</value>
+    <value>Changing the trust mode of the X.509 chain policy used for TLS client authentication is not allowed by default for security reasons.
+To use a custom policy relying on the system store, set 'OpenIddictServerOptions.PublicKeyInfrastructureTlsClientAuthenticationPolicy' or 'OpenIddictServerOptions.SelfSignedTlsClientAuthenticationPolicy' manually.</value>
   </data>
   <data name="ID0510" xml:space="preserve">
     <value>mTLS endpoint aliases cannot be set when the corresponding endpoints have not been enabled.</value>
   </data>
   <data name="ID0511" xml:space="preserve">
     <value>Public Key Infrastructure certificates cannot contain private keys.</value>
+  </data>
+  <data name="ID0512" xml:space="preserve">
+    <value>A certificate-based client authentication or token binding method was negotiated but no suitable certificate could be found.</value>
+  </data>
+  <data name="ID0513" xml:space="preserve">
+    <value>The type of the specified certificate doesn't match the negotiated client authentication or token binding method.</value>
+  </data>
+  <data name="ID0514" xml:space="preserve">
+    <value>TLS client certificates must contain a private key.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
@@ -2437,13 +2446,31 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
     <value>The '{0}' parameter is only allowed for OAuth 2.0 Token Exchange requests.</value>
   </data>
   <data name="ID2196" xml:space="preserve">
-    <value>Certificate-based authentication is not valid for this client application.</value>
+    <value>The specified token binding method is invalid or not supported.</value>
   </data>
   <data name="ID2197" xml:space="preserve">
     <value>The specified TLS client certificate is invalid, expired or has been revoked.</value>
   </data>
   <data name="ID2198" xml:space="preserve">
     <value>Client authentication is required for this application.</value>
+  </data>
+  <data name="ID2199" xml:space="preserve">
+    <value>The confirmation claim resolved from the security principal is malformed or invalid.</value>
+  </data>
+  <data name="ID2200" xml:space="preserve">
+    <value>The thumbprint of the client certificate couldn't be resolved from the confirmation claim.</value>
+  </data>
+  <data name="ID2201" xml:space="preserve">
+    <value>An existing '{0}' instance is already attached to the execution context.</value>
+  </data>
+  <data name="ID2202" xml:space="preserve">
+    <value>The '{0}' attached to the execution context could not be resolved.</value>
+  </data>
+  <data name="ID2203" xml:space="preserve">
+    <value>A certificate-based proof-of-possession is required to use this token.</value>
+  </data>
+  <data name="ID2204" xml:space="preserve">
+    <value>The specified certificate-based proof-of-possession is not valid.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3256,7 +3283,7 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The token request was rejected because the '{Parameter}' contained a URI fragment: {RedirectUri}.</value>
   </data>
   <data name="ID6282" xml:space="preserve">
-    <value>The authentication demand was rejected because the public application '{ClientId}' was not allowed to send a client certificate.</value>
+    <value>The token was rejected because the proof of possession was missing.</value>
   </data>
   <data name="ID6283" xml:space="preserve">
     <value>The authentication demand was rejected because the confidential application '{ClientId}' didn't specify a valid client certificate.</value>
@@ -3265,16 +3292,25 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The authentication demand was rejected because the confidential application '{ClientId}' didn't specify a valid self-signed client certificate.</value>
   </data>
   <data name="ID6285" xml:space="preserve">
-    <value>Certificate-based client authentication failed for {ClientId} because no redirection URI was associated with the application.</value>
+    <value>Certificate validation failed for {ClientId} because no redirection URI was associated with the application.</value>
   </data>
   <data name="ID6286" xml:space="preserve">
-    <value>Certificate-based client authentication failed for {ClientId} because the certificate was not valid: {Errors}.</value>
+    <value>Certificate validation failed for {ClientId} because the provided certificate was not valid: {Errors}.</value>
   </data>
   <data name="ID6287" xml:space="preserve">
-    <value>Certificate-based client authentication failed for {ClientId} because the certificate didn't match any of the hostnames extracted from the redirection URIs associated with the application.</value>
+    <value>Certificate validation failed for {ClientId} because the provided certificate didn't match any of the hostnames extracted from the redirection URIs associated with the application.</value>
   </data>
   <data name="ID6288" xml:space="preserve">
     <value>An error occurred while trying to validate a client certificate, which may indicate that the certificate is malformed or has an invalid chain.</value>
+  </data>
+  <data name="ID6289" xml:space="preserve">
+    <value>The token was rejected because the proof of possession was malformed or invalid.</value>
+  </data>
+  <data name="ID6290" xml:space="preserve">
+    <value>The revocation request was successfully sent to {Uri}: {Request}.</value>
+  </data>
+  <data name="ID6291" xml:space="preserve">
+    <value>The revocation response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

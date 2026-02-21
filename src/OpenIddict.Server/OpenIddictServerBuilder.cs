@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -12,7 +11,6 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
 
@@ -2171,6 +2169,56 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
+    /// Sets the URI listed as the mTLS userinfo endpoint
+    /// alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsUserInfoEndpointAliasUri(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        if (uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uri));
+        }
+
+        return Configure(options => options.MtlsUserInfoEndpointAliasUri = uri);
+    }
+
+    /// <summary>
+    /// Sets the URI listed as the mTLS userinfo endpoint
+    /// alias in the server configuration metadata.
+    /// </summary>
+    /// <remarks>
+    /// Note: this URI MUST be absolute and MUST point to a domain for
+    /// which TLS client authentication is enforced by the web server.
+    /// </remarks>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetMtlsUserInfoEndpointAliasUri(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] string uri)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(uri);
+
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || OpenIddictHelpers.IsImplicitFileUri(value))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uri));
+        }
+
+        return SetMtlsUserInfoEndpointAliasUri(value);
+    }
+
+    /// <summary>
     /// Configures OpenIddict to use reference tokens, so that the access token payloads
     /// are stored in the database (only an identifier is returned to the client application).
     /// Enabling this option is useful when storing a very large number of claims in the tokens,
@@ -2191,6 +2239,27 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder UseReferenceRefreshTokens()
         => Configure(options => options.UseReferenceRefreshTokens = true);
+
+    /// <summary>
+    /// Configures OpenIddict to bind access tokens to the client certificates client certificate
+    /// sent by public or confidential clients in the TLS handshake of token requests.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder UseClientCertificateBoundAccessTokens()
+        => Configure(options => options.UseClientCertificateBoundAccessTokens = true);
+
+    /// <summary>
+    /// Configures OpenIddict to bind refresh tokens to the client certificates client
+    /// certificate sent by public clients in the TLS handshake of token requests.
+    /// </summary>
+    /// <remarks>
+    /// Note: refresh tokens are only bound to the client certificate when the client
+    /// is a public application, as refresh tokens issued to confidential applications
+    /// are already sender-constrained via standard client authentication.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder UseClientCertificateBoundRefreshTokens()
+        => Configure(options => options.UseClientCertificateBoundRefreshTokens = true);
 
     /// <summary>
     /// Enables authorization request storage, so that authorization requests
@@ -2218,8 +2287,8 @@ public sealed class OpenIddictServerBuilder
     /// <param name="certificates">The store containing the root and intermediate certificates to trust.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictServerBuilder EnablePublicKeyInfrastructureClientCertificateAuthentication(X509Certificate2Collection certificates)
-        => EnablePublicKeyInfrastructureClientCertificateAuthentication(certificates, static policy => { });
+    public OpenIddictServerBuilder EnablePublicKeyInfrastructureTlsClientAuthentication(X509Certificate2Collection certificates)
+        => EnablePublicKeyInfrastructureTlsClientAuthentication(certificates, static policy => { });
 
     /// <summary>
     /// Configures OpenIddict to enable PKI client certificate authentication (mTLS) and trust
@@ -2229,7 +2298,7 @@ public sealed class OpenIddictServerBuilder
     /// <param name="configuration">The delegate used to amend the created X.509 chain policy.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictServerBuilder EnablePublicKeyInfrastructureClientCertificateAuthentication(
+    public OpenIddictServerBuilder EnablePublicKeyInfrastructureTlsClientAuthentication(
         X509Certificate2Collection certificates, Action<X509ChainPolicy> configuration)
     {
         ArgumentNullException.ThrowIfNull(certificates);
@@ -2261,8 +2330,8 @@ public sealed class OpenIddictServerBuilder
 
         var policy = new X509ChainPolicy
         {
-            // Note: by default, OpenIddict requires that end certificates used for authentication
-            // explicitly list client authentication as an allowed extended key usage.
+            // Note: by default, OpenIddict requires that end certificates used for TLS client
+            // authentication explicitly list client authentication as an allowed extended key usage.
             ApplicationPolicy = { new Oid(ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication) },
             TrustMode = X509ChainTrustMode.CustomRootTrust
         };
@@ -2270,7 +2339,7 @@ public sealed class OpenIddictServerBuilder
         policy.CustomTrustStore.AddRange(certificates);
 
         // If one of the root certificates doesn't include a CRL or AIA
-        // extension, ignore root revocation unknown status errors by default. 
+        // extension, ignore root revocation unknown status errors by default.
         if (certificates.Cast<X509Certificate2>()
             .Where(static certificate =>
                 OpenIddictHelpers.IsCertificateAuthority(certificate) &&
@@ -2284,7 +2353,7 @@ public sealed class OpenIddictServerBuilder
         }
 
         // If one of the intermediate certificates doesn't include a CRL or AIA
-        // extension, ignore root revocation unknown status errors by default. 
+        // extension, ignore root revocation unknown status errors by default.
         if (certificates.Cast<X509Certificate2>()
             .Where(static certificate =>
                 OpenIddictHelpers.IsCertificateAuthority(certificate) &&
@@ -2322,38 +2391,38 @@ public sealed class OpenIddictServerBuilder
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0509));
         }
 
-        return Configure(options => options.ClientCertificateChainPolicy = policy);
+        return Configure(options => options.PublicKeyInfrastructureTlsClientAuthenticationPolicy = policy);
 #else
         throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0508));
 #endif
     }
 
     /// <summary>
-    /// Configures OpenIddict to enable self-signed client certificate authentication (mTLS).
+    /// Configures OpenIddict to enable self-signed TLS client authentication (mTLS).
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictServerBuilder EnableSelfSignedClientCertificateAuthentication()
-        => EnableSelfSignedClientCertificateAuthentication(static policy => { });
+    public OpenIddictServerBuilder EnableSelfSignedTlsClientAuthentication()
+        => EnableSelfSignedTlsClientAuthentication(static policy => { });
 
     /// <summary>
-    /// Configures OpenIddict to enable self-signed client certificate authentication (mTLS).
+    /// Configures OpenIddict to enable self-signed TLS client authentication (mTLS).
     /// </summary>
     /// <param name="configuration">The delegate used to amend the created X.509 chain policy.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictServerBuilder EnableSelfSignedClientCertificateAuthentication(Action<X509ChainPolicy> configuration)
+    public OpenIddictServerBuilder EnableSelfSignedTlsClientAuthentication(Action<X509ChainPolicy> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
         var policy = new X509ChainPolicy
         {
-            // Note: by default, OpenIddict requires that end certificates used for authentication
-            // explicitly list client authentication as an allowed extended key usage.
+            // Note: by default, OpenIddict requires that end certificates used for TLS client
+            // authentication explicitly list client authentication as an allowed extended key usage.
             ApplicationPolicy = { new Oid(ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication) },
-            // Note: self-signed certificates used for client authentication typically never include revocation
-            // information (CRL or AIA) and are "revoked" by simply being removed from the JSON Web Key Set.
+            // Note: self-signed TLS client certificates typically do not include revocation information
+            // (CRL or AIA) and are "revoked" by simply being removed from the JSON Web Key Set.
             RevocationMode = X509RevocationMode.NoCheck,
             TrustMode = X509ChainTrustMode.CustomRootTrust
         };
@@ -2370,7 +2439,7 @@ public sealed class OpenIddictServerBuilder
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0509));
         }
 
-        return Configure(options => options.SelfSignedClientCertificateChainPolicy = policy);
+        return Configure(options => options.SelfSignedTlsClientAuthenticationPolicy = policy);
 #else
         throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0508));
 #endif

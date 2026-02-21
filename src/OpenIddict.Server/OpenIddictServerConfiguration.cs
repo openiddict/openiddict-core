@@ -167,13 +167,13 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
         // If the tls_client_auth or self_signed_tls_client_auth methods are enabled, ensure a chain policy has been set.
         if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-            options.ClientCertificateChainPolicy is null)
+            options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0505));
         }
 
         if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-            options.SelfSignedClientCertificateChainPolicy is null)
+            options.SelfSignedTlsClientAuthenticationPolicy is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0506));
         }
@@ -280,7 +280,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             !TryValidateMtlsEndpointAlias(options.MtlsIntrospectionEndpointAliasUri)       ||
             !TryValidateMtlsEndpointAlias(options.MtlsPushedAuthorizationEndpointAliasUri) ||
             !TryValidateMtlsEndpointAlias(options.MtlsRevocationEndpointAliasUri)          ||
-            !TryValidateMtlsEndpointAlias(options.MtlsTokenEndpointAliasUri))
+            !TryValidateMtlsEndpointAlias(options.MtlsTokenEndpointAliasUri)               ||
+            !TryValidateMtlsEndpointAlias(options.MtlsUserInfoEndpointAliasUri))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0499));
         }
@@ -290,7 +291,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             (options.MtlsIntrospectionEndpointAliasUri       is not null && options.IntrospectionEndpointUris.Count       is 0) ||
             (options.MtlsPushedAuthorizationEndpointAliasUri is not null && options.PushedAuthorizationEndpointUris.Count is 0) ||
             (options.MtlsRevocationEndpointAliasUri          is not null && options.RevocationEndpointUris.Count          is 0) ||
-            (options.MtlsTokenEndpointAliasUri               is not null && options.TokenEndpointUris.Count               is 0))
+            (options.MtlsTokenEndpointAliasUri               is not null && options.TokenEndpointUris.Count               is 0) ||
+            (options.MtlsUserInfoEndpointAliasUri            is not null && options.UserInfoEndpointUris.Count            is 0))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0510));
         }
@@ -302,16 +304,17 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                                        options.MtlsIntrospectionEndpointAliasUri       is not null ||
                                        options.MtlsPushedAuthorizationEndpointAliasUri is not null ||
                                        options.MtlsRevocationEndpointAliasUri          is not null ||
-                                       options.MtlsTokenEndpointAliasUri               is not null))
+                                       options.MtlsTokenEndpointAliasUri               is not null ||
+                                       options.MtlsUserInfoEndpointAliasUri            is not null))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0500));
         }
 
-        // Ensure no end certificate was included in the PKI client certificate
+        // Ensure no end certificate was included in the PKI TLS client authentication
         // chain policy and that none of the certificates contains a private key.
-        if (options.ClientCertificateChainPolicy is not null)
+        if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is not null)
         {
-            if (options.ClientCertificateChainPolicy.ExtraStore.Cast<X509Certificate2>()
+            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.ExtraStore.Cast<X509Certificate2>()
                 .Any(static certificate =>
                     !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
                     !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
@@ -319,14 +322,14 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0501));
             }
 
-            if (options.ClientCertificateChainPolicy.ExtraStore.Cast<X509Certificate2>()
+            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.ExtraStore.Cast<X509Certificate2>()
                 .Any(static certificate => certificate.HasPrivateKey))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0511));
             }
 
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE && SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
-            if (options.ClientCertificateChainPolicy.CustomTrustStore.Cast<X509Certificate2>()
+            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>()
                 .Any(static certificate =>
                     !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
                     !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
@@ -334,7 +337,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0501));
             }
 
-            if (options.ClientCertificateChainPolicy.CustomTrustStore.Cast<X509Certificate2>()
+            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>()
                 .Any(static certificate => certificate.HasPrivateKey))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0511));
@@ -342,16 +345,16 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 #endif
         }
 
-        // Ensure the self-signed client certificate chain policy doesn't contain any certificate.
-        if (options.SelfSignedClientCertificateChainPolicy is not null)
+        // Ensure the self-signed TLS client authentication chain policy doesn't contain any certificate.
+        if (options.SelfSignedTlsClientAuthenticationPolicy is not null)
         {
-            if (options.SelfSignedClientCertificateChainPolicy.ExtraStore.Cast<X509Certificate2>().Any())
+            if (options.SelfSignedTlsClientAuthenticationPolicy.ExtraStore.Cast<X509Certificate2>().Any())
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
             }
 
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE && SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
-            if (options.SelfSignedClientCertificateChainPolicy.CustomTrustStore.Cast<X509Certificate2>().Any())
+            if (options.SelfSignedTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>().Any())
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
             }
@@ -365,7 +368,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
             if (options.AuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
-                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0089));
@@ -374,7 +377,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (options.DeviceAuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 (descriptor.ContextType == typeof(ValidateDeviceAuthorizationRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0090));
@@ -383,7 +386,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (options.IntrospectionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 (descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0091));
@@ -391,7 +394,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
             if (options.EndSessionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 descriptor.ContextType == typeof(ValidateEndSessionRequestContext) &&
-                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0092));
@@ -400,7 +403,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (options.PushedAuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 (descriptor.ContextType == typeof(ValidatePushedAuthorizationRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0467));
@@ -409,7 +412,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (options.RevocationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 (descriptor.ContextType == typeof(ValidateRevocationRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0093));
@@ -418,7 +421,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (options.TokenEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 (descriptor.ContextType == typeof(ValidateTokenRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0094));
@@ -426,7 +429,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
             if (options.EndUserVerificationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 descriptor.ContextType == typeof(ValidateEndUserVerificationRequestContext) &&
-                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0095));

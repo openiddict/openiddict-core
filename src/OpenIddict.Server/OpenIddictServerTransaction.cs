@@ -28,9 +28,9 @@ public sealed class OpenIddictServerTransaction
     public CancellationToken CancellationToken { get; set; }
 
     /// <summary>
-    /// Gets or sets the X.509 client certificate, if available.
+    /// Gets or sets the X.509 client certificate used by the remote peer, if available.
     /// </summary>
-    public X509Certificate2? ClientCertificate { get; set; }
+    public X509Certificate2? RemoteCertificate { get; set; }
 
     /// <summary>
     /// Gets or sets the type of the endpoint processing the current request.

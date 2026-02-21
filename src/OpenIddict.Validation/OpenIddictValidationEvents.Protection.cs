@@ -139,6 +139,11 @@ public static partial class OpenIddictValidationEvents
         public bool DisablePresenterValidation { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether proof-of-possession validation is disabled.
+        /// </summary>
+        public bool DisableProofOfPossessionValidation { get; set; }
+
+        /// <summary>
         /// Gets or sets the security token handler used to validate the token.
         /// </summary>
         public JsonWebTokenHandler SecurityTokenHandler { get; set; } = default!;

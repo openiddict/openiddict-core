@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using Microsoft.Extensions.Options;
 using OpenIddict.Client;
 using OpenIddict.Client.Owin;
 

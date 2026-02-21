@@ -1,4 +1,7 @@
-﻿using System.Security.Claims;
+﻿using System.Runtime.InteropServices;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
@@ -148,6 +151,19 @@ public class InteractiveService : BackgroundService
                     var type = await GetSelectedGrantTypeAsync(registration, configuration, stoppingToken);
                     if (type is GrantTypes.DeviceCode)
                     {
+                        // Note: the OpenIddict server stack supports mTLS-based token binding for public clients:
+                        // while these clients cannot authenticate using a TLS client certificate, the certificate
+                        // can be used to bind the refresh (and access) tokens returned by the authorization server
+                        // to the client application, which prevents such tokens from being used without providing a
+                        // proof-of-possession matching the TLS client certificate used when the token was acquired.
+                        //
+                        // While this sample deliberately doesn't store the generated certificate in a persistent
+                        // location, the certificate used for token binding should typically be stored in the user
+                        // certificate store to be reloaded across application restarts in a real-world application.
+                        var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
+                            ? GenerateEphemeralTlsClientCertificate()
+                            : null;
+
                         // Ask OpenIddict to send a device authorization request and write
                         // the complete verification endpoint URI to the console output.
                         var result = await _service.ChallengeUsingDeviceAsync(new()
@@ -181,7 +197,8 @@ public class InteractiveService : BackgroundService
                             DeviceCode = result.DeviceCode,
                             Interval = result.Interval,
                             ProviderName = provider,
-                            Timeout = result.ExpiresIn < TimeSpan.FromMinutes(5) ? result.ExpiresIn : TimeSpan.FromMinutes(5)
+                            Timeout = result.ExpiresIn < TimeSpan.FromMinutes(5) ? result.ExpiresIn : TimeSpan.FromMinutes(5),
+                            TokenBindingCertificate = certificate
                         });
 
                         AnsiConsole.MarkupLine("[green]Device authentication successful:[/]");
@@ -223,7 +240,8 @@ public class InteractiveService : BackgroundService
                             {
                                 CancellationToken = stoppingToken,
                                 ProviderName = provider,
-                                RefreshToken = response.RefreshToken
+                                RefreshToken = response.RefreshToken,
+                                TokenBindingCertificate = certificate
                             })).Principal));
                         }
                     }
@@ -231,6 +249,10 @@ public class InteractiveService : BackgroundService
                     else if (type is GrantTypes.Password)
                     {
                         var (username, password) = (await GetUsernameAsync(stoppingToken), await GetPasswordAsync(stoppingToken));
+
+                        var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
+                            ? GenerateEphemeralTlsClientCertificate()
+                            : null;
 
                         AnsiConsole.MarkupLine("[cyan]Sending the token request.[/]");
 
@@ -241,7 +263,8 @@ public class InteractiveService : BackgroundService
                             ProviderName = provider,
                             Username = username,
                             Password = password,
-                            Scopes = [Scopes.OfflineAccess]
+                            Scopes = [Scopes.OfflineAccess],
+                            TokenBindingCertificate = certificate
                         });
 
                         AnsiConsole.MarkupLine("[green]Resource owner password credentials authentication successful:[/]");
@@ -283,7 +306,8 @@ public class InteractiveService : BackgroundService
                             {
                                 CancellationToken = stoppingToken,
                                 ProviderName = provider,
-                                RefreshToken = response.RefreshToken
+                                RefreshToken = response.RefreshToken,
+                                TokenBindingCertificate = certificate
                             })).Principal));
                         }
                     }
@@ -309,6 +333,10 @@ public class InteractiveService : BackgroundService
                             await GetSubjectTokenAsync(stoppingToken),
                             await GetActorTokenAsync(stoppingToken));
 
+                        var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
+                            ? GenerateEphemeralTlsClientCertificate()
+                            : null;
+
                         AnsiConsole.MarkupLine("[cyan]Sending the token request.[/]");
 
                         // Ask OpenIddict to send the specified subject token (and actor token, if available).
@@ -320,7 +348,8 @@ public class InteractiveService : BackgroundService
                             ProviderName = provider,
                             RequestedTokenType = identifier,
                             SubjectToken = subject.Token,
-                            SubjectTokenType = subject.TokenType
+                            SubjectTokenType = subject.TokenType,
+                            TokenBindingCertificate = certificate
                         });
 
                         AnsiConsole.MarkupLine("[green]Token exchange authentication successful:[/]");
@@ -368,7 +397,8 @@ public class InteractiveService : BackgroundService
                             {
                                 CancellationToken = stoppingToken,
                                 ProviderName = provider,
-                                RefreshToken = response.IssuedToken
+                                RefreshToken = response.IssuedToken,
+                                TokenBindingCertificate = certificate
                             })).Principal));
                         }
 
@@ -381,7 +411,8 @@ public class InteractiveService : BackgroundService
                             {
                                 CancellationToken = stoppingToken,
                                 ProviderName = provider,
-                                RefreshToken = response.RefreshToken
+                                RefreshToken = response.RefreshToken,
+                                TokenBindingCertificate = certificate
                             })).Principal));
                         }
                     }
@@ -800,5 +831,44 @@ public class InteractiveService : BackgroundService
 
             return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
+
+#if SUPPORTS_CERTIFICATE_GENERATION
+        static X509Certificate2 GenerateEphemeralTlsClientCertificate()
+        {
+            using var algorithm = RSA.Create(keySizeInBits: 4096);
+
+            var subject = new X500DistinguishedName("CN=Self-signed certificate");
+            var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
+            request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension([new Oid("1.3.6.1.5.5.7.3.2")], critical: true));
+
+            var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(2));
+
+            // On Windows, a certificate loaded from PEM-encoded material is ephemeral and
+            // cannot be directly used with TLS, as Schannel cannot access it in this case.
+            //
+            // To work this limitation, the certificate is exported and re-imported from a
+            // PFX blob to ensure the private key is persisted in a way that Schannel can use.
+            //
+            // In a real world application, the certificate wouldn't be embedded in the source code
+            // and would be installed in the certificate store, making this workaround unnecessary.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+#if SUPPORTS_CERTIFICATE_LOADER
+                certificate = X509CertificateLoader.LoadPkcs12(
+                    data: certificate.Export(X509ContentType.Pfx, string.Empty),
+                    password: string.Empty,
+                    keyStorageFlags: X509KeyStorageFlags.DefaultKeySet);
+#else
+                certificate = new X509Certificate2(
+                    rawData: certificate.Export(X509ContentType.Pfx, string.Empty),
+                    password: string.Empty,
+                    keyStorageFlags: X509KeyStorageFlags.DefaultKeySet);
+#endif
+            }
+
+            return certificate;
+        }
+#endif
     }
 }

@@ -8,11 +8,11 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -1119,19 +1119,6 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                // Reject requests containing a TLS client certificate when the client is a public application.
-                if (context.ClientCertificate is not null)
-                {
-                    context.Logger.LogInformation(6282, SR.GetResourceString(SR.ID6282), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidClient,
-                        description: SR.GetResourceString(SR.ID2196),
-                        uri: SR.FormatID8000(SR.ID2196));
-
-                    return;
-                }
-
                 // Reject requests containing a client_assertion when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientAssertion))
                 {
@@ -1158,12 +1145,16 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
+                // Note: requests containing a TLS client certificate are never rejected here to support advanced
+                // scenarios like mTLS token binding without client authentication (in this case, the certificate
+                // is only used as a proof-of-possession mechanism and not as a client authentication method).
+
                 return;
             }
 
             // Confidential applications MUST authenticate to protect them from impersonation attacks.
             if (context.ClientAssertionPrincipal is null &&
-                context.ClientCertificate is null && string.IsNullOrEmpty(context.ClientSecret))
+                context.Transaction.RemoteCertificate is null && string.IsNullOrEmpty(context.ClientSecret))
             {
                 context.Logger.LogInformation(6224, SR.GetResourceString(SR.ID6224), context.ClientId);
 
@@ -1244,7 +1235,8 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for validating the TLS client certificate used for client authentication, if applicable.
+    /// Contains the logic responsible for validating the client certificate
+    /// used for client authentication or token binding, if applicable.
     /// </summary>
     public sealed class ValidateClientCertificate : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -1274,9 +1266,9 @@ public static partial class OpenIddictServerHandlers
             ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-            Debug.Assert(context.ClientCertificate is not null, SR.GetResourceString(SR.ID4020));
+            Debug.Assert(context.Transaction.RemoteCertificate is not null, SR.GetResourceString(SR.ID4020));
 
-            // Don't validate the client secret on endpoints that don't support client authentication.
+            // Don't validate the client certificate on endpoints that don't support client authentication/token binding.
             if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
                                         OpenIddictServerEndpointType.EndSession          or
                                         OpenIddictServerEndpointType.EndUserVerification or
@@ -1288,27 +1280,56 @@ public static partial class OpenIddictServerHandlers
             var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-            // If the application is a public client, don't validate the client certificate.
-            if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
-            {
-                return;
-            }
-
             // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
             // of this check, a certificate is always assumed to be self-signed when it is self-issued.
             //
             // A second pass is internally performed by the default implementations of the
-            // ValidateSelfSignedClientCertificateAsync() and ValidateClientCertificateAsync() APIs
+            // ValidateSelfSignedTlsClientCertificateAsync() and
+            // ValidatePublicKeyInfrastructureTlsClientCertificateAsync() APIs
             // once the chain is built to validate whether the certificate is self-signed or not.
-            if (OpenIddictHelpers.IsSelfIssuedCertificate(context.ClientCertificate))
+            if (OpenIddictHelpers.IsSelfIssuedCertificate(context.Transaction.RemoteCertificate))
             {
-                if (context.Options.SelfSignedClientCertificateChainPolicy is null)
+                if (context.Options.SelfSignedTlsClientAuthenticationPolicy is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0506));
                 }
 
-                var policy = await _applicationManager.GetSelfSignedClientCertificateChainPolicyAsync(application, context.Options.SelfSignedClientCertificateChainPolicy);
-                if (policy is null || !await _applicationManager.ValidateSelfSignedClientCertificateAsync(application, context.ClientCertificate, policy))
+                if (await _applicationManager.GetSelfSignedTlsClientAuthenticationPolicyAsync(
+                    application, context.Options.SelfSignedTlsClientAuthenticationPolicy) is not X509ChainPolicy policy)
+                {
+                    context.Logger.LogInformation(6283, SR.GetResourceString(SR.ID6283), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: SR.GetResourceString(SR.ID2197),
+                        uri: SR.FormatID8000(SR.ID2197));
+
+                    return;
+                }
+
+                // Note: OpenIddict allows using self-signed TLS client certificates for both client authentication
+                // and token binding: if the client application is not confidential, the client certificate cannot
+                // be used for client authentication but can be used for token binding. In the later case, the client
+                // certificate is not expected to be validated against the list of self-signed certificates attached
+                // to the application and is generally generated on-the-fly (e.g one per user or authorization flow).
+                //
+                // To allow validating such certificates, the chain policy is amended to consider the specified
+                // self-signed certificate as a trusted root and basically disable chain validation while still
+                // validating the other aspects of the certificate (e.g expiration date, key usage, etc).
+                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+                {
+                    // Always clone the X.509 chain policy to ensure the original instance is never mutated.
+                    policy = policy.Clone();
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+                    policy.CustomTrustStore.Add(context.Transaction.RemoteCertificate);
+#else
+                    policy.ExtraStore.Add(context.Transaction.RemoteCertificate);
+#endif
+                }
+
+                if (!await _applicationManager.ValidateSelfSignedTlsClientCertificateAsync(
+                    application, context.Transaction.RemoteCertificate, policy))
                 {
                     context.Logger.LogInformation(6283, SR.GetResourceString(SR.ID6283), context.ClientId);
 
@@ -1323,13 +1344,15 @@ public static partial class OpenIddictServerHandlers
 
             else
             {
-                if (context.Options.ClientCertificateChainPolicy is null)
+                if (context.Options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0505));
                 }
 
-                var policy = await _applicationManager.GetClientCertificateChainPolicyAsync(application, context.Options.ClientCertificateChainPolicy);
-                if (policy is null || !await _applicationManager.ValidateClientCertificateAsync(application, context.ClientCertificate, policy))
+                if (await _applicationManager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(
+                    application, context.Options.PublicKeyInfrastructureTlsClientAuthenticationPolicy) is not X509ChainPolicy policy ||
+                   !await _applicationManager.ValidatePublicKeyInfrastructureTlsClientCertificateAsync(
+                    application, context.Transaction.RemoteCertificate, policy))
                 {
                     context.Logger.LogInformation(6284, SR.GetResourceString(SR.ID6284), context.ClientId);
 
@@ -1734,6 +1757,9 @@ public static partial class OpenIddictServerHandlers
                                                                     OpenIddictServerEndpointType.Revocation,
                 DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Introspection or
                                                                      OpenIddictServerEndpointType.Revocation,
+                // Proof-of-possession validation is disabled for the introspection and revocation endpoints.
+                DisableProofOfPossessionValidation = context.EndpointType is OpenIddictServerEndpointType.Introspection or
+                                                                             OpenIddictServerEndpointType.Revocation,
                 Token = context.GenericToken,
                 TokenTypeHint = context.GenericTokenTypeHint,
 
@@ -3396,33 +3422,22 @@ public static partial class OpenIddictServerHandlers
             // Actors identities are also filtered (delegation scenarios).
             var principal = context.Principal.Clone(claim =>
             {
-                // Never exclude the subject and authorization identifier claims.
+                // Always include the following claims:
                 if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                // Never exclude the presenters and scope private claims.
-                if (string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
 
-                // Never include the public or internal token identifiers to ensure the identifiers
-                // that are automatically inherited from the parent token are not reused for the new token.
+                // Never include the the following claims to ensure they are not inherited from the parent token:
                 if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Never include the creation and expiration dates that are automatically
-                // inherited from the parent token are not reused for the new token.
-                if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -3510,7 +3525,21 @@ public static partial class OpenIddictServerHandlers
                 context.Logger.LogDebug(6010, SR.GetResourceString(SR.ID6010), scopes);
             }
 
+            // If certificate-bound access tokens are enabled and a client certificate was used, bind the access
+            // token to the certificate by storing a confirmation claim containing the certificate thumbprint.
+            if (context.Options.UseClientCertificateBoundAccessTokens &&
+                context.Transaction.RemoteCertificate is X509Certificate2 certificate)
+            {
+                principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
+            }
+
             context.AccessTokenPrincipal = principal;
+
+            static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
+            {
+                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(
+                    OpenIddictHelpers.ComputeSha256Hash(certificate.RawData))
+            };
         }
     }
 
@@ -3557,19 +3586,13 @@ public static partial class OpenIddictServerHandlers
             // Actors identities are also filtered (delegation scenarios).
             var principal = context.Principal.Clone(claim =>
             {
-                // Never include the public or internal token identifiers to ensure the identifiers
-                // that are automatically inherited from the parent token are not reused for the new token.
+                // Never include the the following claims to ensure they are not inherited from the parent token:
                 if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Never include the creation and expiration dates that are automatically
-                // inherited from the parent token are not reused for the new token.
-                if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -3686,19 +3709,13 @@ public static partial class OpenIddictServerHandlers
             // Actors identities are also filtered (delegation scenarios).
             var principal = context.Principal.Clone(claim =>
             {
-                // Never include the public or internal token identifiers to ensure the identifiers
-                // that are automatically inherited from the parent token are not reused for the new token.
+                // Never include the the following claims to ensure they are not inherited from the parent token:
                 if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Never include the creation and expiration dates that are automatically
-                // inherited from the parent token are not reused for the new token.
-                if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -3811,33 +3828,22 @@ public static partial class OpenIddictServerHandlers
 
                 TokenTypeIdentifiers.AccessToken => context.Principal.Clone(claim =>
                 {
-                    // Never exclude the subject and authorization identifier claims.
+                    // Always include the following claims:
                     if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-
-                    // Never exclude the presenters and scope private claims.
-                    if (string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
 
-                    // Never include the public or internal token identifiers to ensure the identifiers
-                    // that are automatically inherited from the parent token are not reused for the new token.
+                    // Never include the the following claims to ensure they are not inherited from the parent token:
                     if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-
-                    // Never include the creation and expiration dates that are automatically
-                    // inherited from the parent token are not reused for the new token.
-                    if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -3862,19 +3868,13 @@ public static partial class OpenIddictServerHandlers
 
                 TokenTypeIdentifiers.RefreshToken => context.Principal.Clone(claim =>
                 {
-                    // Never include the public or internal token identifiers to ensure the identifiers
-                    // that are automatically inherited from the parent token are not reused for the new token.
+                    // Never include the the following claims to ensure they are not inherited from the parent token:
                     if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-
-                    // Never include the creation and expiration dates that are automatically
-                    // inherited from the parent token are not reused for the new token.
-                    if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -3885,33 +3885,22 @@ public static partial class OpenIddictServerHandlers
 
                 _ => context.Principal.Clone(claim =>
                 {
-                    // Never exclude the subject and authorization identifier claims.
+                    // Always include the following claims:
                     if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-
-                    // Never exclude the presenters and scope private claims.
-                    if (string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
 
-                    // Never include the public or internal token identifiers to ensure the identifiers
-                    // that are automatically inherited from the parent token are not reused for the new token.
+                    // Never include the the following claims to ensure they are not inherited from the parent token:
                     if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-
-                    // Never include the creation and expiration dates that are automatically
-                    // inherited from the parent token are not reused for the new token.
-                    if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -4024,7 +4013,63 @@ public static partial class OpenIddictServerHandlers
                 principal.SetClaim(Claims.ClientId, context.ClientId);
             }
 
+            if (context.Transaction.RemoteCertificate is X509Certificate2 certificate)
+            {
+                // If certificate-bound access tokens are enabled and a client certificate was used, bind the access
+                // token to the certificate by storing a confirmation claim containing the certificate thumbprint.
+                if (context.IssuedTokenType is TokenTypeIdentifiers.AccessToken &&
+                    context.Options.UseClientCertificateBoundAccessTokens)
+                {
+                    principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
+                }
+
+                // If certificate-bound refresh tokens are enabled and a client certificate was used, bind the refresh
+                // token to the certificate by storing a confirmation claim containing the certificate thumbprint.
+                if (context.IssuedTokenType is TokenTypeIdentifiers.RefreshToken &&
+                    context.Options.UseClientCertificateBoundRefreshTokens &&
+                    !string.IsNullOrEmpty(context.ClientId))
+                {
+                    // If the degraded mode was enabled, it is impossible to determine whether
+                    // the client is a public or confidential application. In this case, the
+                    // confirmation claim is always added to the principal by default.
+                    //
+                    // Applications that need to use a different logic can implement their
+                    // own event handler and remove the confirmation claim from the principal.
+                    if (context.Options.EnableDegradedMode)
+                    {
+                        principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
+                    }
+
+                    else
+                    {
+                        if (_applicationManager is null)
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                        }
+
+                        var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                        // Note: refresh tokens are only bound to the provided certificate when the client
+                        // is a public application, as refresh tokens issued to confidential applications
+                        // are already sender-constrained via standard client authentication, which is more
+                        // flexible than certificate-based token binding, as rotating client credentials is
+                        // easier in that case (specially when using PKI-based mTLS client authentication).
+                        if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+                        {
+                            principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
+                        }
+                    }
+                }
+            }
+
             context.IssuedTokenPrincipal = principal;
+
+            static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
+            {
+                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(
+                    OpenIddictHelpers.ComputeSha256Hash(certificate.RawData))
+            };
         }
     }
 
@@ -4071,19 +4116,13 @@ public static partial class OpenIddictServerHandlers
             // Actors identities are also filtered (delegation scenarios).
             var principal = context.Principal.Clone(claim =>
             {
-                // Never include the public or internal token identifiers to ensure the identifiers
-                // that are automatically inherited from the parent token are not reused for the new token.
+                // Never include the the following claims to ensure they are not inherited from the parent token:
                 if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Never include the creation and expiration dates that are automatically
-                // inherited from the parent token are not reused for the new token.
-                if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -4205,19 +4244,13 @@ public static partial class OpenIddictServerHandlers
             // Actors identities are also filtered (delegation scenarios).
             var principal = context.Principal.Clone(claim =>
             {
-                // Never include the public or internal token identifiers to ensure the identifiers
-                // that are automatically inherited from the parent token are not reused for the new token.
+                // Never include the the following claims to ensure they are not inherited from the parent token:
                 if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Never include the creation and expiration dates that are automatically
-                // inherited from the parent token are not reused for the new token.
-                if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -4285,7 +4318,52 @@ public static partial class OpenIddictServerHandlers
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
             });
 
+            // If certificate-bound refresh tokens are enabled and a client certificate was used, bind the refresh
+            // token to the certificate by storing a confirmation claim containing the certificate thumbprint.
+            if (context.Options.UseClientCertificateBoundRefreshTokens &&
+                context.Transaction.RemoteCertificate is X509Certificate2 certificate &&
+                !string.IsNullOrEmpty(context.ClientId))
+            {
+                // If the degraded mode was enabled, it is impossible to determine whether
+                // the client is a public or confidential application. In this case, the
+                // confirmation claim is always added to the principal by default.
+                //
+                // Applications that need to use a different logic can implement their
+                // own event handler and remove the confirmation claim from the principal.
+                if (context.Options.EnableDegradedMode)
+                {
+                    principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
+                }
+
+                else
+                {
+                    if (_applicationManager is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                    }
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                    // Note: refresh tokens are only bound to the provided certificate when the client
+                    // is a public application, as refresh tokens issued to confidential applications
+                    // are already sender-constrained via standard client authentication, which is more
+                    // flexible than certificate-based token binding, as rotating client credentials is
+                    // easier in that case (specially when using PKI-based mTLS client authentication).
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+                    {
+                        principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
+                    }
+                }
+            }
+
             context.RefreshTokenPrincipal = principal;
+
+            static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
+            {
+                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(
+                    OpenIddictHelpers.ComputeSha256Hash(certificate.RawData))
+            };
         }
     }
 
@@ -4332,26 +4410,20 @@ public static partial class OpenIddictServerHandlers
             // Actors identities are also filtered (delegation scenarios).
             var principal = context.Principal.Clone(claim =>
             {
-                // Never exclude the subject and authorization identifier claims.
+                // Always include the following claims:
                 if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
 
-                // Never include the public or internal token identifiers to ensure the identifiers
-                // that are automatically inherited from the parent token are not reused for the new token.
+                // Never include the the following claims to ensure they are not inherited from the parent token:
                 if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Never include the creation and expiration dates that are automatically
-                // inherited from the parent token are not reused for the new token.
-                if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -4489,19 +4561,13 @@ public static partial class OpenIddictServerHandlers
             // Actors identities are also filtered (delegation scenarios).
             var principal = context.Principal.Clone(claim =>
             {
-                // Never include the public or internal token identifiers to ensure the identifiers
-                // that are automatically inherited from the parent token are not reused for the new token.
+                // Never include the the following claims to ensure they are not inherited from the parent token:
                 if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Never include the creation and expiration dates that are automatically
-                // inherited from the parent token are not reused for the new token.
-                if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Confirmation, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }

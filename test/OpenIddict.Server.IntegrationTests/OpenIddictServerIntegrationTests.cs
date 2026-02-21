@@ -1021,14 +1021,12 @@ public abstract partial class OpenIddictServerIntegrationTests
         Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
     }
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
     [Theory]
-    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
     [InlineData(OpenIddictServerEndpointType.Introspection)]
     [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
     [InlineData(OpenIddictServerEndpointType.Revocation)]
     [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_ClientCertificateCannotBeUsedByPublicClients(OpenIddictServerEndpointType type)
+    public async Task ProcessAuthentication_RequestIsRejectedWhenClientSecretIsInvalid(OpenIddictServerEndpointType type)
     {
         // Arrange
         var application = new OpenIddictApplication();
@@ -1039,16 +1037,101 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(application);
 
             mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
         });
 
         await using var server = await CreateServerAsync(options =>
         {
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = type switch
+        {
+            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            }),
+
+            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            }),
+
+            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                Token = "SlAV32hkKG",
+                TokenTypeHint = TokenTypeHints.RefreshToken
+            }),
+
+            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            }),
+
+            _ => throw new NotSupportedException()
+        };
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2055), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2055), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+    [Theory]
+    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Introspection)]
+    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Revocation)]
+    [InlineData(OpenIddictServerEndpointType.Token)]
+    public async Task ProcessAuthentication_SelfSignedClientCertificateIsRejectedWhenChainPolicyIsNull(OpenIddictServerEndpointType type)
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.GetSelfSignedTlsClientAuthenticationPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.SelfSignedTlsClientAuth));
+            options.Configure(options => options.SelfSignedTlsClientAuthenticationPolicy = new X509ChainPolicy());
+
             options.AddEventHandler<ProcessAuthenticationContext>(builder =>
             {
                 builder.UseInlineHandler(context =>
                 {
-                    context.ClientCertificate = X509Certificate2.CreateFromPem($"""
+                    context.Transaction.RemoteCertificate = X509Certificate2.CreateFromPem($"""
                         -----BEGIN CERTIFICATE-----
                         MIIC8jCCAdqgAwIBAgIIYfcknj8KXN0wDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UE
                         AxMXU2VsZi1zaWduZWQgY2VydGlmaWNhdGUwIBcNMjYwMjAxMTc1MjI2WhgPMjEy
@@ -1121,11 +1204,503 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.GetResourceString(SR.ID2196), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2196), response.ErrorUri);
+        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
 
         Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.GetSelfSignedTlsClientAuthenticationPolicyAsync(application,
+            It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Theory]
+    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Introspection)]
+    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Revocation)]
+    [InlineData(OpenIddictServerEndpointType.Token)]
+    public async Task ProcessAuthentication_SelfSignedClientCertificateIsRejectedWhenInvalid(OpenIddictServerEndpointType type)
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+        var policy = new X509ChainPolicy();
+        var certificate = X509Certificate2.CreateFromPem($"""
+            -----BEGIN CERTIFICATE-----
+            MIIC8jCCAdqgAwIBAgIIYfcknj8KXN0wDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UE
+            AxMXU2VsZi1zaWduZWQgY2VydGlmaWNhdGUwIBcNMjYwMjAxMTc1MjI2WhgPMjEy
+            NjAyMDExNzUyMjZaMCIxIDAeBgNVBAMTF1NlbGYtc2lnbmVkIGNlcnRpZmljYXRl
+            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA45uKd5cdlLmEBGLDEB75
+            o9e3/kMmQjVhhMeBsy4m2t7zw5jZo7OPcahXiXZHttom9tJm7BWPWvYx7p0N9+ss
+            h/E5lzKyV7ZXg+mM+KeECtVhiy+82BuIPelCshrpaV3lIg93y47FYLIWXxdggjt6
+            6VUaxzlTeo+IpuMz8IssL7VpJnjCT5NmqPNVkv1VR1uuetVqP7546ZFw31RiGl/0
+            I1uUlb7SwLwhLUK1iyLmGNA3VDB0m0DvLmlIEY3ZE5zxQp/Rxq6DfjbXm2LWJyu6
+            NO7k7JixXOorEl+6HdJZHTWNFK5jCo2ZZAwWn+uUuzgmLILPJFLDVutXjuEZpsym
+            uQIDAQABoyowKDAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAwwCgYIKwYBBQUH
+            AwIwDQYJKoZIhvcNAQELBQADggEBAGHH3f/bkfViTvPE7yXJkB0bs88mYxajluMA
+            hgihEN5joPT6zHxMLBND2sitIozCMeeaj0rg+OaT/zDBgOLup/BM92UaPpYcgDCy
+            3tHqZLOOJOR4aYnHhIQUnx+NRtKEM4q/hL/xLHeliKmV7TQXISEZlTbb0gOU7TFp
+            nJlP60Vo9F/WD6xcKNxBgV5aB/+2FjiTTw2pF0VUmvcZdQAN5ysfrmKNXbvv1oCp
+            AohiwRiPrwe3mJ8iCqzEY/qQqImEiIT8WC2Fty+UYyBwfXMObi1AO++QkaMUbUJl
+            0aBuRoD85FLotjHIHXkFHERjOolheYdKt5nrGCCz/PmXBfsSCTo=
+            -----END CERTIFICATE-----
+            """);
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.GetSelfSignedTlsClientAuthenticationPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(policy);
+
+            mock.Setup(manager => manager.ValidateSelfSignedTlsClientCertificateAsync(application, certificate, policy, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.SelfSignedTlsClientAuth));
+            options.Configure(options => options.SelfSignedTlsClientAuthenticationPolicy = new X509ChainPolicy());
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Transaction.RemoteCertificate = certificate;
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = type switch
+        {
+            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            }),
+
+            OpenIddictServerEndpointType.DeviceAuthorization => await client.PostAsync("/connect/device", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam"
+            }),
+
+            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            }),
+
+            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Token = "SlAV32hkKG",
+                TokenTypeHint = TokenTypeHints.RefreshToken
+            }),
+
+            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            }),
+
+            _ => throw new NotSupportedException()
+        };
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.GetSelfSignedTlsClientAuthenticationPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.ValidateSelfSignedTlsClientCertificateAsync(application, certificate,
+            It.Is<X509ChainPolicy>(policy => policy.CustomTrustStore.Count == 0 && policy.ExtraStore.Count == 0), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Theory]
+    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Introspection)]
+    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Revocation)]
+    [InlineData(OpenIddictServerEndpointType.Token)]
+    public async Task ProcessAuthentication_SelfSignedClientCertificatePolicyIsAmendedToAllowDynamicCertificatesForPublicClients(OpenIddictServerEndpointType type)
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+        var policy = new X509ChainPolicy();
+        var certificate = X509Certificate2.CreateFromPem($"""
+            -----BEGIN CERTIFICATE-----
+            MIIC8jCCAdqgAwIBAgIIYfcknj8KXN0wDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UE
+            AxMXU2VsZi1zaWduZWQgY2VydGlmaWNhdGUwIBcNMjYwMjAxMTc1MjI2WhgPMjEy
+            NjAyMDExNzUyMjZaMCIxIDAeBgNVBAMTF1NlbGYtc2lnbmVkIGNlcnRpZmljYXRl
+            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA45uKd5cdlLmEBGLDEB75
+            o9e3/kMmQjVhhMeBsy4m2t7zw5jZo7OPcahXiXZHttom9tJm7BWPWvYx7p0N9+ss
+            h/E5lzKyV7ZXg+mM+KeECtVhiy+82BuIPelCshrpaV3lIg93y47FYLIWXxdggjt6
+            6VUaxzlTeo+IpuMz8IssL7VpJnjCT5NmqPNVkv1VR1uuetVqP7546ZFw31RiGl/0
+            I1uUlb7SwLwhLUK1iyLmGNA3VDB0m0DvLmlIEY3ZE5zxQp/Rxq6DfjbXm2LWJyu6
+            NO7k7JixXOorEl+6HdJZHTWNFK5jCo2ZZAwWn+uUuzgmLILPJFLDVutXjuEZpsym
+            uQIDAQABoyowKDAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAwwCgYIKwYBBQUH
+            AwIwDQYJKoZIhvcNAQELBQADggEBAGHH3f/bkfViTvPE7yXJkB0bs88mYxajluMA
+            hgihEN5joPT6zHxMLBND2sitIozCMeeaj0rg+OaT/zDBgOLup/BM92UaPpYcgDCy
+            3tHqZLOOJOR4aYnHhIQUnx+NRtKEM4q/hL/xLHeliKmV7TQXISEZlTbb0gOU7TFp
+            nJlP60Vo9F/WD6xcKNxBgV5aB/+2FjiTTw2pF0VUmvcZdQAN5ysfrmKNXbvv1oCp
+            AohiwRiPrwe3mJ8iCqzEY/qQqImEiIT8WC2Fty+UYyBwfXMObi1AO++QkaMUbUJl
+            0aBuRoD85FLotjHIHXkFHERjOolheYdKt5nrGCCz/PmXBfsSCTo=
+            -----END CERTIFICATE-----
+            """);
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.GetSelfSignedTlsClientAuthenticationPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(policy);
+
+            mock.Setup(manager => manager.ValidateSelfSignedTlsClientCertificateAsync(application, certificate, policy, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.SelfSignedTlsClientAuth));
+            options.Configure(options => options.SelfSignedTlsClientAuthenticationPolicy = new X509ChainPolicy());
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Transaction.RemoteCertificate = certificate;
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = type switch
+        {
+            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            }),
+
+            OpenIddictServerEndpointType.DeviceAuthorization => await client.PostAsync("/connect/device", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam"
+            }),
+
+            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            }),
+
+            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Token = "SlAV32hkKG",
+                TokenTypeHint = TokenTypeHints.RefreshToken
+            }),
+
+            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            }),
+
+            _ => throw new NotSupportedException()
+        };
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.GetSelfSignedTlsClientAuthenticationPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.ValidateSelfSignedTlsClientCertificateAsync(application, certificate,
+            It.Is<X509ChainPolicy>(policy => policy.CustomTrustStore.Contains(certificate)), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Theory]
+    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Introspection)]
+    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Revocation)]
+    [InlineData(OpenIddictServerEndpointType.Token)]
+    public async Task ProcessAuthentication_PkiClientCertificateIsRejectedWhenChainPolicyIsNull(OpenIddictServerEndpointType type)
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.TlsClientAuth));
+            options.Configure(options => options.PublicKeyInfrastructureTlsClientAuthenticationPolicy = new X509ChainPolicy());
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Transaction.RemoteCertificate = X509Certificate2.CreateFromPem($"""
+                        -----BEGIN CERTIFICATE-----
+                        MIIEejCCAmKgAwIBAgIQTmWjGbWFVbvtnm57bOVMZDANBgkqhkiG9w0BAQsFADAa
+                        MRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0EwIBcNMjYwMjAxMDMwNTIwWhgPMjEy
+                        NjAyMDIwMzA1MjBaMBoxGDAWBgNVBAMTD0VuZCBjZXJ0aWZpY2F0ZTCCASIwDQYJ
+                        KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJZ++ilBjvvOBIkZehV2T5dIDTpggJPV
+                        s+6/R2/6zMa0ykzEqaIbuvhhCaY0tDzebTYqUu9omlZkvx4jhxyA44lhwJsElqMx
+                        ANxsfSNUucSiJdOWXaVCQs8hLWn9ATfflE+qJNFx8zZq4nqmfkj8DMQwsej3+Ilo
+                        +FwdV1/2gyifMR0TOb/iZsgh+d386B4hIK94REZbyZ4Diod13VkDPY7I9LD8hBy7
+                        8jU5SflnHdFmG4I1IQmZcSGWfrCl0PIFymHkooeXwUm5sBebZl970908DYNB95g6
+                        Fj4wBxNdrhm8Ty4DHZSikOyt/kmbrdcc8OEVYSFlaSF7QDw6X73pEYUCAwEAAaOB
+                        uTCBtjAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIHgDAWBgNVHSUBAf8EDDAK
+                        BggrBgEFBQcDAjAdBgNVHQ4EFgQU/b5TO/v+uy1JhF2wYpYNrTBQwqgwSQYDVR0j
+                        BEIwQIAUQG7qZEGkePGiBl7n9npI/BZ1MN6hFqQUMBIxEDAOBgNVBAMTB1Jvb3Qg
+                        Q0GCEEZVlMw4Ppnm5GIPGl2I1nwwFAYDVR0RBA0wC4IJbG9jYWxob3N0MA0GCSqG
+                        SIb3DQEBCwUAA4ICAQB/GDA+YullFclspzw/9d3jFgorKJdISB1BKZyWD5tuQ5fP
+                        WX4MOsgnjylbK8wGfG1wW2NJfKc/lWYzoxWtQDDCq9kVgUvd4JBlqR3w6reowDeE
+                        jn/KGsArtjMMv0xvVnP8Wux2GLL2RYRUq6EpcQycN9/uoVyp+JRnxT6vK0y4QzYH
+                        G7C6z/JfoAp7UnS61Be9VlcW1I2H5WiHuzuMG4IrMPdTGJDftSJYfXaBMzAnXdSY
+                        4BP80LsPbj1Jfuz+7tvrIO3gPmBJEprN1g0dKbcWPMRA867xLkQIQTiSnrVFADvr
+                        UxO2G8KX/Yn7n5c68MfEHhFi9ndeijQfe7awG0aQjWX/XbaPpbaOAXxcozpzPIT/
+                        UlciCDCofpr62BdOWJJ6XQLyx5lRg9XcB6TwRsvx9zRW434iGBmGdLMlqHVN7I2v
+                        /kKNWEzOOa4hphG9OCyg3ZOcArCslUiwwfUGe8cOMKf8O63+NY6UUyU5S50EzsdN
+                        5nAK3WkMijGiMbReB/5oCLbU/B9hgEghKcbd3X2QY21MBg+GCB1z9aPduKtleAQm
+                        WExEzLEnb3Kwfr5+O84J3DXisQLG8CO3T9c9uz4Tp95LIdUD4v386dGO/nYnHcZ8
+                        8Fpjqr/MfTyPgOnMusa3yKlAMypPRmtkhkxOk4olCaT6WDRQtoKk/RisREU8nw==
+                        -----END CERTIFICATE-----
+                        """);
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = type switch
+        {
+            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            }),
+
+            OpenIddictServerEndpointType.DeviceAuthorization => await client.PostAsync("/connect/device", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam"
+            }),
+
+            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            }),
+
+            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Token = "SlAV32hkKG",
+                TokenTypeHint = TokenTypeHints.RefreshToken
+            }),
+
+            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            }),
+
+            _ => throw new NotSupportedException()
+        };
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(application,
+            It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Theory]
+    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Introspection)]
+    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData(OpenIddictServerEndpointType.Revocation)]
+    [InlineData(OpenIddictServerEndpointType.Token)]
+    public async Task ProcessAuthentication_PkiClientCertificateIsRejectedWhenInvalid(OpenIddictServerEndpointType type)
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+        var policy = new X509ChainPolicy();
+        var certificate = X509Certificate2.CreateFromPem($"""
+            -----BEGIN CERTIFICATE-----
+            MIIEejCCAmKgAwIBAgIQTmWjGbWFVbvtnm57bOVMZDANBgkqhkiG9w0BAQsFADAa
+            MRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0EwIBcNMjYwMjAxMDMwNTIwWhgPMjEy
+            NjAyMDIwMzA1MjBaMBoxGDAWBgNVBAMTD0VuZCBjZXJ0aWZpY2F0ZTCCASIwDQYJ
+            KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJZ++ilBjvvOBIkZehV2T5dIDTpggJPV
+            s+6/R2/6zMa0ykzEqaIbuvhhCaY0tDzebTYqUu9omlZkvx4jhxyA44lhwJsElqMx
+            ANxsfSNUucSiJdOWXaVCQs8hLWn9ATfflE+qJNFx8zZq4nqmfkj8DMQwsej3+Ilo
+            +FwdV1/2gyifMR0TOb/iZsgh+d386B4hIK94REZbyZ4Diod13VkDPY7I9LD8hBy7
+            8jU5SflnHdFmG4I1IQmZcSGWfrCl0PIFymHkooeXwUm5sBebZl970908DYNB95g6
+            Fj4wBxNdrhm8Ty4DHZSikOyt/kmbrdcc8OEVYSFlaSF7QDw6X73pEYUCAwEAAaOB
+            uTCBtjAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIHgDAWBgNVHSUBAf8EDDAK
+            BggrBgEFBQcDAjAdBgNVHQ4EFgQU/b5TO/v+uy1JhF2wYpYNrTBQwqgwSQYDVR0j
+            BEIwQIAUQG7qZEGkePGiBl7n9npI/BZ1MN6hFqQUMBIxEDAOBgNVBAMTB1Jvb3Qg
+            Q0GCEEZVlMw4Ppnm5GIPGl2I1nwwFAYDVR0RBA0wC4IJbG9jYWxob3N0MA0GCSqG
+            SIb3DQEBCwUAA4ICAQB/GDA+YullFclspzw/9d3jFgorKJdISB1BKZyWD5tuQ5fP
+            WX4MOsgnjylbK8wGfG1wW2NJfKc/lWYzoxWtQDDCq9kVgUvd4JBlqR3w6reowDeE
+            jn/KGsArtjMMv0xvVnP8Wux2GLL2RYRUq6EpcQycN9/uoVyp+JRnxT6vK0y4QzYH
+            G7C6z/JfoAp7UnS61Be9VlcW1I2H5WiHuzuMG4IrMPdTGJDftSJYfXaBMzAnXdSY
+            4BP80LsPbj1Jfuz+7tvrIO3gPmBJEprN1g0dKbcWPMRA867xLkQIQTiSnrVFADvr
+            UxO2G8KX/Yn7n5c68MfEHhFi9ndeijQfe7awG0aQjWX/XbaPpbaOAXxcozpzPIT/
+            UlciCDCofpr62BdOWJJ6XQLyx5lRg9XcB6TwRsvx9zRW434iGBmGdLMlqHVN7I2v
+            /kKNWEzOOa4hphG9OCyg3ZOcArCslUiwwfUGe8cOMKf8O63+NY6UUyU5S50EzsdN
+            5nAK3WkMijGiMbReB/5oCLbU/B9hgEghKcbd3X2QY21MBg+GCB1z9aPduKtleAQm
+            WExEzLEnb3Kwfr5+O84J3DXisQLG8CO3T9c9uz4Tp95LIdUD4v386dGO/nYnHcZ8
+            8Fpjqr/MfTyPgOnMusa3yKlAMypPRmtkhkxOk4olCaT6WDRQtoKk/RisREU8nw==
+            -----END CERTIFICATE-----
+            """);
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(policy);
+
+            mock.Setup(manager => manager.ValidatePublicKeyInfrastructureTlsClientCertificateAsync(application, certificate, policy, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.TlsClientAuth));
+            options.Configure(options => options.PublicKeyInfrastructureTlsClientAuthenticationPolicy = new X509ChainPolicy());
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Transaction.RemoteCertificate = certificate;
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = type switch
+        {
+            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            }),
+
+            OpenIddictServerEndpointType.DeviceAuthorization => await client.PostAsync("/connect/device", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam"
+            }),
+
+            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            }),
+
+            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Token = "SlAV32hkKG",
+                TokenTypeHint = TokenTypeHints.RefreshToken
+            }),
+
+            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            }),
+
+            _ => throw new NotSupportedException()
+        };
+
+        // Assert
+        Assert.Equal(Errors.InvalidClient, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.ValidatePublicKeyInfrastructureTlsClientCertificateAsync(application,
+            certificate, policy, It.IsAny<CancellationToken>()), Times.Once());
     }
 #endif
 
@@ -1218,785 +1793,6 @@ public abstract partial class OpenIddictServerIntegrationTests
         Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
     }
-
-    [Theory]
-    [InlineData(OpenIddictServerEndpointType.Introspection)]
-    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Revocation)]
-    [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_RequestIsRejectedWhenClientSecretIsInvalid(OpenIddictServerEndpointType type)
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-
-            mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-        });
-
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = type switch
-        {
-            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            }),
-
-            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code
-            }),
-
-            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                Token = "SlAV32hkKG",
-                TokenTypeHint = TokenTypeHints.RefreshToken
-            }),
-
-            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            }),
-
-            _ => throw new NotSupportedException()
-        };
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.GetResourceString(SR.ID2055), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2055), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
-    [Theory]
-    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Introspection)]
-    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Revocation)]
-    [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_ThrowsAnExceptionWhenGlobalSelfSignedChainPolicyIsNull(OpenIddictServerEndpointType type)
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-        });
-
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    context.ClientCertificate = X509Certificate2.CreateFromPem($"""
-                        -----BEGIN CERTIFICATE-----
-                        MIIC8jCCAdqgAwIBAgIIYfcknj8KXN0wDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UE
-                        AxMXU2VsZi1zaWduZWQgY2VydGlmaWNhdGUwIBcNMjYwMjAxMTc1MjI2WhgPMjEy
-                        NjAyMDExNzUyMjZaMCIxIDAeBgNVBAMTF1NlbGYtc2lnbmVkIGNlcnRpZmljYXRl
-                        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA45uKd5cdlLmEBGLDEB75
-                        o9e3/kMmQjVhhMeBsy4m2t7zw5jZo7OPcahXiXZHttom9tJm7BWPWvYx7p0N9+ss
-                        h/E5lzKyV7ZXg+mM+KeECtVhiy+82BuIPelCshrpaV3lIg93y47FYLIWXxdggjt6
-                        6VUaxzlTeo+IpuMz8IssL7VpJnjCT5NmqPNVkv1VR1uuetVqP7546ZFw31RiGl/0
-                        I1uUlb7SwLwhLUK1iyLmGNA3VDB0m0DvLmlIEY3ZE5zxQp/Rxq6DfjbXm2LWJyu6
-                        NO7k7JixXOorEl+6HdJZHTWNFK5jCo2ZZAwWn+uUuzgmLILPJFLDVutXjuEZpsym
-                        uQIDAQABoyowKDAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAwwCgYIKwYBBQUH
-                        AwIwDQYJKoZIhvcNAQELBQADggEBAGHH3f/bkfViTvPE7yXJkB0bs88mYxajluMA
-                        hgihEN5joPT6zHxMLBND2sitIozCMeeaj0rg+OaT/zDBgOLup/BM92UaPpYcgDCy
-                        3tHqZLOOJOR4aYnHhIQUnx+NRtKEM4q/hL/xLHeliKmV7TQXISEZlTbb0gOU7TFp
-                        nJlP60Vo9F/WD6xcKNxBgV5aB/+2FjiTTw2pF0VUmvcZdQAN5ysfrmKNXbvv1oCp
-                        AohiwRiPrwe3mJ8iCqzEY/qQqImEiIT8WC2Fty+UYyBwfXMObi1AO++QkaMUbUJl
-                        0aBuRoD85FLotjHIHXkFHERjOolheYdKt5nrGCCz/PmXBfsSCTo=
-                        -----END CERTIFICATE-----
-                        """);
-
-                    return ValueTask.CompletedTask;
-                });
-
-                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
-            });
-
-            options.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act and assert
-        var exception = type switch
-        {
-            OpenIddictServerEndpointType.Introspection =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/introspect", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    Token = "2YotnFZFEjr1zCsicMWpAA"
-                })),
-
-            OpenIddictServerEndpointType.DeviceAuthorization =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/device", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam"
-                })),
-
-            OpenIddictServerEndpointType.PushedAuthorization =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/par", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    RedirectUri = "http://www.fabrikam.com/path",
-                    ResponseType = ResponseTypes.Code
-                })),
-
-            OpenIddictServerEndpointType.Revocation =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/revoke", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    Token = "SlAV32hkKG",
-                    TokenTypeHint = TokenTypeHints.RefreshToken
-                })),
-
-            OpenIddictServerEndpointType.Token =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/token", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    GrantType = GrantTypes.Password,
-                    Username = "johndoe",
-                    Password = "A3ddj3w"
-                })),
-
-            _ => throw new NotSupportedException()
-        };
-
-        Assert.Equal(SR.GetResourceString(SR.ID0506), exception.Message);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-    }
-
-    [Theory]
-    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Introspection)]
-    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Revocation)]
-    [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_SelfSignedClientCertificateIsRejectedWhenChainPolicyIsNull(OpenIddictServerEndpointType type)
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-
-            mock.Setup(manager => manager.GetSelfSignedClientCertificateChainPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(value: null);
-        });
-
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.Configure(options => options.SelfSignedClientCertificateChainPolicy = new X509ChainPolicy());
-
-            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    context.ClientCertificate = X509Certificate2.CreateFromPem($"""
-                        -----BEGIN CERTIFICATE-----
-                        MIIC8jCCAdqgAwIBAgIIYfcknj8KXN0wDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UE
-                        AxMXU2VsZi1zaWduZWQgY2VydGlmaWNhdGUwIBcNMjYwMjAxMTc1MjI2WhgPMjEy
-                        NjAyMDExNzUyMjZaMCIxIDAeBgNVBAMTF1NlbGYtc2lnbmVkIGNlcnRpZmljYXRl
-                        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA45uKd5cdlLmEBGLDEB75
-                        o9e3/kMmQjVhhMeBsy4m2t7zw5jZo7OPcahXiXZHttom9tJm7BWPWvYx7p0N9+ss
-                        h/E5lzKyV7ZXg+mM+KeECtVhiy+82BuIPelCshrpaV3lIg93y47FYLIWXxdggjt6
-                        6VUaxzlTeo+IpuMz8IssL7VpJnjCT5NmqPNVkv1VR1uuetVqP7546ZFw31RiGl/0
-                        I1uUlb7SwLwhLUK1iyLmGNA3VDB0m0DvLmlIEY3ZE5zxQp/Rxq6DfjbXm2LWJyu6
-                        NO7k7JixXOorEl+6HdJZHTWNFK5jCo2ZZAwWn+uUuzgmLILPJFLDVutXjuEZpsym
-                        uQIDAQABoyowKDAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAwwCgYIKwYBBQUH
-                        AwIwDQYJKoZIhvcNAQELBQADggEBAGHH3f/bkfViTvPE7yXJkB0bs88mYxajluMA
-                        hgihEN5joPT6zHxMLBND2sitIozCMeeaj0rg+OaT/zDBgOLup/BM92UaPpYcgDCy
-                        3tHqZLOOJOR4aYnHhIQUnx+NRtKEM4q/hL/xLHeliKmV7TQXISEZlTbb0gOU7TFp
-                        nJlP60Vo9F/WD6xcKNxBgV5aB/+2FjiTTw2pF0VUmvcZdQAN5ysfrmKNXbvv1oCp
-                        AohiwRiPrwe3mJ8iCqzEY/qQqImEiIT8WC2Fty+UYyBwfXMObi1AO++QkaMUbUJl
-                        0aBuRoD85FLotjHIHXkFHERjOolheYdKt5nrGCCz/PmXBfsSCTo=
-                        -----END CERTIFICATE-----
-                        """);
-
-                    return ValueTask.CompletedTask;
-                });
-
-                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
-            });
-
-            options.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = type switch
-        {
-            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            }),
-
-            OpenIddictServerEndpointType.DeviceAuthorization => await client.PostAsync("/connect/device", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam"
-            }),
-
-            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code
-            }),
-
-            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "SlAV32hkKG",
-                TokenTypeHint = TokenTypeHints.RefreshToken
-            }),
-
-            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            }),
-
-            _ => throw new NotSupportedException()
-        };
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.GetSelfSignedClientCertificateChainPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Theory]
-    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Introspection)]
-    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Revocation)]
-    [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_SelfSignedClientCertificateIsRejectedWhenInvalid(OpenIddictServerEndpointType type)
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-        var policy = new X509ChainPolicy();
-        var certificate = X509Certificate2.CreateFromPem($"""
-            -----BEGIN CERTIFICATE-----
-            MIIC8jCCAdqgAwIBAgIIYfcknj8KXN0wDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UE
-            AxMXU2VsZi1zaWduZWQgY2VydGlmaWNhdGUwIBcNMjYwMjAxMTc1MjI2WhgPMjEy
-            NjAyMDExNzUyMjZaMCIxIDAeBgNVBAMTF1NlbGYtc2lnbmVkIGNlcnRpZmljYXRl
-            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA45uKd5cdlLmEBGLDEB75
-            o9e3/kMmQjVhhMeBsy4m2t7zw5jZo7OPcahXiXZHttom9tJm7BWPWvYx7p0N9+ss
-            h/E5lzKyV7ZXg+mM+KeECtVhiy+82BuIPelCshrpaV3lIg93y47FYLIWXxdggjt6
-            6VUaxzlTeo+IpuMz8IssL7VpJnjCT5NmqPNVkv1VR1uuetVqP7546ZFw31RiGl/0
-            I1uUlb7SwLwhLUK1iyLmGNA3VDB0m0DvLmlIEY3ZE5zxQp/Rxq6DfjbXm2LWJyu6
-            NO7k7JixXOorEl+6HdJZHTWNFK5jCo2ZZAwWn+uUuzgmLILPJFLDVutXjuEZpsym
-            uQIDAQABoyowKDAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAwwCgYIKwYBBQUH
-            AwIwDQYJKoZIhvcNAQELBQADggEBAGHH3f/bkfViTvPE7yXJkB0bs88mYxajluMA
-            hgihEN5joPT6zHxMLBND2sitIozCMeeaj0rg+OaT/zDBgOLup/BM92UaPpYcgDCy
-            3tHqZLOOJOR4aYnHhIQUnx+NRtKEM4q/hL/xLHeliKmV7TQXISEZlTbb0gOU7TFp
-            nJlP60Vo9F/WD6xcKNxBgV5aB/+2FjiTTw2pF0VUmvcZdQAN5ysfrmKNXbvv1oCp
-            AohiwRiPrwe3mJ8iCqzEY/qQqImEiIT8WC2Fty+UYyBwfXMObi1AO++QkaMUbUJl
-            0aBuRoD85FLotjHIHXkFHERjOolheYdKt5nrGCCz/PmXBfsSCTo=
-            -----END CERTIFICATE-----
-            """);
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-
-            mock.Setup(manager => manager.GetSelfSignedClientCertificateChainPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(policy);
-
-            mock.Setup(manager => manager.ValidateSelfSignedClientCertificateAsync(application, certificate, policy, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-        });
-
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.Configure(options => options.SelfSignedClientCertificateChainPolicy = new X509ChainPolicy());
-
-            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    context.ClientCertificate = certificate;
-
-                    return ValueTask.CompletedTask;
-                });
-
-                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
-            });
-
-            options.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = type switch
-        {
-            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            }),
-
-            OpenIddictServerEndpointType.DeviceAuthorization => await client.PostAsync("/connect/device", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam"
-            }),
-
-            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code
-            }),
-
-            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "SlAV32hkKG",
-                TokenTypeHint = TokenTypeHints.RefreshToken
-            }),
-
-            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            }),
-
-            _ => throw new NotSupportedException()
-        };
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.GetSelfSignedClientCertificateChainPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
-        Mock.Get(manager).Verify(manager => manager.ValidateSelfSignedClientCertificateAsync(application, certificate, policy, It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Theory]
-    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Introspection)]
-    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Revocation)]
-    [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_ThrowsAnExceptionWhenGlobalPkiChainPolicyIsNull(OpenIddictServerEndpointType type)
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-        });
-
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    context.ClientCertificate = X509Certificate2.CreateFromPem($"""
-                        -----BEGIN CERTIFICATE-----
-                        MIIEejCCAmKgAwIBAgIQTmWjGbWFVbvtnm57bOVMZDANBgkqhkiG9w0BAQsFADAa
-                        MRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0EwIBcNMjYwMjAxMDMwNTIwWhgPMjEy
-                        NjAyMDIwMzA1MjBaMBoxGDAWBgNVBAMTD0VuZCBjZXJ0aWZpY2F0ZTCCASIwDQYJ
-                        KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJZ++ilBjvvOBIkZehV2T5dIDTpggJPV
-                        s+6/R2/6zMa0ykzEqaIbuvhhCaY0tDzebTYqUu9omlZkvx4jhxyA44lhwJsElqMx
-                        ANxsfSNUucSiJdOWXaVCQs8hLWn9ATfflE+qJNFx8zZq4nqmfkj8DMQwsej3+Ilo
-                        +FwdV1/2gyifMR0TOb/iZsgh+d386B4hIK94REZbyZ4Diod13VkDPY7I9LD8hBy7
-                        8jU5SflnHdFmG4I1IQmZcSGWfrCl0PIFymHkooeXwUm5sBebZl970908DYNB95g6
-                        Fj4wBxNdrhm8Ty4DHZSikOyt/kmbrdcc8OEVYSFlaSF7QDw6X73pEYUCAwEAAaOB
-                        uTCBtjAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIHgDAWBgNVHSUBAf8EDDAK
-                        BggrBgEFBQcDAjAdBgNVHQ4EFgQU/b5TO/v+uy1JhF2wYpYNrTBQwqgwSQYDVR0j
-                        BEIwQIAUQG7qZEGkePGiBl7n9npI/BZ1MN6hFqQUMBIxEDAOBgNVBAMTB1Jvb3Qg
-                        Q0GCEEZVlMw4Ppnm5GIPGl2I1nwwFAYDVR0RBA0wC4IJbG9jYWxob3N0MA0GCSqG
-                        SIb3DQEBCwUAA4ICAQB/GDA+YullFclspzw/9d3jFgorKJdISB1BKZyWD5tuQ5fP
-                        WX4MOsgnjylbK8wGfG1wW2NJfKc/lWYzoxWtQDDCq9kVgUvd4JBlqR3w6reowDeE
-                        jn/KGsArtjMMv0xvVnP8Wux2GLL2RYRUq6EpcQycN9/uoVyp+JRnxT6vK0y4QzYH
-                        G7C6z/JfoAp7UnS61Be9VlcW1I2H5WiHuzuMG4IrMPdTGJDftSJYfXaBMzAnXdSY
-                        4BP80LsPbj1Jfuz+7tvrIO3gPmBJEprN1g0dKbcWPMRA867xLkQIQTiSnrVFADvr
-                        UxO2G8KX/Yn7n5c68MfEHhFi9ndeijQfe7awG0aQjWX/XbaPpbaOAXxcozpzPIT/
-                        UlciCDCofpr62BdOWJJ6XQLyx5lRg9XcB6TwRsvx9zRW434iGBmGdLMlqHVN7I2v
-                        /kKNWEzOOa4hphG9OCyg3ZOcArCslUiwwfUGe8cOMKf8O63+NY6UUyU5S50EzsdN
-                        5nAK3WkMijGiMbReB/5oCLbU/B9hgEghKcbd3X2QY21MBg+GCB1z9aPduKtleAQm
-                        WExEzLEnb3Kwfr5+O84J3DXisQLG8CO3T9c9uz4Tp95LIdUD4v386dGO/nYnHcZ8
-                        8Fpjqr/MfTyPgOnMusa3yKlAMypPRmtkhkxOk4olCaT6WDRQtoKk/RisREU8nw==
-                        -----END CERTIFICATE-----
-                        """);
-
-                    return ValueTask.CompletedTask;
-                });
-
-                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
-            });
-
-            options.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act and assert
-        var exception = type switch
-        {
-            OpenIddictServerEndpointType.Introspection =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/introspect", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    Token = "2YotnFZFEjr1zCsicMWpAA"
-                })),
-
-            OpenIddictServerEndpointType.DeviceAuthorization =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/device", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam"
-                })),
-
-            OpenIddictServerEndpointType.PushedAuthorization =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/par", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    RedirectUri = "http://www.fabrikam.com/path",
-                    ResponseType = ResponseTypes.Code
-                })),
-
-            OpenIddictServerEndpointType.Revocation =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/revoke", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    Token = "SlAV32hkKG",
-                    TokenTypeHint = TokenTypeHints.RefreshToken
-                })),
-
-            OpenIddictServerEndpointType.Token =>
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("/connect/token", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    GrantType = GrantTypes.Password,
-                    Username = "johndoe",
-                    Password = "A3ddj3w"
-                })),
-
-            _ => throw new NotSupportedException()
-        };
-
-        Assert.Equal(SR.GetResourceString(SR.ID0505), exception.Message);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-    }
-
-    [Theory]
-    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Introspection)]
-    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Revocation)]
-    [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_PkiClientCertificateIsRejectedWhenChainPolicyIsNull(OpenIddictServerEndpointType type)
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-
-            mock.Setup(manager => manager.GetClientCertificateChainPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(value: null);
-        });
-
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.Configure(options => options.ClientCertificateChainPolicy = new X509ChainPolicy());
-
-            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    context.ClientCertificate = X509Certificate2.CreateFromPem($"""
-                        -----BEGIN CERTIFICATE-----
-                        MIIEejCCAmKgAwIBAgIQTmWjGbWFVbvtnm57bOVMZDANBgkqhkiG9w0BAQsFADAa
-                        MRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0EwIBcNMjYwMjAxMDMwNTIwWhgPMjEy
-                        NjAyMDIwMzA1MjBaMBoxGDAWBgNVBAMTD0VuZCBjZXJ0aWZpY2F0ZTCCASIwDQYJ
-                        KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJZ++ilBjvvOBIkZehV2T5dIDTpggJPV
-                        s+6/R2/6zMa0ykzEqaIbuvhhCaY0tDzebTYqUu9omlZkvx4jhxyA44lhwJsElqMx
-                        ANxsfSNUucSiJdOWXaVCQs8hLWn9ATfflE+qJNFx8zZq4nqmfkj8DMQwsej3+Ilo
-                        +FwdV1/2gyifMR0TOb/iZsgh+d386B4hIK94REZbyZ4Diod13VkDPY7I9LD8hBy7
-                        8jU5SflnHdFmG4I1IQmZcSGWfrCl0PIFymHkooeXwUm5sBebZl970908DYNB95g6
-                        Fj4wBxNdrhm8Ty4DHZSikOyt/kmbrdcc8OEVYSFlaSF7QDw6X73pEYUCAwEAAaOB
-                        uTCBtjAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIHgDAWBgNVHSUBAf8EDDAK
-                        BggrBgEFBQcDAjAdBgNVHQ4EFgQU/b5TO/v+uy1JhF2wYpYNrTBQwqgwSQYDVR0j
-                        BEIwQIAUQG7qZEGkePGiBl7n9npI/BZ1MN6hFqQUMBIxEDAOBgNVBAMTB1Jvb3Qg
-                        Q0GCEEZVlMw4Ppnm5GIPGl2I1nwwFAYDVR0RBA0wC4IJbG9jYWxob3N0MA0GCSqG
-                        SIb3DQEBCwUAA4ICAQB/GDA+YullFclspzw/9d3jFgorKJdISB1BKZyWD5tuQ5fP
-                        WX4MOsgnjylbK8wGfG1wW2NJfKc/lWYzoxWtQDDCq9kVgUvd4JBlqR3w6reowDeE
-                        jn/KGsArtjMMv0xvVnP8Wux2GLL2RYRUq6EpcQycN9/uoVyp+JRnxT6vK0y4QzYH
-                        G7C6z/JfoAp7UnS61Be9VlcW1I2H5WiHuzuMG4IrMPdTGJDftSJYfXaBMzAnXdSY
-                        4BP80LsPbj1Jfuz+7tvrIO3gPmBJEprN1g0dKbcWPMRA867xLkQIQTiSnrVFADvr
-                        UxO2G8KX/Yn7n5c68MfEHhFi9ndeijQfe7awG0aQjWX/XbaPpbaOAXxcozpzPIT/
-                        UlciCDCofpr62BdOWJJ6XQLyx5lRg9XcB6TwRsvx9zRW434iGBmGdLMlqHVN7I2v
-                        /kKNWEzOOa4hphG9OCyg3ZOcArCslUiwwfUGe8cOMKf8O63+NY6UUyU5S50EzsdN
-                        5nAK3WkMijGiMbReB/5oCLbU/B9hgEghKcbd3X2QY21MBg+GCB1z9aPduKtleAQm
-                        WExEzLEnb3Kwfr5+O84J3DXisQLG8CO3T9c9uz4Tp95LIdUD4v386dGO/nYnHcZ8
-                        8Fpjqr/MfTyPgOnMusa3yKlAMypPRmtkhkxOk4olCaT6WDRQtoKk/RisREU8nw==
-                        -----END CERTIFICATE-----
-                        """);
-
-                    return ValueTask.CompletedTask;
-                });
-
-                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
-            });
-
-            options.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = type switch
-        {
-            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            }),
-
-            OpenIddictServerEndpointType.DeviceAuthorization => await client.PostAsync("/connect/device", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam"
-            }),
-
-            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code
-            }),
-
-            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "SlAV32hkKG",
-                TokenTypeHint = TokenTypeHints.RefreshToken
-            }),
-
-            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            }),
-
-            _ => throw new NotSupportedException()
-        };
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.GetClientCertificateChainPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Theory]
-    [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Introspection)]
-    [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
-    [InlineData(OpenIddictServerEndpointType.Revocation)]
-    [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_PkiClientCertificateIsRejectedWhenInvalid(OpenIddictServerEndpointType type)
-    {
-        // Arrange
-        var application = new OpenIddictApplication();
-        var policy = new X509ChainPolicy();
-        var certificate = X509Certificate2.CreateFromPem($"""
-            -----BEGIN CERTIFICATE-----
-            MIIEejCCAmKgAwIBAgIQTmWjGbWFVbvtnm57bOVMZDANBgkqhkiG9w0BAQsFADAa
-            MRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0EwIBcNMjYwMjAxMDMwNTIwWhgPMjEy
-            NjAyMDIwMzA1MjBaMBoxGDAWBgNVBAMTD0VuZCBjZXJ0aWZpY2F0ZTCCASIwDQYJ
-            KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJZ++ilBjvvOBIkZehV2T5dIDTpggJPV
-            s+6/R2/6zMa0ykzEqaIbuvhhCaY0tDzebTYqUu9omlZkvx4jhxyA44lhwJsElqMx
-            ANxsfSNUucSiJdOWXaVCQs8hLWn9ATfflE+qJNFx8zZq4nqmfkj8DMQwsej3+Ilo
-            +FwdV1/2gyifMR0TOb/iZsgh+d386B4hIK94REZbyZ4Diod13VkDPY7I9LD8hBy7
-            8jU5SflnHdFmG4I1IQmZcSGWfrCl0PIFymHkooeXwUm5sBebZl970908DYNB95g6
-            Fj4wBxNdrhm8Ty4DHZSikOyt/kmbrdcc8OEVYSFlaSF7QDw6X73pEYUCAwEAAaOB
-            uTCBtjAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIHgDAWBgNVHSUBAf8EDDAK
-            BggrBgEFBQcDAjAdBgNVHQ4EFgQU/b5TO/v+uy1JhF2wYpYNrTBQwqgwSQYDVR0j
-            BEIwQIAUQG7qZEGkePGiBl7n9npI/BZ1MN6hFqQUMBIxEDAOBgNVBAMTB1Jvb3Qg
-            Q0GCEEZVlMw4Ppnm5GIPGl2I1nwwFAYDVR0RBA0wC4IJbG9jYWxob3N0MA0GCSqG
-            SIb3DQEBCwUAA4ICAQB/GDA+YullFclspzw/9d3jFgorKJdISB1BKZyWD5tuQ5fP
-            WX4MOsgnjylbK8wGfG1wW2NJfKc/lWYzoxWtQDDCq9kVgUvd4JBlqR3w6reowDeE
-            jn/KGsArtjMMv0xvVnP8Wux2GLL2RYRUq6EpcQycN9/uoVyp+JRnxT6vK0y4QzYH
-            G7C6z/JfoAp7UnS61Be9VlcW1I2H5WiHuzuMG4IrMPdTGJDftSJYfXaBMzAnXdSY
-            4BP80LsPbj1Jfuz+7tvrIO3gPmBJEprN1g0dKbcWPMRA867xLkQIQTiSnrVFADvr
-            UxO2G8KX/Yn7n5c68MfEHhFi9ndeijQfe7awG0aQjWX/XbaPpbaOAXxcozpzPIT/
-            UlciCDCofpr62BdOWJJ6XQLyx5lRg9XcB6TwRsvx9zRW434iGBmGdLMlqHVN7I2v
-            /kKNWEzOOa4hphG9OCyg3ZOcArCslUiwwfUGe8cOMKf8O63+NY6UUyU5S50EzsdN
-            5nAK3WkMijGiMbReB/5oCLbU/B9hgEghKcbd3X2QY21MBg+GCB1z9aPduKtleAQm
-            WExEzLEnb3Kwfr5+O84J3DXisQLG8CO3T9c9uz4Tp95LIdUD4v386dGO/nYnHcZ8
-            8Fpjqr/MfTyPgOnMusa3yKlAMypPRmtkhkxOk4olCaT6WDRQtoKk/RisREU8nw==
-            -----END CERTIFICATE-----
-            """);
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-
-            mock.Setup(manager => manager.GetClientCertificateChainPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(policy);
-
-            mock.Setup(manager => manager.ValidateClientCertificateAsync(application, certificate, policy, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-        });
-
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.Configure(options => options.ClientCertificateChainPolicy = new X509ChainPolicy());
-
-            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    context.ClientCertificate = certificate;
-
-                    return ValueTask.CompletedTask;
-                });
-
-                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
-            });
-
-            options.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = type switch
-        {
-            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            }),
-
-            OpenIddictServerEndpointType.DeviceAuthorization => await client.PostAsync("/connect/device", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam"
-            }),
-
-            OpenIddictServerEndpointType.PushedAuthorization => await client.PostAsync("/connect/par", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code
-            }),
-
-            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "SlAV32hkKG",
-                TokenTypeHint = TokenTypeHints.RefreshToken
-            }),
-
-            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            }),
-
-            _ => throw new NotSupportedException()
-        };
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-        Mock.Get(manager).Verify(manager => manager.GetClientCertificateChainPolicyAsync(application, It.IsAny<X509ChainPolicy>(), It.IsAny<CancellationToken>()), Times.Once());
-        Mock.Get(manager).Verify(manager => manager.ValidateClientCertificateAsync(application, certificate, policy, It.IsAny<CancellationToken>()), Times.Once());
-    }
-#endif
 
     [Fact]
     public async Task ProcessAuthentication_RequestTokenPrincipalIsNotPopulatedWhenRequestTokenIsMissing()

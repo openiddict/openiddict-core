@@ -5,6 +5,7 @@
  */
 
 using System.Security.Claims;
+using System.Text.Json.Nodes;
 
 namespace OpenIddict.Server;
 
@@ -112,6 +113,11 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the "client_id" claim returned to the caller, if applicable.
         /// </summary>
         public string? ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "cnf" claim returned to the caller, if applicable.
+        /// </summary>
+        public JsonObject? Confirmation { get; set; }
 
         /// <summary>
         /// Gets or sets the "exp" claim

@@ -7,7 +7,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client;
-using OpenIddict.Client.SystemNetHttp;
 using OpenIddict.Client.WebIntegration;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -38,8 +37,6 @@ public static partial class OpenIddictClientWebIntegrationExtensions
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>());
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IPostConfigureOptions<OpenIddictClientSystemNetHttpOptions>, OpenIddictClientWebIntegrationConfiguration>());
 
         // Note: the IPostConfigureOptions<OpenIddictClientOptions> service responsible for populating
         // the client registrations MUST be registered before OpenIddictClientConfiguration to ensure

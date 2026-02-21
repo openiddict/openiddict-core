@@ -19,6 +19,7 @@ public static partial class OpenIddictServerOwinHandlers
              */
             ExtractGetOrPostRequest<ExtractUserInfoRequestContext>.Descriptor,
             ExtractAccessToken<ExtractUserInfoRequestContext>.Descriptor,
+            ExtractClientCertificate<ExtractUserInfoRequestContext>.Descriptor,
 
             /*
              * UserInfo request handling:
