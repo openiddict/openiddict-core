@@ -1129,6 +1129,9 @@
 
     <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
              Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
+
+    <Setting PropertyName="Prompt" ParameterName="prompt" Type="String" Required="false"
+             Description="The value used as the 'prompt' parameter: can be set to none, consent (triggers a consent prompt on every session) or select_account (allows the user to select which account to use on each session)" />
   </Provider>
 
   <!--

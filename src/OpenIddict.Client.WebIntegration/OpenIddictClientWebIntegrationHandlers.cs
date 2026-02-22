@@ -1924,6 +1924,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var settings = context.Registration.GetGoogleSettings();
 
                 context.Request["access_type"] = settings.AccessType;
+                context.Request.Prompt = settings.Prompt;
             }
 
             // By default, Huawei doesn't return a refresh token but allows sending an "access_type"
