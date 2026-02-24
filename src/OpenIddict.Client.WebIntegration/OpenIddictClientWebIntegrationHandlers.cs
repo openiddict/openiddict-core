@@ -833,8 +833,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.PayPal => (false, false, false),
                 
                 // NetSuite does not return an id_token when using the refresh_token grant type.
-                // Additionally, the at_hash inside their id_token is not a valid hash of the
-                // access token, but is instead a copy of the RS256 signature within the access token.
+                //
+                // Additionally, the at_hash inside the id_token is not a valid hash of the access
+                // token, but is instead a copy of the RS256 signature within the access token.
                 ProviderTypes.NetSuite => (true, false, false),
 
                 _ => (context.ExtractBackchannelIdentityToken,
