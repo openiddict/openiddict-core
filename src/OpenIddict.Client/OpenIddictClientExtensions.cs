@@ -60,6 +60,7 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireRevocationClientAssertionGenerated>();
         builder.Services.TryAddSingleton<RequireRevocationRequest>();
         builder.Services.TryAddSingleton<RequireStateTokenPrincipal>();
+        builder.Services.TryAddSingleton<RequireStateTokenRedeemed>();
         builder.Services.TryAddSingleton<RequireStateTokenValidated>();
         builder.Services.TryAddSingleton<RequireTokenAudienceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenEntryCreated>();

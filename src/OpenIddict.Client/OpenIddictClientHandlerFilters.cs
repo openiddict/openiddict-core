@@ -407,6 +407,20 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the state token should not be redeemed.
+    /// </summary>
+    public sealed class RequireStateTokenRedeemed : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(!context.DisableStateTokenRedeeming);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no state token is validated.
     /// </summary>
     public sealed class RequireStateTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>

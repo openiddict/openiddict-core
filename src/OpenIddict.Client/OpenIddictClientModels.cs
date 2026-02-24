@@ -21,6 +21,11 @@ public static class OpenIddictClientModels
     public sealed record class InteractiveAuthenticationRequest
     {
         /// <summary>
+        /// Gets or sets the parameters that will be added to the token request, if applicable.
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
+
+        /// <summary>
         /// Gets or sets the cancellation token that will be
         /// used to determine if the operation was aborted.
         /// </summary>
@@ -35,6 +40,23 @@ public static class OpenIddictClientModels
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Note: when mTLs is also used for OAuth 2.0 client authentication, the
+        /// certificate set here replaces the client certificate chosen by OpenIddict.
+        /// </para>
+        /// <para>
+        /// Note: if a certificate-based client authentication or token binding method is
+        /// negotiated, the type of the certificate must match the negotiated methods.
+        /// </para>
+        /// </remarks>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
     }
 
     /// <summary>

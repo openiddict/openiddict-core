@@ -442,6 +442,12 @@ public static partial class OpenIddictClientEvents
         public HashSet<string> UserInfoEndpointTokenBindingMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the token entry associated
+        /// with the state token should be marked as redeemed in the database.
+        /// </summary>
+        public bool DisableStateTokenRedeeming { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a token request should be sent.
         /// </summary>
         public bool SendTokenRequest { get; set; }

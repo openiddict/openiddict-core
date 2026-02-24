@@ -44,6 +44,19 @@ public class InteractiveService : BackgroundService
 
                 if (await AuthenticateUserInteractivelyAsync(registration, configuration, stoppingToken))
                 {
+                    // Note: the OpenIddict server stack supports mTLS-based token binding for public clients:
+                    // while these clients cannot authenticate using a TLS client certificate, the certificate
+                    // can be used to bind the refresh (and access) tokens returned by the authorization server
+                    // to the client application, which prevents such tokens from being used without providing a
+                    // proof-of-possession matching the TLS client certificate used when the token was acquired.
+                    //
+                    // While this sample deliberately doesn't store the generated certificate in a persistent
+                    // location, the certificate used for token binding should typically be stored in the user
+                    // certificate store to be reloaded across application restarts in a real-world application.
+                    var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
+                        ? GenerateEphemeralTlsClientCertificate()
+                        : null;
+
                     var flow = await GetSelectedFlowAsync(registration, configuration, stoppingToken);
 
                     AnsiConsole.MarkupLine("[cyan]Launching the system browser.[/]");
@@ -64,7 +77,8 @@ public class InteractiveService : BackgroundService
                     var response = await _service.AuthenticateInteractivelyAsync(new()
                     {
                         CancellationToken = stoppingToken,
-                        Nonce = result.Nonce
+                        Nonce = result.Nonce,
+                        TokenBindingCertificate = certificate
                     });
 
                     AnsiConsole.MarkupLine("[green]Interactive authentication successful:[/]");
@@ -112,7 +126,8 @@ public class InteractiveService : BackgroundService
                         {
                             CancellationToken = stoppingToken,
                             ProviderName = provider,
-                            RefreshToken = response.RefreshToken
+                            RefreshToken = response.RefreshToken,
+                            TokenBindingCertificate = certificate
                         })).Principal));
                     }
 
@@ -151,15 +166,6 @@ public class InteractiveService : BackgroundService
                     var type = await GetSelectedGrantTypeAsync(registration, configuration, stoppingToken);
                     if (type is GrantTypes.DeviceCode)
                     {
-                        // Note: the OpenIddict server stack supports mTLS-based token binding for public clients:
-                        // while these clients cannot authenticate using a TLS client certificate, the certificate
-                        // can be used to bind the refresh (and access) tokens returned by the authorization server
-                        // to the client application, which prevents such tokens from being used without providing a
-                        // proof-of-possession matching the TLS client certificate used when the token was acquired.
-                        //
-                        // While this sample deliberately doesn't store the generated certificate in a persistent
-                        // location, the certificate used for token binding should typically be stored in the user
-                        // certificate store to be reloaded across application restarts in a real-world application.
                         var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
                             ? GenerateEphemeralTlsClientCertificate()
                             : null;

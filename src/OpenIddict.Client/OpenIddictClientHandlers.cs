@@ -824,6 +824,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenStorageEnabled>()
                 .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireStateTokenRedeemed>()
                 .AddFilter<RequireStateTokenValidated>()
                 .UseScopedHandler<RedeemStateTokenEntry>()
                 // Note: this handler is deliberately executed early in the pipeline to ensure that
@@ -896,7 +897,7 @@ public static partial class OpenIddictClientHandlers
             // Reject the authentication demand if the expected endpoint type doesn't
             // match the current endpoint type as it may indicate a mix-up attack (e.g a
             // state token created for a logout operation was used for a login operation).
-            if (type != context.EndpointType)
+            if (context.EndpointType is not OpenIddictClientEndpointType.Unknown && context.EndpointType != type)
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -994,6 +995,12 @@ public static partial class OpenIddictClientHandlers
             ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Only validate the endpoint type if the endpoint is well-known.
+            if (context.EndpointType is OpenIddictClientEndpointType.Unknown)
+            {
+                return ValueTask.CompletedTask;
+            }
 
             // Resolve the endpoint type allowed to be used with the state token.
             if (!Enum.TryParse(context.StateTokenPrincipal.GetClaim(Claims.Private.EndpointType),
@@ -1174,8 +1181,8 @@ public static partial class OpenIddictClientHandlers
         {
             ArgumentNullException.ThrowIfNull(context);
 
-            // To help mitigate mix-up attacks, the identity of the issuer can be returned by
-            // authorization servers that support it as a part of the "iss" parameter, which
+            // To help mitigate mix-up attacks, the identity of the issuer can be returned
+            // by authorization servers that support it as part of the "iss" parameter, which
             // allows comparing it to the issuer in the state token. Depending on the selected
             // response_type, the same information could be retrieved from the identity token
             // that is expected to contain an "iss" claim containing the issuer identity.
@@ -1217,6 +1224,7 @@ public static partial class OpenIddictClientHandlers
 
             // Reject authorization responses containing an "iss" parameter if the configuration
             // doesn't indicate this parameter is supported, as recommended by the specification.
+            //
             // See https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05#section-2.4
             // for more information.
             else if (!string.IsNullOrEmpty(issuer))
@@ -1467,7 +1475,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the token from the incoming request.
+    /// Contains the logic responsible for resolving the frontchannel tokens from the incoming request.
     /// </summary>
     public sealed class ResolveValidatedFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {

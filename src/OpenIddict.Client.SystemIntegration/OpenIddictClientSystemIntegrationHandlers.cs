@@ -40,24 +40,19 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
         WaitMarshalledAuthentication.Descriptor,
 
         RestoreClientRegistrationFromMarshalledContext.Descriptor,
-        RestoreStateTokenFromMarshalledAuthentication.Descriptor,
-        RestoreStateTokenPrincipalFromMarshalledAuthentication.Descriptor,
-        RestoreHostAuthenticationPropertiesFromMarshalledAuthentication.Descriptor,
+
+        EvaluateValidatedUpfrontTokensForMarshalledContext.Descriptor,
+        ResolveValidatedStateTokenFromMarshalledContext.Descriptor,
+        EvaluateValidatedFrontchannelTokensForMarshalledContext.Descriptor,
+        ResolveValidatedFrontchannelTokensFromMarshalledContext.Descriptor,
+        EvaluateValidatedBackchannelTokensForMarshalledContext.Descriptor,
+
+        DisableStateTokenRedeeming.Descriptor,
+        DisableTokenRequestSending.Descriptor,
+        DisableUserInfoRequestSending.Descriptor,
 
         RedirectProtocolActivation.Descriptor,
         ResolveRequestForgeryProtection.Descriptor,
-
-        RestoreFrontchannelTokensFromMarshalledAuthentication.Descriptor,
-        RestoreFrontchannelIdentityTokenPrincipalFromMarshalledAuthentication.Descriptor,
-        RestoreFrontchannelAccessTokenPrincipalFromMarshalledAuthentication.Descriptor,
-        RestoreAuthorizationCodePrincipalFromMarshalledAuthentication.Descriptor,
-        RestoreTokenResponseFromMarshalledAuthentication.Descriptor,
-        RestoreBackchannelTokensFromMarshalledAuthentication.Descriptor,
-        RestoreBackchannelIdentityTokenPrincipalFromMarshalledAuthentication.Descriptor,
-        RestoreBackchannelAccessTokenPrincipalFromMarshalledAuthentication.Descriptor,
-        RestoreRefreshTokenPrincipalFromMarshalledAuthentication.Descriptor,
-        RestoreUserInfoDetailsFromMarshalledAuthentication.Descriptor,
-        RestoreMergedPrincipalFromMarshalledAuthentication.Descriptor,
 
         CompleteAuthenticationOperation.Descriptor,
         UntrackMarshalledAuthenticationOperation.Descriptor,
@@ -613,7 +608,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0379));
             }
 
-            // At this point, user authentication demands cannot complete until the authorization response has been
+            // At this point, the user authentication demand cannot complete until the authorization response has been
             // returned to the redirection endpoint (materialized as a registered protocol activation URI) and handled
             // by OpenIddict via the ProcessRequest event. Since it is asynchronous by nature, this process requires
             // using a signal mechanism to unblock the authentication operation once it is complete. For that, the
@@ -697,8 +692,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             (context.Configuration, context.Registration) = context.EndpointType switch
             {
-                // When the authentication context is marshalled, restore the
-                // issuer registration and configuration from the other instance.
+                // When the authentication demand is marshalled from a different context,
+                // restore the registration and configuration from the other instance.
                 OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
                     => (notification.Configuration, notification.Registration),
 
@@ -710,15 +705,361 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for restoring the state token
-    /// from the marshalled authentication context, if applicable.
+    /// Contains the logic responsible for determining the types of
+    /// tokens to validate upfront when the context is marshalled.
     /// </summary>
-    public sealed class RestoreStateTokenFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateValidatedUpfrontTokensForMarshalledContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
 
-        public RestoreStateTokenFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
+        public EvaluateValidatedUpfrontTokensForMarshalledContext(OpenIddictClientSystemIntegrationMarshal marshal)
             => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<EvaluateValidatedUpfrontTokensForMarshalledContext>()
+                .SetOrder(EvaluateValidatedUpfrontTokens.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            // When the authentication demand is marshalled from a different context, always
+            // extract and validate the state token to ensure the authentication details
+            // contained in the state token principal can be used to validate the operation.
+            if (context.EndpointType is OpenIddictClientEndpointType.Unknown && _marshal.IsTracked(context.Nonce))
+            {
+                context.ExtractStateToken = context.RequireStateToken = true;
+                context.ValidateStateToken = context.RejectStateToken = true;
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the state token to validate upfront from the marshalled context.
+    /// </summary>
+    public sealed class ResolveValidatedStateTokenFromMarshalledContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public ResolveValidatedStateTokenFromMarshalledContext(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<ResolveValidatedStateTokenFromMarshalledContext>()
+                .SetOrder(ResolveValidatedStateToken.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            context.StateToken = context.EndpointType switch
+            {
+                // When the authentication demand is marshalled from a different context,
+                // always restore the state token from the instance that extracted it.
+                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
+                    => notification.StateToken,
+
+                _ => null
+            };
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for determining the set of
+    /// frontchannel tokens to validate when the context is marshalled.
+    /// </summary>
+    public sealed class EvaluateValidatedFrontchannelTokensForMarshalledContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public EvaluateValidatedFrontchannelTokensForMarshalledContext(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<EvaluateValidatedFrontchannelTokensForMarshalledContext>()
+                .SetOrder(EvaluateValidatedFrontchannelTokens.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            // When the authentication demand is expected to be marshalled to a different context,
+            // always skip the validation of all the frontchannel tokens by default as the security
+            // principals they contain are not needed to marshal the authentication demand.
+            if (context.EndpointType is
+                    OpenIddictClientEndpointType.Redirection or
+                    OpenIddictClientEndpointType.PostLogoutRedirection && _marshal.IsTracked(context.Nonce))
+            {
+                context.ValidateAuthorizationCode = context.RejectAuthorizationCode = false;
+                context.ValidateFrontchannelAccessToken = context.RejectFrontchannelAccessToken = false;
+                context.ValidateFrontchannelIdentityToken = context.RejectFrontchannelIdentityToken = false;
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the frontchannel tokens from the marshalled context.
+    /// </summary>
+    public sealed class ResolveValidatedFrontchannelTokensFromMarshalledContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public ResolveValidatedFrontchannelTokensFromMarshalledContext(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<ResolveValidatedFrontchannelTokensFromMarshalledContext>()
+                .SetOrder(ResolveValidatedFrontchannelTokens.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            // When the authentication context is marshalled, restore the frontchannel tokens from the other instance.
+            if (context.EndpointType is OpenIddictClientEndpointType.Unknown &&
+                _marshal.TryGetResult(context.Nonce, out var notification))
+            {
+                context.AuthorizationCode = notification.AuthorizationCode;
+                context.FrontchannelAccessToken = notification.FrontchannelAccessToken;
+                context.FrontchannelAccessTokenExpirationDate = notification.FrontchannelAccessTokenExpirationDate;
+                context.FrontchannelIdentityToken = notification.FrontchannelIdentityToken;
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for determining the set of
+    /// backchannel tokens to validate when the context is marshalled.
+    /// </summary>
+    public sealed class EvaluateValidatedBackchannelTokensForMarshalledContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public EvaluateValidatedBackchannelTokensForMarshalledContext(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<EvaluateValidatedBackchannelTokensForMarshalledContext>()
+                .SetOrder(EvaluateValidatedBackchannelTokens.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            // When the authentication demand is expected to be marshalled to a different context,
+            // always skip the validation of all the backchannel tokens by default as the security
+            // principals they contain are not needed to marshal the authentication demand.
+            if (context.EndpointType is
+                OpenIddictClientEndpointType.Redirection or
+                OpenIddictClientEndpointType.PostLogoutRedirection && _marshal.IsTracked(context.Nonce))
+            {
+                context.ValidateBackchannelAccessToken = context.RejectBackchannelAccessToken = false;
+                context.ValidateBackchannelIdentityToken = context.RejectBackchannelIdentityToken = false;
+                context.ValidateIssuedToken = context.RejectIssuedToken = false;
+                context.ValidateRefreshToken = context.RejectRefreshToken = false;
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for disabling the redeeming of the state token, if applicable.
+    /// </summary>
+    public sealed class DisableStateTokenRedeeming : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public DisableStateTokenRedeeming(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<DisableStateTokenRedeeming>()
+                .SetOrder(RedeemStateTokenEntry.Descriptor.Order - 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            context.DisableStateTokenRedeeming = context.EndpointType switch
+            {
+                // When the authentication demand is expected to be marshalled to a different context,
+                // disable the redeeming of the state token to ensure it is not in an invalid state
+                // when the marshalled authentication demand is processed by the other instance.
+                OpenIddictClientEndpointType.Redirection or
+                OpenIddictClientEndpointType.PostLogoutRedirection when _marshal.IsTracked(context.Nonce)
+                    => true,
+
+                _ => context.DisableStateTokenRedeeming
+            };
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for preventing a token request from being sent, if applicable.
+    /// </summary>
+    public sealed class DisableTokenRequestSending : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public DisableTokenRequestSending(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<DisableTokenRequestSending>()
+                .SetOrder(EvaluateTokenRequest.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            context.SendTokenRequest = context.EndpointType switch
+            {
+                // When the authentication demand is expected to be marshalled to a different
+                // context, do not send a token request and let the other instance do it.
+                OpenIddictClientEndpointType.Redirection or
+                OpenIddictClientEndpointType.PostLogoutRedirection when _marshal.IsTracked(context.Nonce)
+                    => false,
+
+                _ => context.SendTokenRequest
+            };
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for preventing a userinfo request from being sent, if applicable.
+    /// </summary>
+    public sealed class DisableUserInfoRequestSending : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public DisableUserInfoRequestSending(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<DisableUserInfoRequestSending>()
+                .SetOrder(EvaluateUserInfoRequest.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            context.SendUserInfoRequest = context.EndpointType switch
+            {
+                // When the authentication demand is expected to be marshalled to a different
+                // context, do not send a userinfo request and let the other instance do it.
+                OpenIddictClientEndpointType.Redirection or
+                OpenIddictClientEndpointType.PostLogoutRedirection when _marshal.IsTracked(context.Nonce)
+                    => false,
+
+                _ => context.SendUserInfoRequest
+            };
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for restoring the state token
+    /// from the marshalled authentication context, if applicable.
+    /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
+    public sealed class RestoreStateTokenFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        public RestoreStateTokenFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -732,36 +1073,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.StateToken = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the state token from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.StateToken,
-
-                // Otherwise, don't alter the current context.
-                _ => context.StateToken
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the state token
     /// principal from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreStateTokenPrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreStateTokenPrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -775,37 +1098,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.StateTokenPrincipal = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore
-                // the state token principal from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.StateTokenPrincipal,
-
-                // Otherwise, don't alter the current context.
-                _ => context.StateTokenPrincipal
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the host authentication
     /// properties from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreHostAuthenticationPropertiesFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreHostAuthenticationPropertiesFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -819,25 +1123,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            // When the authentication context is marshalled, restore the
-            // host authentication properties from the other instance.
-            if (context.EndpointType is OpenIddictClientEndpointType.Unknown &&
-                _marshal.TryGetResult(context.Nonce, out var notification))
-            {
-                foreach (var property in notification.Properties)
-                {
-                    context.Properties[property.Key] = property.Value;
-                }
-            }
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
@@ -984,12 +1270,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
     /// Contains the logic responsible for restoring the frontchannel tokens
     /// from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreFrontchannelTokensFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreFrontchannelTokensFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1003,38 +1288,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            (context.AuthorizationCode,
-             context.FrontchannelAccessToken,
-             context.FrontchannelIdentityToken) = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the tokens from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => (notification.AuthorizationCode, notification.FrontchannelAccessToken, notification.FrontchannelIdentityToken),
-
-                // Otherwise, don't alter the current context.
-                _ => (context.AuthorizationCode, context.FrontchannelAccessToken, context.FrontchannelIdentityToken)
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the frontchannel identity
     /// token principal from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreFrontchannelIdentityTokenPrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreFrontchannelIdentityTokenPrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1048,37 +1313,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.FrontchannelIdentityTokenPrincipal = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the
-                // frontchannel identity token principal from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.FrontchannelIdentityTokenPrincipal,
-
-                // Otherwise, don't alter the current context.
-                _ => context.FrontchannelIdentityTokenPrincipal
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the frontchannel access
     /// token principal from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreFrontchannelAccessTokenPrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreFrontchannelAccessTokenPrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1092,37 +1338,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.FrontchannelAccessTokenPrincipal = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the
-                // frontchannel access token principal from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.FrontchannelAccessTokenPrincipal,
-
-                // Otherwise, don't alter the current context.
-                _ => context.FrontchannelAccessTokenPrincipal
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the authorization code
     /// principal from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreAuthorizationCodePrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreAuthorizationCodePrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1136,37 +1363,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.AuthorizationCodePrincipal = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the
-                // authorization code principal from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.AuthorizationCodePrincipal,
-
-                // Otherwise, don't alter the current context.
-                _ => context.AuthorizationCodePrincipal
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the token response
     /// from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreTokenResponseFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreTokenResponseFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1180,36 +1388,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.TokenResponse = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the token response from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.TokenResponse,
-
-                // Otherwise, don't alter the current context.
-                _ => context.TokenResponse
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the backchannel tokens
     /// from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreBackchannelTokensFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreBackchannelTokensFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1223,38 +1413,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            (context.BackchannelAccessToken,
-             context.BackchannelIdentityToken,
-             context.RefreshToken) = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the tokens from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => (notification.BackchannelAccessToken, notification.BackchannelIdentityToken, notification.RefreshToken),
-
-                // Otherwise, don't alter the current context.
-                _ => (context.BackchannelAccessToken, context.BackchannelIdentityToken, context.RefreshToken)
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the backchannel identity
     /// token principal from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreBackchannelIdentityTokenPrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreBackchannelIdentityTokenPrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1268,37 +1438,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.BackchannelIdentityTokenPrincipal = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the
-                // frontchannel identity token principal from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.BackchannelIdentityTokenPrincipal,
-
-                // Otherwise, don't alter the current context.
-                _ => context.BackchannelIdentityTokenPrincipal
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the frontchannel access
     /// token principal from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreBackchannelAccessTokenPrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreBackchannelAccessTokenPrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1312,37 +1463,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.BackchannelAccessTokenPrincipal = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the
-                // frontchannel access token principal from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.BackchannelAccessTokenPrincipal,
-
-                // Otherwise, don't alter the current context.
-                _ => context.BackchannelAccessTokenPrincipal
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the refresh token
     /// principal from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreRefreshTokenPrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreRefreshTokenPrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1356,37 +1488,18 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.RefreshTokenPrincipal = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore
-                // the refresh token principal from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.RefreshTokenPrincipal,
-
-                // Otherwise, don't alter the current context.
-                _ => context.RefreshTokenPrincipal
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the userinfo details
     /// from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreUserInfoDetailsFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreUserInfoDetailsFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1400,35 +1513,17 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            (context.UserInfoResponse, context.UserInfoTokenPrincipal, context.UserInfoToken) = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the userinfo details from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => (notification.UserInfoResponse, notification.UserInfoTokenPrincipal, notification.UserInfoToken),
-
-                // Otherwise, don't alter the current context.
-                _ => (context.UserInfoResponse, context.UserInfoTokenPrincipal, context.UserInfoToken)
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Contains the logic responsible for restoring the merged principal from the marshalled authentication context, if applicable.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class RestoreMergedPrincipalFromMarshalledAuthentication : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
-
         public RestoreMergedPrincipalFromMarshalledAuthentication(OpenIddictClientSystemIntegrationMarshal marshal)
-            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+            => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1442,24 +1537,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
-
-            context.MergedPrincipal = context.EndpointType switch
-            {
-                // When the authentication context is marshalled, restore the merged principal from the other instance.
-                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
-                    => notification.MergedPrincipal,
-
-                // Otherwise, don't alter the current context.
-                _ => context.MergedPrincipal
-            };
-
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
     }
 
     /// <summary>
@@ -1492,8 +1570,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
 
-            // Inform the marshal that the authentication demand is complete.
-            if (!_marshal.TryComplete(context.Nonce, context))
+            if (context.EndpointType is not (OpenIddictClientEndpointType.Redirection or
+                                             OpenIddictClientEndpointType.PostLogoutRedirection))
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            if (_marshal.IsTracked(context.Nonce) && !_marshal.TryComplete(context.Nonce, context))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0380));
             }

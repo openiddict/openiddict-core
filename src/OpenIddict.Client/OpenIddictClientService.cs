@@ -271,7 +271,10 @@ public class OpenIddictClientService
         var context = new ProcessAuthenticationContext(transaction)
         {
             CancellationToken = request.CancellationToken,
-            Nonce = request.Nonce
+            Nonce = request.Nonce,
+            TokenEndpointClientCertificate = request.TokenBindingCertificate,
+            TokenRequest = request.AdditionalTokenRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
 
         if (request.Properties is { Count: > 0 })
