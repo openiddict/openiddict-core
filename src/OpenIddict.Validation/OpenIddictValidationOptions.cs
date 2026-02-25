@@ -85,6 +85,12 @@ public sealed class OpenIddictValidationOptions
     /// <summary>
     /// Gets or sets the client secret sent to the authorization server when using remote validation.
     /// </summary>
+    /// <remarks>
+    /// Note: client authentication based on shared secrets is not recommended and should
+    /// only be used for backward compatibility with legacy applications that only support
+    /// client secrets. When possible, consider using public/private key pairs or TLS client
+    /// certificates instead, as these client authentication methods are significantly safer.
+    /// </remarks>
     public string? ClientSecret { get; set; }
 
     /// <summary>

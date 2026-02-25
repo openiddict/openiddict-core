@@ -218,6 +218,12 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "client_secret" parameter.
     /// </summary>
+    /// <remarks>
+    /// Note: client authentication based on shared secrets is not recommended and should
+    /// only be used for backward compatibility with legacy applications that only support
+    /// client secrets. When possible, consider using public/private key pairs or TLS client
+    /// certificates instead, as these client authentication methods are significantly safer.
+    /// </remarks>
     public string? ClientSecret
     {
         get => (string?) GetParameter(OpenIddictConstants.Parameters.ClientSecret);
