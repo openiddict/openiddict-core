@@ -3312,6 +3312,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6291" xml:space="preserve">
     <value>The revocation response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
+  <data name="ID6292" xml:space="preserve">
+    <value>The payload of the '{0}' reference token was used instead of its reference identifier, which may indicate that the payload stored in the database has leaked and is being used as a regular token.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>

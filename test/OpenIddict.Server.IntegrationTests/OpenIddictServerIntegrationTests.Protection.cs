@@ -8,6 +8,8 @@
 
 using System.Collections.Immutable;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
@@ -465,6 +467,78 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
         Assert.Equal<IEnumerable<string?>?>([Scopes.OpenId, Scopes.Profile], (ImmutableArray<string?>?) response[Claims.Private.Scope]);
+    }
+
+    [Fact]
+    public async Task ValidateToken_TokenPayloadUsedInsteadOfTokenReferenceIdentifierIsRejected()
+    {
+        // Arrange
+        var token = new OpenIddictToken();
+
+        var manager = CreateTokenManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(token);
+
+            mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+            mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeIdentifiers.AccessToken);
+
+            mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.GetReferenceIdAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("reference_id");
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetUserInfoEndpointUris("/authenticate");
+
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return ValueTask.CompletedTask;
+                }));
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("token_payload", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                        .SetClaim(Claims.Subject, "Bob le Magnifique")
+                        .SetClaims(Claims.Scope, [Scopes.OpenId, Scopes.Profile]);
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+        {
+            AccessToken = "token_payload"
+        });
+
+        // Assert
+        Assert.Null((string?) response[Claims.Subject]);
+
+        Mock.Get(manager).Verify(manager => manager.GetReferenceIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
