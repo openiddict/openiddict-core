@@ -139,6 +139,12 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// Note: depending on the manager used to create the application,
     /// the client secret may be hashed for security reasons.
     /// </summary>
+    /// <remarks>
+    /// Note: client authentication based on shared secrets is not recommended and should
+    /// only be used for backward compatibility with legacy applications that only support
+    /// client secrets. When possible, consider using public/private key pairs or TLS client
+    /// certificates instead, as these client authentication methods are significantly safer.
+    /// </remarks>
     /// <param name="application">The application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
@@ -334,6 +340,12 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// Note: depending on the manager used to create the application,
     /// the client secret may be hashed for security reasons.
     /// </summary>
+    /// <remarks>
+    /// Note: client authentication based on shared secrets is not recommended and should
+    /// only be used for backward compatibility with legacy applications that only support
+    /// client secrets. When possible, consider using public/private key pairs or TLS client
+    /// certificates instead, as these client authentication methods are significantly safer.
+    /// </remarks>
     /// <param name="application">The application.</param>
     /// <param name="secret">The client secret associated with the application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>

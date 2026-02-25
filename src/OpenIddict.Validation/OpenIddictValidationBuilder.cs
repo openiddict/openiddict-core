@@ -672,6 +672,12 @@ public sealed class OpenIddictValidationBuilder
     /// Sets the client identifier client_secret used when communicating
     /// with the remote authorization server (e.g for introspection).
     /// </summary>
+    /// <remarks>
+    /// Note: client authentication based on shared secrets is not recommended and should
+    /// only be used for backward compatibility with legacy applications that only support
+    /// client secrets. When possible, consider using public/private key pairs or TLS client
+    /// certificates instead, as these client authentication methods are significantly safer.
+    /// </remarks>
     /// <param name="secret">The client secret.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetClientSecret(string secret)

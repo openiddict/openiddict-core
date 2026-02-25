@@ -122,6 +122,12 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// Note: the default implementation automatically hashes the client
     /// secret before storing it in the database, for security reasons.
     /// </summary>
+    /// <remarks>
+    /// Note: client authentication based on shared secrets is not recommended and should
+    /// only be used for backward compatibility with legacy applications that only support
+    /// client secrets. When possible, consider using public/private key pairs or TLS client
+    /// certificates instead, as these client authentication methods are significantly safer.
+    /// </remarks>
     /// <param name="application">The application to create.</param>
     /// <param name="secret">The client secret associated with the application, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -1157,6 +1163,12 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// Note: the default implementation automatically hashes the client
     /// secret before storing it in the database, for security reasons.
     /// </summary>
+    /// <remarks>
+    /// Note: client authentication based on shared secrets is not recommended and should
+    /// only be used for backward compatibility with legacy applications that only support
+    /// client secrets. When possible, consider using public/private key pairs or TLS client
+    /// certificates instead, as these client authentication methods are significantly safer.
+    /// </remarks>
     /// <param name="application">The application to update.</param>
     /// <param name="secret">The client secret associated with the application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -1334,6 +1346,12 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <summary>
     /// Validates the client_secret associated with an application.
     /// </summary>
+    /// <remarks>
+    /// Note: client authentication based on shared secrets is not recommended and should
+    /// only be used for backward compatibility with legacy applications that only support
+    /// client secrets. When possible, consider using public/private key pairs or TLS client
+    /// certificates instead, as these client authentication methods are significantly safer.
+    /// </remarks>
     /// <param name="application">The application.</param>
     /// <param name="secret">The secret that should be compared to the client_secret stored in the database.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>

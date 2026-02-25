@@ -148,6 +148,12 @@ public static partial class OpenIddictServerEvents
         /// The authorization server application is responsible for
         /// validating this value to ensure it identifies a registered client.
         /// </summary>
+        /// <remarks>
+        /// Note: client authentication based on shared secrets is not recommended and should
+        /// only be used for backward compatibility with legacy applications that only support
+        /// client secrets. When possible, consider using public/private key pairs or TLS client
+        /// certificates instead, as these client authentication methods are significantly safer.
+        /// </remarks>
         public string? ClientSecret => Transaction.Request?.ClientSecret;
     }
 
