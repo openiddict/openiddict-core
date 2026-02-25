@@ -955,6 +955,11 @@ public sealed class OpenIddictServerBuilder
     /// https://tools.ietf.org/html/rfc6749#section-4.2 and
     /// http://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth.
     /// </summary>
+    /// <remarks>
+    /// Note: the implicit flow is not recommended for new applications due to
+    /// its inherent limitations and should only be used in legacy scenarios.
+    /// When possible, consider using the authorization code flow instead.
+    /// </remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AllowImplicitFlow()
         => Configure(options =>
@@ -978,6 +983,11 @@ public sealed class OpenIddictServerBuilder
     /// Enables password flow support. For more information about this specific
     /// OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc6749#section-4.3.
     /// </summary>
+    /// <remarks>
+    /// Note: the password flow is not recommended for new applications due to its
+    /// inherent limitations and should only be used in legacy scenarios. When possible,
+    /// consider using an interactive user flow like the authorization code flow instead.
+    /// </remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AllowPasswordFlow()
         => Configure(options => options.GrantTypes.Add(GrantTypes.Password));
