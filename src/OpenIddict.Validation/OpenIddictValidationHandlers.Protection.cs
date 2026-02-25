@@ -567,6 +567,21 @@ public static partial class OpenIddictValidationHandlers
                     return;
                 }
 
+                // If the token was not validated as a reference token but has a reference identifier attached, this
+                // may indicate that the payload stored in the database has leaked and is being used as a regular,
+                // non-reference token. To prevent this, reject the token if the reference identifier is not null.
+                if (!context.IsReferenceToken && !string.IsNullOrEmpty(await _tokenManager.GetReferenceIdAsync(token)))
+                {
+                    context.Logger.LogWarning(6292, SR.GetResourceString(SR.ID6292), await _tokenManager.GetIdAsync(token));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2019),
+                        uri: SR.FormatID8000(SR.ID2019));
+
+                    return;
+                }
+
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
                 context.Principal
                     .SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
