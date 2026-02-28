@@ -7,7 +7,7 @@ using OpenIddict.Client.WebIntegration;
 using OpenIddict.Sandbox.Console.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
-var builder = Host.CreateApplicationBuilder();
+var builder = Host.CreateApplicationBuilder(args);
 
 builder.Logging.ClearProviders();
 builder.Logging.AddDebug();
@@ -129,14 +129,18 @@ builder.Services.AddOpenIddict()
                });
     });
 
-// Register the worker responsible for creating the database used to store tokens
-// and adding the registry entries required to register the custom URI scheme.
-//
-// Note: in a real world application, this step should be part of a setup script.
-builder.Services.AddHostedService<Worker>();
-
 // Register the background service responsible for handling the console interactions.
 builder.Services.AddHostedService<InteractiveService>();
 
 var app = builder.Build();
+
+// Before starting the host, create the database used to store the application data.
+//
+// Note: in a real world application, this step should be part of a setup script.
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+    await context.Database.EnsureCreatedAsync();
+}
+
 await app.RunAsync();

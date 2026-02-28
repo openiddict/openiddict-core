@@ -210,10 +210,6 @@ public class Startup
 #endif
 
         services.AddMvc();
-
-        // Register the worker responsible for creating the database used to store tokens.
-        // Note: in a real world application, this step should be part of a setup script.
-        services.AddHostedService<Worker>();
     }
 
     public void Configure(IApplicationBuilder app)
