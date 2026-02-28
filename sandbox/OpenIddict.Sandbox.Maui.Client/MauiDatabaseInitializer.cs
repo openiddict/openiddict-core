@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenIddict.Sandbox.Maui.Client;
 
-public class Worker : IMauiInitializeScopedService
+public class MauiDatabaseInitializer : IMauiInitializeScopedService
 {
     public void Initialize(IServiceProvider services)
     {

@@ -130,7 +130,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<MainPage>();
 
         // Register the initialization service responsible for creating the SQLite database.
-        builder.Services.AddScoped<IMauiInitializeScopedService, Worker>();
+        builder.Services.AddScoped<IMauiInitializeScopedService, MauiDatabaseInitializer>();
 
         return builder.Build();
     }

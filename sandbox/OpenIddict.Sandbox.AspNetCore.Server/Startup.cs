@@ -315,10 +315,6 @@ public class Startup
         services.AddTransient<IEmailSender, AuthMessageSender>();
         services.AddTransient<ISmsSender, AuthMessageSender>();
 
-        // Register the worker responsible for seeding the database with the sample clients.
-        // Note: in a real world application, this step should be part of a setup script.
-        services.AddHostedService<Worker>();
-
 #if SUPPORTS_KESTREL_TLS_HANDSHAKE_CALLBACK_OPTIONS
         // Configure Kestrel to listen on the 44395 port and configure it to enforce mTLS.
         //
