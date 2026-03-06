@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -13,6 +14,7 @@ namespace OpenIddict.EntityFrameworkCore;
 /// Represents a model customizer able to register the entity sets
 /// required by the OpenIddict stack in an Entity Framework Core context.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictEntityFrameworkCoreCustomizer<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
