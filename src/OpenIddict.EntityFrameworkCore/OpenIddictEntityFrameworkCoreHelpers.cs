@@ -22,8 +22,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Registers the OpenIddict entity sets in the Entity Framework Core context
     /// using the default OpenIddict models and the default key type (string).
     /// </summary>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static DbContextOptionsBuilder UseOpenIddict(this DbContextOptionsBuilder builder)
         => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication,
                                  OpenIddictEntityFrameworkCoreAuthorization,
@@ -34,8 +34,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Registers the OpenIddict entity sets in the Entity Framework Core context
     /// using the default OpenIddict models and the default key type (string).
     /// </summary>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static DbContextOptionsBuilder<TContext> UseOpenIddict<TContext>(this DbContextOptionsBuilder<TContext> builder)
         where TContext : DbContext
     {
@@ -51,8 +51,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Note: when using a custom key type, the new key type MUST be registered by calling
     /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TKey}"/>.
     /// </remarks>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static DbContextOptionsBuilder UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(this DbContextOptionsBuilder builder)
         where TKey : notnull, IEquatable<TKey>
@@ -69,8 +69,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Note: when using a custom key type, the new key type MUST be registered by calling
     /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TKey}"/>.
     /// </remarks>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static DbContextOptionsBuilder<TContext> UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey,
         TContext>(this DbContextOptionsBuilder<TContext> builder)
@@ -89,8 +89,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Note: when using custom entities, the new entities MUST be registered by calling
     /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TScope, TToken, TKey}"/>.
     /// </remarks>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static DbContextOptionsBuilder UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
@@ -124,8 +124,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Note: when using custom entities, the new entities MUST be registered by calling
     /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TScope, TToken, TKey}"/>.
     /// </remarks>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static DbContextOptionsBuilder<TContext> UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
@@ -149,8 +149,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Registers the OpenIddict entity sets in the Entity Framework Core context
     /// using the default OpenIddict models and the default key type (string).
     /// </summary>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static ModelBuilder UseOpenIddict(this ModelBuilder builder)
         => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication,
                                  OpenIddictEntityFrameworkCoreAuthorization,
@@ -165,8 +165,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Note: when using a custom key type, the new key type MUST be registered by calling
     /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TKey}"/>.
     /// </remarks>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static ModelBuilder UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(this ModelBuilder builder) where TKey : notnull, IEquatable<TKey>
         => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication<TKey>,
@@ -182,8 +182,8 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// Note: when using custom entities, the new entities MUST be registered by calling
     /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TScope, TToken, TKey}"/>.
     /// </remarks>
-    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-    /// <returns>The Entity Framework context builder.</returns>
+    /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
+    /// <returns>The Entity Framework Core context builder.</returns>
     public static ModelBuilder UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
