@@ -348,13 +348,13 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         // Ensure the self-signed TLS client authentication chain policy doesn't contain any certificate.
         if (options.SelfSignedTlsClientAuthenticationPolicy is not null)
         {
-            if (options.SelfSignedTlsClientAuthenticationPolicy.ExtraStore.Cast<X509Certificate2>().Any())
+            if (options.SelfSignedTlsClientAuthenticationPolicy.ExtraStore.Count is not 0)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
             }
 
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE && SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
-            if (options.SelfSignedTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>().Any())
+            if (options.SelfSignedTlsClientAuthenticationPolicy.CustomTrustStore.Count is not 0)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
             }
