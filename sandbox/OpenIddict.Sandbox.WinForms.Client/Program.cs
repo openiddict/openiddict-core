@@ -98,10 +98,6 @@ var host = new HostBuilder()
                                   .SetRedirectUri("com.openiddict.sandbox.winforms.client://callback/login/github");
                        });
             });
-
-        //
-        // Note: in a real world application, this step should be part of a setup script.
-        // services.Insert(0, ServiceDescriptor.Singleton<IHostedService, Worker>());
     })
     .ConfigureWinForms<MainForm>()
     .UseWinFormsLifetime()

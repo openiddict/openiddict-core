@@ -716,6 +716,5 @@ public sealed class OpenIddictServerOptions
     /// the system certificates store, doing so is strongly discouraged.
     /// </para>
     /// </remarks>
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public X509ChainPolicy? SelfSignedTlsClientAuthenticationPolicy { get; set; }
 }

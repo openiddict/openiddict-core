@@ -1849,7 +1849,7 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
     <value>mTLS endpoint aliases cannot be set when the corresponding endpoints have not been enabled.</value>
   </data>
   <data name="ID0511" xml:space="preserve">
-    <value>Public Key Infrastructure certificates cannot contain private keys.</value>
+    <value>Certificates attached to client authentication policies cannot contain private keys.</value>
   </data>
   <data name="ID0512" xml:space="preserve">
     <value>A certificate-based client authentication or token binding method was negotiated but no suitable certificate could be found.</value>

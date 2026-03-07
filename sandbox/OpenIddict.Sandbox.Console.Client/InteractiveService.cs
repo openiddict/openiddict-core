@@ -53,9 +53,13 @@ public class InteractiveService : BackgroundService
                     // While this sample deliberately doesn't store the generated certificate in a persistent
                     // location, the certificate used for token binding should typically be stored in the user
                     // certificate store to be reloaded across application restarts in a real-world application.
-                    var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
-                        ? GenerateEphemeralTlsClientCertificate()
-                        : null;
+                    var certificate = registration.ClientType switch
+                    {
+                        ClientTypes.Public when configuration.TlsClientCertificateBoundAccessTokens is true
+                            => GenerateEphemeralTlsClientCertificate(),
+
+                        _ => null
+                    };
 
                     var flow = await GetSelectedFlowAsync(registration, configuration, stoppingToken);
 
@@ -166,9 +170,13 @@ public class InteractiveService : BackgroundService
                     var type = await GetSelectedGrantTypeAsync(registration, configuration, stoppingToken);
                     if (type is GrantTypes.DeviceCode)
                     {
-                        var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
-                            ? GenerateEphemeralTlsClientCertificate()
-                            : null;
+                        var certificate = registration.ClientType switch
+                        {
+                            ClientTypes.Public when configuration.TlsClientCertificateBoundAccessTokens is true
+                                => GenerateEphemeralTlsClientCertificate(),
+
+                            _ => null
+                        };
 
                         // Ask OpenIddict to send a device authorization request and write
                         // the complete verification endpoint URI to the console output.
@@ -256,9 +264,13 @@ public class InteractiveService : BackgroundService
                     {
                         var (username, password) = (await GetUsernameAsync(stoppingToken), await GetPasswordAsync(stoppingToken));
 
-                        var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
-                            ? GenerateEphemeralTlsClientCertificate()
-                            : null;
+                        var certificate = registration.ClientType switch
+                        {
+                            ClientTypes.Public when configuration.TlsClientCertificateBoundAccessTokens is true
+                                => GenerateEphemeralTlsClientCertificate(),
+
+                            _ => null
+                        };
 
                         AnsiConsole.MarkupLine("[cyan]Sending the token request.[/]");
 
@@ -339,9 +351,13 @@ public class InteractiveService : BackgroundService
                             await GetSubjectTokenAsync(stoppingToken),
                             await GetActorTokenAsync(stoppingToken));
 
-                        var certificate = configuration.TlsClientCertificateBoundAccessTokens is true
-                            ? GenerateEphemeralTlsClientCertificate()
-                            : null;
+                        var certificate = registration.ClientType switch
+                        {
+                            ClientTypes.Public when configuration.TlsClientCertificateBoundAccessTokens is true
+                                => GenerateEphemeralTlsClientCertificate(),
+
+                            _ => null
+                        };
 
                         AnsiConsole.MarkupLine("[cyan]Sending the token request.[/]");
 

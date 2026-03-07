@@ -2420,7 +2420,6 @@ public sealed class OpenIddictServerBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to amend the created X.509 chain policy.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerBuilder EnableSelfSignedTlsClientAuthentication(Action<X509ChainPolicy> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
