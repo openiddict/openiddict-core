@@ -426,23 +426,6 @@ public static class OpenIddictClientModels
         /// Gets the scopes that will be sent to the authorization server.
         /// </summary>
         public List<string>? Scopes { get; init; }
-
-        /// <summary>
-        /// Gets or sets the X.509 client certificate used to bind the access and/or
-        /// refresh tokens issued by the authorization server, if applicable.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Note: when mTLs is also used for OAuth 2.0 client authentication, the
-        /// certificate set here replaces the client certificate chosen by OpenIddict.
-        /// </para>
-        /// <para>
-        /// Note: if a certificate-based client authentication or token binding method is
-        /// negotiated, the type of the certificate must match the negotiated methods.
-        /// </para>
-        /// </remarks>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public X509Certificate2? TokenBindingCertificate { get; init; }
     }
 
     /// <summary>

@@ -430,7 +430,6 @@ public class OpenIddictClientService
             Issuer = request.Issuer,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
-            TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
