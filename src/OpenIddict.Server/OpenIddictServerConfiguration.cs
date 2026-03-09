@@ -406,7 +406,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0467));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0466));
             }
 
             if (options.RevocationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
