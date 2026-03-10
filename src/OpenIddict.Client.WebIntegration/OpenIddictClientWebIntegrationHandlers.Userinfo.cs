@@ -512,6 +512,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     }
                 }
 
+                // Note: Apple returns a non-standard "name" claim formatted as a JSON object.
+                else if (context.Registration.ProviderType is ProviderTypes.Apple)
+                {
+                    var name = context.Response[Claims.Name];
+                    if (name is not null)
+                    {
+                        context.Response[Claims.Name] = $"{name?["firstName"]} {name?["lastName"]}";
+                        context.Response[Claims.FamilyName] = name?["lastName"];
+                        context.Response[Claims.GivenName] = name?["firstName"];
+                    }
+                }
+
                 return ValueTask.CompletedTask;
             }
         }

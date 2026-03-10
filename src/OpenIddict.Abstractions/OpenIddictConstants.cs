@@ -547,6 +547,7 @@ public static class OpenIddictConstants
         public const string Phone = "phone";
         public const string Profile = "profile";
         public const string Roles = "roles";
+        public const string Name = "name";
     }
 
     public static class Separators

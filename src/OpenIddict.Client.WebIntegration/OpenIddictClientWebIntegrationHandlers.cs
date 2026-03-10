@@ -1750,7 +1750,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.ResponseMode = context.Registration.ProviderType switch
             {
                 // Note: Apple requires using form_post when the "email" or "name" scopes are requested.
-                ProviderTypes.Apple when context.Scopes.Contains(Scopes.Email) || context.Scopes.Contains("name")
+                ProviderTypes.Apple when context.Scopes.Contains(Scopes.Email) || context.Scopes.Contains(Scopes.Name)
                     => ResponseModes.FormPost,
 
                 _ => context.ResponseMode
