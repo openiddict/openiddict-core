@@ -39,6 +39,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
          */
         WaitMarshalledAuthentication.Descriptor,
 
+        RestoreRequestFromMarshalledContext.Descriptor,
         RestoreClientRegistrationFromMarshalledContext.Descriptor,
 
         EvaluateValidatedUpfrontTokensForMarshalledContext.Descriptor,
@@ -658,6 +659,48 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             {
                 throw;
             }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for restoring the request from the marshalled authentication context, if applicable.
+    /// </summary>
+    public sealed class RestoreRequestFromMarshalledContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientSystemIntegrationMarshal _marshal;
+
+        public RestoreRequestFromMarshalledContext(OpenIddictClientSystemIntegrationMarshal marshal)
+            => _marshal = marshal ?? throw new ArgumentNullException(nameof(marshal));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationNonce>()
+                .UseSingletonHandler<RestoreRequestFromMarshalledContext>()
+                .SetOrder(WaitMarshalledAuthentication.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(!string.IsNullOrEmpty(context.Nonce), SR.GetResourceString(SR.ID4019));
+
+            context.Request = context.EndpointType switch
+            {
+                // When the authentication demand is marshalled from a different context, restore the request from the
+                // other instance so that custom parameters can be resolved from the marshalled context, if necessary.
+                OpenIddictClientEndpointType.Unknown when _marshal.TryGetResult(context.Nonce, out var notification)
+                    => notification.Request,
+
+                _ => context.Request
+            };
+
+            return ValueTask.CompletedTask;
         }
     }
 

@@ -524,7 +524,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // For more information, see
                 // https://www.zoho.com/accounts/protocol/oauth/multi-dc/client-authorization.html.
                 ProviderTypes.Zoho when context.GrantType is GrantTypes.AuthorizationCode
-                    => ((string?) context.Request?["location"])?.ToUpperInvariant() switch
+                    => ((string?) context.Request["location"])?.ToUpperInvariant() switch
                     {
                         "AU" => new Uri("https://accounts.zoho.com.au/oauth/v2/token", UriKind.Absolute),
                         "CA" => new Uri("https://accounts.zohocloud.ca/oauth/v2/token", UriKind.Absolute),
@@ -1077,7 +1077,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // For more information, see
                 // https://www.zoho.com/accounts/protocol/oauth/multi-dc/client-authorization.html.
                 ProviderTypes.Zoho when context.GrantType is GrantTypes.AuthorizationCode
-                    => ((string?) context.Request?["location"])?.ToUpperInvariant() switch
+                    => ((string?) context.Request["location"])?.ToUpperInvariant() switch
                     {
                         "AU" => new Uri("https://accounts.zoho.com.au/oauth/user/info", UriKind.Absolute),
                         "CA" => new Uri("https://accounts.zohocloud.ca/oauth/user/info", UriKind.Absolute),

@@ -272,6 +272,7 @@ public class OpenIddictClientService
         {
             CancellationToken = request.CancellationToken,
             Nonce = request.Nonce,
+            Request = new(),
             TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
@@ -430,6 +431,7 @@ public class OpenIddictClientService
             Issuer = request.Issuer,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
+            Request = new(),
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
         };
@@ -521,6 +523,7 @@ public class OpenIddictClientService
             GrantType = request.GrantType,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
+            Request = new(),
             TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
@@ -616,6 +619,7 @@ public class OpenIddictClientService
                     Issuer = request.Issuer,
                     ProviderName = request.ProviderName,
                     RegistrationId = request.RegistrationId,
+                    Request = new(),
                     TokenEndpointClientCertificate = request.TokenBindingCertificate,
                     TokenRequest = request.AdditionalTokenRequestParameters
                         is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
@@ -801,6 +805,7 @@ public class OpenIddictClientService
             Password = request.Password,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
+            Request = new(),
             TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
@@ -889,6 +894,7 @@ public class OpenIddictClientService
             Issuer = request.Issuer,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
+            Request = new(),
             RequestedTokenType = request.RequestedTokenType,
             SubjectToken = request.SubjectToken,
             SubjectTokenType = request.SubjectTokenType,
@@ -975,6 +981,7 @@ public class OpenIddictClientService
             ProviderName = request.ProviderName,
             RefreshToken = request.RefreshToken,
             RegistrationId = request.RegistrationId,
+            Request = new(),
             TokenEndpointClientCertificate = request.TokenBindingCertificate,
             TokenRequest = request.AdditionalTokenRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
