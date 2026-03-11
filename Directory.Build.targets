@@ -117,6 +117,7 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_LOADER</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_DEEP_EQUALS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_KEYED_HTTP_CLIENT_RESOLUTION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_CLONING</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_VERIFICATION_TIME_MODE</DefineConstants>

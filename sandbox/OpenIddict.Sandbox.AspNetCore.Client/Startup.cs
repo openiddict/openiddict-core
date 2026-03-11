@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -198,6 +199,9 @@ public class Startup
         // access tokens, the client certificate MUST be attached to outgoing HTTP requests
         // and the mTLS subdomain (for which TLS client authentication is enabled) MUST be used.
         services.AddHttpClient("ApiClient")
+#if SUPPORTS_KEYED_HTTP_CLIENT_RESOLUTION
+            .AddAsKeyed()
+#endif
 #if SUPPORTS_PEM_ENCODED_KEY_IMPORT
             .ConfigureHttpClient(static client => client.BaseAddress = new Uri("https://mtls.dev.localhost:44395/"))
             .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler
@@ -207,6 +211,14 @@ public class Startup
             });
 #else
             .ConfigureHttpClient(static client => client.BaseAddress = new Uri("https://localhost:44395/"));
+#endif
+
+#if !SUPPORTS_KEYED_HTTP_CLIENT_RESOLUTION
+        services.AddKeyedScoped("ApiClient", static (provider, name) =>
+        {
+            var factory = provider.GetRequiredService<IHttpClientFactory>();
+            return factory.CreateClient((string) name!);
+        });
 #endif
 
         services.AddMvc();

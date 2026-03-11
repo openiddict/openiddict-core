@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Autofac;
@@ -100,6 +101,16 @@ public class Startup
                                   .AddScopes(Scopes.Profile);
                        });
             });
+
+        // Register a named HTTP client that will be used to call the demo resource API.
+        services.AddHttpClient("ApiClient")
+            .ConfigureHttpClient(static client => client.BaseAddress = new Uri("https://localhost:44349/"));
+
+        services.AddKeyedScoped("ApiClient", static (provider, name) =>
+        {
+            var factory = provider.GetRequiredService<IHttpClientFactory>();
+            return factory.CreateClient((string) name!);
+        });
 
         // Create a new Autofac container and import the OpenIddict services.
         var builder = new ContainerBuilder();
