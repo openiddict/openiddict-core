@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using OpenIddict.Client;
@@ -15,23 +16,12 @@ using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Client.Controllers;
 
-public class HomeController : Controller
+public class HomeController([FromKeyedServices("ApiClient")] HttpClient client, OpenIddictClientService service) : Controller
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly OpenIddictClientService _service;
-
-    public HomeController(
-        IHttpClientFactory httpClientFactory,
-        OpenIddictClientService service)
-    {
-        _httpClientFactory = httpClientFactory;
-        _service = service;
-    }
-
     [HttpGet, Route("~/")]
     public async Task<ActionResult> Index(CancellationToken cancellationToken) => View(new IndexViewModel
     {
-        Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+        Providers = from registration in await service.GetClientRegistrationsAsync(cancellationToken)
                     where !string.IsNullOrEmpty(registration.ProviderName)
                     where !string.IsNullOrEmpty(registration.ProviderDisplayName)
                     select registration
@@ -45,9 +35,7 @@ public class HomeController : Controller
         var result = await context.Authentication.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationType);
         var token = result.Properties.Dictionary[Tokens.BackchannelAccessToken];
 
-        using var client = _httpClientFactory.CreateClient();
-
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:44349/api/message");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "api/message");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         using var response = await client.SendAsync(request, cancellationToken);
@@ -56,7 +44,7 @@ public class HomeController : Controller
         return View("Index", new IndexViewModel
         {
             Message = await response.Content.ReadAsStringAsync(),
-            Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+            Providers = from registration in await service.GetClientRegistrationsAsync(cancellationToken)
                         where !string.IsNullOrEmpty(registration.ProviderName)
                         where !string.IsNullOrEmpty(registration.ProviderDisplayName)
                         select registration
@@ -75,7 +63,7 @@ public class HomeController : Controller
             return new HttpStatusCodeResult(400);
         }
 
-        var result = await _service.AuthenticateWithRefreshTokenAsync(new()
+        var result = await service.AuthenticateWithRefreshTokenAsync(new()
         {
             CancellationToken = cancellationToken,
             RefreshToken = token,
@@ -99,7 +87,7 @@ public class HomeController : Controller
         return View("Index", new IndexViewModel
         {
             Message = result.AccessToken,
-            Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+            Providers = from registration in await service.GetClientRegistrationsAsync(cancellationToken)
                         where !string.IsNullOrEmpty(registration.ProviderName)
                         where !string.IsNullOrEmpty(registration.ProviderDisplayName)
                         select registration

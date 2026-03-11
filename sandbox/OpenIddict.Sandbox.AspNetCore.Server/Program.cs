@@ -153,6 +153,7 @@ static async Task RegisterApplicationsAsync(IServiceProvider provider)
         {
             ApplicationType = ApplicationTypes.Web,
             ClientId = "mvc",
+            ClientSecret = "emCimpdc9SeOaZzN5jzm4_eek-STF6VenfVlKO1_qt0",
             ClientType = ClientTypes.Confidential,
             ConsentType = ConsentTypes.Systematic,
             DisplayName = "MVC client application",
@@ -206,8 +207,6 @@ static async Task RegisterApplicationsAsync(IServiceProvider provider)
                         """))
                 }
             },
-#else
-            ClientSecret = "emCimpdc9SeOaZzN5jzm4_eek-STF6VenfVlKO1_qt0",
 #endif
             RedirectUris =
             {

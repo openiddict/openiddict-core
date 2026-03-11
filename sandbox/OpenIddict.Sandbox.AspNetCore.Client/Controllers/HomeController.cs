@@ -10,23 +10,12 @@ using static OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Client.Controllers;
 
-public class HomeController : Controller
+public class HomeController([FromKeyedServices("ApiClient")] HttpClient client, OpenIddictClientService service) : Controller
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly OpenIddictClientService _service;
-
-    public HomeController(
-        IHttpClientFactory httpClientFactory,
-        OpenIddictClientService service)
-    {
-        _httpClientFactory = httpClientFactory;
-        _service = service;
-    }
-
     [HttpGet("~/")]
     public async Task<ActionResult> Index(CancellationToken cancellationToken) => View(new IndexViewModel
     {
-        Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+        Providers = from registration in await service.GetClientRegistrationsAsync(cancellationToken)
                     where !string.IsNullOrEmpty(registration.ProviderName)
                     where !string.IsNullOrEmpty(registration.ProviderDisplayName)
                     select registration
@@ -39,8 +28,6 @@ public class HomeController : Controller
         // authentication options shouldn't be used, a specific scheme can be specified here.
         var token = await HttpContext.GetTokenAsync(Tokens.BackchannelAccessToken);
 
-        using var client = _httpClientFactory.CreateClient("ApiClient");
-
         using var request = new HttpRequestMessage(HttpMethod.Get, "api/message");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
@@ -50,7 +37,7 @@ public class HomeController : Controller
         return View("Index", new IndexViewModel
         {
             Message = await response.Content.ReadAsStringAsync(),
-            Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+            Providers = from registration in await service.GetClientRegistrationsAsync(cancellationToken)
                         where !string.IsNullOrEmpty(registration.ProviderName)
                         where !string.IsNullOrEmpty(registration.ProviderDisplayName)
                         select registration
@@ -74,7 +61,7 @@ public class HomeController : Controller
             return BadRequest();
         }
 
-        var result = await _service.AuthenticateWithRefreshTokenAsync(new()
+        var result = await service.AuthenticateWithRefreshTokenAsync(new()
         {
             CancellationToken = cancellationToken,
             RefreshToken = token,
@@ -100,7 +87,7 @@ public class HomeController : Controller
         return View("Index", new IndexViewModel
         {
             Message = result.AccessToken,
-            Providers = from registration in await _service.GetClientRegistrationsAsync(cancellationToken)
+            Providers = from registration in await service.GetClientRegistrationsAsync(cancellationToken)
                         where !string.IsNullOrEmpty(registration.ProviderName)
                         where !string.IsNullOrEmpty(registration.ProviderDisplayName)
                         select registration
