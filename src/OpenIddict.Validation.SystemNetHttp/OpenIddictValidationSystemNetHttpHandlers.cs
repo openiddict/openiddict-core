@@ -84,7 +84,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
             if (OpenIddictValidationSystemNetHttpContext.Current is not null)
             {
-                throw new InvalidOperationException(SR.FormatID2201(nameof(OpenIddictValidationSystemNetHttpContext)));
+                throw new InvalidOperationException(SR.FormatID0515(nameof(OpenIddictValidationSystemNetHttpContext)));
             }
 
             try

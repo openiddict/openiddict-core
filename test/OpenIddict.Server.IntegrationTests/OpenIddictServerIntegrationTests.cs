@@ -9,6 +9,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -1100,12 +1101,169 @@ public abstract partial class OpenIddictServerIntegrationTests
 
 #if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
     [Theory]
+    [InlineData(OpenIddictServerEndpointType.Introspection)]
+    [InlineData(OpenIddictServerEndpointType.Revocation)]
+    [InlineData(OpenIddictServerEndpointType.Token)]
+    public async Task ProcessAuthentication_SelfSignedClientCertificateIsRejectedWhenBaseChainPolicyIsNullWithUnknownClient(OpenIddictServerEndpointType type)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.AcceptAnonymousClients();
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Transaction.RemoteCertificate = X509Certificate2.CreateFromPem($"""
+                        -----BEGIN CERTIFICATE-----
+                        MIIC8jCCAdqgAwIBAgIIYfcknj8KXN0wDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UE
+                        AxMXU2VsZi1zaWduZWQgY2VydGlmaWNhdGUwIBcNMjYwMjAxMTc1MjI2WhgPMjEy
+                        NjAyMDExNzUyMjZaMCIxIDAeBgNVBAMTF1NlbGYtc2lnbmVkIGNlcnRpZmljYXRl
+                        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA45uKd5cdlLmEBGLDEB75
+                        o9e3/kMmQjVhhMeBsy4m2t7zw5jZo7OPcahXiXZHttom9tJm7BWPWvYx7p0N9+ss
+                        h/E5lzKyV7ZXg+mM+KeECtVhiy+82BuIPelCshrpaV3lIg93y47FYLIWXxdggjt6
+                        6VUaxzlTeo+IpuMz8IssL7VpJnjCT5NmqPNVkv1VR1uuetVqP7546ZFw31RiGl/0
+                        I1uUlb7SwLwhLUK1iyLmGNA3VDB0m0DvLmlIEY3ZE5zxQp/Rxq6DfjbXm2LWJyu6
+                        NO7k7JixXOorEl+6HdJZHTWNFK5jCo2ZZAwWn+uUuzgmLILPJFLDVutXjuEZpsym
+                        uQIDAQABoyowKDAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAwwCgYIKwYBBQUH
+                        AwIwDQYJKoZIhvcNAQELBQADggEBAGHH3f/bkfViTvPE7yXJkB0bs88mYxajluMA
+                        hgihEN5joPT6zHxMLBND2sitIozCMeeaj0rg+OaT/zDBgOLup/BM92UaPpYcgDCy
+                        3tHqZLOOJOR4aYnHhIQUnx+NRtKEM4q/hL/xLHeliKmV7TQXISEZlTbb0gOU7TFp
+                        nJlP60Vo9F/WD6xcKNxBgV5aB/+2FjiTTw2pF0VUmvcZdQAN5ysfrmKNXbvv1oCp
+                        AohiwRiPrwe3mJ8iCqzEY/qQqImEiIT8WC2Fty+UYyBwfXMObi1AO++QkaMUbUJl
+                        0aBuRoD85FLotjHIHXkFHERjOolheYdKt5nrGCCz/PmXBfsSCTo=
+                        -----END CERTIFICATE-----
+                        """);
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = type switch
+        {
+            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            }),
+
+            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
+            {
+                Token = "SlAV32hkKG",
+                TokenTypeHint = TokenTypeHints.RefreshToken
+            }),
+
+            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            }),
+
+            _ => throw new NotSupportedException()
+        };
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2205), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2205), response.ErrorUri);
+    }
+
+    [Theory]
+    [InlineData(OpenIddictServerEndpointType.Introspection)]
+    [InlineData(OpenIddictServerEndpointType.Revocation)]
+    [InlineData(OpenIddictServerEndpointType.Token)]
+    public async Task ProcessAuthentication_SelfSignedClientCertificateIsRejectedWhenInvalidWithUnknownClient(OpenIddictServerEndpointType type)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.AcceptAnonymousClients();
+
+            options.Configure(options => options.SelfSignedTlsClientAuthenticationPolicy = new X509ChainPolicy
+            {
+                ApplicationPolicy = { new Oid("1.3.6.1.4.1.99999.1.1") }
+            });
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Transaction.RemoteCertificate = X509Certificate2.CreateFromPem($"""
+                        -----BEGIN CERTIFICATE-----
+                        MIIC8jCCAdqgAwIBAgIIYfcknj8KXN0wDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UE
+                        AxMXU2VsZi1zaWduZWQgY2VydGlmaWNhdGUwIBcNMjYwMjAxMTc1MjI2WhgPMjEy
+                        NjAyMDExNzUyMjZaMCIxIDAeBgNVBAMTF1NlbGYtc2lnbmVkIGNlcnRpZmljYXRl
+                        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA45uKd5cdlLmEBGLDEB75
+                        o9e3/kMmQjVhhMeBsy4m2t7zw5jZo7OPcahXiXZHttom9tJm7BWPWvYx7p0N9+ss
+                        h/E5lzKyV7ZXg+mM+KeECtVhiy+82BuIPelCshrpaV3lIg93y47FYLIWXxdggjt6
+                        6VUaxzlTeo+IpuMz8IssL7VpJnjCT5NmqPNVkv1VR1uuetVqP7546ZFw31RiGl/0
+                        I1uUlb7SwLwhLUK1iyLmGNA3VDB0m0DvLmlIEY3ZE5zxQp/Rxq6DfjbXm2LWJyu6
+                        NO7k7JixXOorEl+6HdJZHTWNFK5jCo2ZZAwWn+uUuzgmLILPJFLDVutXjuEZpsym
+                        uQIDAQABoyowKDAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAwwCgYIKwYBBQUH
+                        AwIwDQYJKoZIhvcNAQELBQADggEBAGHH3f/bkfViTvPE7yXJkB0bs88mYxajluMA
+                        hgihEN5joPT6zHxMLBND2sitIozCMeeaj0rg+OaT/zDBgOLup/BM92UaPpYcgDCy
+                        3tHqZLOOJOR4aYnHhIQUnx+NRtKEM4q/hL/xLHeliKmV7TQXISEZlTbb0gOU7TFp
+                        nJlP60Vo9F/WD6xcKNxBgV5aB/+2FjiTTw2pF0VUmvcZdQAN5ysfrmKNXbvv1oCp
+                        AohiwRiPrwe3mJ8iCqzEY/qQqImEiIT8WC2Fty+UYyBwfXMObi1AO++QkaMUbUJl
+                        0aBuRoD85FLotjHIHXkFHERjOolheYdKt5nrGCCz/PmXBfsSCTo=
+                        -----END CERTIFICATE-----
+                        """);
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateClientType.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = type switch
+        {
+            OpenIddictServerEndpointType.Introspection => await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            }),
+
+            OpenIddictServerEndpointType.Revocation => await client.PostAsync("/connect/revoke", new OpenIddictRequest
+            {
+                Token = "SlAV32hkKG",
+                TokenTypeHint = TokenTypeHints.RefreshToken
+            }),
+
+            OpenIddictServerEndpointType.Token => await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            }),
+
+            _ => throw new NotSupportedException()
+        };
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2197), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2197), response.ErrorUri);
+    }
+
+    [Theory]
     [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
     [InlineData(OpenIddictServerEndpointType.Introspection)]
     [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
     [InlineData(OpenIddictServerEndpointType.Revocation)]
     [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_SelfSignedClientCertificateIsRejectedWhenChainPolicyIsNull(OpenIddictServerEndpointType type)
+    public async Task ProcessAuthentication_SelfSignedClientCertificateIsRejectedWhenApplicationChainPolicyIsNull(OpenIddictServerEndpointType type)
     {
         // Arrange
         var application = new OpenIddictApplication();
@@ -1459,7 +1617,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
     [InlineData(OpenIddictServerEndpointType.Revocation)]
     [InlineData(OpenIddictServerEndpointType.Token)]
-    public async Task ProcessAuthentication_PkiClientCertificateIsRejectedWhenChainPolicyIsNull(OpenIddictServerEndpointType type)
+    public async Task ProcessAuthentication_PkiClientCertificateIsRejectedWhenApplicationChainPolicyIsNull(OpenIddictServerEndpointType type)
     {
         // Arrange
         var application = new OpenIddictApplication();
