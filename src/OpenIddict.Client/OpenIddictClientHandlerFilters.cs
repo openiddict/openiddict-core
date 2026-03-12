@@ -267,6 +267,20 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if issuer parameter validation was disabled.
+    /// </summary>
+    public sealed class RequireIssuerParameterValidationEnabled : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(!context.DisableIssuerParameterValidation);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the selected token format is not JSON Web Token.
     /// </summary>
     public sealed class RequireJsonWebTokenFormat : IOpenIddictClientHandlerFilter<GenerateTokenContext>
