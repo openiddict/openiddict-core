@@ -75,7 +75,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
         // an async-local context to flow per-instance properties and uses dynamic client
         // names to ensure the inner HttpClientHandler is not reused if the context differs.
         var context = OpenIddictValidationSystemNetHttpContext.Current ??
-            throw new InvalidOperationException(SR.FormatID2202(nameof(OpenIddictValidationSystemNetHttpContext)));
+            throw new InvalidOperationException(SR.FormatID0516(nameof(OpenIddictValidationSystemNetHttpContext)));
 
         var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>().CurrentValue;
 

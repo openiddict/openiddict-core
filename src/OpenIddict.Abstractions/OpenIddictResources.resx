@@ -1860,6 +1860,12 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   <data name="ID0514" xml:space="preserve">
     <value>TLS client certificates must contain a private key.</value>
   </data>
+  <data name="ID0515" xml:space="preserve">
+    <value>An existing '{0}' instance is already attached to the execution context.</value>
+  </data>
+  <data name="ID0516" xml:space="preserve">
+    <value>The '{0}' attached to the execution context could not be resolved.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2462,15 +2468,20 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   </data>
   <data name="ID2201" xml:space="preserve">
     <value>An existing '{0}' instance is already attached to the execution context.</value>
+    <comment>This resource is no longer used and will be removed in a future version.</comment>
   </data>
   <data name="ID2202" xml:space="preserve">
     <value>The '{0}' attached to the execution context could not be resolved.</value>
+    <comment>This resource is no longer used and will be removed in a future version.</comment>
   </data>
   <data name="ID2203" xml:space="preserve">
     <value>A certificate-based proof-of-possession is required to use this token.</value>
   </data>
   <data name="ID2204" xml:space="preserve">
     <value>The specified certificate-based proof-of-possession is not valid.</value>
+  </data>
+  <data name="ID2205" xml:space="preserve">
+    <value>The specified TLS client certificate is not allowed or valid for this operation.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3314,6 +3325,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6292" xml:space="preserve">
     <value>The payload of the '{0}' reference token was used instead of its reference identifier, which may indicate that the payload stored in the database has leaked and is being used as a regular token.</value>
+  </data>
+  <data name="ID6293" xml:space="preserve">
+    <value>Certificate validation failed because the token binding certificate provided by an anonymous client was not valid: {Errors}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

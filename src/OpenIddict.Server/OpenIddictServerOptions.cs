@@ -359,6 +359,9 @@ public sealed class OpenIddictServerOptions
     /// Enabling this option allows client applications to communicate with the token,
     /// introspection and revocation endpoints without having to send their client identifier.
     /// </summary>
+    /// <remarks>
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </remarks>
     public bool AcceptAnonymousClients { get; set; }
 
     /// <summary>
@@ -593,38 +596,50 @@ public sealed class OpenIddictServerOptions
 
     /// <summary>
     /// Gets or sets a boolean indicating whether audience permissions should be ignored.
-    /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>
+    /// <remarks>
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </remarks>
     public bool IgnoreAudiencePermissions { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.
-    /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>
+    /// <remarks>
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </remarks>
     public bool IgnoreEndpointPermissions { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether grant type permissions should be ignored.
-    /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>
+    /// <remarks>
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </remarks>
     public bool IgnoreGrantTypePermissions { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether resource permissions should be ignored.
-    /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>
+    /// <remarks>
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </remarks>
     public bool IgnoreResourcePermissions { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether response type permissions should be ignored.
-    /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>
+    /// <remarks>
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </remarks>
     public bool IgnoreResponseTypePermissions { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether scope permissions should be ignored.
-    /// Setting this property to <see langword="true"/> is NOT recommended.
     /// </summary>
+    /// <remarks>
+    /// Setting this property to <see langword="true"/> is NOT recommended.
+    /// </remarks>
     public bool IgnoreScopePermissions { get; set; }
 
     /// <summary>

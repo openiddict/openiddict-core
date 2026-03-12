@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
@@ -1004,7 +1005,13 @@ public static partial class OpenIddictServerHandlers
 
                     case OpenIddictServerEndpointType.Introspection when context.Options.AcceptAnonymousClients:
                     case OpenIddictServerEndpointType.Revocation    when context.Options.AcceptAnonymousClients:
-                    case OpenIddictServerEndpointType.Token         when context.Options.AcceptAnonymousClients:
+                        return;
+
+                    // Note: the authorization code and client credentials grant types never
+                    // allow anonymous clients, even if the corresponding option is enabled.
+                    case OpenIddictServerEndpointType.Token when context.Options.AcceptAnonymousClients &&
+                        !context.Request.IsAuthorizationCodeGrantType() &&
+                        !context.Request.IsClientCredentialsGrantType():
                         return;
 
                     // Note: despite being conceptually similar to the token endpoint, the pushed authorization
@@ -1240,9 +1247,9 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class ValidateClientCertificate : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
-        private readonly IOpenIddictApplicationManager _applicationManager;
+        private readonly IOpenIddictApplicationManager? _applicationManager;
 
-        public ValidateClientCertificate() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+        public ValidateClientCertificate() { }
 
         public ValidateClientCertificate(IOpenIddictApplicationManager applicationManager)
             => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
@@ -1252,9 +1259,18 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireClientIdParameter>()
                 .AddFilter<RequireClientCertificate>()
-                .AddFilter<RequireDegradedModeDisabled>()
+                .UseScopedHandler(static provider =>
+                {
+                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
+                    // invalid core configuration exceptions are not thrown even if the managers were registered.
+                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    return options.EnableDegradedMode ?
+                        new ValidateClientCertificate() :
+                        new ValidateClientCertificate(provider.GetService<IOpenIddictApplicationManager>() ??
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                })
                 .UseScopedHandler<ValidateClientCertificate>()
                 .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1265,7 +1281,6 @@ public static partial class OpenIddictServerHandlers
         {
             ArgumentNullException.ThrowIfNull(context);
 
-            Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
             Debug.Assert(context.Transaction.RemoteCertificate is not null, SR.GetResourceString(SR.ID4020));
 
             // Don't validate the client certificate on endpoints that don't support client authentication/token binding.
@@ -1275,6 +1290,106 @@ public static partial class OpenIddictServerHandlers
                                         OpenIddictServerEndpointType.UserInfo)
             {
                 return;
+            }
+
+            // If the client is anonymous, assume the provided certificate will exclusively be used for mTLS token
+            // binding, validate the certificate using the base chain policy specified in the options and ensure
+            // the certificate is self-signed as PKI certificates cannot be used for token binding exclusively.
+            if (string.IsNullOrEmpty(context.ClientId))
+            {
+                // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
+                // of this check, a certificate is always assumed to be self-signed when it is self-issued.
+                //
+                // A second pass is performed once the chain is built to validate whether the certificate is self-signed or not.
+                if (context.Options.SelfSignedTlsClientAuthenticationPolicy is not X509ChainPolicy policy ||
+                    !OpenIddictHelpers.IsSelfIssuedCertificate(context.Transaction.RemoteCertificate))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2205),
+                        uri: SR.FormatID8000(SR.ID2205));
+
+                    return;
+                }
+
+                // Always clone the X.509 chain policy to ensure the original instance is never mutated.
+                policy = policy.Clone();
+
+                // Note: to allow validating certificates that are exclusively used for mTLS token binding, the chain policy
+                // is amended to consider the specified self-signed certificate as a trusted root and basically disable chain
+                // validation while still validating the other aspects of the certificate (e.g expiration date, key usage, etc).
+#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+                policy.CustomTrustStore.Add(context.Transaction.RemoteCertificate);
+#else
+                policy.ExtraStore.Add(context.Transaction.RemoteCertificate);
+#endif
+
+                using var chain = new X509Chain()
+                {
+                    ChainPolicy = policy
+                };
+
+                try
+                {
+                    // Ensure the specified certificate is valid based on the chain policy.
+                    if (!chain.Build(context.Transaction.RemoteCertificate))
+                    {
+                        context.Logger.LogInformation(6293, SR.GetResourceString(SR.ID6293),
+                            chain.ChainStatus.Select(static status => status.Status).ToArray());
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.GetResourceString(SR.ID2197),
+                            uri: SR.FormatID8000(SR.ID2197));
+
+                        return;
+                    }
+
+                    if (chain.ChainElements is not [X509ChainElement])
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.GetResourceString(SR.ID2205),
+                            uri: SR.FormatID8000(SR.ID2205));
+
+                        return;
+                    }
+                }
+
+                catch (CryptographicException exception) when (!OpenIddictHelpers.IsFatal(exception))
+                {
+                    context.Logger.LogWarning(6288, exception, SR.GetResourceString(SR.ID6288));
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2197),
+                        uri: SR.FormatID8000(SR.ID2197));
+
+                    return;
+                }
+
+                finally
+                {
+                    // Dispose the certificates instantiated internally while building the chain.
+                    for (var index = 0; index < chain.ChainElements.Count; index++)
+                    {
+                        chain.ChainElements[index].Certificate.Dispose();
+                    }
+                }
+
+                return;
+            }
+
+            // Note: when the degraded mode is enabled, the application is responsible for manually
+            // validating the client certificate provided by the client using a custom event handler.
+            if (context.Options.EnableDegradedMode)
+            {
+                return;
+            }
+
+            if (_applicationManager is null)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
             }
 
             var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -1291,7 +1406,12 @@ public static partial class OpenIddictServerHandlers
             {
                 if (context.Options.SelfSignedTlsClientAuthenticationPolicy is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0506));
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2205),
+                        uri: SR.FormatID8000(SR.ID2205));
+
+                    return;
                 }
 
                 if (await _applicationManager.GetSelfSignedTlsClientAuthenticationPolicyAsync(
@@ -1346,7 +1466,12 @@ public static partial class OpenIddictServerHandlers
             {
                 if (context.Options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0505));
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2205),
+                        uri: SR.FormatID8000(SR.ID2205));
+
+                    return;
                 }
 
                 if (await _applicationManager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(

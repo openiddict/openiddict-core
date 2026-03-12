@@ -412,30 +412,18 @@ public static partial class OpenIddictServerHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                // Reject grant_type=authorization_code requests that don't specify a client_id or a client_assertion,
-                // as the client identifier MUST be sent by the client application in the request body if it cannot
-                // be inferred from the client authentication method (e.g the username when using basic).
-                //
-                // See https://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
-                if (context.Request.IsAuthorizationCodeGrantType() &&
-                    string.IsNullOrEmpty(context.Request.ClientId) &&
-                    string.IsNullOrEmpty(context.Request.ClientAssertion))
+                if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsClientCredentialsGrantType())
                 {
-                    context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.ClientId);
-
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2029(Parameters.ClientId),
-                        uri: SR.FormatID8000(SR.ID2029));
-
                     return ValueTask.CompletedTask;
                 }
 
-                // Reject grant_type=client_credentials requests that don't specify a client_id or a client_assertion.
+                // Reject grant_type=authorization_code and grant_type=client_credentials requests that
+                // don't specify a client_id or a client_assertion, as the client identity MUST be sent
+                // by the client application (even when using mTLS OAuth 2.0 client authentication).
                 //
-                // See https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
-                if (context.Request.IsClientCredentialsGrantType() &&
-                    string.IsNullOrEmpty(context.Request.ClientId) &&
+                // See https://tools.ietf.org/html/rfc6749#section-4.1.3
+                // and https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
+                if (string.IsNullOrEmpty(context.Request.ClientId) &&
                     string.IsNullOrEmpty(context.Request.ClientAssertion))
                 {
                     context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.ClientId);
@@ -568,7 +556,8 @@ public static partial class OpenIddictServerHandlers
                 // See https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
                 if (context.Request.IsClientCredentialsGrantType() &&
                     string.IsNullOrEmpty(context.Request.ClientAssertion) &&
-                    string.IsNullOrEmpty(context.Request.ClientSecret))
+                    string.IsNullOrEmpty(context.Request.ClientSecret) &&
+                    context.Transaction.RemoteCertificate is null)
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,

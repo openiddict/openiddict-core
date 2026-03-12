@@ -200,7 +200,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
             if (OpenIddictClientSystemNetHttpContext.Current is not null)
             {
-                throw new InvalidOperationException(SR.FormatID2201(nameof(OpenIddictClientSystemNetHttpContext)));
+                throw new InvalidOperationException(SR.FormatID0515(nameof(OpenIddictClientSystemNetHttpContext)));
             }
 
             try

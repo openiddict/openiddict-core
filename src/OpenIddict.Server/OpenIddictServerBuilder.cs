@@ -116,8 +116,11 @@ public sealed class OpenIddictServerBuilder
     /// <summary>
     /// Makes client identification optional so that token, introspection and revocation
     /// requests that don't specify a client_id are not automatically rejected.
-    /// Enabling this option is NOT recommended.
     /// </summary>
+    /// <remarks>
+    /// Enabling this option is NOT recommended and should only be used for
+    /// backward compatibility with legacy authorization server deployments.
+    /// </remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AcceptAnonymousClients()
         => Configure(options => options.AcceptAnonymousClients = true);
