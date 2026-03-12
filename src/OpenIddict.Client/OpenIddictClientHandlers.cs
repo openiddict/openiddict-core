@@ -1171,6 +1171,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireIssuerParameterValidationEnabled>()
                 .AddFilter<RequireRedirectionRequest>()
                 .UseSingletonHandler<ValidateIssuerParameter>()
                 .SetOrder(ResolveClientRegistrationFromStateToken.Descriptor.Order + 1_000)

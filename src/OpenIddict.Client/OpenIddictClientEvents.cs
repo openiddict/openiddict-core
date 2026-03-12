@@ -1013,6 +1013,14 @@ public static partial class OpenIddictClientEvents
         public bool DisableFrontchannelIdentityTokenNonceValidation { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether issuer parameter validation should be disabled.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool DisableIssuerParameterValidation { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether userinfo retrieval should be disabled.
         /// </summary>
         public bool DisableUserInfoRetrieval { get; set; }

@@ -22,6 +22,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /*
          * Authentication processing:
          */
+        DisableIssuerParameterValidation.Descriptor,
         ValidateRedirectionRequestSignature.Descriptor,
         HandleNonStandardFrontchannelErrorResponse.Descriptor,
         ValidateNonStandardParameters.Descriptor,
@@ -67,6 +68,45 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         .. Revocation.DefaultHandlers,
         .. UserInfo.DefaultHandlers
     ];
+
+    /// <summary>
+    /// Contains the logic responsible for disabling the issuer parameter validation for the providers that require it.
+    /// </summary>
+    public sealed class DisableIssuerParameterValidation : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<DisableIssuerParameterValidation>()
+                .SetOrder(ValidateIssuerParameter.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            context.DisableIssuerParameterValidation = context.Registration.ProviderType switch
+            {
+                // Google is currently rolling out a change that causes the "iss" authorization response
+                // parameter to be returned without the "authorization_response_iss_parameter_supported"
+                // flag being advertised in the provider metadata. Since OpenIddict rejects authorization
+                // responses that contain an issuer if "authorization_response_iss_parameter_supported" is
+                // not explicitly set to true, validation must be disabled until the deployment is complete.
+                //
+                // See https://github.com/openiddict/openiddict-core/issues/2428 for more information.
+                ProviderTypes.Google when context.Request.HasParameter(Parameters.Iss) &&
+                    context.Configuration.AuthorizationResponseIssParameterSupported is not true => true,
+
+                _ => context.DisableIssuerParameterValidation
+            };
+
+            return ValueTask.CompletedTask;
+        }
+    }
 
     /// <summary>
     /// Contains the logic responsible for validating the signature or message authentication
