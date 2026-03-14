@@ -2,8 +2,6 @@
 
 ### The OpenID Connect stack you'll be addicted to.
 
-[![Build status](https://github.com/openiddict/openiddict-core/workflows/build/badge.svg?branch=dev&event=push)](https://github.com/openiddict/openiddict-core/actions?query=workflow%3Abuild+branch%3Adev+event%3Apush)
-
 ## What is OpenIddict?
 
 OpenIddict aims at providing a **versatile solution** to implement **OpenID Connect client, server and token validation support in .NET applications**.
@@ -110,7 +108,6 @@ GitHub tickets opened by users who haven't contributed to the project or don't a
 
   | OpenIddict branch | ABP Framework branch | End of support date (estimated) |
   |-------------------|----------------------|---------------------------------|
-  | 4.x               | 7.x                  | December 19, 2024               |
   | 5.x               | 8.x                  | November 19, 2025               |
   | 6.x               | 9.x                  | Currently supported             |
   | 7.x (current)     | Not supported yet    | Not supported yet               |
@@ -123,11 +120,6 @@ GitHub tickets opened by users who haven't contributed to the project or don't a
 
   | OpenIddict branch | Sponsorship tier | End of support date |
   |-------------------|------------------|---------------------|
-  | 4.x               | Tier 6           | January 18, 2024    |
-  | 4.x               | Tier 7           | June 18, 2024       |
-  | 4.x               | Tier 8           | December 18, 2024   |
-  | 4.x               | Tier 9           | December 18, 2025   |
-  |                   |                  |                     |
   | 5.x               | Tier 6           | January 17, 2025    |
   | 5.x               | Tier 7           | June 17, 2025       |
   | 5.x               | Tier 8           | December 17, 2025   |
