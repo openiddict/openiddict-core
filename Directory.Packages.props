@@ -53,7 +53,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
   <!--
@@ -110,7 +110,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
   <!--
@@ -202,7 +202,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
   <!--
@@ -249,7 +249,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
   <!--
@@ -295,7 +295,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
   <!--
@@ -354,7 +354,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
   <!--
@@ -405,7 +405,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
   <!--
@@ -446,7 +446,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
   <!--
@@ -468,7 +468,7 @@
       Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
       on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.101" />
+    <GlobalPackageReference Include="Meziantou.Polyfill" Condition=" '$(IncludePolyfills)' != 'false' " Version="1.0.104" />
   </ItemGroup>
 
 </Project>
