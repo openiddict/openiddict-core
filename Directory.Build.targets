@@ -59,7 +59,6 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_AUTHORIZATION_MIDDLEWARE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_BCL_ASYNC_ENUMERABLE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_BULK_DBSET_OPERATIONS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_CHUNK_LINQ_EXTENSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_DBSET_VALUETASK_FINDASYNC</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ENDPOINT_ROUTING</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ENVIRONMENT_PROCESS_PATH</DefineConstants>
