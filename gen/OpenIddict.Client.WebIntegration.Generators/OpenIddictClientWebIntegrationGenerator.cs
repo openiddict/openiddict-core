@@ -14,7 +14,7 @@ public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenera
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var files = context.AdditionalTextsProvider.Where(static file =>
-            string.Equals(Path.GetFileName(file.Path), "OpenIddictClientWebIntegrationProviders.xml"));
+            string.Equals(Path.GetFileName(file.Path), "OpenIddictClientWebIntegrationProviders.xml", StringComparison.OrdinalIgnoreCase));
 
         context.RegisterSourceOutput(files, static (context, file) =>
         {
@@ -81,21 +81,19 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        Services.Configure<OpenIddictClientOptions>(options =>
+        var registration = new OpenIddictClientRegistration
         {
-            var registration = new OpenIddictClientRegistration
-            {
-                ProviderSettings = new OpenIddictClientWebIntegrationSettings.{{ provider.name }}(),
-                ProviderType = ProviderTypes.{{ provider.name }}
-            };
+            ProviderSettings = new OpenIddictClientWebIntegrationSettings.{{ provider.name }}(),
+            ProviderType = ProviderTypes.{{ provider.name }}
+        };
 
-            configuration(new OpenIddictClientWebIntegrationBuilder.{{ provider.name }}(registration));
+        configuration(new OpenIddictClientWebIntegrationBuilder.{{ provider.name }}(registration));
 
-            options.Registrations.Add(registration);
-        });
+        Services.Configure<OpenIddictClientOptions>(options => options.Registrations.Add(registration));
 
         return this;
     }
+
     {{~ end ~}}
 
     {{~ for provider in providers ~}}
@@ -131,7 +129,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull(methods);
 
-            return Set(registration => registration.ClientAuthenticationMethods.UnionWith(methods));
+            Registration.ClientAuthenticationMethods.UnionWith(methods);
+
+            return this;
         }
 
         /// <summary>
@@ -145,7 +145,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull(methods);
 
-            return Set(registration => registration.CodeChallengeMethods.UnionWith(methods));
+            Registration.CodeChallengeMethods.UnionWith(methods);
+
+            return this;
         }
 
         /// <summary>
@@ -159,7 +161,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull(types);
 
-            return Set(registration => registration.GrantTypes.UnionWith(types));
+            Registration.GrantTypes.UnionWith(types);
+
+            return this;
         }
 
         /// <summary>
@@ -173,7 +177,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull(modes);
 
-            return Set(registration => registration.ResponseModes.UnionWith(modes));
+            Registration.ResponseModes.UnionWith(modes);
+
+            return this;
         }
 
         /// <summary>
@@ -187,7 +193,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull(types);
 
-            return Set(registration => registration.ResponseTypes.UnionWith(types));
+            Registration.ResponseTypes.UnionWith(types);
+
+            return this;
         }
 
         /// <summary>
@@ -199,7 +207,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull(scopes);
 
-            return Set(registration => registration.Scopes.UnionWith(scopes));
+            Registration.Scopes.UnionWith(scopes);
+
+            return this;
         }
 
         /// <summary>
@@ -210,7 +220,11 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} DisablePushedAuthorizationRequests()
-            => Set(registration => registration.DisablePushedAuthorizationRequests = true);
+        {
+            Registration.DisablePushedAuthorizationRequests = true;
+
+            return this;
+        }
 
         /// <summary>
         /// Sets the issuer that will be attached to the <see cref=""Claim""/>
@@ -222,7 +236,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentException.ThrowIfNullOrEmpty(issuer);
 
-            return Set(registration => registration.ClaimsIssuer = issuer);
+            Registration.ClaimsIssuer = issuer;
+
+            return this;
         }
 
         /// <summary>
@@ -234,7 +250,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
-            return Set(registration => registration.ProviderName = name);
+            Registration.ProviderName = name;
+
+            return this;
         }
 
         /// <summary>
@@ -246,7 +264,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
-            return Set(registration => registration.ProviderDisplayName = name);
+            Registration.ProviderDisplayName = name;
+
+            return this;
         }
 
         /// <summary>
@@ -258,7 +278,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-            return Set(registration => registration.RegistrationId = identifier);
+            Registration.RegistrationId = identifier;
+
+            return this;
         }
 
         /// <summary>
@@ -270,7 +292,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-            return Set(registration => registration.ClientId = identifier);
+            Registration.ClientId = identifier;
+
+            return this;
         }
 
         /// <summary>
@@ -282,7 +306,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentException.ThrowIfNullOrEmpty(secret);
 
-            return Set(registration => registration.ClientSecret = secret);
+            Registration.ClientSecret = secret;
+
+            return this;
         }
 
         /// <summary>
@@ -294,7 +320,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentException.ThrowIfNullOrEmpty(type);
 
-            return Set(registration => registration.ClientType = type);
+            Registration.ClientType = type;
+
+            return this;
         }
 
         /// <summary>
@@ -310,7 +338,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull(uri);
 
-            return Set(registration => registration.PostLogoutRedirectUri = uri);
+            Registration.PostLogoutRedirectUri = uri;
+
+            return this;
         }
 
         /// <summary>
@@ -342,7 +372,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull(uri);
 
-            return Set(registration => registration.RedirectUri = uri);
+            Registration.RedirectUri = uri;
+
+            return this;
         }
 
         /// <summary>
@@ -367,7 +399,12 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} Use{{ environment.name }}Environment()
-            => Set(registration => registration.Get{{ provider.name }}Settings().Environment = OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }});
+        {
+            Registration.Get{{ provider.name }}Settings().Environment = OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }};
+
+            return this;
+        }
+
         {{~ end ~}}
 
         {{~ for setting in provider.settings ~}}
@@ -384,7 +421,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
 
-            return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }}.UnionWith({{ setting.parameter_name }}));
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }}.UnionWith({{ setting.parameter_name }});
+
+            return this;
         }
         {{~ else if setting.clr_type == 'ECDsaSecurityKey' ~}}
         /// <summary>
@@ -404,7 +443,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0055), nameof({{ setting.parameter_name }}));
             }
 
-            return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
         }
 
 #if SUPPORTS_PEM_ENCODED_KEY_IMPORT
@@ -486,7 +527,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof({{ setting.parameter_name }}));
             }
 
-            return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
         }
 
         /// <summary>
@@ -521,7 +564,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0061), nameof({{ setting.parameter_name }}));
             }
 
-            return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
         }
 
         /// <summary>
@@ -677,7 +722,11 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(bool {{ setting.parameter_name }})
-            => Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
+        {
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
+        }
         {{~ else ~}}
         /// <summary>
         /// Configures {{ setting.description }}.
@@ -691,7 +740,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {
             ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
 
-            return Set(registration => registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }});
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
         }
         {{~ end ~}}
 
@@ -708,22 +759,8 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override string? ToString() => base.ToString();
-
-        /// <summary>
-        /// Amends the client registration created by the {{ provider.display_name }} integration.
-        /// </summary>
-        /// <param name=""configuration"">The delegate used to configure the {{ provider.display_name }} client registration.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref=""OpenIddictClientRegistration""/> instance.</returns>
-        private {{ provider.name }} Set(Action<OpenIddictClientRegistration> configuration)
-        {
-            ArgumentNullException.ThrowIfNull(configuration);
-
-            configuration(Registration);
-
-            return this;
-        }
     }
+
     {{~ end ~}}
 }
 ");
@@ -1226,6 +1263,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             {{~ end ~}}
             {{~ end ~}}
         }
+
         {{~ end ~}}
 
         else
@@ -1398,8 +1436,13 @@ public static partial class OpenIddictClientWebIntegrationHelpers
     /// <returns>The {{ provider.display_name }} provider settings.</returns>
     /// <exception cref=""InvalidOperationException"">The provider options cannot be resolved.</exception>
     public static OpenIddictClientWebIntegrationSettings.{{ provider.name }} Get{{ provider.name }}Settings(this OpenIddictClientRegistration registration)
-        => registration.ProviderSettings is OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings ? settings :
-            throw new InvalidOperationException(SR.FormatID0333(Providers.{{ provider.name }}));
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+
+        return registration.ProviderSettings is OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings
+            ? settings
+            : throw new InvalidOperationException(SR.FormatID0333(Providers.{{ provider.name }}));
+    }
 
     {{~ end ~}}
 }
@@ -1455,6 +1498,7 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
 
         {{~ end ~}}
     }
+
     {{~ end ~}}
 }
 ");
@@ -1514,6 +1558,7 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
         {
             var context = new TemplateContext
             {
+                LimitToString = 128 * 1024 * 1024,
                 LoopLimit = 100_000
             };
 
