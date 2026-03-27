@@ -4741,22 +4741,33 @@ public static partial class OpenIddictClientHandlers
                          context.Registration.ProviderName ??
                          context.Registration.Issuer.AbsoluteUri;
 
-            context.MergedPrincipal
-                .SetClaim(ClaimTypes.Email,          context.MergedPrincipal.GetClaim(Claims.Email),             issuer)
-                .SetClaim(ClaimTypes.Gender,         context.MergedPrincipal.GetClaim(Claims.Gender),            issuer)
-                .SetClaim(ClaimTypes.GivenName,      context.MergedPrincipal.GetClaim(Claims.GivenName),         issuer)
-                .SetClaim(ClaimTypes.Name,           context.MergedPrincipal.GetClaim(Claims.PreferredUsername) ??
-                                                     context.MergedPrincipal.GetClaim(Claims.Name),              issuer)
-                .SetClaim(ClaimTypes.NameIdentifier, context.MergedPrincipal.GetClaim(Claims.Subject),           issuer)
-                .SetClaim(ClaimTypes.OtherPhone,     context.MergedPrincipal.GetClaim(Claims.PhoneNumber),       issuer)
-                .SetClaim(ClaimTypes.Surname,        context.MergedPrincipal.GetClaim(Claims.FamilyName),        issuer);
+            MapClaim(ClaimTypes.Email,          Claims.Email);
+            MapClaim(ClaimTypes.Gender,         Claims.Gender);
+            MapClaim(ClaimTypes.GivenName,      Claims.GivenName);
+            MapClaim(ClaimTypes.Name,           Claims.PreferredUsername, Claims.Name);
+            MapClaim(ClaimTypes.NameIdentifier, Claims.Subject);
+            MapClaim(ClaimTypes.OtherPhone,     Claims.PhoneNumber);
+            MapClaim(ClaimTypes.Surname,        Claims.FamilyName);
 
             // Note: while this claim is not exposed by the BCL ClaimTypes class, it is used by both ASP.NET Identity
             // for ASP.NET 4.x and the System.Web.WebPages package, that requires it for antiforgery to work correctly.
-            context.MergedPrincipal.SetClaim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
-                context.MergedPrincipal.GetClaim(Claims.Private.ProviderName));
+            MapClaim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
+                Claims.Private.ProviderName);
 
             return ValueTask.CompletedTask;
+
+            void MapClaim(string destinationClaimType, string sourceClaimType, string? alternativeSourceClaimType = null)
+            {
+                var claim = context.MergedPrincipal.GetClaim(sourceClaimType);
+                if (claim != null)
+                {
+                    context.MergedPrincipal.SetClaim(destinationClaimType, claim, issuer);
+                }
+                else if (alternativeSourceClaimType != null)
+                {
+                    MapClaim(destinationClaimType, alternativeSourceClaimType);
+                }
+            }
         }
     }
 
