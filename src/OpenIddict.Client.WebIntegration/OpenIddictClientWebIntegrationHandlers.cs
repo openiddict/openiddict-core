@@ -1429,226 +1429,235 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             var issuer = context.Registration.ClaimsIssuer ??
                          context.Registration.ProviderName ??
                          context.Registration.Issuer.AbsoluteUri;
-
-            context.MergedPrincipal.SetClaim(ClaimTypes.Email, issuer: issuer, value: context.Registration.ProviderType switch
+            
+            if (!context.MergedPrincipal.HasClaim(ClaimTypes.Email))
             {
-                // Basecamp returns the email address as a custom "email_address" node:
-                ProviderTypes.Basecamp => (string?) context.UserInfoResponse?["email_address"],
+                context.MergedPrincipal.SetClaim(ClaimTypes.Email, issuer: issuer, value: context.Registration.ProviderType switch
+                {
+                    // Basecamp returns the email address as a custom "email_address" node:
+                    ProviderTypes.Basecamp => (string?) context.UserInfoResponse?["email_address"],
 
-                // Bitly returns one or more email addresses as a custom "emails" node:
-                ProviderTypes.Bitly => context.UserInfoResponse?["emails"]
-                    ?.GetUnnamedParameters()
-                    ?.Where(parameter => (bool?) parameter["is_primary"] is true)
-                    ?.Select(parameter => (string?) parameter["email"])
-                    ?.FirstOrDefault(),
+                    // Bitly returns one or more email addresses as a custom "emails" node:
+                    ProviderTypes.Bitly => context.UserInfoResponse?["emails"]
+                        ?.GetUnnamedParameters()
+                        ?.Where(parameter => (bool?) parameter["is_primary"] is true)
+                        ?.Select(parameter => (string?) parameter["email"])
+                        ?.FirstOrDefault(),
 
-                // HubSpot returns the email address as a custom "user" node:
-                ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
+                    // HubSpot returns the email address as a custom "user" node:
+                    ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
 
-                // Mailchimp returns the email address as a custom "login/login_email" node:
-                ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["login"]?["login_email"],
+                    // Mailchimp returns the email address as a custom "login/login_email" node:
+                    ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["login"]?["login_email"],
 
-                // Notion returns the email address as a custom "bot/owner/user/person/email" node
-                // but requires a special capability to access this node, that may not be present:
-                ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["person"]?["email"],
+                    // Notion returns the email address as a custom "bot/owner/user/person/email" node
+                    // but requires a special capability to access this node, that may not be present:
+                    ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["person"]?["email"],
 
-                // Patreon returns the email address as a custom "attributes/email" node:
-                ProviderTypes.Patreon => (string?) context.UserInfoResponse?["attributes"]?["email"],
+                    // Patreon returns the email address as a custom "attributes/email" node:
+                    ProviderTypes.Patreon => (string?) context.UserInfoResponse?["attributes"]?["email"],
 
-                // ServiceChannel and Zoho return the email address as a custom "Email" node:
-                ProviderTypes.ServiceChannel or ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Email"],
+                    // ServiceChannel and Zoho return the email address as a custom "Email" node:
+                    ProviderTypes.ServiceChannel or ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Email"],
 
-                // Shopify returns the email address as a custom "associated_user/email" node in token responses:
-                ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["email"],
+                    // Shopify returns the email address as a custom "associated_user/email" node in token responses:
+                    ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["email"],
 
-                // Yandex returns the email address as a custom "default_email" node:
-                ProviderTypes.Yandex => (string?) context.UserInfoResponse?["default_email"],
+                    // Yandex returns the email address as a custom "default_email" node:
+                    ProviderTypes.Yandex => (string?) context.UserInfoResponse?["default_email"],
 
-                _ => context.MergedPrincipal.GetClaim(ClaimTypes.Email)
-            });
+                    _ => context.MergedPrincipal.GetClaim(ClaimTypes.Email)
+                });
+            }
 
-            context.MergedPrincipal.SetClaim(ClaimTypes.Name, issuer: issuer, value: context.Registration.ProviderType switch
+            if (!context.MergedPrincipal.HasClaim(ClaimTypes.Name))
             {
-                // These providers return the username as a custom "username" node:
-                ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.DeviantArt or
-                ProviderTypes.Discord      or ProviderTypes.Disqus      or ProviderTypes.Kook       or
-                ProviderTypes.Lichess      or ProviderTypes.Mastodon    or ProviderTypes.Mixcloud   or
-                ProviderTypes.Osu          or ProviderTypes.Trakt       or ProviderTypes.WordPress
-                    => (string?) context.UserInfoResponse?["username"],
+                context.MergedPrincipal.SetClaim(ClaimTypes.Name, issuer: issuer, value: context.Registration.ProviderType switch
+                {
+                    // These providers return the username as a custom "username" node:
+                    ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.DeviantArt or
+                    ProviderTypes.Discord      or ProviderTypes.Disqus      or ProviderTypes.Kook       or
+                    ProviderTypes.Lichess      or ProviderTypes.Mastodon    or ProviderTypes.Mixcloud   or
+                    ProviderTypes.Osu          or ProviderTypes.Trakt       or ProviderTypes.WordPress
+                        => (string?) context.UserInfoResponse?["username"],
 
-                // These providers don't return a username so one is created using the "first_name" and "last_name" nodes:
-                ProviderTypes.Basecamp or ProviderTypes.Harvest or ProviderTypes.VkId
-                    when context.UserInfoResponse?.HasParameter("first_name") is true &&
-                         context.UserInfoResponse?.HasParameter("last_name")  is true
-                    => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
+                    // These providers don't return a username so one is created using the "first_name" and "last_name" nodes:
+                    ProviderTypes.Basecamp or ProviderTypes.Harvest or ProviderTypes.VkId
+                        when context.UserInfoResponse?.HasParameter("first_name") is true &&
+                             context.UserInfoResponse?.HasParameter("last_name")  is true
+                        => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
 
-                // BungieNet and FitBit return the username as a custom "displayName" node:
-                ProviderTypes.BungieNet or ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["displayName"],
+                    // BungieNet and FitBit return the username as a custom "displayName" node:
+                    ProviderTypes.BungieNet or ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["displayName"],
 
-                // These providers don't return a username so one is created using the "firstName" and "lastName" nodes:
-                ProviderTypes.Contentful or ProviderTypes.Smartsheet
-                    when context.UserInfoResponse?.HasParameter("firstName") is true &&
-                         context.UserInfoResponse?.HasParameter("lastName")  is true
-                    => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
+                    // These providers don't return a username so one is created using the "firstName" and "lastName" nodes:
+                    ProviderTypes.Contentful or ProviderTypes.Smartsheet
+                        when context.UserInfoResponse?.HasParameter("firstName") is true &&
+                             context.UserInfoResponse?.HasParameter("lastName")  is true
+                        => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
 
-                // Figma returns the username as a custom "handle" node:
-                ProviderTypes.Figma => (string?) context.UserInfoResponse?["handle"],
+                    // Figma returns the username as a custom "handle" node:
+                    ProviderTypes.Figma => (string?) context.UserInfoResponse?["handle"],
 
-                // Huawei returns the username as a custom "display_name" in the backchannel identity token:
-                ProviderTypes.Huawei => context.BackchannelIdentityTokenPrincipal?.GetClaim("display_name"),
+                    // Huawei returns the username as a custom "display_name" in the backchannel identity token:
+                    ProviderTypes.Huawei => context.BackchannelIdentityTokenPrincipal?.GetClaim("display_name"),
 
-                // HubSpot returns the username as a custom "user" node:
-                ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
+                    // HubSpot returns the username as a custom "user" node:
+                    ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
 
-                // Mailchimp returns the username as a custom "accountname" node:
-                ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["accountname"],
+                    // Mailchimp returns the username as a custom "accountname" node:
+                    ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["accountname"],
 
-                // Mailchimp returns the username as a custom "sub" node:
-                ProviderTypes.MusicBrainz => (string?) context.UserInfoResponse?["sub"],
+                    // Mailchimp returns the username as a custom "sub" node:
+                    ProviderTypes.MusicBrainz => (string?) context.UserInfoResponse?["sub"],
 
-                // Nextcloud returns the username as a custom "displayname" or "display-name" node:
-                ProviderTypes.Nextcloud => (string?) context.UserInfoResponse?["displayname"] ??
-                                           (string?) context.UserInfoResponse?["display-name"],
+                    // Nextcloud returns the username as a custom "displayname" or "display-name" node:
+                    ProviderTypes.Nextcloud => (string?) context.UserInfoResponse?["displayname"] ??
+                                               (string?) context.UserInfoResponse?["display-name"],
 
-                // Notion returns the username as a custom "bot/owner/user/name" node but
-                // requires a special capability to access this node, that may not be present:
-                ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["name"],
+                    // Notion returns the username as a custom "bot/owner/user/name" node but
+                    // requires a special capability to access this node, that may not be present:
+                    ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["name"],
 
-                // Patreon doesn't return a username and requires using the complete user name as the username:
-                ProviderTypes.Patreon => (string?) context.UserInfoResponse?["attributes"]?["full_name"],
+                    // Patreon doesn't return a username and requires using the complete user name as the username:
+                    ProviderTypes.Patreon => (string?) context.UserInfoResponse?["attributes"]?["full_name"],
 
-                // ServiceChannel returns the username as a custom "UserName" node:
-                ProviderTypes.ServiceChannel => (string?) context.UserInfoResponse?["UserName"],
+                    // ServiceChannel returns the username as a custom "UserName" node:
+                    ProviderTypes.ServiceChannel => (string?) context.UserInfoResponse?["UserName"],
 
-                // Shopify doesn't return a username so one is created using the "first_name" and "last_name" nodes:
-                ProviderTypes.Shopify
-                    when context.TokenResponse?["associated_user"]?["first_name"] is not null &&
-                         context.TokenResponse?["associated_user"]?["last_name"]  is not null
-                    => $"{(string?) context.TokenResponse?["associated_user"]?["first_name"]} {(string?) context.TokenResponse?["associated_user"]?["last_name"]}",
+                    // Shopify doesn't return a username so one is created using the "first_name" and "last_name" nodes:
+                    ProviderTypes.Shopify
+                        when context.TokenResponse?["associated_user"]?["first_name"] is not null &&
+                             context.TokenResponse?["associated_user"]?["last_name"]  is not null
+                        => $"{(string?) context.TokenResponse?["associated_user"]?["first_name"]} {(string?) context.TokenResponse?["associated_user"]?["last_name"]}",
 
-                // These providers return the username as a custom "display_name" node:
-                ProviderTypes.Spotify or ProviderTypes.StackExchange or
-                ProviderTypes.Yandex  or ProviderTypes.Zoom
-                    => (string?) context.UserInfoResponse?["display_name"],
+                    // These providers return the username as a custom "display_name" node:
+                    ProviderTypes.Spotify or ProviderTypes.StackExchange or
+                    ProviderTypes.Yandex  or ProviderTypes.Zoom
+                        => (string?) context.UserInfoResponse?["display_name"],
 
-                // Strava returns the username as a custom "athlete/username" node in token responses:
-                ProviderTypes.Strava => (string?) context.TokenResponse?["athlete"]?["username"],
+                    // Strava returns the username as a custom "athlete/username" node in token responses:
+                    ProviderTypes.Strava => (string?) context.TokenResponse?["athlete"]?["username"],
 
-                // Streamlabs returns the username as a custom "streamlabs/display_name" node:
-                ProviderTypes.Streamlabs => (string?) context.UserInfoResponse?["streamlabs"]?["display_name"],
+                    // Streamlabs returns the username as a custom "streamlabs/display_name" node:
+                    ProviderTypes.Streamlabs => (string?) context.UserInfoResponse?["streamlabs"]?["display_name"],
 
-                // Todoist returns the username as a custom "full_name" node:
-                ProviderTypes.Todoist => (string?) context.UserInfoResponse?["full_name"],
+                    // Todoist returns the username as a custom "full_name" node:
+                    ProviderTypes.Todoist => (string?) context.UserInfoResponse?["full_name"],
 
-                // Trovo returns the username as a custom "userName" node:
-                ProviderTypes.Trovo => (string?) context.UserInfoResponse?["userName"],
+                    // Trovo returns the username as a custom "userName" node:
+                    ProviderTypes.Trovo => (string?) context.UserInfoResponse?["userName"],
 
-                // Typeform returns the username as a custom "alias" node:
-                ProviderTypes.Typeform => (string?) context.UserInfoResponse?["alias"],
+                    // Typeform returns the username as a custom "alias" node:
+                    ProviderTypes.Typeform => (string?) context.UserInfoResponse?["alias"],
 
-                // Zoho returns the username as a custom "Display_Name" node:
-                ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Display_Name"],
+                    // Zoho returns the username as a custom "Display_Name" node:
+                    ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Display_Name"],
 
-                _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
-            });
+                    _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
+                });
+            }
 
-            context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
+            if (!context.MergedPrincipal.HasClaim(ClaimTypes.NameIdentifier))
             {
-                // These providers return the user identifier as a custom "user_id" node:
-                ProviderTypes.Amazon        or ProviderTypes.HubSpot or
-                ProviderTypes.StackExchange or ProviderTypes.Typeform or
-                ProviderTypes.VkId
-                    => (string?) context.UserInfoResponse?["user_id"],
+                context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
+                {
+                    // These providers return the user identifier as a custom "user_id" node:
+                    ProviderTypes.Amazon        or ProviderTypes.HubSpot or
+                    ProviderTypes.StackExchange or ProviderTypes.Typeform or
+                    ProviderTypes.VkId
+                        => (string?) context.UserInfoResponse?["user_id"],
 
-                // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
-                ProviderTypes.ArcGisOnline or ProviderTypes.Trakt
-                    => (string?) context.UserInfoResponse?["username"],
+                    // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
+                    ProviderTypes.ArcGisOnline or ProviderTypes.Trakt
+                        => (string?) context.UserInfoResponse?["username"],
 
-                // Atlassian returns the user identifier as a custom "account_id" node:
-                ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
+                    // Atlassian returns the user identifier as a custom "account_id" node:
+                    ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
-                // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Airtable      or ProviderTypes.Basecamp   or ProviderTypes.Box       or
-                ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or ProviderTypes.Discord   or
-                ProviderTypes.Disqus        or ProviderTypes.Facebook   or ProviderTypes.Figma     or
-                ProviderTypes.Genesys       or ProviderTypes.Gitee      or ProviderTypes.GitHub    or
-                ProviderTypes.Harvest       or ProviderTypes.Kook       or ProviderTypes.Kroger    or
-                ProviderTypes.Lichess       or ProviderTypes.Linear     or ProviderTypes.Mastodon  or
-                ProviderTypes.Meetup        or ProviderTypes.Miro       or ProviderTypes.Nextcloud or
-                ProviderTypes.Osu           or ProviderTypes.Patreon    or ProviderTypes.Pipedrive or
-                ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify   or
-                ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter   or
-                ProviderTypes.Webflow       or ProviderTypes.Weibo      or ProviderTypes.Yandex    or
-                ProviderTypes.Zoom
-                    => (string?) context.UserInfoResponse?["id"],
+                    // These providers return the user identifier as a custom "id" node:
+                    ProviderTypes.Airtable      or ProviderTypes.Basecamp   or ProviderTypes.Box       or
+                    ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or ProviderTypes.Discord   or
+                    ProviderTypes.Disqus        or ProviderTypes.Facebook   or ProviderTypes.Figma     or
+                    ProviderTypes.Genesys       or ProviderTypes.Gitee      or ProviderTypes.GitHub    or
+                    ProviderTypes.Harvest       or ProviderTypes.Kook       or ProviderTypes.Kroger    or
+                    ProviderTypes.Lichess       or ProviderTypes.Linear     or ProviderTypes.Mastodon  or
+                    ProviderTypes.Meetup        or ProviderTypes.Miro       or ProviderTypes.Nextcloud or
+                    ProviderTypes.Osu           or ProviderTypes.Patreon    or ProviderTypes.Pipedrive or
+                    ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify   or
+                    ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter   or
+                    ProviderTypes.Webflow       or ProviderTypes.Weibo      or ProviderTypes.Yandex    or
+                    ProviderTypes.Zoom
+                        => (string?) context.UserInfoResponse?["id"],
 
-                // Bitbucket returns the user identifier as a custom "uuid" node:
-                ProviderTypes.Bitbucket => (string?) context.UserInfoResponse?["uuid"],
+                    // Bitbucket returns the user identifier as a custom "uuid" node:
+                    ProviderTypes.Bitbucket => (string?) context.UserInfoResponse?["uuid"],
 
-                // Bitly returns the user identifier as a custom "login" node:
-                ProviderTypes.Bitly => (string?) context.UserInfoResponse?["login"],
+                    // Bitly returns the user identifier as a custom "login" node:
+                    ProviderTypes.Bitly => (string?) context.UserInfoResponse?["login"],
 
-                // BungieNet returns the user identifier as a custom "membershipId" node:
-                ProviderTypes.BungieNet => (string?) context.UserInfoResponse?["membershipId"],
+                    // BungieNet returns the user identifier as a custom "membershipId" node:
+                    ProviderTypes.BungieNet => (string?) context.UserInfoResponse?["membershipId"],
 
-                // Calendly returns the user identifier (formatted as a URI) as a custom "uri" node:
-                ProviderTypes.Calendly => (string?) context.UserInfoResponse?["uri"],
+                    // Calendly returns the user identifier (formatted as a URI) as a custom "uri" node:
+                    ProviderTypes.Calendly => (string?) context.UserInfoResponse?["uri"],
 
-                // Contentful returns the user identifier as a custom "sys/id" node:
-                ProviderTypes.Contentful => (string?) context.UserInfoResponse?["sys"]?["id"],
+                    // Contentful returns the user identifier as a custom "sys/id" node:
+                    ProviderTypes.Contentful => (string?) context.UserInfoResponse?["sys"]?["id"],
 
-                // DeviantArt returns the user identifier as a custom "userid" node:
-                ProviderTypes.DeviantArt => (string?) context.UserInfoResponse?["userid"],
+                    // DeviantArt returns the user identifier as a custom "userid" node:
+                    ProviderTypes.DeviantArt => (string?) context.UserInfoResponse?["userid"],
 
-                // Fitbit returns the user identifier as a custom "encodedId" node:
-                ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["encodedId"],
+                    // Fitbit returns the user identifier as a custom "encodedId" node:
+                    ProviderTypes.Fitbit => (string?) context.UserInfoResponse?["encodedId"],
 
-                // Mailchimp returns the user identifier as a custom "login/login_id" node:
-                ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["login"]?["login_id"],
+                    // Mailchimp returns the user identifier as a custom "login/login_id" node:
+                    ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["login"]?["login_id"],
 
-                // Mixcloud returns the user identifier as a custom "key" node:
-                ProviderTypes.Mixcloud => (string?) context.UserInfoResponse?["key"],
+                    // Mixcloud returns the user identifier as a custom "key" node:
+                    ProviderTypes.Mixcloud => (string?) context.UserInfoResponse?["key"],
 
-                // MusicBrainz returns the user identifier as a custom "metabrainz_user_id" node:
-                ProviderTypes.MusicBrainz => (string?) context.UserInfoResponse?["metabrainz_user_id"],
+                    // MusicBrainz returns the user identifier as a custom "metabrainz_user_id" node:
+                    ProviderTypes.MusicBrainz => (string?) context.UserInfoResponse?["metabrainz_user_id"],
 
-                // Notion returns the user identifier as a custom "bot/owner/user/id" node but
-                // requires a special capability to access this node, that may not be present:
-                ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["id"],
+                    // Notion returns the user identifier as a custom "bot/owner/user/id" node but
+                    // requires a special capability to access this node, that may not be present:
+                    ProviderTypes.Notion => (string?) context.UserInfoResponse?["bot"]?["owner"]?["user"]?["id"],
 
-                // ServiceChannel returns the user identifier as a custom "UserId" node:
-                ProviderTypes.ServiceChannel => (string?) context.UserInfoResponse?["UserId"],
+                    // ServiceChannel returns the user identifier as a custom "UserId" node:
+                    ProviderTypes.ServiceChannel => (string?) context.UserInfoResponse?["UserId"],
 
-                // Shopify returns the user identifier as a custom "associated_user/id" node in token responses:
-                ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["id"],
+                    // Shopify returns the user identifier as a custom "associated_user/id" node in token responses:
+                    ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["id"],
 
-                // Strava returns the user identifier as a custom "athlete/id" node in token responses:
-                ProviderTypes.Strava => (string?) context.TokenResponse?["athlete"]?["id"],
+                    // Strava returns the user identifier as a custom "athlete/id" node in token responses:
+                    ProviderTypes.Strava => (string?) context.TokenResponse?["athlete"]?["id"],
 
-                // Stripe returns the user identifier as a custom "stripe_user_id" node in token responses:
-                ProviderTypes.StripeConnect => (string?) context.TokenResponse?["stripe_user_id"],
+                    // Stripe returns the user identifier as a custom "stripe_user_id" node in token responses:
+                    ProviderTypes.StripeConnect => (string?) context.TokenResponse?["stripe_user_id"],
 
-                // Streamlabs returns the user identifier as a custom "streamlabs/id" node:
-                ProviderTypes.Streamlabs => (string?) context.UserInfoResponse?["streamlabs"]?["id"],
+                    // Streamlabs returns the user identifier as a custom "streamlabs/id" node:
+                    ProviderTypes.Streamlabs => (string?) context.UserInfoResponse?["streamlabs"]?["id"],
 
-                // Trovo returns the user identifier as a custom "userId" node:
-                ProviderTypes.Trovo => (string?) context.UserInfoResponse?["userId"],
+                    // Trovo returns the user identifier as a custom "userId" node:
+                    ProviderTypes.Trovo => (string?) context.UserInfoResponse?["userId"],
 
-                // Tumblr doesn't return a user identifier and requires using the username as the identifier:
-                ProviderTypes.Tumblr => (string?) context.UserInfoResponse?["name"],
+                    // Tumblr doesn't return a user identifier and requires using the username as the identifier:
+                    ProviderTypes.Tumblr => (string?) context.UserInfoResponse?["name"],
 
-                // Vimeo returns the user identifier as a custom "uri" node, prefixed with "/users/":
-                ProviderTypes.Vimeo => (string?) context.UserInfoResponse?["uri"] is string uri &&
-                    uri.StartsWith("/users/", StringComparison.Ordinal) ? uri["/users/".Length..] : null,
+                    // Vimeo returns the user identifier as a custom "uri" node, prefixed with "/users/":
+                    ProviderTypes.Vimeo => (string?) context.UserInfoResponse?["uri"] is string uri &&
+                        uri.StartsWith("/users/", StringComparison.Ordinal) ? uri["/users/".Length..] : null,
 
-                // WordPress returns the user identifier as a custom "ID" node:
-                ProviderTypes.WordPress => (string?) context.UserInfoResponse?["ID"],
+                    // WordPress returns the user identifier as a custom "ID" node:
+                    ProviderTypes.WordPress => (string?) context.UserInfoResponse?["ID"],
 
-                // Zoho returns the user identifier as a custom "ZUID" node:
-                ProviderTypes.Zoho => (string?) context.UserInfoResponse?["ZUID"],
+                    // Zoho returns the user identifier as a custom "ZUID" node:
+                    ProviderTypes.Zoho => (string?) context.UserInfoResponse?["ZUID"],
 
-                _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
-            });
+                    _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
+                });
+            }
 
             return ValueTask.CompletedTask;
         }

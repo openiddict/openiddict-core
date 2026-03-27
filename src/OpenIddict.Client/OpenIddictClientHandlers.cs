@@ -4758,15 +4758,17 @@ public static partial class OpenIddictClientHandlers
 
             void MapClaim(string destinationClaimType, string sourceClaimType, string? alternativeSourceClaimType = null)
             {
+                if (context.MergedPrincipal.HasClaim(destinationClaimType))
+                {
+                    return;
+                }
                 var claim = context.MergedPrincipal.GetClaim(sourceClaimType);
-                if (claim != null)
+                if (claim == null && alternativeSourceClaimType != null)
                 {
-                    context.MergedPrincipal.SetClaim(destinationClaimType, claim, issuer);
+                    claim = context.MergedPrincipal.GetClaim(alternativeSourceClaimType);
                 }
-                else if (alternativeSourceClaimType != null)
-                {
-                    MapClaim(destinationClaimType, alternativeSourceClaimType);
-                }
+
+                context.MergedPrincipal.SetClaim(destinationClaimType, claim, issuer);
             }
         }
     }
