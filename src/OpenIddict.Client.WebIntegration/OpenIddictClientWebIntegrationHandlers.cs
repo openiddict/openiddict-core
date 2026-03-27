@@ -1426,13 +1426,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // Note: a similar event handler exists in OpenIddict.Client to map these claims from
             // the standard OpenID Connect claim types (see MapStandardWebServicesFederationClaims).
 
+            if (context.MergedPrincipal.Identity is not ClaimsIdentity identity)
+            {
+                return ValueTask.CompletedTask;
+            }
+
             var issuer = context.Registration.ClaimsIssuer ??
                          context.Registration.ProviderName ??
                          context.Registration.Issuer.AbsoluteUri;
-            
+
             if (!context.MergedPrincipal.HasClaim(ClaimTypes.Email))
             {
-                context.MergedPrincipal.SetClaim(ClaimTypes.Email, issuer: issuer, value: context.Registration.ProviderType switch
+                var value = context.Registration.ProviderType switch
                 {
                     // Basecamp returns the email address as a custom "email_address" node:
                     ProviderTypes.Basecamp => (string?) context.UserInfoResponse?["email_address"],
@@ -1466,13 +1471,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // Yandex returns the email address as a custom "default_email" node:
                     ProviderTypes.Yandex => (string?) context.UserInfoResponse?["default_email"],
 
-                    _ => context.MergedPrincipal.GetClaim(ClaimTypes.Email)
-                });
+                    _ => null
+                };
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    context.MergedPrincipal.AddClaim(ClaimTypes.Email, value, issuer);
+                }
             }
 
             if (!context.MergedPrincipal.HasClaim(ClaimTypes.Name))
             {
-                context.MergedPrincipal.SetClaim(ClaimTypes.Name, issuer: issuer, value: context.Registration.ProviderType switch
+                var value = context.Registration.ProviderType switch
                 {
                     // These providers return the username as a custom "username" node:
                     ProviderTypes.ArcGisOnline or ProviderTypes.Dailymotion or ProviderTypes.DeviantArt or
@@ -1554,13 +1564,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // Zoho returns the username as a custom "Display_Name" node:
                     ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Display_Name"],
 
-                    _ => context.MergedPrincipal.GetClaim(ClaimTypes.Name)
-                });
+                    _ => null
+                };
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    context.MergedPrincipal.AddClaim(ClaimTypes.Name, value, issuer);
+                }
             }
 
             if (!context.MergedPrincipal.HasClaim(ClaimTypes.NameIdentifier))
             {
-                context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier, issuer: issuer, value: context.Registration.ProviderType switch
+                var value = context.Registration.ProviderType switch
                 {
                     // These providers return the user identifier as a custom "user_id" node:
                     ProviderTypes.Amazon        or ProviderTypes.HubSpot or
@@ -1655,8 +1670,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // Zoho returns the user identifier as a custom "ZUID" node:
                     ProviderTypes.Zoho => (string?) context.UserInfoResponse?["ZUID"],
 
-                    _ => context.MergedPrincipal.GetClaim(ClaimTypes.NameIdentifier)
-                });
+                    _ => null
+                };
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    context.MergedPrincipal.AddClaim(ClaimTypes.NameIdentifier, value, issuer);
+                }
             }
 
             return ValueTask.CompletedTask;

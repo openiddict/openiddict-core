@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -4737,38 +4738,48 @@ public static partial class OpenIddictClientHandlers
             // Note: a similar event handler exists in OpenIddict.Client.WebIntegration to map these claims
             // from non-standard/provider-specific claim types (see MapCustomWebServicesFederationClaims).
 
+            if (context.MergedPrincipal.Identity is not ClaimsIdentity identity)
+            {
+                return ValueTask.CompletedTask;
+            }
+
             var issuer = context.Registration.ClaimsIssuer ??
                          context.Registration.ProviderName ??
                          context.Registration.Issuer.AbsoluteUri;
 
-            MapClaim(ClaimTypes.Email,          Claims.Email);
-            MapClaim(ClaimTypes.Gender,         Claims.Gender);
-            MapClaim(ClaimTypes.GivenName,      Claims.GivenName);
-            MapClaim(ClaimTypes.Name,           Claims.PreferredUsername, Claims.Name);
-            MapClaim(ClaimTypes.NameIdentifier, Claims.Subject);
-            MapClaim(ClaimTypes.OtherPhone,     Claims.PhoneNumber);
-            MapClaim(ClaimTypes.Surname,        Claims.FamilyName);
+            MapClaim(ClaimTypes.Email,          ClaimValueTypes.String, [Claims.Email]);
+            MapClaim(ClaimTypes.Gender,         ClaimValueTypes.String, [Claims.Gender]);
+            MapClaim(ClaimTypes.GivenName,      ClaimValueTypes.String, [Claims.GivenName]);
+            MapClaim(ClaimTypes.Name,           ClaimValueTypes.String, [Claims.PreferredUsername, Claims.Name]);
+            MapClaim(ClaimTypes.NameIdentifier, ClaimValueTypes.String, [Claims.Subject]);
+            MapClaim(ClaimTypes.OtherPhone,     ClaimValueTypes.String, [Claims.PhoneNumber]);
+            MapClaim(ClaimTypes.Surname,        ClaimValueTypes.String, [Claims.FamilyName]);
 
             // Note: while this claim is not exposed by the BCL ClaimTypes class, it is used by both ASP.NET Identity
             // for ASP.NET 4.x and the System.Web.WebPages package, that requires it for antiforgery to work correctly.
             MapClaim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
-                Claims.Private.ProviderName);
+                ClaimValueTypes.String, [Claims.Private.ProviderName]);
 
             return ValueTask.CompletedTask;
 
-            void MapClaim(string destinationClaimType, string sourceClaimType, string? alternativeSourceClaimType = null)
+            void MapClaim(string name, string type, ReadOnlySpan<string> names)
             {
-                if (context.MergedPrincipal.HasClaim(destinationClaimType))
+                // Do not map the claim if the claim is already present in the merged principal (e.g because it was
+                // returned by the identity provider or because it was manually added from a custom event handler).
+                if (context.MergedPrincipal.HasClaim(name))
                 {
                     return;
                 }
-                var claim = context.MergedPrincipal.GetClaim(sourceClaimType);
-                if (claim == null && alternativeSourceClaimType != null)
-                {
-                    claim = context.MergedPrincipal.GetClaim(alternativeSourceClaimType);
-                }
 
-                context.MergedPrincipal.SetClaim(destinationClaimType, claim, issuer);
+                // Use the first claim that matches one of the provided claim types.
+                for (var index = 0; index < names.Length; index++)
+                {
+                    if (context.MergedPrincipal.FindFirst(names[index]) is Claim claim)
+                    {
+                        identity.AddClaim(new Claim(name, claim.Value, type, issuer, issuer, identity));
+                        return;
+                    }
+                }
             }
         }
     }
@@ -8039,20 +8050,44 @@ public static partial class OpenIddictClientHandlers
             // WS-Federation equivalent, this handler is responsible for mapping the standard OAuth 2.0 introspection nodes
             // defined by https://datatracker.ietf.org/doc/html/rfc7662#section-2.2 to their WS-Federation equivalent.
 
+            if (context.Principal.Identity is not ClaimsIdentity identity)
+            {
+                return ValueTask.CompletedTask;
+            }
+
             var issuer = context.Registration.ClaimsIssuer ??
                          context.Registration.ProviderName ??
                          context.Registration.Issuer.AbsoluteUri;
 
-            context.Principal
-                .SetClaim(ClaimTypes.Name,           context.Principal.GetClaim(Claims.Username), issuer)
-                .SetClaim(ClaimTypes.NameIdentifier, context.Principal.GetClaim(Claims.Subject),  issuer);
+            MapClaim(ClaimTypes.Name,           ClaimValueTypes.String, [Claims.Username]);
+            MapClaim(ClaimTypes.NameIdentifier, ClaimValueTypes.String, [Claims.Subject]);
 
             // Note: while this claim is not exposed by the BCL ClaimTypes class, it is used by both ASP.NET Identity
             // for ASP.NET 4.x and the System.Web.WebPages package, that requires it for antiforgery to work correctly.
-            context.Principal.SetClaim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
-                context.Principal.GetClaim(Claims.Private.ProviderName));
+            MapClaim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
+                ClaimValueTypes.String, [Claims.Private.ProviderName]);
 
             return ValueTask.CompletedTask;
+
+            void MapClaim(string name, string type, ReadOnlySpan<string> names)
+            {
+                // Do not map the claim if the claim is already present in the merged principal (e.g because it was
+                // returned by the identity provider or because it was manually added from a custom event handler).
+                if (context.Principal.HasClaim(name))
+                {
+                    return;
+                }
+
+                // Use the first claim that matches one of the provided claim types.
+                for (var index = 0; index < names.Length; index++)
+                {
+                    if (context.Principal.FindFirst(names[index]) is Claim claim)
+                    {
+                        identity.AddClaim(new Claim(name, claim.Value, type, issuer, issuer, identity));
+                        return;
+                    }
+                }
+            }
         }
     }
 

@@ -167,7 +167,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
         {
             var properties = CreateAuthenticationProperties();
 
-            return new AuthenticationTicket(context.MergedPrincipal?.Identity as ClaimsIdentity ?? new ClaimsIdentity(), properties);
+            return new AuthenticationTicket(context.MergedPrincipal.Identity as ClaimsIdentity ?? new ClaimsIdentity(), properties);
         }
 
         AuthenticationProperties CreateAuthenticationProperties()
