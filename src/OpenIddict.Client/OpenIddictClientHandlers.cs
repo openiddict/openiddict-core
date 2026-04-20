@@ -9,8 +9,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -955,7 +955,7 @@ public static partial class OpenIddictClientHandlers
             //
             // In any case, the authentication demand MUST be rejected as it's impossible to ensure
             // it's not an injection or session fixation attack without the correct "rfp" value.
-            if (string.IsNullOrEmpty(context.RequestForgeryProtection) || !OpenIddictHelpers.FixedTimeEquals(
+            if (string.IsNullOrEmpty(context.RequestForgeryProtection) || !CryptographicOperations.FixedTimeEquals(
                 left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
                 right: MemoryMarshal.AsBytes(context.RequestForgeryProtection.AsSpan())))
             {
@@ -1935,10 +1935,10 @@ public static partial class OpenIddictClientHandlers
 
                 // If the two nonces don't match, return an error.
                 case { FrontchannelIdentityTokenNonce: string left, StateTokenNonce: string right } when
-                    !OpenIddictHelpers.FixedTimeEquals(
+                    !CryptographicOperations.FixedTimeEquals(
                         left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
                         right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
-                            OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan())):
+                            SHA256.HashData(Encoding.UTF8.GetBytes(right))).AsSpan())):
                     context.Logger.LogWarning(6210, SR.GetResourceString(SR.ID6210));
 
                     context.Reject(
@@ -2047,15 +2047,15 @@ public static partial class OpenIddictClientHandlers
                 {
                     SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
                     SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
-                        => OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(token)),
+                        => SHA256.HashData(Encoding.ASCII.GetBytes(token)),
 
                     SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
                     SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
-                        => OpenIddictHelpers.ComputeSha384Hash(Encoding.ASCII.GetBytes(token)),
+                        => SHA384.HashData(Encoding.ASCII.GetBytes(token)),
 
                     SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
                     SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
-                        => OpenIddictHelpers.ComputeSha512Hash(Encoding.ASCII.GetBytes(token)),
+                        => SHA512.HashData(Encoding.ASCII.GetBytes(token)),
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0293))
                 };
@@ -2066,7 +2066,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             static bool ValidateTokenHash(string algorithm, string token, string hash) =>
-                OpenIddictHelpers.FixedTimeEquals(
+                CryptographicOperations.FixedTimeEquals(
                     left:  MemoryMarshal.AsBytes(hash.AsSpan()),
                     right: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)));
 
@@ -3650,10 +3650,10 @@ public static partial class OpenIddictClientHandlers
 
                 // If the two nonces don't match, return an error.
                 case { BackchannelIdentityTokenNonce: string left, StateTokenNonce: string right } when
-                    !OpenIddictHelpers.FixedTimeEquals(
+                    !CryptographicOperations.FixedTimeEquals(
                         left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
                         right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
-                            OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan())):
+                            SHA256.HashData(Encoding.UTF8.GetBytes(right))).AsSpan())):
                     context.Logger.LogWarning(6211, SR.GetResourceString(SR.ID6211));
 
                     context.Reject(
@@ -3726,15 +3726,15 @@ public static partial class OpenIddictClientHandlers
                 {
                     SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
                     SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
-                        => OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(token)),
+                        => SHA256.HashData(Encoding.ASCII.GetBytes(token)),
 
                     SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
                     SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
-                        => OpenIddictHelpers.ComputeSha384Hash(Encoding.ASCII.GetBytes(token)),
+                        => SHA384.HashData(Encoding.ASCII.GetBytes(token)),
 
                     SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
                     SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
-                        => OpenIddictHelpers.ComputeSha512Hash(Encoding.ASCII.GetBytes(token)),
+                        => SHA512.HashData(Encoding.ASCII.GetBytes(token)),
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0295))
                 };
@@ -3745,7 +3745,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             static bool ValidateTokenHash(string algorithm, string token, string hash) =>
-                OpenIddictHelpers.FixedTimeEquals(
+                CryptographicOperations.FixedTimeEquals(
                     left:  MemoryMarshal.AsBytes(hash.AsSpan()),
                     right: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)));
 
@@ -5457,7 +5457,7 @@ public static partial class OpenIddictClientHandlers
             // Generate a new crypto-secure random identifier that will
             // be used as the non-guessable part of the state token.
             context.RequestForgeryProtection = Base64UrlEncoder.Encode(
-                OpenIddictHelpers.CreateRandomArray(size: 256));
+                RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             return ValueTask.CompletedTask;
         }
@@ -5494,7 +5494,7 @@ public static partial class OpenIddictClientHandlers
             // attached to the authorization request so that the identity provider can bind
             // the issued identity tokens to the generated value, which helps detect token
             // replays (and authorization code injection attacks when PKCE is not available).
-            context.Nonce = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
+            context.Nonce = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             return ValueTask.CompletedTask;
         }
@@ -5573,7 +5573,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Generate a new crypto-secure random identifier that will be used as the code challenge.
-            context.CodeVerifier = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
+            context.CodeVerifier = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             context.CodeChallenge = context.CodeChallengeMethod switch
             {
@@ -5585,7 +5585,7 @@ public static partial class OpenIddictClientHandlers
                 // Note: ASCII is deliberately used here, as it's the encoding required by the specification.
                 // For more information, see https://datatracker.ietf.org/doc/html/rfc7636#section-4.2.
                 CodeChallengeMethods.Sha256 => Base64UrlEncoder.Encode(
-                    OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(context.CodeVerifier))),
+                    SHA256.HashData(Encoding.ASCII.GetBytes(context.CodeVerifier))),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0045))
             };
@@ -5897,7 +5897,7 @@ public static partial class OpenIddictClientHandlers
                 (types.Contains(ResponseTypes.Code) || types.Contains(ResponseTypes.IdToken)))
             {
                 context.Request.Nonce = Base64UrlEncoder.Encode(
-                    OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(context.Nonce)));
+                    SHA256.HashData(Encoding.UTF8.GetBytes(context.Nonce)));
             }
 
             context.Request.CodeChallenge = context.CodeChallenge;
@@ -9156,7 +9156,7 @@ public static partial class OpenIddictClientHandlers
             // Generate a new crypto-secure random identifier that will
             // be used as the non-guessable part of the state token.
             context.RequestForgeryProtection = Base64UrlEncoder.Encode(
-                OpenIddictHelpers.CreateRandomArray(size: 256));
+                RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             return ValueTask.CompletedTask;
         }
@@ -9182,7 +9182,7 @@ public static partial class OpenIddictClientHandlers
             ArgumentNullException.ThrowIfNull(context);
 
             // Generate a new crypto-secure random identifier that will be used as the nonce.
-            context.Nonce = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
+            context.Nonce = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             return ValueTask.CompletedTask;
         }

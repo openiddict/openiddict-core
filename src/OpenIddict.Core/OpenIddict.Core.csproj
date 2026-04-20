@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>
-      $(NetFrameworkTargetFrameworks);
-      $(NetCoreTargetFrameworks);
-      $(NetStandardTargetFrameworks)
-    </TargetFrameworks>
+    <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,12 +21,6 @@
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <Reference Include="System.ComponentModel.DataAnnotations" />
-  </ItemGroup>
-
-  <ItemGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '4.7.2'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard'  And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
-    <PackageReference Include="BouncyCastle.Cryptography" />
   </ItemGroup>
 
   <ItemGroup>

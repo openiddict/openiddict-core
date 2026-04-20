@@ -6,7 +6,6 @@
 
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFrameworkCore;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -203,45 +202,6 @@ public static class OpenIddictEntityFrameworkCoreHelpers
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
-    }
-
-#if SUPPORTS_BCL_ASYNC_ENUMERABLE
-    /// <summary>
-    /// Executes the query and returns the results as a streamed async enumeration.
-    /// </summary>
-    /// <typeparam name="T">The type of the returned entities.</typeparam>
-    /// <param name="source">The query source.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The non-streamed async enumeration containing the results.</returns>
-#else
-    /// <summary>
-    /// Executes the query and returns the results as a non-streamed async enumeration.
-    /// </summary>
-    /// <typeparam name="T">The type of the returned entities.</typeparam>
-    /// <param name="source">The query source.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The non-streamed async enumeration containing the results.</returns>
-#endif
-    internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        return ExecuteAsync(source, cancellationToken);
-
-        static async IAsyncEnumerable<T> ExecuteAsync(IQueryable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-#if SUPPORTS_BCL_ASYNC_ENUMERABLE
-            await foreach (var element in source.AsAsyncEnumerable().WithCancellation(cancellationToken))
-            {
-                yield return element;
-            }
-#else
-            foreach (var element in await source.ToListAsync(cancellationToken))
-            {
-                yield return element;
-            }
-#endif
-        }
     }
 
     /// <summary>

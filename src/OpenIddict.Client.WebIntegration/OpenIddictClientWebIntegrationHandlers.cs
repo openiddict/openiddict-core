@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
@@ -188,11 +189,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Note: to prevent timing attacks, a time-constant comparer is always used.
                 try
                 {
-                    if (!OpenIddictHelpers.FixedTimeEquals(
+                    if (!CryptographicOperations.FixedTimeEquals(
                         left : Convert.FromHexString(signature),
-                        right: OpenIddictHelpers.ComputeSha256MessageAuthenticationCode(
-                            key : Encoding.UTF8.GetBytes(context.Registration.ClientSecret),
-                            data: Encoding.UTF8.GetBytes(builder.ToString()))))
+                        right: HMACSHA256.HashData(
+                            key   : Encoding.UTF8.GetBytes(context.Registration.ClientSecret),
+                            source: Encoding.UTF8.GetBytes(builder.ToString()))))
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,

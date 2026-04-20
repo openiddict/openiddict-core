@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>
-      $(NetFrameworkTargetFrameworks);
-      $(NetCoreTargetFrameworks);
-      $(NetStandardTargetFrameworks)
-    </TargetFrameworks>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <IncludeInternalExtensions>false</IncludeInternalExtensions>
   </PropertyGroup>
 

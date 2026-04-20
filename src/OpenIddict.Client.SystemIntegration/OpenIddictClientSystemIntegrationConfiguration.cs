@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO.Pipes;
 using System.Net;
 using System.Security.AccessControl;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using Microsoft.Extensions.Hosting;
@@ -136,7 +137,7 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0386));
             }
 
-            var digest = OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(_environment.ApplicationName));
+            var digest = SHA256.HashData(Encoding.UTF8.GetBytes(_environment.ApplicationName));
 
             // Note: only the left-most half of the hash is used to limit the length of the resulting discriminator,
             // which is required on platforms like macOS, where the name of pipes is always prefixed with a static part
@@ -147,7 +148,7 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
         // If no explicit instance identifier was specified, use a 96-bit random identifier.
         if (string.IsNullOrEmpty(options.InstanceIdentifier))
         {
-            options.InstanceIdentifier = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 96));
+            options.InstanceIdentifier = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 96 / 8));
         }
 
         // If no explicit pipe name was specified, build one using the application discriminator.

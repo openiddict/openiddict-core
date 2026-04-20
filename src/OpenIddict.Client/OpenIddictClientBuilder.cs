@@ -206,8 +206,7 @@ public sealed class OpenIddictClientBuilder
 
             if (!certificates.Exists(certificate => certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
             {
-#if SUPPORTS_CERTIFICATE_GENERATION
-                using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 4096);
+                using var algorithm = RSA.Create(keySizeInBits: 4096);
 
                 var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
@@ -238,11 +237,7 @@ public sealed class OpenIddictClientBuilder
                         flags |= X509KeyStorageFlags.Exportable;
                     }
 
-#if SUPPORTS_CERTIFICATE_LOADER
                     certificate = X509CertificateLoader.LoadPkcs12(data, string.Empty, flags);
-#else
-                    certificate = new X509Certificate2(data, string.Empty, flags);
-#endif
                     certificates.Insert(0, certificate);
                 }
 
@@ -252,9 +247,6 @@ public sealed class OpenIddictClientBuilder
                 }
 
                 store.Add(certificate);
-#else
-                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
-#endif
             }
 
             options.EncryptionCredentials.AddRange(
@@ -293,13 +285,13 @@ public sealed class OpenIddictClientBuilder
         {
             SecurityAlgorithms.Aes256KW
                 => AddEncryptionCredentials(new EncryptingCredentials(
-                    new SymmetricSecurityKey(OpenIddictHelpers.CreateRandomArray(size: 256)),
+                    new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(count: 256 / 8)),
                     algorithm, SecurityAlgorithms.Aes256CbcHmacSha512)),
 
             SecurityAlgorithms.RsaOAEP or
             SecurityAlgorithms.RsaOaepKeyWrap
                 => AddEncryptionCredentials(new EncryptingCredentials(
-                    new RsaSecurityKey(OpenIddictHelpers.CreateRsaKey(size: 4096)),
+                    new RsaSecurityKey(RSA.Create(keySizeInBits: 4096)),
                     algorithm, SecurityAlgorithms.Aes256CbcHmacSha512)),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058))
@@ -343,14 +335,10 @@ public sealed class OpenIddictClientBuilder
     /// <param name="password">The password used to open the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AddEncryptionCertificate(Assembly assembly, string resource, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
         => AddEncryptionCertificate(assembly, resource, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
-#else
-        => AddEncryptionCertificate(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
     /// <summary>
     /// Registers an encryption certificate retrieved from an embedded resource.
@@ -380,14 +368,10 @@ public sealed class OpenIddictClientBuilder
     /// <param name="password">The password used to open the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AddEncryptionCertificate(Stream stream, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
         => AddEncryptionCertificate(stream, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
-#else
-        => AddEncryptionCertificate(stream, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
     /// <summary>
     /// Registers an encryption certificate extracted from a stream.
@@ -403,16 +387,13 @@ public sealed class OpenIddictClientBuilder
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
-#if SUPPORTS_CERTIFICATE_LOADER
         var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
         {
             X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
         };
-#else
-        var certificate = new X509Certificate2(buffer.ToArray(), password, flags);
-#endif
+
         return AddEncryptionCertificate(certificate);
     }
 
@@ -510,7 +491,6 @@ public sealed class OpenIddictClientBuilder
             return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
         }
 
-#if SUPPORTS_ECDSA
         // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
         if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
         {
@@ -526,14 +506,6 @@ public sealed class OpenIddictClientBuilder
         {
             return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
         }
-#else
-        if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
-            key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
-            key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
-        }
-#endif
 
         throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
     }
@@ -584,8 +556,7 @@ public sealed class OpenIddictClientBuilder
 
             if (!certificates.Exists(certificate => certificate.NotBefore < now.LocalDateTime && certificate.NotAfter > now.LocalDateTime))
             {
-#if SUPPORTS_CERTIFICATE_GENERATION
-                using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 4096);
+                using var algorithm = RSA.Create(keySizeInBits: 4096);
 
                 var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
@@ -616,11 +587,7 @@ public sealed class OpenIddictClientBuilder
                         flags |= X509KeyStorageFlags.Exportable;
                     }
 
-#if SUPPORTS_CERTIFICATE_LOADER
                     certificate = X509CertificateLoader.LoadPkcs12(data, string.Empty, flags);
-#else
-                    certificate = new X509Certificate2(data, string.Empty, flags);
-#endif
                     certificates.Insert(0, certificate);
                 }
 
@@ -630,9 +597,6 @@ public sealed class OpenIddictClientBuilder
                 }
 
                 store.Add(certificate);
-#else
-                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
-#endif
             }
 
             options.SigningCredentials.AddRange(
@@ -681,32 +645,22 @@ public sealed class OpenIddictClientBuilder
             SecurityAlgorithms.RsaSsaPssSha384Signature or
             SecurityAlgorithms.RsaSsaPssSha512Signature
                 => AddSigningCredentials(new SigningCredentials(new RsaSecurityKey(
-                    OpenIddictHelpers.CreateRsaKey(size: 4096)), algorithm)),
+                    RSA.Create(keySizeInBits: 4096)), algorithm)),
 
-#if SUPPORTS_ECDSA
             SecurityAlgorithms.EcdsaSha256 or
             SecurityAlgorithms.EcdsaSha256Signature
                 => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                    OpenIddictHelpers.CreateEcdsaKey(ECCurve.NamedCurves.nistP256)), algorithm)),
+                    ECDsa.Create(ECCurve.NamedCurves.nistP256)), algorithm)),
 
             SecurityAlgorithms.EcdsaSha384 or
             SecurityAlgorithms.EcdsaSha384Signature
                 => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                    OpenIddictHelpers.CreateEcdsaKey(ECCurve.NamedCurves.nistP384)), algorithm)),
+                    ECDsa.Create(ECCurve.NamedCurves.nistP384)), algorithm)),
 
             SecurityAlgorithms.EcdsaSha512 or
             SecurityAlgorithms.EcdsaSha512Signature
                 => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                    OpenIddictHelpers.CreateEcdsaKey(ECCurve.NamedCurves.nistP521)), algorithm)),
-#else
-            SecurityAlgorithms.EcdsaSha256 or
-            SecurityAlgorithms.EcdsaSha384 or
-            SecurityAlgorithms.EcdsaSha512 or
-            SecurityAlgorithms.EcdsaSha256Signature or
-            SecurityAlgorithms.EcdsaSha384Signature or
-            SecurityAlgorithms.EcdsaSha512Signature
-                => throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069)),
-#endif
+                    ECDsa.Create(ECCurve.NamedCurves.nistP521)), algorithm)),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058))
         };
@@ -749,14 +703,10 @@ public sealed class OpenIddictClientBuilder
     /// <param name="password">The password used to open the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AddSigningCertificate(Assembly assembly, string resource, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
         => AddSigningCertificate(assembly, resource, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
-#else
-        => AddSigningCertificate(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
     /// <summary>
     /// Registers a signing certificate retrieved from an embedded resource.
@@ -786,14 +736,10 @@ public sealed class OpenIddictClientBuilder
     /// <param name="password">The password used to open the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AddSigningCertificate(Stream stream, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
         => AddSigningCertificate(stream, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
-#else
-        => AddSigningCertificate(stream, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
     /// <summary>
     /// Registers a signing certificate extracted from a stream.
@@ -809,16 +755,13 @@ public sealed class OpenIddictClientBuilder
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
-#if SUPPORTS_CERTIFICATE_LOADER
         var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
         {
             X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
         };
-#else
-        var certificate = new X509Certificate2(buffer.ToArray(), password, flags);
-#endif
+
         return AddSigningCertificate(certificate);
     }
 

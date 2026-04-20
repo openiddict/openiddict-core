@@ -6,7 +6,6 @@
 
 using System.ComponentModel;
 using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Server;

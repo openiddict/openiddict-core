@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>
-      $(NetFrameworkTargetFrameworks);
-      $(NetCoreTargetFrameworks);
-      $(NetStandardTargetFrameworks)
-    </TargetFrameworks>
+    <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,6 +19,10 @@ To use the server feature on ASP.NET Core or OWIN/Katana, reference the OpenIddi
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="Microsoft.Bcl.Cryptography" />
   </ItemGroup>
 
   <ItemGroup>

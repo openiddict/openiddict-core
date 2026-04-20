@@ -62,7 +62,7 @@ public partial class MainForm : Form, IWinFormsShell
                     Nonce = result.Nonce
                 })).Principal;
 
-#if SUPPORTS_WINFORMS_TASK_DIALOG
+#if NET
                 TaskDialog.ShowDialog(new TaskDialogPage
                 {
                     Caption = "Authentication successful",
@@ -78,7 +78,7 @@ public partial class MainForm : Form, IWinFormsShell
 
             catch (OperationCanceledException)
             {
-#if SUPPORTS_WINFORMS_TASK_DIALOG
+#if NET
                 TaskDialog.ShowDialog(new TaskDialogPage
                 {
                     Caption = "Authentication timed out",
@@ -94,7 +94,7 @@ public partial class MainForm : Form, IWinFormsShell
 
             catch (ProtocolException exception) when (exception.Error is Errors.AccessDenied)
             {
-#if SUPPORTS_WINFORMS_TASK_DIALOG
+#if NET
                 TaskDialog.ShowDialog(new TaskDialogPage
                 {
                     Caption = "Authorization denied",
@@ -110,7 +110,7 @@ public partial class MainForm : Form, IWinFormsShell
 
             catch
             {
-#if SUPPORTS_WINFORMS_TASK_DIALOG
+#if NET
                 TaskDialog.ShowDialog(new TaskDialogPage
                 {
                     Caption = "Authentication failed",
@@ -167,7 +167,7 @@ public partial class MainForm : Form, IWinFormsShell
                     Nonce = result.Nonce
                 });
 
-#if SUPPORTS_WINFORMS_TASK_DIALOG
+#if NET
                 TaskDialog.ShowDialog(new TaskDialogPage
                 {
                     Caption = "Logout successful",
@@ -183,7 +183,7 @@ public partial class MainForm : Form, IWinFormsShell
 
             catch (OperationCanceledException)
             {
-#if SUPPORTS_WINFORMS_TASK_DIALOG
+#if NET
                 TaskDialog.ShowDialog(new TaskDialogPage
                 {
                     Caption = "Logout timed out",
@@ -199,7 +199,7 @@ public partial class MainForm : Form, IWinFormsShell
 
             catch (ProtocolException exception) when (exception.Error is Errors.AccessDenied)
             {
-#if SUPPORTS_WINFORMS_TASK_DIALOG
+#if NET
                 TaskDialog.ShowDialog(new TaskDialogPage
                 {
                     Caption = "Logout denied",
@@ -215,7 +215,7 @@ public partial class MainForm : Form, IWinFormsShell
 
             catch
             {
-#if SUPPORTS_WINFORMS_TASK_DIALOG
+#if NET
                 TaskDialog.ShowDialog(new TaskDialogPage
                 {
                     Caption = "Logout failed",

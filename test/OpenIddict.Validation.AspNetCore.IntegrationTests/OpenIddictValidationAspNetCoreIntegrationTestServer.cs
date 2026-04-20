@@ -5,11 +5,8 @@
  */
 
 using Microsoft.AspNetCore.TestHost;
-using OpenIddict.Validation.IntegrationTests;
-
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
 using Microsoft.Extensions.Hosting;
-#endif
+using OpenIddict.Validation.IntegrationTests;
 
 namespace OpenIddict.Validation.AspNetCore.IntegrationTests;
 
@@ -18,7 +15,6 @@ namespace OpenIddict.Validation.AspNetCore.IntegrationTests;
 /// </summary>
 public class OpenIddictValidationAspNetCoreIntegrationTestServer : OpenIddictValidationIntegrationTestServer
 {
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
     public OpenIddictValidationAspNetCoreIntegrationTestServer(IHost host)
     {
         Host = host;
@@ -29,10 +25,6 @@ public class OpenIddictValidationAspNetCoreIntegrationTestServer : OpenIddictVal
     /// Gets the generic host used by this instance.
     /// </summary>
     public IHost Host { get; }
-#else
-    public OpenIddictValidationAspNetCoreIntegrationTestServer(TestServer server)
-        => Server = server;
-#endif
 
     /// <summary>
     /// Gets the ASP.NET Core test server used by this instance.
@@ -42,21 +34,13 @@ public class OpenIddictValidationAspNetCoreIntegrationTestServer : OpenIddictVal
     public override ValueTask<OpenIddictValidationIntegrationTestClient> CreateClientAsync()
         => new(new OpenIddictValidationIntegrationTestClient(Server.CreateClient()));
 
-    public override
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
-        async
-#endif
-        ValueTask DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
         // Dispose of the underlying test server.
         Server.Dispose();
 
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         // Stop and dispose of the underlying generic host.
         await Host.StopAsync();
         Host.Dispose();
-#else
-        return ValueTask.CompletedTask;
-#endif
     }
 }

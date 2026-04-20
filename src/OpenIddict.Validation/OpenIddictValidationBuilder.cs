@@ -204,14 +204,10 @@ public sealed class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(
         Assembly assembly, string resource, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
         => AddEncryptionCertificate(assembly, resource, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
-#else
-        => AddEncryptionCertificate(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
     /// <summary>
     /// Registers an encryption certificate retrieved from an embedded resource.
@@ -241,14 +237,10 @@ public sealed class OpenIddictValidationBuilder
     /// <param name="password">The password used to open the certificate.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(Stream stream, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
         => AddEncryptionCertificate(stream, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
-#else
-        => AddEncryptionCertificate(stream, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
     /// <summary>
     /// Registers an encryption certificate extracted from a stream.
@@ -265,16 +257,13 @@ public sealed class OpenIddictValidationBuilder
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
-#if SUPPORTS_CERTIFICATE_LOADER
         var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
         {
             X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
         };
-#else
-        var certificate = new X509Certificate2(buffer.ToArray(), password, flags);
-#endif
+
         return AddEncryptionCertificate(certificate);
     }
 
@@ -373,7 +362,6 @@ public sealed class OpenIddictValidationBuilder
             return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
         }
 
-#if SUPPORTS_ECDSA
         // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
         if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
         {
@@ -389,14 +377,6 @@ public sealed class OpenIddictValidationBuilder
         {
             return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
         }
-#else
-        if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
-            key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
-            key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
-        }
-#endif
 
         throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
     }
@@ -450,14 +430,10 @@ public sealed class OpenIddictValidationBuilder
     /// <param name="password">The password used to open the certificate.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningCertificate(Assembly assembly, string resource, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
         => AddSigningCertificate(assembly, resource, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
-#else
-        => AddSigningCertificate(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
     /// <summary>
     /// Registers a signing certificate retrieved from an embedded resource.
@@ -487,14 +463,10 @@ public sealed class OpenIddictValidationBuilder
     /// <param name="password">The password used to open the certificate.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddSigningCertificate(Stream stream, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
         => AddSigningCertificate(stream, password, OperatingSystem.IsMacOS() ?
             X509KeyStorageFlags.MachineKeySet :
             X509KeyStorageFlags.EphemeralKeySet);
-#else
-        => AddSigningCertificate(stream, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
     /// <summary>
     /// Registers a signing certificate extracted from a stream.
@@ -510,16 +482,13 @@ public sealed class OpenIddictValidationBuilder
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
-#if SUPPORTS_CERTIFICATE_LOADER
         var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
         {
             X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
         };
-#else
-        var certificate = new X509Certificate2(buffer.ToArray(), password, flags);
-#endif
+
         return AddSigningCertificate(certificate);
     }
 

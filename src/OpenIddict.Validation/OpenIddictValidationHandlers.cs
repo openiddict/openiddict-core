@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
@@ -920,8 +921,8 @@ public static partial class OpenIddictValidationHandlers
 
                 // If the thumbprint of the certificate doesn't match the hash
                 // resolved from the confirmation claim, return an error.
-                var hash = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(certificate.RawData));
-                if (!OpenIddictHelpers.FixedTimeEquals(
+                var hash = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256));
+                if (!CryptographicOperations.FixedTimeEquals(
                     left : MemoryMarshal.AsBytes<char>(hash),
                     right: MemoryMarshal.AsBytes<char>(thumbprint)))
                 {

@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
@@ -762,14 +763,13 @@ public static partial class OpenIddictServerHandlers
                     // Try to resolve the JWA algorithm short name.
                     var algorithm = credentials.Algorithm switch
                     {
-#if SUPPORTS_ECDSA
                         SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
                             => SecurityAlgorithms.EcdsaSha256,
                         SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
                             => SecurityAlgorithms.EcdsaSha384,
                         SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
                             => SecurityAlgorithms.EcdsaSha512,
-#endif
+
                         SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
                             => SecurityAlgorithms.RsaSha256,
                         SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
@@ -1167,7 +1167,6 @@ public static partial class OpenIddictServerHandlers
 
                 foreach (var credentials in context.Options.SigningCredentials)
                 {
-#if SUPPORTS_ECDSA
                     if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
                         !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256) &&
                         !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
@@ -1178,15 +1177,6 @@ public static partial class OpenIddictServerHandlers
 
                         continue;
                     }
-#else
-                    if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
-                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
-                    {
-                        context.Logger.LogInformation(6072, SR.GetResourceString(SR.ID6072), credentials.Key.GetType().Name);
-
-                        continue;
-                    }
-#endif
 
                     var key = new JsonWebKey
                     {
@@ -1195,14 +1185,13 @@ public static partial class OpenIddictServerHandlers
                         // Resolve the JWA identifier from the algorithm specified in the credentials.
                         Alg = credentials.Algorithm switch
                         {
-#if SUPPORTS_ECDSA
                             SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
                                 => SecurityAlgorithms.EcdsaSha256,
                             SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
                                 => SecurityAlgorithms.EcdsaSha384,
                             SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
                                 => SecurityAlgorithms.EcdsaSha512,
-#endif
+
                             SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
                                 => SecurityAlgorithms.RsaSha256,
                             SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
@@ -1260,7 +1249,6 @@ public static partial class OpenIddictServerHandlers
                         key.N = Base64UrlEncoder.Encode(parameters.Value.Modulus);
                     }
 
-#if SUPPORTS_ECDSA
                     else if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
                              credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
                              credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
@@ -1281,10 +1269,17 @@ public static partial class OpenIddictServerHandlers
                             continue;
                         }
 
-                        var curve =
-                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
-                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
-                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
+                        // Warning: on .NET Framework 4.x, exported ECParameters generally have a null OID
+                        // value attached. To work around this limitation, both the raw OID values and the
+                        // friendly names are compared to determine whether the curve is of the specified type.
+                        var curve = parameters.Value.Curve.Oid switch
+                        {
+                            { FriendlyName: "nistP256" } or { Value: "1.2.840.10045.3.1.7" } => JsonWebKeyECTypes.P256,
+                            { FriendlyName: "nistP384" } or { Value: "1.3.132.0.34"        } => JsonWebKeyECTypes.P384,
+                            { FriendlyName: "nistP521" } or { Value: "1.3.132.0.35"        } => JsonWebKeyECTypes.P521,
+
+                            _ => null
+                        };
 
                         if (string.IsNullOrEmpty(curve))
                         {
@@ -1296,9 +1291,6 @@ public static partial class OpenIddictServerHandlers
                         Debug.Assert(parameters.Value.Q.X is not null &&
                                      parameters.Value.Q.Y is not null, SR.GetResourceString(SR.ID4004));
 
-                        Debug.Assert(parameters.Value.Curve.Oid is not null, SR.GetResourceString(SR.ID4011));
-                        Debug.Assert(parameters.Value.Curve.IsNamed, SR.GetResourceString(SR.ID4005));
-
                         key.Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
                         key.Crv = curve;
 
@@ -1307,12 +1299,10 @@ public static partial class OpenIddictServerHandlers
                         key.X = Base64UrlEncoder.Encode(parameters.Value.Q.X);
                         key.Y = Base64UrlEncoder.Encode(parameters.Value.Q.Y);
                     }
-#endif
 
                     // If the signing key is embedded in a X.509 certificate, set
                     // the x5t and x5c parameters using the certificate details.
-                    var certificate = (credentials.Key as X509SecurityKey)?.Certificate;
-                    if (certificate is not null)
+                    if (credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate })
                     {
                         // x5t must be base64url-encoded.
                         // See https://tools.ietf.org/html/rfc7517#section-4.8.
@@ -1320,7 +1310,7 @@ public static partial class OpenIddictServerHandlers
 
                         // x5t#S256 must be base64url-encoded.
                         // See https://tools.ietf.org/html/rfc7517#section-4.9.
-                        key.X5tS256 = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(certificate.RawData));
+                        key.X5tS256 = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256));
 
                         // Unlike E or N, the certificates contained in x5c
                         // must be base64-encoded and not base64url-encoded.

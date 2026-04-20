@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -1182,7 +1183,7 @@ public static partial class OpenIddictClientHandlers
 
                 if (context.IsReferenceToken)
                 {
-                    descriptor.ReferenceId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
+                    descriptor.ReferenceId = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
                 }
 
                 await _tokenManager.UpdateAsync(token, descriptor);

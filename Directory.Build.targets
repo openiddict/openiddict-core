@@ -16,27 +16,20 @@
   </PropertyGroup>
 
   <!--
-    Note: the trimming and Native AOT analyzers are only supported on .NET. Since the OpenIddict
-    Entity Framework 6.x and Entity Framework Core stores internally use new trimming/AOT-friendly
-    TypeDescriptor APIs introduced in .NET 9.0, only the .NET 9.0+ TFMs are marked as AOT-compatible.
+    Note: the trimming and Native AOT analyzers are only supported on .NET.
   -->
 
-  <PropertyGroup
-    Condition=" $(RepoRelativeProjectDir.Contains('src')) And
-               '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
-                $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0')) ">
+  <PropertyGroup Condition=" $(RepoRelativeProjectDir.Contains('src')) And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <!--
-    Note: .NET Native, .NET Framework and .NET Standard assemblies are not annotated with
-    nullable references annotations. To avoid errors on these target frameworks, related
-    warnings are disabled by setting <Nullable> to "annotations" instead of "enable".
+    Note: .NET Framework assemblies are not annotated with nullable references
+    annotations. To avoid errors on these target frameworks, related warnings
+    are disabled by setting <Nullable> to "annotations" instead of "enable".
   -->
 
-  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' Or
-                             '$(TargetFrameworkIdentifier)' == '.NETFramework' Or
-                             '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
@@ -48,84 +41,29 @@
     <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Windows'     ">7.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_CONSTRUCTOR_WITH_ACL</DefineConstants>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_APPLICATION_CONFIGURATION_INITIALIZATION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_HANDLER_SELECTION_FALLBACK</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_HANDLER_TIME_PROVIDER_ARGUMENT</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHORIZATION_MIDDLEWARE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_BCL_ASYNC_ENUMERABLE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_BULK_DBSET_OPERATIONS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_DBSET_VALUETASK_FINDASYNC</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ENDPOINT_ROUTING</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ENVIRONMENT_PROCESS_PATH</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_BROTLI_COMPRESSION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_CURRENT_USER_ONLY_PIPE_OPTION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HEXADECIMAL_STRING_CONVERSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_RESILIENCE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_INT32_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_KESTREL_TLS_HANDSHAKE_CALLBACK_OPTIONS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_HASHING_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_ONE_SHOT_KEY_DERIVATION_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_PEM_ENCODED_KEY_IMPORT</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_REDIRECTION_ON_SIGN_IN</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_RELAXED_URI_LIMITS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TEXT_ELEMENT_ENUMERATOR</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TIME_CONSTANT_COMPARISONS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_VALUETASK_COMPLETED_TASK</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_WINFORMS_TASK_DIALOG</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_CLONING</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_DOWNLOAD_MODE</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ZLIB_COMPRESSION</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7.2'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7.2'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_GENERATION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_EPHEMERAL_KEY_SETS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_RSA_KEY_CREATION_WITH_SPECIFIED_SIZE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_BROTLI_COMPRESSION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_CURRENT_USER_ONLY_PIPE_OPTION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_TIME_CONSTANT_COMPARISONS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0')) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_LOADER</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_DEEP_EQUALS</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_KEYED_HTTP_CLIENT_RESOLUTION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_CLONING</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_X509_CHAIN_POLICY_VERIFICATION_TIME_MODE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup
-    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '10.0')) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_ASYNC_LINQ</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_RELAXED_URI_LIMITS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_ZLIB_COMPRESSION</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
@@ -154,9 +92,7 @@
   </PropertyGroup>
 
   <PropertyGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCore' And '$(TargetPlatformIdentifier)' == 'UAP') Or
-
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
                  '$(TargetPlatformIdentifier)'  == 'Windows'     And
                  '$(TargetPlatformVersion)'     != ''            And
                   $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '8.0'))) Or
@@ -164,20 +100,6 @@
                 ('$(TargetFrameworkIdentifier)' == '.NETFramework') ">
     <DefineConstants>$(DefineConstants);SUPPORTS_WINDOWS_RUNTIME</DefineConstants>
   </PropertyGroup>
-
-  <!--
-    Note: Entity Framework Core 2.x references System.Interactive.Async 3.x, that includes
-    its own IAsyncEnumerable. To work around collisions between this type and the new type
-    now included in the BCL (System.Runtime), an alias is added to System.Interactive.Async.
-  -->
-
-  <Target Name="AddAssemblyAliasToReactiveAsync" AfterTargets="ResolveAssemblyReferences">
-    <ItemGroup>
-      <ReferencePath Condition=" '%(FileName)' == 'System.Interactive.Async' ">
-        <Aliases>reactive</Aliases>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
 
   <!--
     Note: metapackages don't include any build output. To ensure the TFM-specific folders under
@@ -211,13 +133,5 @@
         Overwrite="true"
         Encoding="Unicode" />
   </Target>
-
-  <!--
-    Note: the built-in _CalculateXbfSupport target cannot be used when building a UWP project using
-    the .NET version of MSBuild. To work around this limitation, a fake target is defined here.
-  -->
-
-  <Target Name="_CalculateXbfSupport"
-          Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' And '$(TargetPlatformIdentifier)' == 'UAP' " />
 
 </Project>

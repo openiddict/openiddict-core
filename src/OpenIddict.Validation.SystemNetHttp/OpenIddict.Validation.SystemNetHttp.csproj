@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>
-      $(NetFrameworkTargetFrameworks);
-      $(NetCoreTargetFrameworks);
-      $(NetStandardTargetFrameworks)
-    </TargetFrameworks>
+    <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,8 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
   </ItemGroup>
 
-  <ItemGroup
-    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <PackageReference Include="System.Net.Http.Json" />
   </ItemGroup>
 

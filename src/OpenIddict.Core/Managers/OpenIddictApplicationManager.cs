@@ -19,13 +19,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
-#if !SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-#endif
-
 namespace OpenIddict.Core;
 
 /// <summary>
@@ -1718,7 +1711,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         // Note: the PRF, iteration count, salt length and key length currently all match the default values
         // used by CryptoHelper and ASP.NET Core Identity but this may change in the future, if necessary.
 
-        var salt = OpenIddictHelpers.CreateRandomArray(size: 128);
+        var salt = RandomNumberGenerator.GetBytes(count: 128 / 8);
         var hash = HashSecret(secret, salt, HashAlgorithmName.SHA256, iterations: 10_000, length: 256 / 8);
 
         return new(Convert.ToBase64String(hash));
@@ -1729,7 +1722,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
         static byte[] HashSecret(string secret, byte[] salt, HashAlgorithmName algorithm, int iterations, int length)
         {
-            var key = DeriveKey(secret, salt, algorithm, iterations, length);
+            var key = Rfc2898DeriveBytes.Pbkdf2(secret, salt, iterations, algorithm, length);
             var payload = new byte[13 + salt.Length + key.Length];
 
             // Write the format marker.
@@ -1838,31 +1831,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 return false;
             }
 
-            return OpenIddictHelpers.FixedTimeEquals(
-                left:  payload.Slice(13 + salt.Length, keyLength),
-                right: DeriveKey(secret, salt.ToArray(), algorithm, iterations, keyLength));
+            return CryptographicOperations.FixedTimeEquals(
+                left : payload.Slice(13 + salt.Length, keyLength),
+                right: Rfc2898DeriveBytes.Pbkdf2(secret, salt.ToArray(), iterations, algorithm, keyLength));
         }
-    }
-
-    private static byte[] DeriveKey(string secret, byte[] salt, HashAlgorithmName algorithm, int iterations, int length)
-    {
-#if SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
-        return OpenIddictHelpers.DeriveKey(secret, salt, algorithm, iterations, length);
-#else
-        var generator = new Pkcs5S2ParametersGenerator(algorithm switch
-        {
-            var name when name == HashAlgorithmName.SHA1   => new Sha1Digest(),
-            var name when name == HashAlgorithmName.SHA256 => new Sha256Digest(),
-            var name when name == HashAlgorithmName.SHA512 => new Sha512Digest(),
-
-            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0217))
-        });
-
-        generator.Init(PbeParametersGenerator.Pkcs5PasswordToBytes(secret.ToCharArray()), salt, iterations);
-
-        var key = (KeyParameter) generator.GenerateDerivedMacParameters(length * 8);
-        return key.GetKey();
-#endif
     }
 
     /// <inheritdoc/>

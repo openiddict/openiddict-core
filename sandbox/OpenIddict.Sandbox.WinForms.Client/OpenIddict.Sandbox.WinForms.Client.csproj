@@ -2,25 +2,52 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net48</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(SupportsWindowsTargeting)' == 'true' ">$(TargetFrameworks);net10.0-windows7.0</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows7.0</TargetFrameworks>
+    <TargetFrameworks Condition=" $([MSBuild]::IsOSPlatform('Windows')) ">$(TargetFrameworks);net48</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+  </PropertyGroup>
+
+  <!--
+    Note: the SourceGear.sqlite3 package doesn't support AnyCPU builds and requires the application
+    to be built as x64, x86 or arm64. To avoid any potential "BadImageFormatException" at runtime,
+    the PlatformTarget and Prefer32Bit properties are always set to "x64" and "false" by default.
+  -->
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net48' ">
+    <PlatformTarget Condition=" '$(PlatformTarget)' == '' ">x64</PlatformTarget>
+    <Prefer32Bit Condition=" '$(Prefer32Bit)' == '' ">false</Prefer32Bit>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.Client.SystemIntegration\OpenIddict.Client.SystemIntegration.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Client.SystemNetHttp\OpenIddict.Client.SystemNetHttp.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Client.WebIntegration\OpenIddict.Client.WebIntegration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
     <ProjectReference Include="..\..\src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <ProjectReference Include="..\..\src\OpenIddict.EntityFramework\OpenIddict.EntityFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.AppServices" />
     <PackageReference Include="Dapplo.Microsoft.Extensions.Hosting.WinForms" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="SourceGear.sqlite3" />
+    <PackageReference Include="SQLite.CodeFirst" />
+    <PackageReference Include="System.Data.SQLite.EF6" />
   </ItemGroup>
 
 </Project>

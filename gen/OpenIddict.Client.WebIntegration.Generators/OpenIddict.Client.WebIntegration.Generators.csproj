@@ -10,20 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OpenIddict.Abstractions\OpenIddict.Abstractions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
     <PackageReference Include="Scriban" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="System.Interactive" PrivateAssets="all" GeneratePathProperty="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="OpenIddict.Abstractions" />
-    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
-    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
   </ItemGroup>
   
   <PropertyGroup>
