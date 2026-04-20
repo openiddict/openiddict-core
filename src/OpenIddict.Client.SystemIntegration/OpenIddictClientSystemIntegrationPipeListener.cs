@@ -131,12 +131,10 @@ public sealed class OpenIddictClientSystemIntegrationPipeListener : BackgroundSe
             // Note: the ACL-based PipeSecurity class is only supported on Windows. On other operating systems,
             // PipeOptions.CurrentUserOnly can be used as an alternative, but only for TFMs that implement it.
             => OperatingSystem.IsWindows() ?
-#if SUPPORTS_NAMED_PIPE_CONSTRUCTOR_WITH_ACL
-                new NamedPipeServerStream(
-#elif SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL
+#if SUPPORTS_NAMED_PIPE_STATIC_FACTORY_WITH_ACL
                 NamedPipeServerStreamAcl.Create(
 #else
-                NamedPipeServerStreamConstructors.New(
+                new NamedPipeServerStream(
 #endif
                     pipeName                  : $@"{options.PipeName}-{options.InstanceIdentifier}",
                     direction                 : PipeDirection.In,

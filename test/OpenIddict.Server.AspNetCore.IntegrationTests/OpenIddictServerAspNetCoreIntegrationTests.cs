@@ -652,17 +652,10 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
     }
 
-    protected override
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
-        async
-#endif
-        ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null)
+    protected override async ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(
+        Action<OpenIddictServerBuilder>? configuration = null)
     {
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         var builder = new HostBuilder();
-#else
-        var builder = new WebHostBuilder();
-#endif
         builder.UseEnvironment("Testing");
 
         builder.ConfigureLogging(options => options.AddXUnit(OutputHelper));
@@ -681,25 +674,15 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
                 });
         });
 
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         builder.ConfigureWebHost(options =>
         {
             options.UseTestServer();
             options.Configure(ConfigurePipeline);
         });
-#else
-        builder.Configure(ConfigurePipeline);
-#endif
 
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         var host = await builder.StartAsync();
 
         return new OpenIddictServerAspNetCoreIntegrationTestServer(host);
-#else
-        var server = new TestServer(builder);
-
-        return new(new OpenIddictServerAspNetCoreIntegrationTestServer(server));
-#endif
 
         void ConfigurePipeline(IApplicationBuilder app)
         {

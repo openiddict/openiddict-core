@@ -409,11 +409,7 @@ public abstract partial class OpenIddictValidationIntegrationTests
             using var buffer = new MemoryStream();
             stream.CopyTo(buffer);
 
-#if SUPPORTS_CERTIFICATE_LOADER
             return X509CertificateLoader.LoadCertificate(buffer.ToArray());
-#else
-            return new X509Certificate2(buffer.ToArray());
-#endif
         }
     }
 

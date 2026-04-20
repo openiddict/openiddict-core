@@ -9,7 +9,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1177,8 +1179,8 @@ public static partial class OpenIddictServerHandlers
 
                     // If the thumbprint of the certificate doesn't match the hash
                     // resolved from the confirmation claim, return an error.
-                    var hash = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(certificate.RawData));
-                    if (!OpenIddictHelpers.FixedTimeEquals(
+                    var hash = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256));
+                    if (!CryptographicOperations.FixedTimeEquals(
                         left : MemoryMarshal.AsBytes<char>(hash),
                         right: MemoryMarshal.AsBytes<char>(thumbprint)))
                     {
@@ -1829,7 +1831,7 @@ public static partial class OpenIddictServerHandlers
                     {
                         do
                         {
-                            descriptor.ReferenceId = OpenIddictHelpers.CreateRandomString(
+                            descriptor.ReferenceId = CreateRandomString(
                                 charset: [.. context.Options.UserCodeCharset],
                                 count  : context.Options.UserCodeLength);
                         }
@@ -1842,7 +1844,7 @@ public static partial class OpenIddictServerHandlers
                     else
                     {
                         // For other tokens, generate a base64url-encoded 256-bit random identifier.
-                        descriptor.ReferenceId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
+                        descriptor.ReferenceId = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
                     }
                 }
 
@@ -1855,6 +1857,19 @@ public static partial class OpenIddictServerHandlers
                 {
                     context.Token = descriptor.ReferenceId;
                     context.Logger.LogTrace(6015, SR.GetResourceString(SR.ID6015), descriptor.ReferenceId, identifier, context.TokenType);
+                }
+
+                static string CreateRandomString(ReadOnlySpan<string> charset, int count)
+                {
+                    var builder = new StringBuilder();
+
+                    for (var index = 0; index < count; index++)
+                    {
+                        // Pick a character in the specified charset by generating a random index.
+                        builder.Append(RandomNumberGenerator.GetInt32(0, charset.Length));
+                    }
+
+                    return builder.ToString();
                 }
             }
         }

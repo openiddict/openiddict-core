@@ -119,8 +119,8 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 string?[] value => value.Length,
 
                 // If the parameter is a JSON array or a JSON object, return its length.
-                JsonElement { ValueKind: JsonValueKind.Array or JsonValueKind.Object } element
-                    => Count(element),
+                JsonElement { ValueKind: JsonValueKind.Array  } element => element.GetArrayLength(),
+                JsonElement { ValueKind: JsonValueKind.Object } element => element.GetPropertyCount(),
 
                 // If the parameter is a JsonArray, return its length.
                 JsonArray value => value.Count,
@@ -130,8 +130,13 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
                 // If the parameter is a JsonValue wrapping a JsonElement,
                 // apply the same logic as with direct JsonElement instances.
-                JsonValue value when value.TryGetValue(out JsonElement element)
-                    => element.ValueKind is JsonValueKind.Array or JsonValueKind.Object ? Count(element) : 0,
+                JsonValue value when value.TryGetValue(out JsonElement element) => element.ValueKind switch
+                {
+                    JsonValueKind.Array  => element.GetArrayLength(),
+                    JsonValueKind.Object => element.GetPropertyCount(),
+
+                    _ => 0
+                },
 
                 // If the parameter is a JsonValue wrapping a well-known primitive type
                 // (e.g int or string), always return 0 as these types can't have a length.
@@ -145,42 +150,11 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 // and extract the number of items if the element is a JSON array or object.
                 JsonNode value when JsonSerializer.SerializeToElement(value, OpenIddictSerializer.Default.JsonNode)
                     is JsonElement { ValueKind: JsonValueKind.Array or JsonValueKind.Object } element
-                    => Count(element),
+                    => element.ValueKind is JsonValueKind.Array ? element.GetArrayLength() : element.GetPropertyCount(),
 
                 // Otherwise, return 0.
                 _ => 0
             };
-
-            static int Count(JsonElement element)
-            {
-                switch (element.ValueKind)
-                {
-                    case JsonValueKind.Array:
-                        return element.GetArrayLength();
-
-                    case JsonValueKind.Object:
-#if SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT
-                        return element.GetPropertyCount();
-#else
-                        var count = 0;
-
-                        using (var enumerator = element.EnumerateObject())
-                        {
-                            checked
-                            {
-                                while (enumerator.MoveNext())
-                                {
-                                    count++;
-                                }
-                            }
-                        }
-
-                        return count;
-#endif
-
-                    default: return 0;
-                }
-            }
         }
     }
 
@@ -290,75 +264,21 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 JsonSerializer.SerializeToElement(right, right.GetType(), OpenIddictSerializer.Default))
         };
 
-        static bool DeepEquals(JsonElement left, JsonElement right)
+        static bool DeepEquals(JsonElement left, JsonElement right) => (left.ValueKind, right.ValueKind) switch
         {
-#if !SUPPORTS_JSON_ELEMENT_DEEP_EQUALS
-            RuntimeHelpers.EnsureSufficientExecutionStack();
-#endif
-            switch ((left.ValueKind, right.ValueKind))
-            {
-                case (JsonValueKind.Undefined, JsonValueKind.Undefined):
-                case (JsonValueKind.Null,      JsonValueKind.Null):
-                case (JsonValueKind.False,     JsonValueKind.False):
-                case (JsonValueKind.True,      JsonValueKind.True):
-                    return true;
+            (JsonValueKind.Undefined, JsonValueKind.Undefined) or
+            (JsonValueKind.Null,      JsonValueKind.Null)      or
+            (JsonValueKind.False,     JsonValueKind.False)     or
+            (JsonValueKind.True,      JsonValueKind.True)
+                => true,
 
-                // Treat undefined JsonElement instances as null values.
-                case (JsonValueKind.Undefined, JsonValueKind.Null):
-                case (JsonValueKind.Null, JsonValueKind.Undefined):
-                    return true;
+            // Treat undefined JsonElement instances as null values.
+            (JsonValueKind.Undefined, JsonValueKind.Null) or
+            (JsonValueKind.Null, JsonValueKind.Undefined)
+                => true,
 
-#if SUPPORTS_JSON_ELEMENT_DEEP_EQUALS
-                default: return JsonElement.DeepEquals(left, right);
-#else
-                case (JsonValueKind.Number, JsonValueKind.Number):
-                    return string.Equals(left.GetRawText(), right.GetRawText(), StringComparison.Ordinal);
-
-                case (JsonValueKind.String, JsonValueKind.String):
-                    return string.Equals(left.GetString(), right.GetString(), StringComparison.Ordinal);
-
-                case (JsonValueKind.Array, JsonValueKind.Array):
-                {
-                    var length = left.GetArrayLength();
-                    if (length != right.GetArrayLength())
-                    {
-                        return false;
-                    }
-
-                    for (var index = 0; index < length; index++)
-                    {
-                        if (!DeepEquals(left[index], right[index]))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-
-                case (JsonValueKind.Object, JsonValueKind.Object):
-                {
-                    foreach (var property in left.EnumerateObject())
-                    {
-                        if (!right.TryGetProperty(property.Name, out JsonElement element) ||
-                            property.Value.ValueKind != element.ValueKind)
-                        {
-                            return false;
-                        }
-
-                        if (!DeepEquals(property.Value, element))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-
-                default: return false;
-#endif
-            }
-        }
+            _ => JsonElement.DeepEquals(left, right)
+        };
     }
 
     /// <summary>

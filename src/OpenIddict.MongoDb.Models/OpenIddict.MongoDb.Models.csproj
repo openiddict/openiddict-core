@@ -1,12 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>
-      net472;
-      net48;
-      $(NetCoreTargetFrameworks);
-      netstandard2.1
-    </TargetFrameworks>
+    <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
     <IncludeInternalExtensions>false</IncludeInternalExtensions>
   </PropertyGroup>
 
@@ -19,8 +14,7 @@
     <PackageReference Include="MongoDB.Bson" />
   </ItemGroup>
 
-  <ItemGroup
-    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 

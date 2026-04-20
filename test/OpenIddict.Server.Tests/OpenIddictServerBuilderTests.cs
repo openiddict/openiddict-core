@@ -8,11 +8,6 @@ using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
-#if !SUPPORTS_CERTIFICATE_GENERATION
-using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
-#endif
-
 namespace OpenIddict.Server.Tests;
 
 public class OpenIddictServerBuilderTests
@@ -281,7 +276,6 @@ public class OpenIddictServerBuilderTests
         Assert.Equal("subject", exception.ParamName);
     }
 
-#if SUPPORTS_CERTIFICATE_GENERATION
     [Fact]
     public void AddDevelopmentEncryptionCertificate_CanGenerateCertificate()
     {
@@ -300,27 +294,6 @@ public class OpenIddictServerBuilderTests
         Assert.Equal(SecurityAlgorithms.Aes256CbcHmacSha512, options.EncryptionCredentials[0].Enc);
         Assert.NotNull(options.EncryptionCredentials[0].Key.KeyId);
     }
-#else
-    [Fact]
-    public void AddDevelopmentEncryptionCertificate_ThrowsAnExceptionOnUnsupportedPlatforms()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        builder.AddDevelopmentEncryptionCertificate(
-            subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)));
-
-        var provider = services.BuildServiceProvider();
-
-        var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
-
-        // Act and assert
-        var exception = Assert.Throws<PlatformNotSupportedException>(() => options.Value);
-
-        Assert.Equal("X.509 certificate generation is not supported on this platform.", exception.Message);
-    }
-#endif
 
     [Fact]
     public void AddDevelopmentSigningCertificate_ThrowsAnExceptionForNullSubject()
@@ -338,7 +311,6 @@ public class OpenIddictServerBuilderTests
         Assert.Equal("subject", exception.ParamName);
     }
 
-#if SUPPORTS_CERTIFICATE_GENERATION
     [Fact]
     public void AddDevelopmentSigningCertificate_CanGenerateCertificate()
     {
@@ -356,27 +328,6 @@ public class OpenIddictServerBuilderTests
         Assert.Equal(SecurityAlgorithms.RsaSha256, options.SigningCredentials[0].Algorithm);
         Assert.NotNull(options.SigningCredentials[0].Kid);
     }
-#else
-    [Fact]
-    public void AddDevelopmentSigningCertificate_ThrowsAnExceptionOnUnsupportedPlatforms()
-    {
-        // Arrange
-        var services = CreateServices();
-        var builder = CreateBuilder(services);
-
-        builder.AddDevelopmentSigningCertificate(
-            subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)));
-
-        var provider = services.BuildServiceProvider();
-
-        var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
-
-        // Act and assert
-        var exception = Assert.Throws<PlatformNotSupportedException>(() => options.Value);
-
-        Assert.Equal("X.509 certificate generation is not supported on this platform.", exception.Message);
-    }
-#endif
 
     [Fact]
     public void AddEphemeralSigningKey_SigningKeyIsCorrectlyAdded()
@@ -398,11 +349,9 @@ public class OpenIddictServerBuilderTests
     [InlineData(SecurityAlgorithms.RsaSha256)]
     [InlineData(SecurityAlgorithms.RsaSha384)]
     [InlineData(SecurityAlgorithms.RsaSha512)]
-#if SUPPORTS_ECDSA
     [InlineData(SecurityAlgorithms.EcdsaSha256)]
     [InlineData(SecurityAlgorithms.EcdsaSha384)]
     [InlineData(SecurityAlgorithms.EcdsaSha512)]
-#endif
     public void AddEphemeralSigningKey_SigningCredentialsUseSpecifiedAlgorithm(string algorithm)
     {
         // Arrange
@@ -447,11 +396,9 @@ public class OpenIddictServerBuilderTests
     [Theory]
     [InlineData(SecurityAlgorithms.HmacSha256)]
     [InlineData(SecurityAlgorithms.RsaSha256)]
-#if SUPPORTS_ECDSA
     [InlineData(SecurityAlgorithms.EcdsaSha256)]
     [InlineData(SecurityAlgorithms.EcdsaSha384)]
     [InlineData(SecurityAlgorithms.EcdsaSha512)]
-#endif
     public void AddSigningKey_SigningKeyIsCorrectlyAdded(string algorithm)
     {
         // Arrange

@@ -5,7 +5,6 @@
  */
 
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
@@ -44,7 +43,7 @@ public sealed class OpenIddictValidationSystemNetHttpContext
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        using var algorithm = CreateAlgorithm();
+        using var algorithm = SHA256.Create();
 
         if (context.LocalCertificate is X509Certificate2 certificate)
         {
@@ -54,14 +53,5 @@ public sealed class OpenIddictValidationSystemNetHttpContext
         algorithm.TransformFinalBlock([], 0, 0);
 
         return Base64UrlEncoder.Encode(algorithm.Hash);
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026",
-            Justification = "The default implementation is always used when no custom algorithm was registered.")]
-        static SHA256 CreateAlgorithm() => CryptoConfig.CreateFromName("OpenIddict SHA-256 Cryptographic Provider") switch
-        {
-            SHA256 result => result,
-            null => SHA256.Create(),
-            var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
-        };
     }
 }

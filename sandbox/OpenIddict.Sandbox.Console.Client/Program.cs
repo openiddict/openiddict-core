@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
 using OpenIddict.Sandbox.Console.Client;
+using OpenIddict.Sandbox.Console.Client.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -12,21 +12,26 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddDebug();
 
-builder.Services.AddDbContext<DbContext>(options =>
-{
-    options.UseSqlite($"Filename={Path.Combine(Path.GetTempPath(), "openiddict-sandbox-console-client.sqlite3")}");
-    options.UseOpenIddict();
-});
+#if NET
+builder.Services.AddDbContext<ApplicationDbContext>();
+#else
+builder.Services.AddScoped<ApplicationDbContext>();
+#endif
 
 builder.Services.AddOpenIddict()
 
     // Register the OpenIddict core components.
     .AddCore(options =>
     {
+#if NET
         // Configure OpenIddict to use the Entity Framework Core stores and models.
-        // Note: call ReplaceDefaultEntities() to replace the default OpenIddict entities.
         options.UseEntityFrameworkCore()
-               .UseDbContext<DbContext>();
+               .UseDbContext<ApplicationDbContext>();
+#else
+        // Configure OpenIddict to use the Entity Framework 6.x stores and models.
+        options.UseEntityFramework()
+               .UseDbContext<ApplicationDbContext>();
+#endif
     })
 
     // Register the OpenIddict client components.
@@ -137,10 +142,12 @@ var app = builder.Build();
 // Before starting the host, create the database used to store the application data.
 //
 // Note: in a real world application, this step should be part of a setup script.
+#if NET
 await using (var scope = app.Services.CreateAsyncScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await context.Database.EnsureCreatedAsync();
 }
+#endif
 
 await app.RunAsync();

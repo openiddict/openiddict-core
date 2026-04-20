@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -13,24 +13,8 @@
     <ProjectReference Include="..\OpenIddict.Validation\OpenIddict.Validation.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
   <ItemGroup>
-    <!--
-      Note: the versions of the System.Security.Cryptography.Xml package that are transitively referenced are
-      known to be affected by security vulnerabilities (see https://github.com/advisories/GHSA-w3x6-4m5h-cxqf
-      and https://github.com/advisories/GHSA-37gx-xxp4-5rgx for more information). To mitigate this issue,
-      the package is explicitly referenced here to ensure that a fixed version is used.
-    -->
-
-    <PackageReference Include="System.Security.Cryptography.Xml" />
-  </ItemGroup>
-
-  <ItemGroup
-    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>

@@ -198,7 +198,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
             await foreach (var scope in (from scope in context.Set<TScope>().AsTracking()
                                          where Enumerable.Contains(names, scope.Name)
-                                         select scope).AsAsyncEnumerable(cancellationToken))
+                                         select scope).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return scope;
             }
@@ -225,7 +225,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
             var scopes = (from scope in context.Set<TScope>().AsTracking()
                           where scope.Resources!.Contains(resource)
-                          select scope).AsAsyncEnumerable(cancellationToken);
+                          select scope).AsAsyncEnumerable().WithCancellation(cancellationToken);
 
             await foreach (var scope in scopes)
             {
@@ -461,7 +461,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var scope in query.AsAsyncEnumerable(cancellationToken))
+        await foreach (var scope in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return scope;
         }
@@ -480,7 +480,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var scope in query(context.Set<TScope>().AsTracking(), state).AsAsyncEnumerable(cancellationToken))
+            await foreach (var scope in query(context.Set<TScope>().AsTracking(), state).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return scope;
             }

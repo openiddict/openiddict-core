@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>
@@ -8,20 +8,8 @@
       $(NetCoreIOSTargetFrameworks);
       $(NetCoreMacCatalystTargetFrameworks);
       $(NetCoreMacOSTargetFrameworks);
-      $(NetCoreWindowsTargetFrameworks);
-      $(NetStandardTargetFrameworks);
-      $(UniversalWindowsPlatformTargetFrameworks)
+      $(NetCoreWindowsTargetFrameworks)
     </TargetFrameworks>
-
-    <!--
-      Note: MSBuild.Sdk.Extras has a bug that prevents the target framework identifier from being
-      correctly inferred for .NET 10+ target framework monikers. To work around that bug, the identifier
-      is explicitly set when the moniker corresponds to a .NET (Core) target framework moniker.
-
-      See https://github.com/novotnyllc/MSBuildSdkExtras/issues/305 for more information.
-    -->
-    <TargetFrameworkIdentifier
-      Condition=" $([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) == '.NETCoreApp' ">.NETCoreApp</TargetFrameworkIdentifier>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!--
@@ -44,10 +32,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
-    <PackageReference Include="NamedPipeServerStream.NetFrameworkVersion" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">

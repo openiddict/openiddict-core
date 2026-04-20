@@ -136,7 +136,6 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-#if SUPPORTS_BULK_DBSET_OPERATIONS
         if (!Options.CurrentValue.DisableBulkOperations)
         {
             var strategy = context.Database.CreateExecutionStrategy();
@@ -180,7 +179,6 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         }
 
         else
-#endif
         {
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
@@ -323,7 +321,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
             var applications = (from application in context.Set<TApplication>().AsTracking()
                                 where application.PostLogoutRedirectUris!.Contains(uri)
-                                select application).AsAsyncEnumerable(cancellationToken);
+                                select application).AsAsyncEnumerable().WithCancellation(cancellationToken);
 
             await foreach (var application in applications)
             {
@@ -356,7 +354,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
             var applications = (from application in context.Set<TApplication>().AsTracking()
                                 where application.RedirectUris!.Contains(uri)
-                                select application).AsAsyncEnumerable(cancellationToken);
+                                select application).AsAsyncEnumerable().WithCancellation(cancellationToken);
 
             await foreach (var application in applications)
             {
@@ -754,7 +752,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var application in query.AsAsyncEnumerable(cancellationToken))
+        await foreach (var application in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return application;
         }
@@ -773,7 +771,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var application in query(context.Set<TApplication>().AsTracking(), state).AsAsyncEnumerable(cancellationToken))
+            await foreach (var application in query(context.Set<TApplication>().AsTracking(), state).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return application;
             }

@@ -890,11 +890,9 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(Algorithms.RsaSha256)]
     [InlineData(Algorithms.RsaSha384)]
     [InlineData(Algorithms.RsaSha512)]
-#if SUPPORTS_ECDSA
     [InlineData(Algorithms.EcdsaSha256)]
     [InlineData(Algorithms.EcdsaSha384)]
     [InlineData(Algorithms.EcdsaSha512)]
-#endif
     public async Task HandleConfigurationRequest_SigningAlgorithmsAreCorrectlyReturned(string algorithm)
     {
         // Arrange
@@ -1422,11 +1420,6 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(SecurityAlgorithms.HmacSha256Signature)]
     [InlineData(SecurityAlgorithms.HmacSha384Signature)]
     [InlineData(SecurityAlgorithms.HmacSha512Signature)]
-#if !SUPPORTS_ECDSA
-    [InlineData(SecurityAlgorithms.EcdsaSha256Signature)]
-    [InlineData(SecurityAlgorithms.EcdsaSha384Signature)]
-    [InlineData(SecurityAlgorithms.EcdsaSha512Signature)]
-#endif
     public async Task HandleJsonWebKeySetRequest_UnsupportedSecurityKeysAreIgnored(string algorithm)
     {
         // Arrange
@@ -1487,7 +1480,6 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(parameters.Modulus, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.N]));
     }
 
-#if SUPPORTS_ECDSA
     [Theory]
     [InlineData(
         /* oid: */ "1.2.840.10045.3.1.7", // P-256
@@ -1538,7 +1530,6 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(parameters.Q.X, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.X]));
         Assert.Equal(parameters.Q.Y, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.Y]));
     }
-#endif
 
     [Fact]
     public async Task HandleJsonWebKeySetRequest_X509CertificatesAreCorrectlyExposed()

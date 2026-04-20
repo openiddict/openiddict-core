@@ -29,7 +29,6 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientAspNetCoreHandler"/> class.
     /// </summary>
-#if SUPPORTS_AUTHENTICATION_HANDLER_TIME_PROVIDER_ARGUMENT
     public OpenIddictClientAspNetCoreHandler(
         IOpenIddictClientDispatcher dispatcher,
         IOpenIddictClientFactory factory,
@@ -41,20 +40,6 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
-#else
-    public OpenIddictClientAspNetCoreHandler(
-        IOpenIddictClientDispatcher dispatcher,
-        IOpenIddictClientFactory factory,
-        IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options,
-        ILoggerFactory logger,
-        UrlEncoder encoder,
-        ISystemClock clock)
-        : base(options, logger, encoder, clock)
-    {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-    }
-#endif
 
     /// <inheritdoc/>
     public async Task<bool> HandleRequestAsync()

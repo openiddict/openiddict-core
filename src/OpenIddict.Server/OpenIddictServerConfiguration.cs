@@ -615,7 +615,6 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
-#if SUPPORTS_ECDSA
             if (key is ECDsaSecurityKey ecsdaSecurityKey)
             {
                 // Extract the ECDSA parameters from the signing credentials.
@@ -627,7 +626,6 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
                 return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
-#endif
 
             return null;
         }

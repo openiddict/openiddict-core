@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -1157,7 +1158,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
 
         // Compute the digest of the generated identifier and use it as the hashed identifier of the reference token.
         // Doing that prevents token identifiers stolen from the database from being used as valid reference tokens.
-        return new(Convert.ToBase64String(OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(identifier))));
+        return new(Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(identifier))));
     }
 
     /// <inheritdoc/>

@@ -6,7 +6,6 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -296,7 +295,6 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
-#if SUPPORTS_ECDSA
             if (key is ECDsaSecurityKey ecsdaSecurityKey)
             {
                 // Extract the ECDSA parameters from the signing credentials.
@@ -308,7 +306,6 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
                 return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
-#endif
 
             return null;
         }
@@ -317,7 +314,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         {
             Debug.Assert(registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
-            using var algorithm = CreateAlgorithm();
+            using var algorithm = SHA256.Create();
 
             TransformBlock(algorithm, registration.Issuer.AbsoluteUri);
 
@@ -329,15 +326,6 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             algorithm.TransformFinalBlock([], 0, 0);
 
             return Base64UrlEncoder.Encode(algorithm.Hash);
-
-            [UnconditionalSuppressMessage("Trimming", "IL2026",
-                Justification = "The default implementation is always used when no custom algorithm was registered.")]
-            static SHA256 CreateAlgorithm() => CryptoConfig.CreateFromName("OpenIddict SHA-256 Cryptographic Provider") switch
-            {
-                SHA256 result => result,
-                null => SHA256.Create(),
-                var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
-            };
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void TransformBlock(HashAlgorithm algorithm, string input)

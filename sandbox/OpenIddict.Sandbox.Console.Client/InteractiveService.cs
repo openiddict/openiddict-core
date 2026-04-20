@@ -854,7 +854,6 @@ public class InteractiveService : BackgroundService
             return Task.Run(Prompt, cancellationToken).WaitAsync(cancellationToken);
         }
 
-#if SUPPORTS_CERTIFICATE_GENERATION
         static X509Certificate2 GenerateEphemeralTlsClientCertificate()
         {
             using var algorithm = RSA.Create(keySizeInBits: 4096);
@@ -876,21 +875,13 @@ public class InteractiveService : BackgroundService
             // and would be installed in the certificate store, making this workaround unnecessary.
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-#if SUPPORTS_CERTIFICATE_LOADER
                 certificate = X509CertificateLoader.LoadPkcs12(
                     data: certificate.Export(X509ContentType.Pfx, string.Empty),
                     password: string.Empty,
                     keyStorageFlags: X509KeyStorageFlags.DefaultKeySet);
-#else
-                certificate = new X509Certificate2(
-                    rawData: certificate.Export(X509ContentType.Pfx, string.Empty),
-                    password: string.Empty,
-                    keyStorageFlags: X509KeyStorageFlags.DefaultKeySet);
-#endif
             }
 
             return certificate;
         }
-#endif
     }
 }

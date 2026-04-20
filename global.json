@@ -6,20 +6,12 @@
   },
 
   "tools": {
-    "dotnet": "10.0.203",
-
-    "runtimes": {
-      "aspnetcore": [
-        "8.0.26",
-        "9.0.15"
-      ]
-    }
+    "dotnet": "10.0.203"
   },
 
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25562.108",
     "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25562.108",
-    "MSBuild.Sdk.Extras": "3.0.44",
     "MSBuild.SDK.SystemWeb": "4.0.97"
   }
 }

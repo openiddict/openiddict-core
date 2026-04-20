@@ -1,15 +1,15 @@
 using System.Diagnostics;
 using Dapplo.Microsoft.Extensions.Hosting.WinForms;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using OpenIddict.Client;
 using OpenIddict.Sandbox.WinForms.Client;
+using OpenIddict.Sandbox.WinForms.Client.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
-#if SUPPORTS_APPLICATION_CONFIGURATION_INITIALIZATION
+#if NET
 ApplicationConfiguration.Initialize();
 #endif
 
@@ -23,21 +23,26 @@ var host = new HostBuilder()
     .ConfigureLogging(options => options.AddDebug())
     .ConfigureServices(services =>
     {
-        services.AddDbContext<DbContext>(options =>
-        {
-            options.UseSqlite($"Filename={Path.Combine(Path.GetTempPath(), "openiddict-sandbox-winforms-client.sqlite3")}");
-            options.UseOpenIddict();
-        });
+#if NET
+        services.AddDbContext<ApplicationDbContext>();
+#else
+        services.AddScoped<ApplicationDbContext>();
+#endif
 
         services.AddOpenIddict()
 
             // Register the OpenIddict core components.
             .AddCore(options =>
             {
+#if NET
                 // Configure OpenIddict to use the Entity Framework Core stores and models.
-                // Note: call ReplaceDefaultEntities() to replace the default OpenIddict entities.
                 options.UseEntityFrameworkCore()
-                       .UseDbContext<DbContext>();
+                       .UseDbContext<ApplicationDbContext>();
+#else
+                // Configure OpenIddict to use the Entity Framework 6.x stores and models.
+                options.UseEntityFramework()
+                       .UseDbContext<ApplicationDbContext>();
+#endif
             })
 
             // Register the OpenIddict client components.
@@ -109,8 +114,10 @@ var host = new HostBuilder()
 // Note: in a real world application, this step should be part of a setup script.
 await using (var scope = host.Services.CreateAsyncScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+#if NET
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await context.Database.EnsureCreatedAsync();
+#endif
 
     // Create the registry entries necessary to handle URI protocol activations.
     //
@@ -126,12 +133,12 @@ await using (var scope = host.Services.CreateAsyncScope())
 
     using var command = root.CreateSubKey("shell\\open\\command");
     command.SetValue(string.Empty, string.Format("\"{0}\" \"%1\"",
-#if SUPPORTS_ENVIRONMENT_PROCESS_PATH
+#if NET
         Environment.ProcessPath
 #else
         Process.GetCurrentProcess().MainModule.FileName
 #endif
-    ));
+        ));
 }
 
 await host.RunAsync();

@@ -1,6 +1,7 @@
 <Project>
 
   <ItemGroup>
+    <PackageReference Include="MSBuild.Microsoft.VisualStudio.Web.targets" Version="14.0.0.3" IsImplicitlyDefined="true" />
     <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.10.0" IsImplicitlyDefined="true" />
   </ItemGroup>
 
@@ -38,6 +39,11 @@
     <Exec Command='"$(DotNetTool)" workload install macos --skip-manifest-update'
           WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true"
           Condition=" $([System.OperatingSystem]::IsMacOS()) Or $([System.OperatingSystem]::IsWindows()) ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+
+    <Exec Command='"$(DotNetTool)" workload install maui-android --skip-manifest-update'
+          WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
     </Exec>
 

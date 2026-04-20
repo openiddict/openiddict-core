@@ -78,7 +78,6 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-#if SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS
                 var location = QueryHelpers.AddQueryString(context.RequestUri.GetLeftPart(UriPartial.Path),
                     from parameter in context.Response.GetParameters()
                     let values = (ImmutableArray<string?>?) parameter.Value
@@ -86,20 +85,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select KeyValuePair.Create(parameter.Key, value));
-#else
-                var location = context.RequestUri.GetLeftPart(UriPartial.Path);
 
-                foreach (var (key, value) in
-                    from parameter in context.Response.GetParameters()
-                    let values = (ImmutableArray<string?>?) parameter.Value
-                    where values is not null
-                    from value in values.GetValueOrDefault()
-                    where !string.IsNullOrEmpty(value)
-                    select (parameter.Key, Value: value))
-                {
-                    location = QueryHelpers.AddQueryString(location, key, value);
-                }
-#endif
                 response.Redirect(location);
                 context.HandleRequest();
 
@@ -145,7 +131,6 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
                 // For consistency, multiple parameters with the same name are also supported by this endpoint.
 
-#if SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS
                 var location = QueryHelpers.AddQueryString(context.PostLogoutRedirectUri,
                     from parameter in context.Response.GetParameters()
                     let values = (ImmutableArray<string?>?) parameter.Value
@@ -153,20 +138,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select KeyValuePair.Create(parameter.Key, value));
-#else
-                var location = context.PostLogoutRedirectUri;
 
-                foreach (var (key, value) in
-                    from parameter in context.Response.GetParameters()
-                    let values = (ImmutableArray<string?>?) parameter.Value
-                    where values is not null
-                    from value in values.GetValueOrDefault()
-                    where !string.IsNullOrEmpty(value)
-                    select (parameter.Key, Value: value))
-                {
-                    location = QueryHelpers.AddQueryString(location, key, value);
-                }
-#endif
                 response.Redirect(location);
                 context.HandleRequest();
 

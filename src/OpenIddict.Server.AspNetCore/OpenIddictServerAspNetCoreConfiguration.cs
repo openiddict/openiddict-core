@@ -62,7 +62,6 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0109));
         }
 
-#if SUPPORTS_AUTHENTICATION_HANDLER_SELECTION_FALLBACK
         // Starting in ASP.NET 7.0, the authentication stack integrates a fallback
         // mechanism to select the default scheme to use when no value is set, but
         // only if a single handler has been registered in the authentication options.
@@ -81,7 +80,6 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
         {
             options.AddScheme<IAuthenticationHandler>(Guid.NewGuid().ToString(), displayName: null);
         }
-#endif
 
         static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
         {

@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1993,7 +1994,7 @@ public static partial class OpenIddictServerHandlers
                     CodeChallengeMethods.Plain => context.Request.CodeVerifier,
 
                     CodeChallengeMethods.Sha256 => Base64UrlEncoder.Encode(
-                        OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier))),
+                        SHA256.HashData(Encoding.ASCII.GetBytes(context.Request.CodeVerifier))),
 
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0268)),
 
@@ -2002,7 +2003,7 @@ public static partial class OpenIddictServerHandlers
 
                 // Compare the verifier and the code challenge: if the two don't match, return an error.
                 // Note: to prevent timing attacks, a time-constant comparer is always used.
-                if (!OpenIddictHelpers.FixedTimeEquals(
+                if (!CryptographicOperations.FixedTimeEquals(
                     left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
                     right: MemoryMarshal.AsBytes(challenge.AsSpan())))
                 {

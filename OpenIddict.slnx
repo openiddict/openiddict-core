@@ -1,7 +1,6 @@
 <Solution>
 
   <Folder Name="/eng/">
-    <File Path="eng/AfterTargetFrameworkInference.targets" />
     <File Path="eng/Build.props" />
     <File Path="eng/key.snk" />
     <File Path="eng/Signing.props" />
@@ -69,10 +68,10 @@
     <Project Path="src/OpenIddict.MongoDb/OpenIddict.MongoDb.csproj" />
     <Project Path="src/OpenIddict.Owin/OpenIddict.Owin.csproj" />
     <Project Path="src/OpenIddict.Quartz/OpenIddict.Quartz.csproj" />
+    <Project Path="src/OpenIddict.Server/OpenIddict.Server.csproj" />
     <Project Path="src/OpenIddict.Server.AspNetCore/OpenIddict.Server.AspNetCore.csproj" />
     <Project Path="src/OpenIddict.Server.DataProtection/OpenIddict.Server.DataProtection.csproj" />
     <Project Path="src/OpenIddict.Server.Owin/OpenIddict.Server.Owin.csproj" />
-    <Project Path="src/OpenIddict.Server/OpenIddict.Server.csproj" />
     <Project Path="src/OpenIddict.Validation/OpenIddict.Validation.csproj" />
     <Project Path="src/OpenIddict.Validation.AspNetCore/OpenIddict.Validation.AspNetCore.csproj" />
     <Project Path="src/OpenIddict.Validation.DataProtection/OpenIddict.Validation.DataProtection.csproj" />

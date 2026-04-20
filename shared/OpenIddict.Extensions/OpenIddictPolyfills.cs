@@ -4,8 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace OpenIddict.Extensions;
@@ -40,6 +42,29 @@ internal static class OpenIddictPolyfills
             }
 
             return array;
+        }
+#endif
+    }
+
+    extension(HMACSHA256)
+    {
+#if !SUPPORTS_ONE_SHOT_HASHING_METHODS
+        /// <summary>
+        /// Computes the HMAC of data using the SHA256 algorithm.
+        /// </summary>
+        /// <param name="key">The HMAC key.</param>
+        /// <param name="source">The data to HMAC.</param>
+        /// <returns>The HMAC of the data.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="key" /> or <paramref name="source" /> is <see langword="null" />.
+        /// </exception>
+        public static byte[] HashData(byte[] key, byte[] source)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            ArgumentNullException.ThrowIfNull(source);
+
+            using var algorithm = new HMACSHA256(key);
+            return algorithm.ComputeHash(source);
         }
 #endif
     }
@@ -127,6 +152,69 @@ internal static class OpenIddictPolyfills
             return RuntimeInformation.OSDescription.StartsWith("Microsoft Windows ", StringComparison.OrdinalIgnoreCase) &&
                    RuntimeInformation.OSDescription["Microsoft Windows ".Length..] is string value &&
                    Version.TryParse(value, out Version? version) && version >= new Version(major, minor, build, revision);
+        }
+#endif
+    }
+
+    extension(Rfc2898DeriveBytes)
+    {
+#if !SUPPORTS_ONE_SHOT_KEY_DERIVATION_METHODS
+
+        /// <summary>
+        /// Creates a PBKDF2 derived key from a password.
+        /// </summary>
+        /// <param name="password">The password used to derive the key.</param>
+        /// <param name="salt">The key salt used to derive the key.</param>
+        /// <param name="iterations">The number of iterations for the operation.</param>
+        /// <param name="hashAlgorithm">The hash algorithm to use to derive the key.</param>
+        /// <param name="outputLength">The size of key to derive.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///   <para><paramref name="outputLength" /> is not zero or a positive value.</para>
+        ///   <para>-or-</para>
+        ///   <para><paramref name="iterations" /> is not a positive value.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        ///   <paramref name="hashAlgorithm" /> has a <see cref="HashAlgorithmName.Name" />
+        ///   that is empty or <see langword="null" />.
+        /// </exception>
+        /// <exception cref="CryptographicException">
+        ///   <paramref name="hashAlgorithm" /> is an unsupported hash algorithm. Supported algorithms
+        ///   are <see cref="HashAlgorithmName.SHA1" />, <see cref="HashAlgorithmName.SHA256" />,
+        ///   <see cref="HashAlgorithmName.SHA384" />, and <see cref="HashAlgorithmName.SHA512" />.
+        /// </exception>
+        public static byte[] Pbkdf2(
+            ReadOnlySpan<char> password,
+            ReadOnlySpan<byte> salt,
+            int iterations,
+            HashAlgorithmName hashAlgorithm,
+            int outputLength)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(outputLength);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(iterations);
+
+            using var algorithm = new Rfc2898DeriveBytes(password.ToString(), salt.ToArray(), iterations, hashAlgorithm);
+            return algorithm.GetBytes(outputLength);
+        }
+#endif
+    }
+
+    extension(SHA384)
+    {
+#if !SUPPORTS_ONE_SHOT_HASHING_METHODS
+        /// <summary>
+        /// Computes the hash of data using the SHA384 algorithm.
+        /// </summary>
+        /// <param name="source">The data to hash.</param>
+        /// <returns>The hash of the data.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="source" /> is <see langword="null" />.
+        /// </exception>
+        public static byte[] HashData(byte[] source)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            
+            using var algorithm = SHA384.Create();
+            return algorithm.ComputeHash(source);
         }
 #endif
     }
@@ -219,3 +307,85 @@ internal static class OpenIddictPolyfills
 #endif
     }
 }
+
+
+/// <summary>
+/// Exposes common polyfills used by the OpenIddict assemblies.
+/// </summary>
+internal static class OpenIddictPolyfills_SHA512
+{
+    extension(SHA512)
+    {
+#if !SUPPORTS_ONE_SHOT_HASHING_METHODS
+        /// <summary>
+        /// Computes the hash of data using the SHA512 algorithm.
+        /// </summary>
+        /// <param name="source">The data to hash.</param>
+        /// <returns>The hash of the data.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="source" /> is <see langword="null" />.
+        /// </exception>
+        public static byte[] HashData(byte[] source)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            
+            using var algorithm = SHA512.Create();
+            return algorithm.ComputeHash(source);
+        }
+#endif
+    }
+}
+
+#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
+internal static class CryptographicOperations
+{
+    /// <summary>
+    /// Determine the equality of two byte sequences in an amount of time which depends on
+    /// the length of the sequences, but not the values.
+    /// </summary>
+    /// <param name="left">The first buffer to compare.</param>
+    /// <param name="right">The second buffer to compare.</param>
+    /// <returns>
+    ///   <c>true</c> if <paramref name="left"/> and <paramref name="right"/> have the same
+    ///   values for <see cref="ReadOnlySpan{T}.Length"/> and the same contents, <c>false</c>
+    ///   otherwise.
+    /// </returns>
+    /// <remarks>
+    ///   This method compares two buffers' contents for equality in a manner which does not
+    ///   leak timing information, making it ideal for use within cryptographic routines.
+    ///   This method will short-circuit and return <c>false</c> only if <paramref name="left"/>
+    ///   and <paramref name="right"/> have different lengths.
+    ///
+    ///   Fixed-time behavior is guaranteed in all other cases, including if <paramref name="left"/>
+    ///   and <paramref name="right"/> reference the same address.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+    public static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+    {
+        // Note: the logic used here is directly taken from the official implementation of
+        // the CryptographicOperations.FixedTimeEquals() method introduced in .NET Core 2.1.
+        //
+        // See https://github.com/dotnet/corefx/pull/27103 for more information.
+
+        // Note: these null checks can be theoretically considered as early checks
+        // (which would defeat the purpose of a time-constant comparison method),
+        // but the expected string length is the only information an attacker
+        // could get at this stage, which is not critical where this method is used.
+
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        var length = left.Length;
+        var accumulator = 0;
+
+        for (var index = 0; index < length; index++)
+        {
+            accumulator |= left[index] - right[index];
+        }
+
+        return accumulator is 0;
+    }
+}
+#endif

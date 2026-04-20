@@ -492,7 +492,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0346), nameof(key));
             }
 
-            var algorithm = OpenIddictHelpers.CreateEcdsaKey();
+            var algorithm = ECDsa.Create();
 
             try
             {
@@ -580,14 +580,10 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Assembly assembly, string resource, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => Set{{ setting.property_name }}(assembly, resource, password, OperatingSystem.IsMacOS() ?
                 X509KeyStorageFlags.MachineKeySet :
                 X509KeyStorageFlags.EphemeralKeySet);
-#else
-            => Set{{ setting.property_name }}(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
         /// <summary>
         /// Configures {{ setting.description }}.
@@ -623,14 +619,10 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password)
-#if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => Set{{ setting.property_name }}(stream, password, OperatingSystem.IsMacOS() ?
                 X509KeyStorageFlags.MachineKeySet :
                 X509KeyStorageFlags.EphemeralKeySet);
-#else
-            => Set{{ setting.property_name }}(stream, password, X509KeyStorageFlags.MachineKeySet);
-#endif
 
         /// <summary>
         /// Configures {{ setting.description }}.
@@ -649,16 +641,13 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             using var buffer = new MemoryStream();
             stream.CopyTo(buffer);
 
-#if SUPPORTS_CERTIFICATE_LOADER
             var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
             {
                 X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
             };
-#else
-            var certificate = new X509Certificate2(buffer.ToArray(), password, flags);
-#endif
+
             return Set{{ setting.property_name }}(certificate);
         }
 
@@ -1178,7 +1167,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
                 }
 
-#if SUPPORTS_ECDSA
                 // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
                 else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
                 {
@@ -1194,14 +1182,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
                 }
-#else
-                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
-                         key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
-                         key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
-                {
-                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
-                }
-#endif
+
                 else
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
@@ -1230,7 +1211,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.HmacSha256));
                 }
 
-#if SUPPORTS_ECDSA
                 // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
                 else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
                 {
@@ -1246,14 +1226,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha512));
                 }
-#else
-                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
-                         settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
-                         settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
-                {
-                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
-                }
-#endif
+
                 else
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
@@ -1311,7 +1284,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                         { Count: > 0 } types => types.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit grant type was set, assume the provider only supports the code flow.
-                                        _ => [GrantTypes.AuthorizationCode]
+                                        _ => ["authorization_code"]
                                     },
 
                                     ResponseModesSupported = configuration.Elements("ResponseMode").ToList() switch
@@ -1319,7 +1292,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                         { Count: > 0 } modes => modes.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit response mode was set, assume the provider only supports the query response mode.
-                                        _ => [ResponseModes.Query]
+                                        _ => ["query"]
                                     },
 
                                     ResponseTypesSupported = configuration.Elements("ResponseType").ToList() switch
@@ -1327,7 +1300,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                         { Count: > 0 } types => types.Select(static type => (string?) type.Attribute("Value")).ToList(),
 
                                         // If no explicit response type was set, assume the provider only supports the code flow.
-                                        _ => [ResponseTypes.Code]
+                                        _ => ["code"]
                                     },
 
                                     ScopesSupported = configuration.Elements("Scope").ToList() switch
@@ -1343,7 +1316,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                         // If no explicit client authentication method was set, assume the provider only supports
                                         // flowing the client credentials as part of the device authorization request payload.
-                                        _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                        _ => ["client_secret_post"]
                                     },
 
                                     IntrospectionEndpointAuthMethodsSupported = configuration.Elements("IntrospectionEndpointAuthMethod").ToList() switch
@@ -1352,7 +1325,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                         // If no explicit client authentication method was set, assume the provider only
                                         // supports flowing the client credentials as part of the introspection request payload.
-                                        _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                        _ => ["client_secret_post"]
                                     },
 
                                     RevocationEndpointAuthMethodsSupported = configuration.Elements("RevocationEndpointAuthMethod").ToList() switch
@@ -1361,7 +1334,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                         // If no explicit client authentication method was set, assume the provider only
                                         // supports flowing the client credentials as part of the revocation request payload.
-                                        _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                        _ => ["client_secret_post"]
                                     },
 
                                     TokenEndpointAuthMethodsSupported = configuration.Elements("TokenEndpointAuthMethod").ToList() switch
@@ -1370,7 +1343,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                                         // If no explicit client authentication method was set, assume the provider only
                                         // supports flowing the client credentials as part of the token request payload.
-                                        _ => [ClientAuthenticationMethods.ClientSecretPost]
+                                        _ => ["client_secret_post"]
                                     }
                                 },
 

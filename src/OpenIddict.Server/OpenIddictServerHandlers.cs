@@ -3662,8 +3662,7 @@ public static partial class OpenIddictServerHandlers
 
             static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
             {
-                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(
-                    OpenIddictHelpers.ComputeSha256Hash(certificate.RawData))
+                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256))
             };
         }
     }
@@ -4192,8 +4191,7 @@ public static partial class OpenIddictServerHandlers
 
             static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
             {
-                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(
-                    OpenIddictHelpers.ComputeSha256Hash(certificate.RawData))
+                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256))
             };
         }
     }
@@ -4486,8 +4484,7 @@ public static partial class OpenIddictServerHandlers
 
             static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
             {
-                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(
-                    OpenIddictHelpers.ComputeSha256Hash(certificate.RawData))
+                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256))
             };
         }
     }
@@ -5338,21 +5335,21 @@ public static partial class OpenIddictServerHandlers
                 { Algorithm: SecurityAlgorithms.HmacSha256      or SecurityAlgorithms.HmacSha256Signature      } or
                 { Algorithm: SecurityAlgorithms.RsaSha256       or SecurityAlgorithms.RsaSha256Signature       } or
                 { Algorithm: SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature }
-                    => OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(token)),
+                    => SHA256.HashData(Encoding.ASCII.GetBytes(token)),
 
                 { Digest:    SecurityAlgorithms.Sha384          or SecurityAlgorithms.Sha384Digest             } or
                 { Algorithm: SecurityAlgorithms.EcdsaSha384     or SecurityAlgorithms.EcdsaSha384Signature     } or
                 { Algorithm: SecurityAlgorithms.HmacSha384      or SecurityAlgorithms.HmacSha384Signature      } or
                 { Algorithm: SecurityAlgorithms.RsaSha384       or SecurityAlgorithms.RsaSha384Signature       } or
                 { Algorithm: SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature }
-                    => OpenIddictHelpers.ComputeSha384Hash(Encoding.ASCII.GetBytes(token)),
+                    => SHA384.HashData(Encoding.ASCII.GetBytes(token)),
 
                 { Digest:    SecurityAlgorithms.Sha512          or SecurityAlgorithms.Sha512Digest             } or
                 { Algorithm: SecurityAlgorithms.EcdsaSha512     or SecurityAlgorithms.EcdsaSha512Signature     } or
                 { Algorithm: SecurityAlgorithms.HmacSha512      or SecurityAlgorithms.HmacSha512Signature      } or
                 { Algorithm: SecurityAlgorithms.RsaSha512       or SecurityAlgorithms.RsaSha512Signature       } or
                 { Algorithm: SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature }
-                    => OpenIddictHelpers.ComputeSha512Hash(Encoding.ASCII.GetBytes(token)),
+                    => SHA512.HashData(Encoding.ASCII.GetBytes(token)),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
             };

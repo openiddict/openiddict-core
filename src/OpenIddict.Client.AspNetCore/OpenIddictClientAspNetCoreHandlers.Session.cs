@@ -72,7 +72,6 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
                 // For consistency, multiple parameters with the same name are also supported by this endpoint.
 
-#if SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS
                 var location = QueryHelpers.AddQueryString(context.EndSessionEndpoint,
                     from parameter in context.Request.GetParameters()
                     let values = (ImmutableArray<string?>?) parameter.Value
@@ -80,20 +79,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     from value in values.GetValueOrDefault()
                     where !string.IsNullOrEmpty(value)
                     select KeyValuePair.Create(parameter.Key, value));
-#else
-                var location = context.EndSessionEndpoint;
 
-                foreach (var (key, value) in
-                    from parameter in context.Request.GetParameters()
-                    let values = (ImmutableArray<string?>?) parameter.Value
-                    where values is not null
-                    from value in values.GetValueOrDefault()
-                    where !string.IsNullOrEmpty(value)
-                    select (parameter.Key, Value: value))
-                {
-                    location = QueryHelpers.AddQueryString(location, key, value);
-                }
-#endif
                 response.Redirect(location);
                 context.HandleRequest();
 

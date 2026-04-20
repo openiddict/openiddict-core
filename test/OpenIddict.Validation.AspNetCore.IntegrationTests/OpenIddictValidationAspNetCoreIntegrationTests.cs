@@ -109,17 +109,10 @@ public partial class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddict
         Assert.Equal(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.ExpiresUtc);
     }
 
-    protected override
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
-        async
-#endif
-        ValueTask<OpenIddictValidationIntegrationTestServer> CreateServerAsync(Action<OpenIddictValidationBuilder>? configuration = null)
+    protected override async ValueTask<OpenIddictValidationIntegrationTestServer> CreateServerAsync(
+        Action<OpenIddictValidationBuilder>? configuration = null)
     {
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         var builder = new HostBuilder();
-#else
-        var builder = new WebHostBuilder();
-#endif
         builder.UseEnvironment("Testing");
 
         builder.ConfigureLogging(options => options.AddXUnit(OutputHelper));
@@ -136,25 +129,15 @@ public partial class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddict
                 });
         });
 
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         builder.ConfigureWebHost(options =>
         {
             options.UseTestServer();
             options.Configure(ConfigurePipeline);
         });
-#else
-        builder.Configure(ConfigurePipeline);
-#endif
 
-#if SUPPORTS_WEB_INTEGRATION_IN_GENERIC_HOST
         var host = await builder.StartAsync();
 
         return new OpenIddictValidationAspNetCoreIntegrationTestServer(host);
-#else
-        var server = new TestServer(builder);
-
-        return new(new OpenIddictValidationAspNetCoreIntegrationTestServer(server));
-#endif
 
         void ConfigurePipeline(IApplicationBuilder app)
         {

@@ -92,72 +92,39 @@
     <SupportsWindowsTargeting
       Condition=" '$(SupportsWindowsTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) ">true</SupportsWindowsTargeting>
 
-    <!--
-      Note: the .NET Core 5.0 reference assemblies or UWP contract assemblies may not be available if
-      the Windows SDK is not installed (or if a different version is installed). To ensure the solution
-      can be built on machines that don't have the UWP tooling installed, directory checks are used to
-      ensure the reference and contract assemblies are present on the machine before targeting uap10.0.
-    -->
-    <SupportsUniversalWindowsPlatformTargeting
-      Condition=" '$(SupportsUniversalWindowsPlatformTargeting)' == '' And $([System.OperatingSystem]::IsWindows()) And
-                 ('$(GITHUB_ACTIONS)' == 'true' Or (Exists('$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETCore\v5.0') And
-                                                    Exists('$(MSBuildProgramFiles32)\Windows Kits\10\References\10.0.17763.0'))) ">true</SupportsUniversalWindowsPlatformTargeting>
-
     <NetFrameworkTargetFrameworks Condition=" '$(NetFrameworkTargetFrameworks)' == '' ">
-      net462;
-      net472;
       net48
     </NetFrameworkTargetFrameworks>
 
     <NetCoreTargetFrameworks Condition=" '$(NetCoreTargetFrameworks)' == '' ">
-      net8.0;
-      net9.0;
       net10.0
     </NetCoreTargetFrameworks>
 
     <NetCoreAndroidTargetFrameworks
       Condition=" '$(NetCoreAndroidTargetFrameworks)' == '' And '$(SupportsAndroidTargeting)' == 'true' ">
-      net9.0-android;
       net10.0-android
     </NetCoreAndroidTargetFrameworks>
 
     <NetCoreIOSTargetFrameworks
       Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSTargeting)' == 'true' ">
-      net9.0-ios;
       net10.0-ios
     </NetCoreIOSTargetFrameworks>
 
     <NetCoreMacCatalystTargetFrameworks
       Condition=" '$(NetCoreMacCatalystTargetFrameworks)' == '' And '$(SupportsMacCatalystTargeting)' == 'true' ">
-      net9.0-maccatalyst;
       net10.0-maccatalyst
     </NetCoreMacCatalystTargetFrameworks>
 
     <NetCoreMacOSTargetFrameworks
       Condition=" '$(NetCoreMacOSTargetFrameworks)' == '' And '$(SupportsMacOSTargeting)' == 'true' ">
-      net9.0-macos;
       net10.0-macos
     </NetCoreMacOSTargetFrameworks>
 
     <NetCoreWindowsTargetFrameworks
       Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' And '$(SupportsWindowsTargeting)' == 'true' ">
-      net8.0-windows7.0;
-      net8.0-windows10.0.17763;
-      net9.0-windows7.0;
-      net9.0-windows10.0.17763;
       net10.0-windows7.0;
       net10.0-windows10.0.17763
     </NetCoreWindowsTargetFrameworks>
-
-    <NetStandardTargetFrameworks Condition=" '$(NetStandardTargetFrameworks)' == '' ">
-      netstandard2.0;
-      netstandard2.1
-    </NetStandardTargetFrameworks>
-
-    <UniversalWindowsPlatformTargetFrameworks
-      Condition=" '$(UniversalWindowsPlatformTargetFrameworks)' == '' And '$(SupportsUniversalWindowsPlatformTargeting)' == 'true' ">
-      uap10.0.17763
-    </UniversalWindowsPlatformTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -176,10 +143,8 @@
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
-    <AfterTargetFrameworkInferenceTargets>$(MSBuildThisFileDirectory)eng\AfterTargetFrameworkInference.targets</AfterTargetFrameworkInferenceTargets>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddTfmSpecificPlaceholders</TargetsForTfmSpecificContentInPackage>
-    <WebApplicationsTargetPath>$(MSBuildThisFileDirectory)eng\msbuild\web\WebApplications\Microsoft.WebApplication.targets</WebApplicationsTargetPath>
   </PropertyGroup>
 
   <!--
