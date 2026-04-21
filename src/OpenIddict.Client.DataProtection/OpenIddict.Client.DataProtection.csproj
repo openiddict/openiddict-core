@@ -17,10 +17,6 @@
     <ProjectReference Include="..\OpenIddict.Client\OpenIddict.Client.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
   <ItemGroup>
     <!--
       Note: the versions of the System.Security.Cryptography.Xml package that are transitively referenced are
@@ -29,12 +25,8 @@
       the package is explicitly referenced here to ensure that a fixed version is used.
     -->
 
-    <PackageReference Include="System.Security.Cryptography.Xml" />
-  </ItemGroup>
-
-  <ItemGroup
-    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
   <ItemGroup>

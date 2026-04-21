@@ -219,6 +219,7 @@
   <ItemGroup Label="Package versions for .NET 8.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0')) ">
     <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"             />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection"                             Version="8.0.26"            />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="8.0.26"            />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="8.0.1"             />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="8.0.2"             />
@@ -267,6 +268,7 @@
   <ItemGroup Label="Package versions for .NET 9.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '9.0')) ">
     <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"             />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection"                             Version="9.0.15"            />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="9.0.15"            />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="9.0.15"            />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="9.0.15"            />
@@ -314,6 +316,7 @@
   <ItemGroup Label="Package versions for .NET 10.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '10.0')) ">
     <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"             />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection"                             Version="10.0.7"            />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="10.0.7"            />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="10.0.7"            />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="10.0.7"            />
