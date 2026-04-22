@@ -27,6 +27,7 @@
 
   <ItemGroup
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+    <PackageReference Include="System.Buffers" />
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 

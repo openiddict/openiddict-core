@@ -44,7 +44,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
-    <PackageReference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCore' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
