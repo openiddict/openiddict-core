@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
@@ -15,7 +16,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationConstants;
 
 namespace OpenIddict.Client.SystemIntegration;
@@ -456,7 +456,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 // If no encoding was set or if the received value is not valid, fall back to UTF-8.
                 context.Transaction.Request = new OpenIddictRequest(await OpenIddictHelpers.ParseFormAsync(
                     stream           : request.InputStream,
-                    encoding         : type.Encoding is { CodePage: not 65000 } encoding ? encoding : Encoding.UTF8,
+                    encoding         : GetEncoding(type) is { CodePage: not 65000 } encoding ? encoding : Encoding.UTF8,
                     cancellationToken: CancellationToken.None));
             }
 
@@ -470,6 +470,24 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     uri: SR.FormatID8000(SR.ID2084));
 
                 return;
+            }
+
+            static Encoding? GetEncoding(MediaTypeHeaderValue type)
+            {
+                if (string.IsNullOrEmpty(type.CharSet))
+                {
+                    return null;
+                }
+
+                try
+                {
+                    return Encoding.GetEncoding(type.CharSet);
+                }
+
+                catch (ArgumentException)
+                {
+                    return null;
+                }
             }
         }
     }
