@@ -1198,7 +1198,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         else
         {
             var converter =
-#if SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION
+#if NET
                 TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 #else
                 TypeDescriptor.GetConverter(typeof(TKey));
@@ -1229,7 +1229,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         else
         {
             var converter =
-#if SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION
+#if NET
                 TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 #else
                 TypeDescriptor.GetConverter(typeof(TKey));

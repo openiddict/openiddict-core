@@ -19,8 +19,7 @@ internal static class OpenIddictPolyfills
 {
     extension(Convert)
     {
-#if !SUPPORTS_HEXADECIMAL_STRING_CONVERSION
-
+#if !NET
         /// <summary>Converts the specified string, which encodes binary data as hex characters, to an equivalent 8-bit unsigned integer array.</summary>
         /// <param name="s">The string to convert.</param>
         /// <returns>An array of 8-bit unsigned integers that is equivalent to <paramref name="s"/>.</returns>
@@ -48,7 +47,7 @@ internal static class OpenIddictPolyfills
 
     extension(HMACSHA256)
     {
-#if !SUPPORTS_ONE_SHOT_HASHING_METHODS
+#if !NET
         /// <summary>
         /// Computes the HMAC of data using the SHA256 algorithm.
         /// </summary>
@@ -71,7 +70,7 @@ internal static class OpenIddictPolyfills
 
     extension(OperatingSystem)
     {
-#if !SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+#if !NET
         /// <summary>
         /// Indicates whether the current application is running on Android.
         /// </summary>
@@ -158,8 +157,7 @@ internal static class OpenIddictPolyfills
 
     extension(Rfc2898DeriveBytes)
     {
-#if !SUPPORTS_ONE_SHOT_KEY_DERIVATION_METHODS
-
+#if !NET
         /// <summary>
         /// Creates a PBKDF2 derived key from a password.
         /// </summary>
@@ -200,7 +198,7 @@ internal static class OpenIddictPolyfills
 
     extension(SHA384)
     {
-#if !SUPPORTS_ONE_SHOT_HASHING_METHODS
+#if !NET
         /// <summary>
         /// Computes the hash of data using the SHA384 algorithm.
         /// </summary>
@@ -221,7 +219,7 @@ internal static class OpenIddictPolyfills
 
     extension<TResult>(ValueTask<TResult>)
     {
-#if !SUPPORTS_VALUETASK_COMPLETED_TASK
+#if !NET
         /// <summary>
         /// Gets a task that has already completed successfully.
         /// </summary>
@@ -229,7 +227,7 @@ internal static class OpenIddictPolyfills
 #endif
     }
 
-#if !SUPPORTS_OPERATING_SYSTEM_VERSIONS_COMPARISON
+#if !NET
     static bool IsOSVersionAtLeast(int major, int minor, int build, int revision)
     {
         Version current = Environment.OSVersion.Version;
@@ -259,23 +257,19 @@ internal static class OpenIddictPolyfills
 
     extension(X509ChainPolicy policy)
     {
-#if !SUPPORTS_X509_CHAIN_POLICY_CLONING
+#if !NET
         public X509ChainPolicy Clone()
         {
             var clone = new X509ChainPolicy
             {
-#if SUPPORTS_X509_CHAIN_POLICY_DOWNLOAD_MODE
-                DisableCertificateDownloads = policy.DisableCertificateDownloads,
-#endif
                 RevocationMode = policy.RevocationMode,
                 RevocationFlag = policy.RevocationFlag,
-#if SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
-                TrustMode = policy.TrustMode,
-#endif
                 UrlRetrievalTimeout = policy.UrlRetrievalTimeout,
                 VerificationFlags = policy.VerificationFlags,
                 VerificationTime = policy.VerificationTime,
-#if SUPPORTS_X509_CHAIN_POLICY_VERIFICATION_TIME_MODE
+#if NET
+                DisableCertificateDownloads = policy.DisableCertificateDownloads,
+                TrustMode = policy.TrustMode,
                 VerificationTimeIgnored = policy.VerificationTimeIgnored
 #endif
             };
@@ -296,7 +290,7 @@ internal static class OpenIddictPolyfills
                 }
             }
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
             clone.CustomTrustStore.AddRange(policy.CustomTrustStore);
 #endif
 
@@ -316,7 +310,7 @@ internal static class OpenIddictPolyfills_SHA512
 {
     extension(SHA512)
     {
-#if !SUPPORTS_ONE_SHOT_HASHING_METHODS
+#if !NET
         /// <summary>
         /// Computes the hash of data using the SHA512 algorithm.
         /// </summary>
@@ -336,7 +330,7 @@ internal static class OpenIddictPolyfills_SHA512
     }
 }
 
-#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
+#if !NET
 internal static class CryptographicOperations
 {
     /// <summary>

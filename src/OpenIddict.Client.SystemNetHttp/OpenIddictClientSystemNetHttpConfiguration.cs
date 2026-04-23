@@ -13,7 +13,7 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Polly;
 
-#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+#if NET
 using Microsoft.Extensions.Http.Resilience;
 #endif
 
@@ -110,7 +110,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
                 builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
             }
 
-#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+#if NET
             else if (options.CurrentValue.HttpResiliencePipeline is ResiliencePipeline<HttpResponseMessage> pipeline)
             {
 #pragma warning disable EXTEXP0001

@@ -1099,7 +1099,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
     }
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
     [Theory]
     [InlineData(OpenIddictServerEndpointType.Introspection)]
     [InlineData(OpenIddictServerEndpointType.Revocation)]

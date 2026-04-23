@@ -13,23 +13,19 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Principal;
 
-#if SUPPORTS_ANDROID
+#if ANDROID
 using Android.Content;
 using NativeUri = Android.Net.Uri;
 #endif
 
-#if SUPPORTS_FOUNDATION
-using Foundation;
-#endif
-
-#if SUPPORTS_APPKIT
+#if MACOS
 using AppKit;
 using NativeWindow = AppKit.NSWindow;
-#elif SUPPORTS_UIKIT
+#elif IOS || MACCATALYST
 using NativeWindow = UIKit.UIWindow;
 #endif
 
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel;
 using Windows.Foundation.Metadata;
@@ -77,7 +73,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatformGuard("maccatalyst13.1")]
     [SupportedOSPlatformGuard("macos10.15")]
     internal static bool IsASWebAuthenticationSessionSupported()
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if IOS || MACCATALYST || MACOS
         => OperatingSystem.IsIOSVersionAtLeast(12)         ||
            OperatingSystem.IsMacCatalystVersionAtLeast(13) ||
            OperatingSystem.IsMacOSVersionAtLeast(10, 15);
@@ -92,7 +88,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SupportedOSPlatformGuard("android21.0")]
     internal static bool IsCustomTabsIntentSupported()
-#if SUPPORTS_ANDROIDX_BROWSER
+#if ANDROID
         => OperatingSystem.IsAndroidVersionAtLeast(21);
 #else
         => false;
@@ -111,7 +107,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     // platforms that don't support it. Since OpenIddict declares Windows 10 1809 as the
     // oldest supported version in the package, it is also used for the runtime check.
     internal static bool IsWindowsRuntimeSupported()
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
         => OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763);
 #else
         => false;
@@ -126,7 +122,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatformGuard("windows10.0.17763")]
     internal static bool IsAppInstanceActivationSupported()
     {
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
         return IsWindowsRuntimeSupported() && IsApiPresent();
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -148,7 +144,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatformGuard("windows10.0.17763")]
     internal static bool IsUriLauncherSupported()
     {
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
         return IsWindowsRuntimeSupported() && IsApiPresent();
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -170,7 +166,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     [SupportedOSPlatformGuard("windows10.0.17763")]
     internal static bool IsWebAuthenticationBrokerSupported()
     {
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
         return IsWindowsRuntimeSupported() && IsApiPresent();
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -221,16 +217,16 @@ public static class OpenIddictClientSystemIntegrationHelpers
             out uint ReturnLength);
     }
 
-#if SUPPORTS_APPKIT || SUPPORTS_UIKIT
+#if IOS || MACCATALYST || MACOS
     /// <summary>
     /// Gets a reference to the current <see cref="NativeWindow"/>.
     /// </summary>
     /// <returns>The <see cref="NativeWindow"/> or <see langword="null"/> if it couldn't be resolved.</returns>
     internal static NativeWindow? GetCurrentUIWindow()
     {
-#if SUPPORTS_APPKIT
+#if MACOS
         return NSApplication.SharedApplication.KeyWindow;
-#elif SUPPORTS_UIKIT
+#else
         var window = GetKeyWindow();
         if (window is not null && window.WindowLevel == UIWindowLevel.Normal)
         {
@@ -292,7 +288,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     }
 #endif
 
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
     /// <summary>
     /// Resolves the protocol activation using the Windows Runtime APIs, if applicable.
     /// </summary>
@@ -393,7 +389,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
         }
     }
 
-#if SUPPORTS_ANDROID
+#if ANDROID
     /// <summary>
     /// Starts the system browser using <see href="NSWorkspace"/>.
     /// </summary>
@@ -420,7 +416,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     }
 #endif
 
-#if SUPPORTS_APPKIT
+#if MACOS
     /// <summary>
     /// Starts the system browser using <see href="NSWorkspace"/>.
     /// </summary>
@@ -441,7 +437,7 @@ public static class OpenIddictClientSystemIntegrationHelpers
     }
 #endif
 
-#if SUPPORTS_UIKIT
+#if IOS || MACCATALYST
     /// <summary>
     /// Starts the system browser using <see href="UIApplication"/>.
     /// </summary>

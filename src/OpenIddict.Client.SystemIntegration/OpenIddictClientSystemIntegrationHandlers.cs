@@ -1827,7 +1827,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
             {
-#if SUPPORTS_WINDOWS_RUNTIME
                 // When using the web authentication broker on Windows, if both the client and
                 // the server support response_mode=fragment, use it if the response types contain
                 // a value that prevents response_mode=query from being used (token/id_token).
@@ -1848,7 +1847,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     client.Contains(ResponseModes.Fragment)                                                           &&
                     (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
                     => ResponseModes.Fragment,
-#endif
+
                 // When using browser-based authentication with a redirect_uri not pointing to the embedded server,
                 // if both the client and the server support response_mode=fragment, use it if the response types
                 // contain a value that prevents response_mode=query from being used (token/id_token).
@@ -1901,7 +1900,6 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.Query)
                     => ResponseModes.Query,
 
-#if SUPPORTS_WINDOWS_RUNTIME
                 // When using the web authentication broker on Windows, if both
                 // the client and the server support response_mode=fragment, use it.
                 ({ Count: > 0 } client, { Count: > 0 } server) when
@@ -1909,7 +1907,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     IsAuthenticationMode(OpenIddictClientSystemIntegrationAuthenticationMode.WebAuthenticationBroker) &&
                     client.Contains(ResponseModes.Fragment) && server.Contains(ResponseModes.Fragment)
                     => ResponseModes.Fragment,
-#endif
+
                 // When using browser-based authentication with a redirect_uri not pointing to the embedded
                 // server, if both the client and the server support response_mode=fragment, use it.
                 ({ Count: > 0 } client, { Count: > 0 } server) when

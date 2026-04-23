@@ -312,7 +312,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         {
             ArgumentNullException.ThrowIfNull(context);
 
-#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION || SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY
+#if NET
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
             var request = context.Transaction.GetHttpRequestMessage() ??
@@ -321,15 +321,9 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             var client = context.Transaction.GetHttpClient() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0372));
 
-#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION
-            // If supported, import the HTTP version from the client instance.
+            // When supported, import the HTTP version and version policy from the client instance.
             request.Version = client.DefaultRequestVersion;
-#endif
-
-#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY
-            // If supported, import the HTTP version policy from the client instance.
             request.VersionPolicy = client.DefaultVersionPolicy;
-#endif
 #endif
             return ValueTask.CompletedTask;
         }
@@ -753,7 +747,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     stream = new GZipStream(stream, CompressionMode.Decompress);
                 }
 
-#if SUPPORTS_ZLIB_COMPRESSION
+#if NET
                 // Note: some server implementations are known to incorrectly implement the "Deflate" compression
                 // algorithm and don't wrap the compressed data in a ZLib frame as required by the specifications.
                 //
@@ -766,8 +760,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     stream ??= await response.Content.ReadAsStreamAsync();
                     stream = new ZLibStream(stream, CompressionMode.Decompress);
                 }
-#endif
-#if SUPPORTS_BROTLI_COMPRESSION
+
                 else if (string.Equals(encoding, ContentEncodings.Brotli, StringComparison.OrdinalIgnoreCase))
                 {
                     stream ??= await response.Content.ReadAsStreamAsync();

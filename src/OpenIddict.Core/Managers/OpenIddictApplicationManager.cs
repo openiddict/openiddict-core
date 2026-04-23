@@ -831,7 +831,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                     OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
                     OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
                 {
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
                     policy.CustomTrustStore.Add(certificate);
 #else
                     policy.ExtraStore.Add(certificate);
@@ -1479,7 +1479,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         // Note: using a policy relying on the default system trust store
         // is strongly discouraged but deliberately not prevented here.
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
         var uris = await GetRedirectUrisAsync(application, cancellationToken);
         if (uris.IsDefaultOrEmpty)
         {
@@ -1646,7 +1646,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         // Note: using a policy relying on the default system trust store
         // is strongly discouraged but deliberately not prevented here.
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
         using var chain = new X509Chain()
         {
             ChainPolicy = policy

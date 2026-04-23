@@ -73,7 +73,7 @@ public sealed class OpenIddictEntityFrameworkBuilder
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0277));
         }
 
-#if SUPPORTS_TYPE_DESCRIPTOR_TYPE_REGISTRATION
+#if NET
         // If the specified key type isn't a string (which is special-cased by the stores to avoid having to resolve
         // a TypeDescriptor instance) and the platform supports type registration, register the key type to ensure the
         // TypeDescriptor associated with that type will be preserved by the IL Linker and can be resolved at runtime.

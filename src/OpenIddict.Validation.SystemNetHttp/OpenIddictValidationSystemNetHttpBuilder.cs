@@ -112,7 +112,7 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
         return Configure(options => options.HttpErrorPolicy = policy);
     }
 
-#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+#if NET
     /// <summary>
     /// Replaces the default HTTP resilience pipeline used by the OpenIddict client services.
     /// </summary>

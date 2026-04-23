@@ -448,7 +448,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             return this;
         }
 
-#if SUPPORTS_PEM_ENCODED_KEY_IMPORT
+#if NET
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>

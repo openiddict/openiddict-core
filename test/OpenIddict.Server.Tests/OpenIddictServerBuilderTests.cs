@@ -768,7 +768,7 @@ public class OpenIddictServerBuilderTests
         Assert.Equal("certificates", exception.ParamName);
     }
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
     [Fact]
     public void EnablePublicKeyInfrastructureTlsClientAuthentication_ThrowsAnExceptionWhenNoRootCertificateProvided()
     {
@@ -1123,7 +1123,7 @@ public class OpenIddictServerBuilderTests
         Assert.Equal("configuration", exception.ParamName);
     }
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
     [Fact]
     public void EnableSelfSignedTlsClientAuthentication_PolicyIsCorrectlyConfigured()
     {
@@ -2683,7 +2683,7 @@ public class OpenIddictServerBuilderTests
         Assert.Equal("charset", exception.ParamName);
     }
 
-#if SUPPORTS_TEXT_ELEMENT_ENUMERATOR
+#if NET
     [InlineData("")]
     [InlineData("\uD83D\uDE42\uD83D\uDE42")]
     [Theory]

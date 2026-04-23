@@ -9,27 +9,24 @@ using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
-#if SUPPORTS_ANDROID
+#if ANDROID
 using Android.Content;
+using AndroidX.Browser.CustomTabs;
 using NativeUri = Android.Net.Uri;
 #endif
 
-#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
-using AndroidX.Browser.CustomTabs;
-#endif
-
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if IOS || MACCATALYST || MACOS
 using AuthenticationServices;
 using Microsoft.Extensions.Logging;
 #endif
 
-#if SUPPORTS_APPKIT
+#if MACOS
 using NativeWindow = AppKit.NSWindow;
-#elif SUPPORTS_UIKIT
+#elif IOS || MACCATALYST
 using NativeWindow = UIKit.UIWindow;
 #endif
 
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
 using Windows.Security.Authentication.Web;
 using Windows.UI.Core;
 #endif
@@ -100,7 +97,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-#if SUPPORTS_AUTHENTICATION_SERVICES && SUPPORTS_FOUNDATION
+#if IOS || MACCATALYST || MACOS
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                     !Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri))
                 {
@@ -284,7 +281,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 #endif
             }
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if IOS || MACCATALYST || MACOS
             class ASWebAuthenticationPresentationContext(NativeWindow window) : NSObject,
                 IASWebAuthenticationPresentationContextProviding
             {
@@ -320,7 +317,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+#if ANDROID
                 if (string.IsNullOrEmpty(context.RedirectUri))
                 {
                     return;
@@ -393,7 +390,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
                 if (string.IsNullOrEmpty(context.RedirectUri))
                 {
                     return;
@@ -562,7 +559,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     // To avoid that, the OpenIddict host needs to determine whether the platform supports Windows
                     // Runtime APIs and favor the Launcher.LaunchUriAsync() API when it's offered by the platform.
 
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
                     if (IsUriLauncherSupported() && await TryLaunchBrowserWithWindowsRuntimeAsync(uri))
                     {
                         context.HandleRequest();
@@ -578,21 +575,21 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 // On Android, iOS and Mac Catalyst, Process.Start() is not supported and
                 // OS-specific/non-portable APIs must be used to launch the system browser.
-#if SUPPORTS_ANDROID
+#if ANDROID
                 if (OperatingSystem.IsAndroid() && TryLaunchBrowserWithGenericIntent(uri))
                 {
                     context.HandleRequest();
                     return;
                 }
 #endif
-#if SUPPORTS_UIKIT
+#if IOS || MACCATALYST
                 if ((OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst()) && await TryLaunchBrowserWithUIApplicationAsync(uri))
                 {
                     context.HandleRequest();
                     return;
                 }
 #endif
-#if SUPPORTS_APPKIT
+#if MACOS
                 if (OperatingSystem.IsMacOS() && TryLaunchBrowserWithNSWorkspace(uri))
                 {
                     context.HandleRequest();
