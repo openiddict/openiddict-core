@@ -328,7 +328,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0511));
             }
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE && SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
+#if NET
             if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>()
                 .Any(static certificate =>
                     !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
@@ -353,7 +353,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
             }
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE && SUPPORTS_X509_CHAIN_POLICY_TRUST_MODE
+#if NET
             if (options.SelfSignedTlsClientAuthenticationPolicy.CustomTrustStore.Count is not 0)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
@@ -489,7 +489,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
             foreach (var character in options.UserCodeCharset)
             {
-#if SUPPORTS_TEXT_ELEMENT_ENUMERATOR
+#if NET
                 // On supported platforms, ensure each character added to the
                 // charset represents exactly one grapheme cluster/text element.
                 var enumerator = StringInfo.GetTextElementEnumerator(character);

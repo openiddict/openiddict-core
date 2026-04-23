@@ -32,7 +32,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         {
             ArgumentNullException.ThrowIfNull(context);
 
-#if SUPPORTS_AUTHENTICATION_SERVICES
+#if IOS || MACCATALYST || MACOS
             if (IsASWebAuthenticationSessionSupported())
             {
                 if (!context.Transaction.Properties.TryGetValue(
@@ -79,7 +79,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         {
             ArgumentNullException.ThrowIfNull(context);
 
-#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+#if ANDROID
             if (IsCustomTabsIntentSupported())
             {
                 if (!context.Transaction.Properties.TryGetValue(
@@ -215,7 +215,7 @@ public static class OpenIddictClientSystemIntegrationHandlerFilters
         {
             ArgumentNullException.ThrowIfNull(context);
 
-#if SUPPORTS_WINDOWS_RUNTIME
+#if NETFRAMEWORK || WINDOWS10_0_17763_0_OR_GREATER
             if (IsWebAuthenticationBrokerSupported())
             {
                 if (!context.Transaction.Properties.TryGetValue(

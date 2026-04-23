@@ -1791,7 +1791,7 @@ public sealed class OpenIddictServerBuilder
 
         foreach (var character in charset)
         {
-#if SUPPORTS_TEXT_ELEMENT_ENUMERATOR
+#if NET
             // On supported platforms, ensure each character added to the
             // charset represents exactly one grapheme cluster/text element.
             var enumerator = StringInfo.GetTextElementEnumerator(character);
@@ -2269,7 +2269,7 @@ public sealed class OpenIddictServerBuilder
         ArgumentNullException.ThrowIfNull(certificates);
         ArgumentNullException.ThrowIfNull(configuration);
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
         // Ensure at least one root certificate authority was included in the certificate collection.
         if (!certificates.Cast<X509Certificate2>().Any(static certificate =>
             OpenIddictHelpers.IsCertificateAuthority(certificate) &&
@@ -2379,7 +2379,7 @@ public sealed class OpenIddictServerBuilder
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
         var policy = new X509ChainPolicy
         {
             // Note: by default, OpenIddict requires that end certificates used for TLS client

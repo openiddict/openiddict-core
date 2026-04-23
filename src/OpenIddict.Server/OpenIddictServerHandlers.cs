@@ -1318,7 +1318,7 @@ public static partial class OpenIddictServerHandlers
                 // Note: to allow validating certificates that are exclusively used for mTLS token binding, the chain policy
                 // is amended to consider the specified self-signed certificate as a trusted root and basically disable chain
                 // validation while still validating the other aspects of the certificate (e.g expiration date, key usage, etc).
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
                 policy.CustomTrustStore.Add(context.Transaction.RemoteCertificate);
 #else
                 policy.ExtraStore.Add(context.Transaction.RemoteCertificate);
@@ -1441,7 +1441,7 @@ public static partial class OpenIddictServerHandlers
                     // Always clone the X.509 chain policy to ensure the original instance is never mutated.
                     policy = policy.Clone();
 
-#if SUPPORTS_X509_CHAIN_POLICY_CUSTOM_TRUST_STORE
+#if NET
                     policy.CustomTrustStore.Add(context.Transaction.RemoteCertificate);
 #else
                     policy.ExtraStore.Add(context.Transaction.RemoteCertificate);

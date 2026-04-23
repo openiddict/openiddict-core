@@ -13,7 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 using Polly;
 using Polly.Extensions.Http;
 
-#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+#if NET
 using Microsoft.Extensions.Http.Resilience;
 #endif
 
@@ -31,13 +31,13 @@ public sealed class OpenIddictValidationSystemNetHttpOptions
     /// Note: on .NET 8.0 and higher, this property is set to <see langword="null"/> by default.
     /// </remarks>
     public IAsyncPolicy<HttpResponseMessage>? HttpErrorPolicy { get; set; }
-#if !SUPPORTS_HTTP_CLIENT_RESILIENCE
+#if !NET
         = HttpPolicyExtensions.HandleTransientHttpError()
             .OrResult(static response => response.StatusCode is HttpStatusCode.NotFound)
             .WaitAndRetryAsync(4, static attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
 #endif
 
-#if SUPPORTS_HTTP_CLIENT_RESILIENCE
+#if NET
     /// <summary>
     /// Gets or sets the HTTP resilience pipeline used by the internal OpenIddict HTTP clients.
     /// </summary>

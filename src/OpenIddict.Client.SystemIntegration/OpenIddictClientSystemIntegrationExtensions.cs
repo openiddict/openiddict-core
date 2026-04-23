@@ -35,7 +35,7 @@ public static class OpenIddictClientSystemIntegrationExtensions
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
         }
 
-#if !SUPPORTS_ANDROID
+#if !ANDROID
         // When running on Android, iOS or Mac Catalyst, ensure the version compiled for these platforms
         // is used to prevent the generic/non-OS specific TFM from being used as launching the system
         // browser cannot be done using Process.Start() and requires using OS-specific APIs that are
@@ -46,7 +46,7 @@ public static class OpenIddictClientSystemIntegrationExtensions
         }
 #endif
 
-#if !SUPPORTS_UIKIT
+#if !IOS && !MACCATALYST
         if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
         {
             throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));

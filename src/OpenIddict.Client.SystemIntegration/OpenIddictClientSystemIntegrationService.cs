@@ -11,7 +11,7 @@ using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-#if SUPPORTS_ANDROID
+#if ANDROID
 using Android.Content;
 using OpenIddict.Extensions;
 #endif
@@ -42,7 +42,7 @@ public sealed class OpenIddictClientSystemIntegrationService
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
-#if SUPPORTS_ANDROID && SUPPORTS_ANDROIDX_BROWSER
+#if ANDROID
     /// <summary>
     /// Handles the specified intent.
     /// </summary>
