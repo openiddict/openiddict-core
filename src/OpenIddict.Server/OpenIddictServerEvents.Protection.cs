@@ -160,6 +160,11 @@ public static partial class OpenIddictServerEvents
         public TokenValidationParameters TokenValidationParameters { get; set; } = default!;
 
         /// <summary>
+        /// Gets or sets the validation result obtained after validating the token, if available.
+        /// </summary>
+        public TokenValidationResult? TokenValidationResult { get; set; }
+
+        /// <summary>
         /// Gets or sets the token to validate.
         /// </summary>
         public string Token { get; set; } = default!;

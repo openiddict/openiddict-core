@@ -547,7 +547,7 @@ public static partial class OpenIddictServerHandlers
                     token = token.InnerToken;
                 }
 
-                // Attach the principal extracted from the token to the parent event context and store
+                // Attach the principal extracted from the token to the validation context and store
                 // the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity).SetTokenType(result.TokenType switch
                 {
@@ -593,6 +593,10 @@ public static partial class OpenIddictServerHandlers
 
                     context.Principal.SetDestinations(builder.ToImmutable());
                 }
+
+                // Attach the token validation to the validation context so that it can be used by
+                // the other handlers to extract additional information from the token if necessary.
+                context.TokenValidationResult = result;
 
                 context.Logger.LogTrace(6001, SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
             }
