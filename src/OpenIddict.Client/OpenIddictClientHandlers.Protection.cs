@@ -431,7 +431,7 @@ public static partial class OpenIddictClientHandlers
 
                 if (context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.StateToken))
                 {
-                    // Attach the principal extracted from the token to the parent event context and store
+                    // Attach the principal extracted from the token to the validation context and store
                     // the token type (resolved from "typ" or "token_usage") as a special private claim.
                     context.Principal = new ClaimsPrincipal(identity).SetTokenType(result.TokenType switch
                     {
@@ -459,6 +459,10 @@ public static partial class OpenIddictClientHandlers
 
                 // Store the resolved signing algorithm from the token and attach it to the principal.
                 context.Principal.SetClaim(Claims.Private.SigningAlgorithm, token.Alg);
+
+                // Attach the token validation to the validation context so that it can be used by
+                // the other handlers to extract additional information from the token if necessary.
+                context.TokenValidationResult = result;
 
                 context.Logger.LogTrace(6001, SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
             }
