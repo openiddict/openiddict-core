@@ -537,6 +537,27 @@ public class OpenIddictServerBuilderTests
         Assert.Equal("type", exception.ParamName);
     }
 
+    [Theory]
+    [InlineData(GrantTypes.AuthorizationCode)]
+    [InlineData(GrantTypes.ClientCredentials)]
+    [InlineData(GrantTypes.DeviceCode)]
+    [InlineData(GrantTypes.Implicit)]
+    [InlineData(GrantTypes.Password)]
+    [InlineData(GrantTypes.RefreshToken)]
+    [InlineData(GrantTypes.TokenExchange)]
+    public void AllowCustomFlow_ThrowsAnExceptionForStandardGrantType(string type)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.ThrowsAny<ArgumentException>(() => builder.AllowCustomFlow(type));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.FormatID0517(type), exception.Message);
+    }
+
     [Fact]
     public void AllowCustomFlow_CustomFlowIsAdded()
     {

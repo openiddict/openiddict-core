@@ -924,7 +924,16 @@ public sealed class OpenIddictServerBuilder
     {
         ArgumentException.ThrowIfNullOrEmpty(type);
 
-        return Configure(options => options.GrantTypes.Add(type));
+        return type switch
+        {
+            GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+            GrantTypes.DeviceCode        or GrantTypes.Implicit          or
+            GrantTypes.Password          or GrantTypes.RefreshToken      or
+            GrantTypes.TokenExchange
+                => throw new ArgumentException(SR.FormatID0517(type), nameof(type)),
+
+            _ => Configure(options => options.GrantTypes.Add(type))
+        };
     }
 
     /// <summary>
