@@ -20,7 +20,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      Note: the versions of the SharpCompress and Snappier packages that are transitively referenced are
+      known to be affected by security vulnerabilities (see https://github.com/advisories/GHSA-6c8g-7p36-r338
+      and https://github.com/advisories/GHSA-pggp-6c3x-2xmx for more information). To mitigate this issue,
+      the packages are explicitly referenced here to ensure that fixed versions are used.
+    -->
+
     <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="SharpCompress" />
+    <PackageReference Include="Snappier" />
   </ItemGroup>
 
   <ItemGroup>
