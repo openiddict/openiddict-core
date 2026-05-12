@@ -88,13 +88,15 @@ public class OpenIddictEntityFrameworkTokenStore<
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> CountAsync<TState, TResult>(
+        Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+        TState state, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        return await query(context.Set<TToken>()).LongCountAsync(cancellationToken);
+        return await query(context.Set<TToken>(), state).LongCountAsync(cancellationToken);
     }
 
     /// <inheritdoc/>

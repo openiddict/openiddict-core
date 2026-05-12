@@ -47,6 +47,22 @@ public interface IOpenIddictAuthorizationManager
         Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Determines the number of authorizations that match the specified query.
+    /// </summary>
+    /// <typeparam name="TState">The state type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <param name="query">The query to execute.</param>
+    /// <param name="state">The optional state.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the number of authorizations that match the specified query.
+    /// </returns>
+    ValueTask<long> CountAsync<TState, TResult>(
+        Func<IQueryable<object>, TState, IQueryable<TResult>> query,
+        TState state, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Creates a new permanent authorization based on the specified parameters.
     /// </summary>
     /// <param name="identity">The identity associated with the authorization.</param>

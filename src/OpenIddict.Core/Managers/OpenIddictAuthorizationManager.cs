@@ -92,7 +92,28 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        return Store.CountAsync(query, cancellationToken);
+        return CountAsync(static (authorizations, query) => query(authorizations), query, cancellationToken);
+    }
+
+    /// <summary>
+    /// Determines the number of authorizations that match the specified query.
+    /// </summary>
+    /// <typeparam name="TState">The state type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <param name="query">The query to execute.</param>
+    /// <param name="state">The optional state.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the number of authorizations that match the specified query.
+    /// </returns>
+    public virtual ValueTask<long> CountAsync<TState, TResult>(
+        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
+        TState state, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        return Store.CountAsync(query, state, cancellationToken);
     }
 
     /// <summary>
@@ -952,6 +973,10 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <inheritdoc/>
     ValueTask<long> IOpenIddictAuthorizationManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         => CountAsync(query, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<long> IOpenIddictAuthorizationManager.CountAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+        => CountAsync(query, state, cancellationToken);
 
     /// <inheritdoc/>
     async ValueTask<object> IOpenIddictAuthorizationManager.CreateAsync(ClaimsIdentity identity, string subject, string client, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)

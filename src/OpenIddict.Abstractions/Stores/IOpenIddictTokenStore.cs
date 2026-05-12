@@ -28,14 +28,18 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     /// <summary>
     /// Determines the number of tokens that match the specified query.
     /// </summary>
+    /// <typeparam name="TState">The state type.</typeparam>
     /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="query">The query to execute.</param>
+    /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of tokens that match the specified query.
     /// </returns>
-    ValueTask<long> CountAsync<TResult>(Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+    ValueTask<long> CountAsync<TState, TResult>(
+        Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+        TState state, CancellationToken cancellationToken);
 
     /// <summary>
     /// Creates a new token.

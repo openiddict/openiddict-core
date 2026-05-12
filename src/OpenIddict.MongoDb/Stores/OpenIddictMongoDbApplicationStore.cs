@@ -67,15 +67,16 @@ public class OpenIddictMongoDbApplicationStore<
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> CountAsync<TResult>(
-        Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> CountAsync<TState, TResult>(
+        Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+        TState state, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
 
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
-        return await query(collection.AsQueryable()).LongCountAsync(cancellationToken);
+        return await query(collection.AsQueryable(), state).LongCountAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
