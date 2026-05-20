@@ -163,7 +163,7 @@
     -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers"                      Version="4.14.0"          />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp"                         Version="5.0.0"           />
-    <PackageVersion Include="Scriban"                                               Version="7.0.6"           />
+    <PackageVersion Include="Scriban"                                               Version="7.2.0"           />
     <PackageVersion Include="System.Interactive"                                    Version="6.0.3"           />
   </ItemGroup>
 
