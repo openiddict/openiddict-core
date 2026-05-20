@@ -171,12 +171,6 @@ public static partial class OpenIddictClientEvents
         /// this peer when communicating with the external endpoint, if applicable.
         /// </summary>
         public X509Certificate2? LocalCertificate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the token binding method used when communicating with the external endpoint, if applicable.
-        /// </summary>
-        [Obsolete("This property is no longer used and will be removed in a future version.")]
-        public HashSet<string> TokenBindingMethods { get; } = new(StringComparer.Ordinal);
     }
 
     /// <summary>
@@ -433,13 +427,6 @@ public static partial class OpenIddictClientEvents
         /// communicating with the userinfo endpoint, if applicable.
         /// </summary>
         public X509Certificate2? UserInfoEndpointClientCertificate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the token binding methods used when
-        /// communicating with the userinfo endpoint, if applicable.
-        /// </summary>
-        [Obsolete("This property is no longer used and will be removed in a future version.")]
-        public HashSet<string> UserInfoEndpointTokenBindingMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the token entry associated

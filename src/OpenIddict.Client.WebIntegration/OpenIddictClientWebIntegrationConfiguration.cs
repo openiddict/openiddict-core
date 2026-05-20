@@ -6,7 +6,6 @@
 
 using System.ComponentModel;
 using Microsoft.Extensions.Options;
-using OpenIddict.Client.SystemNetHttp;
 
 namespace OpenIddict.Client.WebIntegration;
 
@@ -15,8 +14,7 @@ namespace OpenIddict.Client.WebIntegration;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>,
-                                                                          IPostConfigureOptions<OpenIddictClientOptions>,
-                                                                          IPostConfigureOptions<OpenIddictClientSystemNetHttpOptions>
+                                                                          IPostConfigureOptions<OpenIddictClientOptions>
 {
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
@@ -42,11 +40,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
             }
         }
     }
-
-    /// <inheritdoc/>
-    [Obsolete("This method is no longer supported and will be removed in a future version.")]
-    public void PostConfigure(string? name, OpenIddictClientSystemNetHttpOptions options)
-        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 
     /// <summary>
     /// Amends the registration with the provider-specific configuration logic.
