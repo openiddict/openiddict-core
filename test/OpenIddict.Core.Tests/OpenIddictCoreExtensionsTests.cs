@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
@@ -173,9 +173,4 @@ public class OpenIddictCoreExtensionsTests
 
         Assert.Equal(SR.GetResourceString(SR.ID0472), exception.Message);
     }
-
-    public class OpenIddictApplication { }
-    public class OpenIddictAuthorization { }
-    public class OpenIddictScope { }
-    public class OpenIddictToken { }
 }

@@ -21,17 +21,12 @@
     <PackageReference Include="Moq" />
   </ItemGroup>
 
-  <ItemGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '10.0'))) ">
-    <PackageReference Include="System.Linq.Async" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Net.Http.Json" />
   </ItemGroup>
 

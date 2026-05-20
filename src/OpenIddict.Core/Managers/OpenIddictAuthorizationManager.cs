@@ -630,7 +630,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         ArgumentNullException.ThrowIfNull(authorization);
         ArgumentException.ThrowIfNullOrEmpty(status);
 
-        return string.Equals(await GetStatusAsync(authorization, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetStatusAsync(authorization, cancellationToken), status, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -646,7 +646,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         ArgumentNullException.ThrowIfNull(authorization);
         ArgumentException.ThrowIfNullOrEmpty(type);
 
-        return string.Equals(await GetTypeAsync(authorization, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetTypeAsync(authorization, cancellationToken), type, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -811,7 +811,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         ArgumentNullException.ThrowIfNull(authorization);
 
         var status = await Store.GetStatusAsync(authorization, cancellationToken);
-        if (string.Equals(status, Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
+        if (status is Statuses.Revoked)
         {
             return true;
         }
@@ -935,8 +935,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2116));
             }
 
-            else if (!string.Equals(type, AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
+            else if (type is not (AuthorizationTypes.AdHoc or AuthorizationTypes.Permanent))
             {
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2117));
             }

@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 
@@ -372,6 +373,7 @@ public sealed class OpenIddictCoreBuilder
     /// Disabling this feature MAY result in security vulnerabilities in the other cases.
     /// </summary>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictCoreBuilder DisableAdditionalFiltering()
         => Configure(options => options.DisableAdditionalFiltering = true);
 
@@ -381,8 +383,78 @@ public sealed class OpenIddictCoreBuilder
     /// of your application and result in multiple queries being sent by the stores.
     /// </summary>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictCoreBuilder DisableEntityCaching()
         => Configure(options => options.DisableEntityCaching = true);
+
+    /// <summary>
+    /// Disables the automatic client secret rehashing applied by the application
+    /// manager when a client secret is validated and needs to be rehashed.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictCoreBuilder DisableAutomaticClientSecretRehashing()
+        => Configure(options => options.DisableAutomaticClientSecretRehashing = true);
+
+    /// <summary>
+    /// Configures OpenIddict to use the specified hash algorithm to protect the client secrets.
+    /// </summary>
+    /// <param name="algorithm">The hash algorithm to use.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictCoreBuilder SetClientSecretKeyDerivationHashAlgorithm(HashAlgorithmName algorithm)
+    {
+        if (algorithm != HashAlgorithmName.SHA1   &&
+            algorithm != HashAlgorithmName.SHA256 &&
+            algorithm != HashAlgorithmName.SHA512)
+        {
+            throw new ArgumentException(SR.FormatID0217(algorithm.Name), nameof(algorithm));
+        }
+
+        return Configure(options => options.ClientSecretKeyDerivationHashAlgorithm = algorithm);
+    }
+
+    /// <summary>
+    /// Configures OpenIddict to use the specified number of iterations to protect the client secrets.
+    /// </summary>
+    /// <param name="iterations">The number of iterations to use.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictCoreBuilder SetClientSecretKeyDerivationIterations(int iterations)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(iterations, 10_000);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(iterations, 10_000_000);
+
+        return Configure(options => options.ClientSecretKeyDerivationIterations = iterations);
+    }
+
+    /// <summary>
+    /// Configures OpenIddict to use the specified output length (in bits) to protect the client secrets.
+    /// </summary>
+    /// <param name="length">The output length to use.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictCoreBuilder SetClientSecretKeyDerivationOutputLength(int length)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(length, 256);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, 2048);
+
+        return Configure(options => options.ClientSecretKeyDerivationOutputLength = length);
+    }
+
+    /// <summary>
+    /// Configures OpenIddict to use the specified salt length (in bits) to protect the client secrets.
+    /// </summary>
+    /// <param name="length">The salt length to use.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictCoreBuilder SetClientSecretKeyDerivationSaltLength(int length)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(length, 128);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, 1024);
+
+        return Configure(options => options.ClientSecretKeyDerivationSaltLength = length);
+    }
 
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default application entity.
