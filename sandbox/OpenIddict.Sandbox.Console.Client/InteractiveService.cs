@@ -461,7 +461,6 @@ public class InteractiveService : BackgroundService
         static Table CreateClaimTable(ClaimsPrincipal principal)
         {
             var table = new Table()
-                .LeftAligned()
                 .AddColumn("Claim type")
                 .AddColumn("Claim value type")
                 .AddColumn("Claim value")
