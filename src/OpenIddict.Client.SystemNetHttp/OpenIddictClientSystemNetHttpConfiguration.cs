@@ -25,8 +25,7 @@ namespace OpenIddict.Client.SystemNetHttp;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<OpenIddictClientOptions>,
                                                                  IConfigureNamedOptions<HttpClientFactoryOptions>,
-                                                                 IPostConfigureOptions<HttpClientFactoryOptions>,
-                                                                 IPostConfigureOptions<OpenIddictClientSystemNetHttpOptions>
+                                                                 IPostConfigureOptions<HttpClientFactoryOptions>
 {
     private readonly IServiceProvider _provider;
 
@@ -217,9 +216,4 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
             handler.UseCookies = false;
         });
     }
-
-    /// <inheritdoc/>
-    [Obsolete("This method is no longer supported and will be removed in a future version.")]
-    public void PostConfigure(string? name, OpenIddictClientSystemNetHttpOptions options)
-        => throw new NotSupportedException(SR.GetResourceString(SR.ID0403));
 }

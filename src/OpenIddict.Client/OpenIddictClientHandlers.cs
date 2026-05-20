@@ -4152,28 +4152,6 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for negotiating the best userinfo endpoint client
-    /// authentication method supported by both the client and the authorization server.
-    /// </summary>
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
-    public sealed class AttachUserInfoEndpointTokenBindingMethods : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireUserInfoRequest>()
-                .UseSingletonHandler<AttachUserInfoEndpointTokenBindingMethods>()
-                .SetOrder(EvaluateUserInfoRequest.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
-    }
-
-    /// <summary>
     /// Contains the logic responsible for resolving the URI of the userinfo endpoint.
     /// </summary>
     public sealed class ResolveUserInfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>

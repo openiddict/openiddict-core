@@ -28,27 +28,6 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     ];
 
     /// <summary>
-    /// Contains the logic responsible for negotiating the best introspection endpoint client
-    /// authentication method supported by both the client and the authorization server.
-    /// </summary>
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
-    public sealed class AttachNonDefaultIntrospectionEndpointClientAuthenticationMethod : IOpenIddictValidationHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<AttachNonDefaultIntrospectionEndpointClientAuthenticationMethod>()
-                .SetOrder(AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor.Order - 500)
-                .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context) => ValueTask.CompletedTask;
-    }
-
-    /// <summary>
     /// Contains the logic responsible for creating and attaching a <see cref="HttpClient"/>.
     /// </summary>
     public sealed class CreateHttpClient<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext

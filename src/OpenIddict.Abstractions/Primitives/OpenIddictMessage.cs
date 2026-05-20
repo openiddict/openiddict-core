@@ -182,37 +182,6 @@ public class OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The message parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
-    [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-    public OpenIddictMessage(IEnumerable<KeyValuePair<string, ImmutableArray<string?>?>> parameters)
-    {
-        ArgumentNullException.ThrowIfNull(parameters);
-
-        foreach (var parameter in parameters)
-        {
-            // Ignore parameters whose name is null or empty.
-            if (string.IsNullOrEmpty(parameter.Key))
-            {
-                continue;
-            }
-
-            // Note: the core OAuth 2.0 specification requires that request parameters
-            // not be present more than once but derived specifications like the
-            // token exchange specification deliberately allow specifying multiple
-            // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(parameter.Key, parameter.Value switch
-            {
-                  null or { IsDefaultOrEmpty: true } => default,
-                          [string value]             => new OpenIddictParameter(value),
-                           [..] values               => new OpenIddictParameter(values)
-            });
-        }
-    }
-
-    /// <summary>
-    /// Initializes a new OpenIddict message.
-    /// </summary>
-    /// <param name="parameters">The message parameters.</param>
-    /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictMessage(IEnumerable<KeyValuePair<string, StringValues>> parameters)
     {
         ArgumentNullException.ThrowIfNull(parameters);
