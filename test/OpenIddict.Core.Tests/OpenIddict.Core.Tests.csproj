@@ -13,6 +13,10 @@
     <PackageReference Include="Moq" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="System.Linq.Async" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="OpenIddict.Abstractions" />
     <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />

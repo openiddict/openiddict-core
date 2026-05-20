@@ -708,7 +708,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         ArgumentNullException.ThrowIfNull(token);
         ArgumentException.ThrowIfNullOrEmpty(status);
 
-        return string.Equals(await GetStatusAsync(token, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetStatusAsync(token, cancellationToken), status, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -723,7 +723,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         ArgumentNullException.ThrowIfNull(token);
         ArgumentException.ThrowIfNullOrEmpty(type);
 
-        return string.Equals(await GetTypeAsync(token, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetTypeAsync(token, cancellationToken), type, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -745,7 +745,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
 
         for (var index = 0; index < types.Length; index++)
         {
-            if (string.Equals(type, types[index], StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, types[index], StringComparison.Ordinal))
             {
                 return true;
             }

@@ -4,6 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
+using System.Security.Cryptography;
+
 namespace OpenIddict.Core;
 
 /// <summary>
@@ -12,6 +15,30 @@ namespace OpenIddict.Core;
 public sealed class OpenIddictCoreOptions
 {
     /// <summary>
+    /// Gets or sets the hash algorithm used to protect the client secrets (by default, SHA512).
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public HashAlgorithmName ClientSecretKeyDerivationHashAlgorithm { get; set; } = HashAlgorithmName.SHA512;
+
+    /// <summary>
+    /// Gets or sets the number of iterations used to protect the client secrets (by default, 100 000).
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public int ClientSecretKeyDerivationIterations { get; set; } = 100_000;
+
+    /// <summary>
+    /// Gets or sets the length (in bits) of the PBKDF2 key used to protect the client secrets (by default, 512 bits).
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public int ClientSecretKeyDerivationOutputLength { get; set; } = 512;
+
+    /// <summary>
+    /// Gets or sets the length (in bits) of the salt used to protect the client secrets (by default, 256 bits).
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public int ClientSecretKeyDerivationSaltLength { get; set; } = 256;
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether additional filtering should be disabled,
     /// so that the OpenIddict managers don't execute a second check to ensure the results
     /// returned by the stores exactly match the specified query filters, casing included.
@@ -19,13 +46,21 @@ public sealed class OpenIddictCoreOptions
     /// are guaranteed to execute case-sensitive filtering at the database level.
     /// Disabling this feature MAY result in security vulnerabilities in the other cases.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public bool DisableAdditionalFiltering { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether automatic client secret rehashing should be disabled.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public bool DisableAutomaticClientSecretRehashing { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether entity caching should be disabled.
     /// Disabling entity caching may have a noticeable impact on the performance
     /// of your application and result in multiple queries being sent by the stores.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public bool DisableEntityCaching { get; set; }
 
     /// <summary>
@@ -34,6 +69,7 @@ public sealed class OpenIddictCoreOptions
     /// abnormally and doesn't cause a memory starvation or out-of-memory exceptions.
     /// This property is not used when <see cref="DisableEntityCaching"/> is <see langword="true"/>.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public int EntityCacheLimit { get; set; } = 250;
 
     /// <summary>

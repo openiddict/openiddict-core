@@ -51,9 +51,11 @@ public static class OpenIddictCoreExtensions
         builder.Services.TryAddScoped<IOpenIddictTokenManager>(static provider =>
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
 
-        // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
+        // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<OpenIddictCoreOptions>, OpenIddictCoreConfiguration>());
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IValidateOptions<OpenIddictCoreOptions>, OpenIddictCoreConfiguration>());
 
         return new OpenIddictCoreBuilder(builder.Services);
     }

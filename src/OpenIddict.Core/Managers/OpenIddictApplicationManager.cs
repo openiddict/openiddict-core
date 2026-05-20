@@ -4,9 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -894,7 +896,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         ArgumentNullException.ThrowIfNull(application);
         ArgumentException.ThrowIfNullOrEmpty(type);
 
-        return string.Equals(await GetApplicationTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetApplicationTypeAsync(application, cancellationToken), type, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -910,7 +912,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         ArgumentNullException.ThrowIfNull(application);
         ArgumentException.ThrowIfNullOrEmpty(type);
 
-        return string.Equals(await GetClientTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetClientTypeAsync(application, cancellationToken), type, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -926,7 +928,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         ArgumentNullException.ThrowIfNull(application);
         ArgumentException.ThrowIfNullOrEmpty(type);
 
-        return string.Equals(await GetConsentTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(await GetConsentTypeAsync(application, cancellationToken), type, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -1284,22 +1286,21 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             else
             {
                 // Ensure the application type is supported by the manager.
-                if (!string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                if (type is not (ClientTypes.Confidential or ClientTypes.Public))
                 {
                     yield return new ValidationResult(SR.GetResourceString(SR.ID2112));
                 }
 
                 // Ensure no client secret was specified if the client is a public application.
                 var secret = await Store.GetClientSecretAsync(application, cancellationToken);
-                if (!string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(secret) && type is ClientTypes.Public)
                 {
                     yield return new ValidationResult(SR.GetResourceString(SR.ID2114));
                 }
 
                 // Ensure a client secret or a JSON Web Key suitable for signing
                 // was specified if the client is a confidential application.
-                if (string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(secret) && type is ClientTypes.Confidential)
                 {
                     var set = await Store.GetJsonWebKeySetAsync(application, cancellationToken);
                     if (set?.Keys is null || !set.Keys.Any(static key =>
@@ -1395,11 +1396,33 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             return false;
         }
 
-        if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
+        var result = await ValidateClientSecretAsync(secret, value, cancellationToken);
+        if (!result.IsValid)
         {
             Logger.LogInformation(6161, SR.GetResourceString(SR.ID6161), await GetClientIdAsync(application, cancellationToken));
 
             return false;
+        }
+
+        // If the client secret was valid but a rehash is required, update the stored client secret with the new hash.
+        if (result.IsRehashRequired && !Options.CurrentValue.DisableAutomaticClientSecretRehashing)
+        {
+            try
+            {
+                await UpdateAsync(application, secret, cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // If a non-fatal exception is thrown, ignore it: the client secret will be updated the next time it is validated again.
+                Logger.LogDebug(6295, exception, SR.GetResourceString(SR.ID6295), await GetClientIdAsync(application, cancellationToken));
+
+                return true;
+            }
+
+            Logger.LogInformation(6294, SR.GetResourceString(SR.ID6294), await GetClientIdAsync(application, cancellationToken));
+
+            return true;
         }
 
         return true;
@@ -1729,30 +1752,37 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     {
         ArgumentException.ThrowIfNullOrEmpty(secret);
 
-        // Note: the PRF, iteration count, salt length and key length currently all match the default values
-        // used by CryptoHelper and ASP.NET Core Identity but this may change in the future, if necessary.
-
-        var salt = RandomNumberGenerator.GetBytes(count: 128 / 8);
-        var hash = HashSecret(secret, salt, HashAlgorithmName.SHA256, iterations: 10_000, length: 256 / 8);
-
-        return new(Convert.ToBase64String(hash));
-
         // Note: the following logic deliberately uses the same format as CryptoHelper (used in OpenIddict 1.x/2.x),
         // which was itself based on ASP.NET Core Identity's latest hashed password format. This guarantees that
         // secrets hashed using a recent OpenIddict version can still be read by older packages (and vice versa).
 
-        static byte[] HashSecret(string secret, byte[] salt, HashAlgorithmName algorithm, int iterations, int length)
-        {
-            var key = Rfc2898DeriveBytes.Pbkdf2(secret, salt, iterations, algorithm, length);
-            var payload = new byte[13 + salt.Length + key.Length];
+        var options = Options.CurrentValue;
 
+        var salt = RandomNumberGenerator.GetBytes(options.ClientSecretKeyDerivationSaltLength / 8);
+        var key = Rfc2898DeriveBytes.Pbkdf2(secret, salt,
+            options.ClientSecretKeyDerivationIterations,
+            options.ClientSecretKeyDerivationHashAlgorithm,
+            options.ClientSecretKeyDerivationOutputLength / 8);
+
+        var length = 1 + sizeof(uint) * 3 + salt.Length + key.Length;
+
+        // To avoid unnecessary allocations on the heap, use a stack-allocated buffer when the total length is less
+        // than 256 bytes. Otherwise, rent a buffer from the shared array pool and return it to the pool after use.
+        byte[]? array = null;
+        Span<byte> payload = (length is <= 256
+            ? stackalloc byte[256]
+            : (array = ArrayPool<byte>.Shared.Rent(minimumLength: length)))[..length];
+        Debug.Assert(payload.Length == length, SR.FormatID4021(payload.Length, length));
+
+        try
+        {
             // Write the format marker.
             payload[0] = 0x01;
 
             // Write the hashing algorithm version.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(1, sizeof(uint)), algorithm switch
+            BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(1, sizeof(uint)), options.ClientSecretKeyDerivationHashAlgorithm switch
             {
-                var name when name == HashAlgorithmName.SHA1   => 0,
+                var name when name == HashAlgorithmName.SHA1 => 0,
                 var name when name == HashAlgorithmName.SHA256 => 1,
                 var name when name == HashAlgorithmName.SHA512 => 2,
 
@@ -1760,18 +1790,27 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             });
 
             // Write the iteration count of the algorithm.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(5, sizeof(uint)), (uint) iterations);
+            BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(5, sizeof(uint)), (uint) options.ClientSecretKeyDerivationIterations);
 
             // Write the size of the salt.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(9, sizeof(uint)), (uint) salt.Length);
+            BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(9, sizeof(uint)), (uint) salt.Length);
 
             // Write the salt.
-            salt.CopyTo(payload.AsSpan(13));
+            salt.CopyTo(payload.Slice(13, salt.Length));
 
             // Write the subkey.
-            key.CopyTo(payload.AsSpan(13 + salt.Length));
+            key.CopyTo(payload.Slice(13 + salt.Length, key.Length));
 
-            return payload;
+            return new(Convert.ToBase64String(payload, Base64FormattingOptions.None));
+        }
+
+        finally
+        {
+            // Return the rented buffer to the pool if one was used.
+            if (array is not null)
+            {
+                ArrayPool<byte>.Shared.Return(array, clearArray: true);
+            }
         }
     }
 
@@ -1783,43 +1822,31 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="comparand">The value stored in the database, which is usually a hashed representation of the secret.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-    /// whose result returns a boolean indicating whether the specified value was valid.
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns
+    /// a tuple indicating whether the client secret was valid and whether the client secret should be re-hashed.
     /// </returns>
-    protected virtual ValueTask<bool> ValidateClientSecretAsync(
+    protected virtual ValueTask<(bool IsValid, bool IsRehashRequired)> ValidateClientSecretAsync(
         string secret, string comparand, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(secret);
         ArgumentException.ThrowIfNullOrEmpty(comparand);
 
-        try
-        {
-            return new(VerifyHashedSecret(comparand, secret));
-        }
-
-        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-        {
-            Logger.LogWarning(6163, exception, SR.GetResourceString(SR.ID6163));
-
-            return new(false);
-        }
-
         // Note: the following logic deliberately uses the same format as CryptoHelper (used in OpenIddict 1.x/2.x),
         // which was itself based on ASP.NET Core Identity's latest hashed password format. This guarantees that
         // secrets hashed using a recent OpenIddict version can still be read by older packages (and vice versa).
 
-        static bool VerifyHashedSecret(string hash, string secret)
+        try
         {
-            var payload = new ReadOnlySpan<byte>(Convert.FromBase64String(hash));
-            if (payload.Length is 0)
+            ReadOnlySpan<byte> payload = Convert.FromBase64String(comparand);
+            if (payload is [])
             {
-                return false;
+                throw new ArgumentException(SR.GetResourceString(SR.ID0218), nameof(comparand));
             }
 
             // Verify the hashing format version.
             if (payload[0] is not 0x01)
             {
-                return false;
+                throw new ArgumentException(SR.GetResourceString(SR.ID0218), nameof(comparand));
             }
 
             // Read the hashing algorithm version.
@@ -1829,32 +1856,67 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 1 => HashAlgorithmName.SHA256,
                 2 => HashAlgorithmName.SHA512,
 
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0217))
+                _ => throw new ArgumentException(SR.GetResourceString(SR.ID0218), nameof(comparand))
             };
 
-            // Read the iteration count of the algorithm.
+            // Read the iteration count of the algorithm and ensure it's more than
+            // 10 000 iterations, which is the value used in previous OpenIddict versions.
             var iterations = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(5, sizeof(uint)));
-
-            // Read the size of the salt and ensure it's more than 128 bits.
-            var saltLength = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(9, sizeof(uint)));
-            if (saltLength is < 128 / 8)
+            if (iterations is not (>= 10_000 and <= 10_000_000))
             {
-                return false;
+                throw new ArgumentException(SR.GetResourceString(SR.ID0218), nameof(comparand));
+            }
+
+            // Read the size of the salt and ensure it's more than 128 bits,
+            // which is the value used in previous OpenIddict versions.
+            var length = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(9, sizeof(uint)));
+            if (length is not (>= 128 / 8 and <= 1024 / 8))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0218), nameof(comparand));
             }
 
             // Read the salt.
-            var salt = payload.Slice(13, saltLength);
+            var salt = payload.Slice(13, length);
 
-            // Ensure the derived key length is more than 128 bits.
-            var keyLength = payload.Length - 13 - salt.Length;
-            if (keyLength is < 128 / 8)
+            // Ensure the derived key length is more than 128 bits,
+            // which is the value used in previous OpenIddict versions.
+            length = payload.Length - 13 - salt.Length;
+            if (length is not (>= 128 / 8 and <= 2048 / 8))
             {
-                return false;
+                throw new ArgumentException(SR.GetResourceString(SR.ID0218), nameof(comparand));
             }
 
-            return CryptographicOperations.FixedTimeEquals(
-                left : payload.Slice(13 + salt.Length, keyLength),
-                right: Rfc2898DeriveBytes.Pbkdf2(secret, salt.ToArray(), iterations, algorithm, keyLength));
+            // Read the derived key.
+            var key = payload.Slice(13 + salt.Length, length);
+
+            // Hash the specified client secret with the same salt, iteration count and algorithm as the
+            // stored value, and compare the results: if they don't match, the client secret is invalid.
+            if (!CryptographicOperations.FixedTimeEquals(key, Rfc2898DeriveBytes.Pbkdf2(
+                secret, salt, iterations, algorithm, key.Length)))
+            {
+                return new((IsValid: false, IsRehashRequired: false));
+            }
+
+            var options = Options.CurrentValue;
+
+            // Note: if the client secret is valid but one of the key derivation options is not strictly identical (even
+            // when the application is now configured to use a lower security level), indicate that a rehash is required.
+            //
+            // This deliberately differs from ASP.NET Core Identity's logic, which only considers that a rehash is required
+            // when the iteration count configured in the password options is higher than the one extracted from the payload:
+            // doing that allows developers to select a lower security level (e.g fewer iterations or a less expensive hash
+            // algorithm) if the previous settings used in production proved to be too slow for their needs.
+            return new((IsValid: true, IsRehashRequired: algorithm   != options.ClientSecretKeyDerivationHashAlgorithm    ||
+                                                         iterations  != options.ClientSecretKeyDerivationIterations       ||
+                                                         salt.Length != options.ClientSecretKeyDerivationSaltLength   / 8 ||
+                                                         key.Length  != options.ClientSecretKeyDerivationOutputLength / 8));
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            Logger.LogWarning(6163, exception, SR.GetResourceString(SR.ID6163));
+
+            return new((IsValid: false, IsRehashRequired: false));
         }
     }
 

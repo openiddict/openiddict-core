@@ -849,10 +849,10 @@ To register the validation services, use 'services.AddOpenIddict().AddValidation
     <value>The secret cannot be null or empty.</value>
   </data>
   <data name="ID0217" xml:space="preserve">
-    <value>The specified hash algorithm is not valid.</value>
+    <value>The specified hash algorithm ({0}) is not valid or is not supported by the platform.</value>
   </data>
   <data name="ID0218" xml:space="preserve">
-    <value>The comparand cannot be null or empty.</value>
+    <value>The client secret payload stored in the database is malformed, uses an unsupported version or doesn't meet the minimum security requirements and may have been tampered with.</value>
   </data>
   <data name="ID0219" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to create a new authorization:</value>
@@ -1869,6 +1869,15 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   <data name="ID0517" xml:space="preserve">
     <value>The '{0}' grant type is already assigned to a standard grant type and cannot be used for custom flows.</value>
   </data>
+  <data name="ID0518" xml:space="preserve">
+    <value>The number of iterations for derivation of client secrets cannot be lower than {0} or higher than {1}.</value>
+  </data>
+  <data name="ID0519" xml:space="preserve">
+    <value>The length of salts used for derivation of client secrets cannot be lower than {0} or higher than {1} bits.</value>
+  </data>
+  <data name="ID0520" xml:space="preserve">
+    <value>The output length used for derivation of client secrets cannot be lower than {0} or higher than {1} bits.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2548,6 +2557,9 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   </data>
   <data name="ID4020" xml:space="preserve">
     <value>The X.509 client certificate shouldn't be null at this point.</value>
+  </data>
+  <data name="ID4021" xml:space="preserve">
+    <value>The length of the memory span ({0}) doesn't match the expected value ({1}).</value>
   </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
@@ -3331,6 +3343,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6293" xml:space="preserve">
     <value>Certificate validation failed because the token binding certificate provided by an anonymous client was not valid: {Errors}.</value>
+  </data>
+  <data name="ID6294" xml:space="preserve">
+    <value>The client secret attached to the client application {ClientId} was automatically re-hashed to match the new settings.</value>
+  </data>
+  <data name="ID6295" xml:space="preserve">
+    <value>The client secret attached to the client application {ClientId} couldn't be automatically re-hashed due to a concurency exception.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

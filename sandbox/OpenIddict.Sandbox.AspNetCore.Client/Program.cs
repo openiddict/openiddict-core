@@ -97,6 +97,8 @@ builder.Services.AddOpenIddict()
             RedirectUri = new Uri("callback/login/local", UriKind.Relative),
             PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative),
 
+            // ClientSecret = "emCimpdc9SeOaZzN5jzm4_eek-STF6VenfVlKO1_qt0",
+            //
             // On supported platforms, this application can authenticate using 3 different client
             // authentication methods that all offer a higher security level than shared client secrets:
             //
