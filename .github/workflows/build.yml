@@ -166,6 +166,9 @@ jobs:
   push-packages-nuget:
     needs: [ build, validate-packages ]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
     if: |
       github.event.repository.fork == false &&
       startsWith(github.ref, 'refs/tags/')
@@ -180,7 +183,13 @@ jobs:
       with:
         dotnet-version: ${{ needs.build.outputs.dotnet-sdk-version }}
 
+    - name: Login to NuGet.org (Trusted Publishing)
+      id: nuget-login
+      uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
     - name: Push packages to NuGet.org
       env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
       run: dotnet nuget push "*.nupkg" --api-key "${NUGET_API_KEY}" --skip-duplicate --source https://api.nuget.org/v3/index.json
