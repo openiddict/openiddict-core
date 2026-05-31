@@ -15,7 +15,7 @@ namespace OpenIddict.Server.Owin;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
                                                         IPostConfigureOptions<OpenIddictServerOptions>,
-                                                        IPostConfigureOptions<OpenIddictServerOwinOptions>
+                                                        IValidateOptions<OpenIddictServerOwinOptions>
 {
     /// <inheritdoc/>
     public void Configure(OpenIddictServerOptions options)
@@ -48,13 +48,17 @@ public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenId
     }
 
     /// <inheritdoc/>
-    public void PostConfigure(string? name, OpenIddictServerOwinOptions options)
+    public ValidateOptionsResult Validate(string? name, OpenIddictServerOwinOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
+        var builder = new ValidateOptionsResultBuilder();
+
         if (options.AuthenticationMode is AuthenticationMode.Active)
         {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0119));
+            builder.AddError(SR.GetResourceString(SR.ID0119));
         }
+
+        return builder.Build();
     }
 }

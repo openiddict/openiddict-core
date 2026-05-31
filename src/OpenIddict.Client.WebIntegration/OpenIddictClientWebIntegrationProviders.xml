@@ -2,7 +2,7 @@
            xsi:noNamespaceSchemaLocation="OpenIddictClientWebIntegrationProviders.xsd">
   <!--
     Note: for more information on how to add a new web provider integration, visit
-    https://documentation.openiddict.com/guides/contributing-a-new-web-provider.html.
+    https://documentation.openiddict.com/guides/contributing-a-new-web-provider.
   -->
 
   <!--

@@ -17,14 +17,14 @@ namespace OpenIddict.Validation.DataProtection;
 public sealed class OpenIddictValidationDataProtectionConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
                                                                       IPostConfigureOptions<OpenIddictValidationDataProtectionOptions>
 {
-    private readonly IDataProtectionProvider _dataProtectionProvider;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationDataProtectionConfiguration"/> class.
     /// </summary>
-    /// <param name="dataProtectionProvider">The ASP.NET Core Data Protection provider.</param>
-    public OpenIddictValidationDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider)
-        => _dataProtectionProvider = dataProtectionProvider;
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictValidationDataProtectionConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
@@ -40,6 +40,6 @@ public sealed class OpenIddictValidationDataProtectionConfiguration : IConfigure
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        options.DataProtectionProvider ??= _dataProtectionProvider;
+        options.DataProtectionProvider ??= _provider.GetDataProtectionProvider();
     }
 }

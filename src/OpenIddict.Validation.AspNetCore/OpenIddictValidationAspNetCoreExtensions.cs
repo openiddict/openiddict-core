@@ -46,10 +46,13 @@ public static class OpenIddictValidationAspNetCoreExtensions
             IConfigureOptions<AuthenticationOptions>, OpenIddictValidationAspNetCoreConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationAspNetCoreConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<AuthenticationOptions>, OpenIddictValidationAspNetCoreConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationAspNetCoreConfiguration>());
+            IValidateOptions<AuthenticationOptions>, OpenIddictValidationAspNetCoreConfiguration>());
 
         return new OpenIddictValidationAspNetCoreBuilder(builder.Services);
     }

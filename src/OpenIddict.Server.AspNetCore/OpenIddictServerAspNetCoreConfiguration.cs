@@ -16,23 +16,21 @@ namespace OpenIddict.Server.AspNetCore;
 public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
                                                               IConfigureOptions<OpenIddictServerOptions>,
                                                               IPostConfigureOptions<AuthenticationOptions>,
-                                                              IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>,
-                                                              IPostConfigureOptions<OpenIddictServerOptions>
+                                                              IPostConfigureOptions<OpenIddictServerOptions>,
+                                                              IValidateOptions<AuthenticationOptions>,
+                                                              IValidateOptions<OpenIddictServerAspNetCoreOptions>
 {
     /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
-        if (options.SchemeMap.TryGetValue(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
-            builder.HandlerType != typeof(OpenIddictServerAspNetCoreHandler))
+        // Register the authentication scheme handler used by the OpenIddict ASP.NET Core server integration.
+        if (!options.SchemeMap.ContainsKey(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme))
         {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0108));
+            options.AddScheme<OpenIddictServerAspNetCoreHandler>(
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, displayName: null);
         }
-
-        options.AddScheme<OpenIddictServerAspNetCoreHandler>(
-            OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, displayName: null);
     }
 
     /// <inheritdoc/>
@@ -52,16 +50,6 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (!TryValidate(options.SchemeMap, options.DefaultAuthenticateScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultChallengeScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultForbidScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0109));
-        }
-
         // Starting in ASP.NET 7.0, the authentication stack integrates a fallback
         // mechanism to select the default scheme to use when no value is set, but
         // only if a single handler has been registered in the authentication options.
@@ -79,28 +67,6 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
             string.IsNullOrEmpty(options.DefaultSignOutScheme)))
         {
             options.AddScheme<IAuthenticationHandler>(Guid.NewGuid().ToString(), displayName: null);
-        }
-
-        static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
-        {
-            // If the scheme was not set or if it cannot be found in the map, return true.
-            if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
-            {
-                return true;
-            }
-
-            return builder.HandlerType != typeof(OpenIddictServerAspNetCoreHandler);
-        }
-    }
-
-    /// <inheritdoc/>
-    public void PostConfigure(string? name, OpenIddictServerAspNetCoreOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        if (options.EnableErrorPassthrough && options.EnableStatusCodePagesIntegration)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0110));
         }
     }
 
@@ -120,5 +86,51 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
         {
             options.ClientAuthenticationMethods.Add(ClientAuthenticationMethods.SelfSignedTlsClientAuth);
         }
+    }
+
+    /// <inheritdoc/>
+    public ValidateOptionsResult Validate(string? name, AuthenticationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        if (!ValidateDefaultScheme(options.SchemeMap, options.DefaultAuthenticateScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultChallengeScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultForbidScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultSignInScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultSignOutScheme))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0109));
+        }
+
+        return builder.Build();
+
+        static bool ValidateDefaultScheme(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
+        {
+            // If the scheme was not set or if it cannot be found in the map, return true.
+            if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
+            {
+                return true;
+            }
+
+            return builder.HandlerType != typeof(OpenIddictServerAspNetCoreHandler);
+        }
+    }
+
+    /// <inheritdoc/>
+    public ValidateOptionsResult Validate(string? name, OpenIddictServerAspNetCoreOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        if (options.EnableErrorPassthrough && options.EnableStatusCodePagesIntegration)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0110));
+        }
+
+        return builder.Build();
     }
 }

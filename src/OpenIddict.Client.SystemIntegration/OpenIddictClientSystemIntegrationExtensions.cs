@@ -104,6 +104,9 @@ public static class OpenIddictClientSystemIntegrationExtensions
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<OpenIddictClientSystemIntegrationOptions>, OpenIddictClientSystemIntegrationConfiguration>());
 
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IValidateOptions<OpenIddictClientSystemIntegrationOptions>, OpenIddictClientSystemIntegrationConfiguration>());
+
         return new OpenIddictClientSystemIntegrationBuilder(builder.Services);
     }
 

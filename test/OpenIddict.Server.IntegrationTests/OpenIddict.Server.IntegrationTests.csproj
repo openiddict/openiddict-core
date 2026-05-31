@@ -5,11 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Certificate.cer" />
-    <EmbeddedResource Include="Certificate.pfx" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.Core\OpenIddict.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Server\OpenIddict.Server.csproj" />
   </ItemGroup>
@@ -28,6 +23,11 @@
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Net.Http.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Certificate.cer" />
+    <EmbeddedResource Include="Certificate.pfx" />
   </ItemGroup>
 
   <ItemGroup>

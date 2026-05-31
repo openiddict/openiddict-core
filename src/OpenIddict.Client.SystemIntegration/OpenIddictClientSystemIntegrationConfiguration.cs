@@ -11,6 +11,7 @@ using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -24,16 +25,17 @@ namespace OpenIddict.Client.SystemIntegration;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>,
                                                                      IPostConfigureOptions<OpenIddictClientOptions>,
-                                                                     IPostConfigureOptions<OpenIddictClientSystemIntegrationOptions>
+                                                                     IPostConfigureOptions<OpenIddictClientSystemIntegrationOptions>,
+                                                                     IValidateOptions<OpenIddictClientSystemIntegrationOptions>
 {
-    private readonly IHostEnvironment _environment;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientSystemIntegrationConfiguration"/> class.
     /// </summary>
-    /// <param name="environment">The host environment.</param>
-    public OpenIddictClientSystemIntegrationConfiguration(IHostEnvironment environment)
-        => _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictClientSystemIntegrationConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
@@ -62,50 +64,6 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        // Ensure the operating system version is supported.
-        if (!OperatingSystem.IsAndroidVersionAtLeast(21)    && !OperatingSystem.IsIOSVersionAtLeast(12)            &&
-            !OperatingSystem.IsLinux()                      && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) &&
-            !OperatingSystem.IsMacOSVersionAtLeast(10, 15)  && !OperatingSystem.IsWindowsVersionAtLeast(7))
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0389));
-        }
-
-#if !ANDROID
-        // When running on Android, iOS or Mac Catalyst, ensure the version compiled for these platforms
-        // is used to prevent the generic/non-OS specific TFM from being used as launching the system
-        // browser cannot be done using Process.Start() and requires using OS-specific APIs that are
-        // not available on the portable version of the OpenIddict.Client.SystemIntegration package.
-        if (OperatingSystem.IsAndroid())
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
-        }
-#endif
-
-#if !IOS && !MACCATALYST
-        if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0449));
-        }
-#endif
-
-#pragma warning disable CA1416
-        // If explicitly set, ensure the specified authentication mode is supported.
-        if (options.AuthenticationMode is ASWebAuthenticationSession && !IsASWebAuthenticationSessionSupported())
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0446));
-        }
-
-        else if (options.AuthenticationMode is CustomTabsIntent && !IsCustomTabsIntentSupported())
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0452));
-        }
-
-        else if (options.AuthenticationMode is WebAuthenticationBroker && !IsWebAuthenticationBrokerSupported())
-        {
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0392));
-        }
-#pragma warning restore CA1416
-
         // When possible, always prefer OS-managed modes. Otherwise, fall back to the system browser.
         options.AuthenticationMode ??=
             IsASWebAuthenticationSessionSupported() ? ASWebAuthenticationSession :
@@ -128,16 +86,12 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             options.EnableEmbeddedWebServer     ??= false;
         }
 
-        // If no explicit application discriminator was specified, compute the SHA-256 hash
-        // of the application name resolved from the host and use it as a unique identifier.
-        if (string.IsNullOrEmpty(options.ApplicationDiscriminator))
+        // If no explicit application discriminator was specified, compute the SHA-256 hash of the application
+        // name resolved from the host environment (if available) and use it as a unique identifier.
+        if (string.IsNullOrEmpty(options.ApplicationDiscriminator) &&
+            _provider.GetService<IHostEnvironment>() is IHostEnvironment { ApplicationName.Length: > 0 } environment)
         {
-            if (string.IsNullOrEmpty(_environment.ApplicationName))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0386));
-            }
-
-            var digest = SHA256.HashData(Encoding.UTF8.GetBytes(_environment.ApplicationName));
+            var digest = SHA256.HashData(Encoding.UTF8.GetBytes(environment.ApplicationName));
 
             // Note: only the left-most half of the hash is used to limit the length of the resulting discriminator,
             // which is required on platforms like macOS, where the name of pipes is always prefixed with a static part
@@ -152,7 +106,7 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
         }
 
         // If no explicit pipe name was specified, build one using the application discriminator.
-        if (string.IsNullOrEmpty(options.PipeName))
+        if (string.IsNullOrEmpty(options.PipeName) && !string.IsNullOrEmpty(options.ApplicationDiscriminator))
         {
             // Note: on Windows, the name is deliberately prefixed with "LOCAL\" to support
             // partial trust/sandboxed applications that are executed in an AppContainer
@@ -194,5 +148,67 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
                     PipeAccessRights.FullControl, AccessControlType.Allow));
             }
         }
+    }
+
+    /// <inheritdoc/>
+    public ValidateOptionsResult Validate(string? name, OpenIddictClientSystemIntegrationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        // Ensure the operating system version is supported.
+        if (!OperatingSystem.IsAndroidVersionAtLeast(21)   && !OperatingSystem.IsIOSVersionAtLeast(12) &&
+            !OperatingSystem.IsLinux()                     && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) &&
+            !OperatingSystem.IsMacOSVersionAtLeast(10, 15) && !OperatingSystem.IsWindowsVersionAtLeast(7))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0389));
+        }
+
+#if !ANDROID
+        // When running on Android, iOS or Mac Catalyst, ensure the version compiled for these platforms
+        // is used to prevent the generic/non-OS specific TFM from being used as launching the system
+        // browser cannot be done using Process.Start() and requires using OS-specific APIs that are
+        // not available on the portable version of the OpenIddict.Client.SystemIntegration package.
+        if (OperatingSystem.IsAndroid())
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0449));
+        }
+#endif
+
+#if !IOS && !MACCATALYST
+        else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0449));
+        }
+#endif
+
+#pragma warning disable CA1416
+        // If explicitly set, ensure the specified authentication mode is supported.
+        if (options.AuthenticationMode is ASWebAuthenticationSession && !IsASWebAuthenticationSessionSupported())
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0446));
+        }
+
+        else if (options.AuthenticationMode is CustomTabsIntent && !IsCustomTabsIntentSupported())
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0452));
+        }
+
+        else if (options.AuthenticationMode is WebAuthenticationBroker && !IsWebAuthenticationBrokerSupported())
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0392));
+        }
+#pragma warning restore CA1416
+
+        // If activation redirection or the pipe server is enabled, ensure a pipe name
+        // was specified or could be inferred from the application discriminator.
+        if (string.IsNullOrEmpty(options.PipeName) &&
+           (options.EnableActivationRedirection is true || options.EnablePipeServer is true))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0386));
+        }
+
+        return builder.Build();
     }
 }

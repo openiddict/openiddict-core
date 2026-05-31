@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
@@ -86,6 +87,8 @@ public abstract partial class OpenIddictValidationIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.Configure(options => options.ConfigurationManager = manager);
+
+            options.Services.RemoveAll<IValidateOptions<OpenIddictValidationOptions>>();
         });
 
         await using var client = await server.CreateClientAsync();
@@ -108,6 +111,8 @@ public abstract partial class OpenIddictValidationIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.Configure(options => options.ConfigurationManager = manager);
+
+            options.Services.RemoveAll<IValidateOptions<OpenIddictValidationOptions>>();
         });
 
         await using var client = await server.CreateClientAsync();

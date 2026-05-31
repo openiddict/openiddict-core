@@ -38,10 +38,10 @@ public static class OpenIddictValidationSystemNetHttpExtensions
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationSystemNetHttpConfiguration>());
+            IConfigureOptions<HttpClientFactoryOptions>, OpenIddictValidationSystemNetHttpConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IConfigureOptions<HttpClientFactoryOptions>, OpenIddictValidationSystemNetHttpConfiguration>());
+            IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationSystemNetHttpConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<HttpClientFactoryOptions>, OpenIddictValidationSystemNetHttpConfiguration>());
