@@ -15,22 +15,20 @@ namespace OpenIddict.Validation.AspNetCore;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
                                                                   IConfigureOptions<OpenIddictValidationOptions>,
-                                                                  IPostConfigureOptions<AuthenticationOptions>
+                                                                  IPostConfigureOptions<AuthenticationOptions>,
+                                                                  IValidateOptions<AuthenticationOptions>
 {
     /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
-        if (options.SchemeMap.TryGetValue(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
-            builder.HandlerType != typeof(OpenIddictValidationAspNetCoreHandler))
+        // Register the authentication scheme handler used by the OpenIddict ASP.NET Core server integration.
+        if (!options.SchemeMap.ContainsKey(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme))
         {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0164));
+            options.AddScheme<OpenIddictValidationAspNetCoreHandler>(
+                OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, displayName: null);
         }
-
-        options.AddScheme<OpenIddictValidationAspNetCoreHandler>(
-            OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, displayName: null);
     }
 
     /// <inheritdoc/>
@@ -47,12 +45,6 @@ public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOpti
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (!TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0165));
-        }
-
         // Starting in ASP.NET 7.0, the authentication stack integrates a fallback
         // mechanism to select the default scheme to use when no value is set, but
         // only if a single handler has been registered in the authentication options.
@@ -68,8 +60,24 @@ public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOpti
         {
             options.AddScheme<IAuthenticationHandler>(Guid.NewGuid().ToString(), displayName: null);
         }
+    }
 
-        static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
+    /// <inheritdoc/>
+    public ValidateOptionsResult Validate(string? name, AuthenticationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        if (!ValidateDefaultScheme(options.SchemeMap, options.DefaultSignInScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultSignOutScheme))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0165));
+        }
+
+        return builder.Build();
+
+        static bool ValidateDefaultScheme(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
         {
             // If the scheme was not set or if it cannot be found in the map, return true.
             if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))

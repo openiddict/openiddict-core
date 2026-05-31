@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -19,7 +18,8 @@ namespace OpenIddict.Server;
 /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
+public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>,
+                                                    IValidateOptions<OpenIddictServerOptions>
 {
     private readonly IServiceProvider _provider;
 
@@ -53,411 +53,6 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             options.DisableRollingRefreshTokens = true;
         }
 
-        if (options.JsonWebTokenHandler is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
-        }
-
-        // Ensure at least one flow has been enabled.
-        if (options.GrantTypes.Count is 0 && options.ResponseTypes.Count is 0)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
-        }
-
-        var uris = options.AuthorizationEndpointUris.Distinct()
-            .Concat(options.ConfigurationEndpointUris.Distinct())
-            .Concat(options.JsonWebKeySetEndpointUris.Distinct())
-            .Concat(options.DeviceAuthorizationEndpointUris.Distinct())
-            .Concat(options.IntrospectionEndpointUris.Distinct())
-            .Concat(options.EndSessionEndpointUris.Distinct())
-            .Concat(options.PushedAuthorizationEndpointUris.Distinct())
-            .Concat(options.RevocationEndpointUris.Distinct())
-            .Concat(options.TokenEndpointUris.Distinct())
-            .Concat(options.UserInfoEndpointUris.Distinct())
-            .Concat(options.EndUserVerificationEndpointUris.Distinct())
-            .ToList();
-
-        // Ensure endpoint URIs are unique across endpoints.
-        if (uris.Count != uris.Distinct().Count())
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0285));
-        }
-
-        // Ensure the authorization endpoint has been enabled when
-        // the authorization code or implicit grants are supported.
-        if (options.AuthorizationEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
-                                                             options.GrantTypes.Contains(GrantTypes.Implicit)))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0077));
-        }
-
-        // Ensure the device authorization endpoint has been enabled when the device grant is supported.
-        if (options.DeviceAuthorizationEndpointUris.Count is 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0078));
-        }
-
-        // Ensure the token endpoint has been enabled when the authorization code,
-        // client credentials, device, password or refresh token grants are supported.
-        if (options.TokenEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
-                                                     options.GrantTypes.Contains(GrantTypes.ClientCredentials) ||
-                                                     options.GrantTypes.Contains(GrantTypes.DeviceCode) ||
-                                                     options.GrantTypes.Contains(GrantTypes.Password) ||
-                                                     options.GrantTypes.Contains(GrantTypes.RefreshToken)))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0079));
-        }
-
-        // Ensure the end-user verification endpoint has been enabled when the device grant is supported.
-        if (options.EndUserVerificationEndpointUris.Count is 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0080));
-        }
-
-        // Ensure the device grant is allowed when the device authorization endpoint is enabled.
-        if (options.DeviceAuthorizationEndpointUris.Count is > 0 && !options.GrantTypes.Contains(GrantTypes.DeviceCode))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0084));
-        }
-
-        // Ensure the grant types/response types configuration is consistent.
-        foreach (var type in options.ResponseTypes)
-        {
-            var types = type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
-            if (types.Contains(ResponseTypes.Code) && !options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
-            {
-                throw new InvalidOperationException(SR.FormatID0281(ResponseTypes.Code));
-            }
-
-            if (types.Contains(ResponseTypes.IdToken) && !options.GrantTypes.Contains(GrantTypes.Implicit))
-            {
-                throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.IdToken));
-            }
-
-            if (types.Contains(ResponseTypes.Token) && !options.GrantTypes.Contains(GrantTypes.Implicit))
-            {
-                throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.Token));
-            }
-        }
-
-        // Ensure at least one client authentication method is enabled (unless no non-interactive endpoint was enabled).
-        if (options.ClientAuthenticationMethods.Count is 0 && (options.DeviceAuthorizationEndpointUris.Count is not 0 ||
-                                                               options.IntrospectionEndpointUris.Count       is not 0 ||
-                                                               options.PushedAuthorizationEndpointUris.Count is not 0 ||
-                                                               options.RevocationEndpointUris.Count          is not 0 ||
-                                                               options.TokenEndpointUris.Count               is not 0))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0419));
-        }
-
-        // Ensure the client authentication methods/client assertion types configuration is consistent.
-        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
-           !options.ClientAssertionTypes.Contains(ClientAssertionTypes.JwtBearer))
-        {
-            throw new InvalidOperationException(SR.FormatID0420(
-                ClientAssertionTypes.JwtBearer, ClientAuthenticationMethods.PrivateKeyJwt));
-        }
-
-        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.ClientSecretJwt) &&
-           !options.ClientAssertionTypes.Contains(ClientAssertionTypes.JwtBearer))
-        {
-            throw new InvalidOperationException(SR.FormatID0420(
-                ClientAssertionTypes.JwtBearer, ClientAuthenticationMethods.ClientSecretJwt));
-        }
-
-        // If the tls_client_auth or self_signed_tls_client_auth methods are enabled, ensure a chain policy has been set.
-        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
-            options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0505));
-        }
-
-        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
-            options.SelfSignedTlsClientAuthenticationPolicy is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0506));
-        }
-
-        // Ensure at least one supported subject type is listed.
-        if (options.SubjectTypes.Count is 0)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0421));
-        }
-
-        // Ensure reference tokens support was not enabled when token storage is disabled.
-        if (options.DisableTokenStorage && (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0083));
-        }
-
-        // Ensure authorization or end session request caching was not enabled when token storage is disabled.
-        if (options.DisableTokenStorage && (options.EnableAuthorizationRequestCaching || options.EnableEndSessionRequestCaching))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0465));
-        }
-
-        // Prevent the device authorization flow from being used if token storage is disabled, unless the degraded
-        // mode has been enabled (in this case, additional checks will be enforced later to require custom handlers).
-        if (options.DisableTokenStorage && !options.EnableDegradedMode && options.GrantTypes.Contains(GrantTypes.DeviceCode))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0367));
-        }
-
-        // Ensure at least one subject token type is configured when the token exchange grant is enabled.
-        if (options.SubjectTokenTypes.Count is 0 && options.GrantTypes.Contains(GrantTypes.TokenExchange))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0486));
-        }
-
-        // Prevent internal token types from being used as subject, actor or requested token types.
-        if (options.SubjectTokenTypes.Any(static type => type.StartsWith(
-            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0487));
-        }
-
-        if (options.ActorTokenTypes.Any(static type => type.StartsWith(
-            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0488));
-        }
-
-        if (options.RequestedTokenTypes.Any(static type => type.StartsWith(
-            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0489));
-        }
-
-        // Ensure that the default requested token type (used when the caller doesn't specify a
-        // requested_token_type parameter during an OAuth 2.0 token exchange flow) was configured
-        // and that the configured value is also present in the list of allowed token types.
-        if (string.IsNullOrEmpty(options.DefaultRequestedTokenType))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0490));
-        }
-
-        if (options.DefaultRequestedTokenType.StartsWith(
-            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0491));
-        }
-
-        if (!options.RequestedTokenTypes.Contains(options.DefaultRequestedTokenType))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0492));
-        }
-
-        if (options.EncryptionCredentials.Count is 0)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0085));
-        }
-
-        if (!options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0086));
-        }
-
-        var now = options.TimeProvider.GetUtcNow().LocalDateTime;
-
-        // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.TrueForAll(credentials =>
-            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-           (certificate.NotBefore > now || certificate.NotAfter < now)))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
-        }
-
-        // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.SigningCredentials.TrueForAll(credentials =>
-            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-           (certificate.NotBefore > now || certificate.NotAfter < now)))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0088));
-        }
-
-        // When set, the mTLS endpoint aliases MUST represent absolute HTTPS URLs.
-        if (!TryValidateMtlsEndpointAlias(options.MtlsDeviceAuthorizationEndpointAliasUri) ||
-            !TryValidateMtlsEndpointAlias(options.MtlsIntrospectionEndpointAliasUri)       ||
-            !TryValidateMtlsEndpointAlias(options.MtlsPushedAuthorizationEndpointAliasUri) ||
-            !TryValidateMtlsEndpointAlias(options.MtlsRevocationEndpointAliasUri)          ||
-            !TryValidateMtlsEndpointAlias(options.MtlsTokenEndpointAliasUri)               ||
-            !TryValidateMtlsEndpointAlias(options.MtlsUserInfoEndpointAliasUri))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0499));
-        }
-
-        // Prevent the mTLS aliases from being configured if the corresponding endpoints haven't been enabled.
-        if ((options.MtlsDeviceAuthorizationEndpointAliasUri is not null && options.DeviceAuthorizationEndpointUris.Count is 0) ||
-            (options.MtlsIntrospectionEndpointAliasUri       is not null && options.IntrospectionEndpointUris.Count       is 0) ||
-            (options.MtlsPushedAuthorizationEndpointAliasUri is not null && options.PushedAuthorizationEndpointUris.Count is 0) ||
-            (options.MtlsRevocationEndpointAliasUri          is not null && options.RevocationEndpointUris.Count          is 0) ||
-            (options.MtlsTokenEndpointAliasUri               is not null && options.TokenEndpointUris.Count               is 0) ||
-            (options.MtlsUserInfoEndpointAliasUri            is not null && options.UserInfoEndpointUris.Count            is 0))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0510));
-        }
-
-        // If at least one mTLS endpoint alias was configured, require that the issuer be explicitly set
-        // to ensure it is not dynamically computed based on the current URI, as this would result in two
-        // different issuers being used (one pointing to the mTLS domain and one pointing to the regular one).
-        if (options.Issuer is null && (options.MtlsDeviceAuthorizationEndpointAliasUri is not null ||
-                                       options.MtlsIntrospectionEndpointAliasUri       is not null ||
-                                       options.MtlsPushedAuthorizationEndpointAliasUri is not null ||
-                                       options.MtlsRevocationEndpointAliasUri          is not null ||
-                                       options.MtlsTokenEndpointAliasUri               is not null ||
-                                       options.MtlsUserInfoEndpointAliasUri            is not null))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0500));
-        }
-
-        // Ensure no end certificate was included in the PKI TLS client authentication
-        // chain policy and that none of the certificates contains a private key.
-        if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is not null)
-        {
-            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.ExtraStore.Cast<X509Certificate2>()
-                .Any(static certificate =>
-                    !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
-                    !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0501));
-            }
-
-            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.ExtraStore.Cast<X509Certificate2>()
-                .Any(static certificate => certificate.HasPrivateKey))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0511));
-            }
-
-#if NET
-            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>()
-                .Any(static certificate =>
-                    !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
-                    !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0501));
-            }
-
-            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>()
-                .Any(static certificate => certificate.HasPrivateKey))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0511));
-            }
-#endif
-        }
-
-        // Ensure the self-signed TLS client authentication chain policy doesn't contain any certificate.
-        if (options.SelfSignedTlsClientAuthenticationPolicy is not null)
-        {
-            if (options.SelfSignedTlsClientAuthenticationPolicy.ExtraStore.Count is not 0)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
-            }
-
-#if NET
-            if (options.SelfSignedTlsClientAuthenticationPolicy.CustomTrustStore.Count is not 0)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0502));
-            }
-#endif
-        }
-
-        if (options.EnableDegradedMode)
-        {
-            // If the degraded mode was enabled, ensure custom validation handlers
-            // have been registered for the endpoints that require manual validation.
-
-            if (options.AuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
-                descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0089));
-            }
-
-            if (options.DeviceAuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                (descriptor.ContextType == typeof(ValidateDeviceAuthorizationRequestContext) ||
-                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0090));
-            }
-
-            if (options.IntrospectionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                (descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) ||
-                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0091));
-            }
-
-            if (options.EndSessionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                descriptor.ContextType == typeof(ValidateEndSessionRequestContext) &&
-                descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0092));
-            }
-
-            if (options.PushedAuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                (descriptor.ContextType == typeof(ValidatePushedAuthorizationRequestContext) ||
-                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0466));
-            }
-
-            if (options.RevocationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                (descriptor.ContextType == typeof(ValidateRevocationRequestContext) ||
-                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0093));
-            }
-
-            if (options.TokenEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                (descriptor.ContextType == typeof(ValidateTokenRequestContext) ||
-                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
-                descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0094));
-            }
-
-            if (options.EndUserVerificationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
-                descriptor.ContextType == typeof(ValidateEndUserVerificationRequestContext) &&
-                descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0095));
-            }
-
-            // If the degraded mode was enabled, ensure custom validation/generation handlers
-            // have been registered to deal with device/user codes validation and generation.
-
-            if (options.GrantTypes.Contains(GrantTypes.DeviceCode))
-            {
-                if (!options.Handlers.Exists(static descriptor =>
-                    descriptor.ContextType == typeof(ValidateTokenContext) &&
-                    descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                    descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0096));
-                }
-
-                if (!options.Handlers.Exists(static descriptor =>
-                    descriptor.ContextType == typeof(GenerateTokenContext) &&
-                    descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                    descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0097));
-                }
-            }
-        }
-
         // If token storage was disabled, user codes will be returned as-is by OpenIddict instead of being
         // automatically converted to reference identifiers (in this case, custom event handlers must be
         // registered to manually store the token payload in a database or cache and return a user code
@@ -470,75 +65,10 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             options.UserCodeDisplayFormat = null;
         }
 
-        else
-        {
-            if (options.UserCodeLength is < 6)
-            {
-                throw new InvalidOperationException(SR.FormatID0439(6));
-            }
-
-            if (options.UserCodeCharset.Count is < 9)
-            {
-                throw new InvalidOperationException(SR.FormatID0440(9));
-            }
-
-            if (options.UserCodeCharset.Count != options.UserCodeCharset.Distinct(StringComparer.Ordinal).Count())
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0436));
-            }
-
-            foreach (var character in options.UserCodeCharset)
-            {
-#if NET
-                // On supported platforms, ensure each character added to the
-                // charset represents exactly one grapheme cluster/text element.
-                var enumerator = StringInfo.GetTextElementEnumerator(character);
-                if (!enumerator.MoveNext() || enumerator.MoveNext())
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0437));
-                }
-#else
-                // On unsupported platforms, prevent non-ASCII characters from being used.
-                if (character.Any(static character => (uint) character > '\x007f'))
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0438));
-                }
-#endif
-            }
-
-            if (string.IsNullOrEmpty(options.UserCodeDisplayFormat))
-            {
-                var builder = new StringBuilder();
-
-                var count = options.UserCodeLength % 5 is 0 ? 5 :
-                            options.UserCodeLength % 4 is 0 ? 4 :
-                            options.UserCodeLength % 3 is 0 ? 3 :
-                            options.UserCodeLength % 2 is 0 ? 2 : 1;
-
-                for (var index = 0; index < options.UserCodeLength; index++)
-                {
-                    if (index is > 0 && index % count is 0)
-                    {
-                        builder.Append(Separators.Dash[0]);
-                    }
-
-                    builder.Append('{');
-                    builder.Append(index);
-                    builder.Append('}');
-                }
-
-                options.UserCodeDisplayFormat = builder.ToString();
-            }
-
-            if (options.UserCodeCharset.Contains("-", StringComparer.Ordinal) &&
-                options.UserCodeDisplayFormat.Any(static character => character is '-'))
-            {
-                throw new InvalidOperationException(SR.FormatID0441('-'));
-            }
-        }
-
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort(static (left, right) => left.Order.CompareTo(right.Order));
+
+        var now = options.TimeProvider.GetUtcNow().LocalDateTime;
 
         // Sort the encryption and signing credentials.
         options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
@@ -629,6 +159,467 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
             return null;
         }
+    }
+
+    /// <inheritdoc/>
+    public ValidateOptionsResult Validate(string? name, OpenIddictServerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        if (options.JsonWebTokenHandler is null)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0075));
+        }
+
+        // Ensure at least one flow has been enabled.
+        if (options.GrantTypes.Count is 0 && options.ResponseTypes.Count is 0)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0076));
+        }
+
+        var uris = options.AuthorizationEndpointUris.Distinct()
+            .Concat(options.ConfigurationEndpointUris.Distinct())
+            .Concat(options.JsonWebKeySetEndpointUris.Distinct())
+            .Concat(options.DeviceAuthorizationEndpointUris.Distinct())
+            .Concat(options.IntrospectionEndpointUris.Distinct())
+            .Concat(options.EndSessionEndpointUris.Distinct())
+            .Concat(options.PushedAuthorizationEndpointUris.Distinct())
+            .Concat(options.RevocationEndpointUris.Distinct())
+            .Concat(options.TokenEndpointUris.Distinct())
+            .Concat(options.UserInfoEndpointUris.Distinct())
+            .Concat(options.EndUserVerificationEndpointUris.Distinct())
+            .ToList();
+
+        // Ensure endpoint URIs are unique across endpoints.
+        if (uris.Count != uris.Distinct().Count())
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0285));
+        }
+
+        // Ensure the authorization endpoint has been enabled when
+        // the authorization code or implicit grants are supported.
+        if (options.AuthorizationEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
+                                                             options.GrantTypes.Contains(GrantTypes.Implicit)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0077));
+        }
+
+        // Ensure the device authorization endpoint has been enabled when the device grant is supported.
+        if (options.DeviceAuthorizationEndpointUris.Count is 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0078));
+        }
+
+        // Ensure the token endpoint has been enabled when the authorization code,
+        // client credentials, device, password or refresh token grants are supported.
+        if (options.TokenEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
+                                                     options.GrantTypes.Contains(GrantTypes.ClientCredentials) ||
+                                                     options.GrantTypes.Contains(GrantTypes.DeviceCode) ||
+                                                     options.GrantTypes.Contains(GrantTypes.Password) ||
+                                                     options.GrantTypes.Contains(GrantTypes.RefreshToken)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0079));
+        }
+
+        // Ensure the end-user verification endpoint has been enabled when the device grant is supported.
+        if (options.EndUserVerificationEndpointUris.Count is 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0080));
+        }
+
+        // Ensure the device grant is allowed when the device authorization endpoint is enabled.
+        if (options.DeviceAuthorizationEndpointUris.Count is > 0 && !options.GrantTypes.Contains(GrantTypes.DeviceCode))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0084));
+        }
+
+        // Ensure the grant types/response types configuration is consistent.
+        foreach (var type in options.ResponseTypes)
+        {
+            var types = type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
+            if (types.Contains(ResponseTypes.Code) && !options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
+            {
+                builder.AddError(SR.FormatID0281(ResponseTypes.Code));
+            }
+
+            if (types.Contains(ResponseTypes.IdToken) && !options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                builder.AddError(SR.FormatID0282(ResponseTypes.IdToken));
+            }
+
+            if (types.Contains(ResponseTypes.Token) && !options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                builder.AddError(SR.FormatID0282(ResponseTypes.Token));
+            }
+        }
+
+        // Ensure at least one client authentication method is enabled (unless no non-interactive endpoint was enabled).
+        if (options.ClientAuthenticationMethods.Count is 0 && (options.DeviceAuthorizationEndpointUris.Count is not 0 ||
+                                                               options.IntrospectionEndpointUris.Count       is not 0 ||
+                                                               options.PushedAuthorizationEndpointUris.Count is not 0 ||
+                                                               options.RevocationEndpointUris.Count          is not 0 ||
+                                                               options.TokenEndpointUris.Count               is not 0))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0419));
+        }
+
+        // Ensure the client authentication methods/client assertion types configuration is consistent.
+        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+           !options.ClientAssertionTypes.Contains(ClientAssertionTypes.JwtBearer))
+        {
+            builder.AddError(SR.FormatID0420(ClientAssertionTypes.JwtBearer, ClientAuthenticationMethods.PrivateKeyJwt));
+        }
+
+        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.ClientSecretJwt) &&
+           !options.ClientAssertionTypes.Contains(ClientAssertionTypes.JwtBearer))
+        {
+            builder.AddError(SR.FormatID0420(ClientAssertionTypes.JwtBearer, ClientAuthenticationMethods.ClientSecretJwt));
+        }
+
+        // If the tls_client_auth or self_signed_tls_client_auth methods are enabled, ensure a chain policy has been set.
+        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
+            options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is null)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0505));
+        }
+
+        if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
+            options.SelfSignedTlsClientAuthenticationPolicy is null)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0506));
+        }
+
+        // Ensure at least one supported subject type is listed.
+        if (options.SubjectTypes.Count is 0)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0421));
+        }
+
+        // Ensure reference tokens support was not enabled when token storage is disabled.
+        if (options.DisableTokenStorage && (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0083));
+        }
+
+        // Ensure authorization or end session request caching was not enabled when token storage is disabled.
+        if (options.DisableTokenStorage && (options.EnableAuthorizationRequestCaching || options.EnableEndSessionRequestCaching))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0465));
+        }
+
+        // Prevent the device authorization flow from being used if token storage is disabled, unless the degraded
+        // mode has been enabled (in this case, additional checks will be enforced later to require custom handlers).
+        if (options.DisableTokenStorage && !options.EnableDegradedMode && options.GrantTypes.Contains(GrantTypes.DeviceCode))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0367));
+        }
+
+        // Ensure at least one subject token type is configured when the token exchange grant is enabled.
+        if (options.SubjectTokenTypes.Count is 0 && options.GrantTypes.Contains(GrantTypes.TokenExchange))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0486));
+        }
+
+        // Prevent internal token types from being used as subject, actor or requested token types.
+        if (options.SubjectTokenTypes.Any(static type => type.StartsWith(
+            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0487));
+        }
+
+        if (options.ActorTokenTypes.Any(static type => type.StartsWith(
+            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0488));
+        }
+
+        if (options.RequestedTokenTypes.Any(static type => type.StartsWith(
+            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0489));
+        }
+
+        // Ensure that the default requested token type (used when the caller doesn't specify a
+        // requested_token_type parameter during an OAuth 2.0 token exchange flow) was configured
+        // and that the configured value is also present in the list of allowed token types.
+        if (string.IsNullOrEmpty(options.DefaultRequestedTokenType))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0490));
+        }
+
+        if (options.DefaultRequestedTokenType.StartsWith(
+            TokenTypeIdentifiers.Prefixes.OpenIddict, StringComparison.OrdinalIgnoreCase))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0491));
+        }
+
+        if (!options.RequestedTokenTypes.Contains(options.DefaultRequestedTokenType))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0492));
+        }
+
+        if (options.EncryptionCredentials.Count is 0)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0085));
+        }
+
+        if (!options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0086));
+        }
+
+        var now = options.TimeProvider.GetUtcNow().LocalDateTime;
+
+        // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
+        if (options.EncryptionCredentials.TrueForAll(credentials =>
+            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+           (certificate.NotBefore > now || certificate.NotAfter < now)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0087));
+        }
+
+        // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
+        if (options.SigningCredentials.TrueForAll(credentials =>
+            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+           (certificate.NotBefore > now || certificate.NotAfter < now)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0088));
+        }
+
+        // When set, the mTLS endpoint aliases MUST represent absolute HTTPS URLs.
+        if (!TryValidateMtlsEndpointAlias(options.MtlsDeviceAuthorizationEndpointAliasUri) ||
+            !TryValidateMtlsEndpointAlias(options.MtlsIntrospectionEndpointAliasUri)       ||
+            !TryValidateMtlsEndpointAlias(options.MtlsPushedAuthorizationEndpointAliasUri) ||
+            !TryValidateMtlsEndpointAlias(options.MtlsRevocationEndpointAliasUri)          ||
+            !TryValidateMtlsEndpointAlias(options.MtlsTokenEndpointAliasUri)               ||
+            !TryValidateMtlsEndpointAlias(options.MtlsUserInfoEndpointAliasUri))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0499));
+        }
+
+        // Prevent the mTLS aliases from being configured if the corresponding endpoints haven't been enabled.
+        if ((options.MtlsDeviceAuthorizationEndpointAliasUri is not null && options.DeviceAuthorizationEndpointUris.Count is 0) ||
+            (options.MtlsIntrospectionEndpointAliasUri       is not null && options.IntrospectionEndpointUris.Count       is 0) ||
+            (options.MtlsPushedAuthorizationEndpointAliasUri is not null && options.PushedAuthorizationEndpointUris.Count is 0) ||
+            (options.MtlsRevocationEndpointAliasUri          is not null && options.RevocationEndpointUris.Count          is 0) ||
+            (options.MtlsTokenEndpointAliasUri               is not null && options.TokenEndpointUris.Count               is 0) ||
+            (options.MtlsUserInfoEndpointAliasUri            is not null && options.UserInfoEndpointUris.Count            is 0))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0510));
+        }
+
+        // If at least one mTLS endpoint alias was configured, require that the issuer be explicitly set
+        // to ensure it is not dynamically computed based on the current URI, as this would result in two
+        // different issuers being used (one pointing to the mTLS domain and one pointing to the regular one).
+        if (options.Issuer is null && (options.MtlsDeviceAuthorizationEndpointAliasUri is not null ||
+                                       options.MtlsIntrospectionEndpointAliasUri       is not null ||
+                                       options.MtlsPushedAuthorizationEndpointAliasUri is not null ||
+                                       options.MtlsRevocationEndpointAliasUri          is not null ||
+                                       options.MtlsTokenEndpointAliasUri               is not null ||
+                                       options.MtlsUserInfoEndpointAliasUri            is not null))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0500));
+        }
+
+        // Ensure no end certificate was included in the PKI TLS client authentication
+        // chain policy and that none of the certificates contains a private key.
+        if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy is not null)
+        {
+            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.ExtraStore.Cast<X509Certificate2>()
+                .Any(static certificate =>
+                    !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
+                    !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0501));
+            }
+
+            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.ExtraStore.Cast<X509Certificate2>()
+                .Any(static certificate => certificate.HasPrivateKey))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0511));
+            }
+
+#if NET
+            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>()
+                .Any(static certificate =>
+                    !OpenIddictHelpers.IsCertificateAuthority(certificate) ||
+                    !OpenIddictHelpers.HasKeyUsage(certificate, X509KeyUsageFlags.KeyCertSign)))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0501));
+            }
+
+            if (options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.CustomTrustStore.Cast<X509Certificate2>()
+                .Any(static certificate => certificate.HasPrivateKey))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0511));
+            }
+#endif
+        }
+
+        // Ensure the self-signed TLS client authentication chain policy doesn't contain any certificate.
+        if (options.SelfSignedTlsClientAuthenticationPolicy is not null)
+        {
+            if (options.SelfSignedTlsClientAuthenticationPolicy.ExtraStore.Count is not 0)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0502));
+            }
+
+#if NET
+            if (options.SelfSignedTlsClientAuthenticationPolicy.CustomTrustStore.Count is not 0)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0502));
+            }
+#endif
+        }
+
+        if (options.EnableDegradedMode)
+        {
+            // If the degraded mode was enabled, ensure custom validation handlers
+            // have been registered for the endpoints that require manual validation.
+
+            if (options.AuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0089));
+            }
+
+            if (options.DeviceAuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                (descriptor.ContextType == typeof(ValidateDeviceAuthorizationRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0090));
+            }
+
+            if (options.IntrospectionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                (descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0091));
+            }
+
+            if (options.EndSessionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateEndSessionRequestContext) &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0092));
+            }
+
+            if (options.PushedAuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                (descriptor.ContextType == typeof(ValidatePushedAuthorizationRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0466));
+            }
+
+            if (options.RevocationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                (descriptor.ContextType == typeof(ValidateRevocationRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0093));
+            }
+
+            if (options.TokenEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                (descriptor.ContextType == typeof(ValidateTokenRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0094));
+            }
+
+            if (options.EndUserVerificationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateEndUserVerificationRequestContext) &&
+                descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0095));
+            }
+
+            // If the degraded mode was enabled, ensure custom validation/generation handlers
+            // have been registered to deal with device/user codes validation and generation.
+
+            if (options.GrantTypes.Contains(GrantTypes.DeviceCode))
+            {
+                if (!options.Handlers.Exists(static descriptor =>
+                    descriptor.ContextType == typeof(ValidateTokenContext) &&
+                    descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                    descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                {
+                    builder.AddError(SR.GetResourceString(SR.ID0096));
+                }
+
+                if (!options.Handlers.Exists(static descriptor =>
+                    descriptor.ContextType == typeof(GenerateTokenContext) &&
+                    descriptor.Type is OpenIddictServerHandlerType.Custom &&
+                    descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                {
+                    builder.AddError(SR.GetResourceString(SR.ID0097));
+                }
+            }
+        }
+
+        if (!options.DisableTokenStorage)
+        {
+            if (options.UserCodeLength is < 6)
+            {
+                builder.AddError(SR.FormatID0439(6));
+            }
+
+            if (options.UserCodeCharset.Count is < 9)
+            {
+                builder.AddError(SR.FormatID0440(9));
+            }
+
+            if (options.UserCodeCharset.Count != options.UserCodeCharset.Distinct(StringComparer.Ordinal).Count())
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0436));
+            }
+
+#if NET
+            // On supported platforms, ensure each character added to the
+            // charset represents exactly one grapheme cluster/text element.
+            if (options.UserCodeCharset.Any(static character => !ValidateUserCodeCharacter(character)))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0437));
+            }
+#else
+            // On unsupported platforms, prevent non-ASCII characters from being used.
+            if (options.UserCodeCharset.Any(static character => character.Any(static character => (uint) character > '\x007f')))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0438));
+            }
+#endif
+
+            if (!string.IsNullOrEmpty(options.UserCodeDisplayFormat) &&
+                options.UserCodeCharset.Contains("-", StringComparer.Ordinal) &&
+                options.UserCodeDisplayFormat.Any(static character => character is '-'))
+            {
+                builder.AddError(SR.FormatID0441('-'));
+            }
+
+#if NET
+            static bool ValidateUserCodeCharacter(string character)
+            {
+                var enumerator = StringInfo.GetTextElementEnumerator(character);
+                return enumerator.MoveNext() && !enumerator.MoveNext();
+            }
+#endif
+        }
+
+        return builder.Build();
 
         static bool TryValidateMtlsEndpointAlias(Uri? uri) => uri is null ||
           (uri.IsAbsoluteUri && string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));

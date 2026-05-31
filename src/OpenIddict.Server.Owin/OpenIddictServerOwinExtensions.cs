@@ -53,10 +53,10 @@ public static class OpenIddictServerOwinExtensions
             IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerOwinConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IPostConfigureOptions<OpenIddictServerOwinOptions>, OpenIddictServerOwinConfiguration>());
+            IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerOwinConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerOwinConfiguration>());
+            IValidateOptions<OpenIddictServerOwinOptions>, OpenIddictServerOwinConfiguration>());
 
         return new OpenIddictServerOwinBuilder(builder.Services);
     }

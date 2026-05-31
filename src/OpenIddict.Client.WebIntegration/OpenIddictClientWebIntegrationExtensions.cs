@@ -38,15 +38,23 @@ public static partial class OpenIddictClientWebIntegrationExtensions
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>());
 
-        // Note: the IPostConfigureOptions<OpenIddictClientOptions> service responsible for populating
-        // the client registrations MUST be registered before OpenIddictClientConfiguration to ensure
-        // the registrations are correctly populated before being validated.
+        // Note: the IPostConfigureOptions<OpenIddictClientOptions> and IValidateOptions<OpenIddictClientOptions>
+        // services responsible for populating and validating the client registrations MUST be registered before
+        // OpenIddictClientConfiguration to ensure the registrations are correctly populated and validated.
         if (!builder.Services.Any(static descriptor =>
             descriptor.ServiceType == typeof(IPostConfigureOptions<OpenIddictClientOptions>) &&
             descriptor.ImplementationType == typeof(OpenIddictClientWebIntegrationConfiguration)))
         {
             builder.Services.Insert(0, ServiceDescriptor.Singleton<
                 IPostConfigureOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>());
+        }
+
+        if (!builder.Services.Any(static descriptor =>
+            descriptor.ServiceType == typeof(IValidateOptions<OpenIddictClientOptions>) &&
+            descriptor.ImplementationType == typeof(OpenIddictClientWebIntegrationConfiguration)))
+        {
+            builder.Services.Insert(0, ServiceDescriptor.Singleton<
+                IValidateOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>());
         }
 
         return new OpenIddictClientWebIntegrationBuilder(builder.Services);

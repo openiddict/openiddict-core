@@ -32,7 +32,7 @@ public static class OpenIddictValidationServerIntegrationExtensions
             IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationServerIntegrationConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IPostConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationServerIntegrationConfiguration>());
+            IValidateOptions<OpenIddictValidationOptions>, OpenIddictValidationServerIntegrationConfiguration>());
 
         return new OpenIddictValidationServerIntegrationBuilder(builder.Services);
     }

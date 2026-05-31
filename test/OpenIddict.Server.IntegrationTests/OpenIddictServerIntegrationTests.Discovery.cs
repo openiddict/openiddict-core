@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
@@ -611,12 +613,17 @@ public abstract partial class OpenIddictServerIntegrationTests
     public async Task HandleConfigurationRequest_ConfiguredGrantTypesAreReturned()
     {
         // Arrange
-        await using var server = await CreateServerAsync(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+        await using var server = await CreateServerAsync(options =>
         {
-            options.GrantTypes.Clear();
-            options.GrantTypes.Add(GrantTypes.AuthorizationCode);
-            options.GrantTypes.Add(GrantTypes.Password);
-        }));
+            options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+            {
+                options.GrantTypes.Clear();
+                options.GrantTypes.Add(GrantTypes.AuthorizationCode);
+                options.GrantTypes.Add(GrantTypes.Password);
+            });
+
+            options.Services.RemoveAll<IValidateOptions<OpenIddictServerOptions>>();
+        });
 
         await using var client = await server.CreateClientAsync();
 

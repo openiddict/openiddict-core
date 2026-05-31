@@ -20,65 +20,32 @@ namespace OpenIddict.Client;
 /// Contains the methods required to ensure that the OpenIddict client configuration is valid.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
+public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>,
+                                                    IValidateOptions<OpenIddictClientOptions>
 {
-    private readonly OpenIddictClientService _service;
     private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
     /// </summary>
     /// <param name="provider">The service provider.</param>
-    /// <param name="service">The OpenIddict client service.</param>
-    public OpenIddictClientConfiguration(IServiceProvider provider, OpenIddictClientService service)
-    {
-        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-        _service = service ?? throw new ArgumentNullException(nameof(service));
-    }
+    public OpenIddictClientConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (options.JsonWebTokenHandler is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
-        }
-
         options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
 
         foreach (var registration in options.Registrations)
         {
-            if (registration.Issuer is null)
-            {
-                throw string.IsNullOrEmpty(registration.ProviderType) ?
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0405)) :
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0411));
-            }
-
-            if (!registration.Issuer.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(registration.Issuer))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
-            }
-
-            if (!string.IsNullOrEmpty(registration.Issuer.Fragment) || !string.IsNullOrEmpty(registration.Issuer.Query))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
-            }
-
             // If no explicit registration identifier was set, compute a stable
             // hash based on the issuer URI and the provider name, if available.
-            if (string.IsNullOrEmpty(registration.RegistrationId))
+            if (registration.Issuer is not null && string.IsNullOrEmpty(registration.RegistrationId))
             {
                 registration.RegistrationId = ComputeDefaultRegistrationId(registration);
-            }
-
-            // Ensure the registration identifier doesn't contain U+001E or U+001F separators as they are
-            // used by the System.Net.Http integration to separate properties in the HTTP client names.
-            else if (registration.RegistrationId.Any(static character => character is '\u001e' or '\u001f'))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0455));
             }
 
             // If no client type was explicitly set, assume the client is confidential if a client secret
@@ -96,30 +63,19 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             {
                 if (registration.Configuration is not null)
                 {
-                    if (registration.Configuration.Issuer is not null &&
-                        registration.Configuration.Issuer != registration.Issuer)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0395));
-                    }
-
                     registration.Configuration.Issuer ??= registration.Issuer;
                     registration.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(registration.Configuration);
                 }
 
-                else
+                else if (registration.Issuer is not null)
                 {
-                    if (!options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
-                        !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyJsonWebKeySetRequestContext)))
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0313));
-                    }
-
-                    registration.ConfigurationEndpoint = OpenIddictHelpers.CreateAbsoluteUri(
+                    registration.ConfigurationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                         registration.Issuer,
                         registration.ConfigurationEndpoint ?? new Uri(".well-known/openid-configuration", UriKind.Relative));
 
                     registration.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(
-                        registration.ConfigurationEndpoint.AbsoluteUri, new OpenIddictClientRetriever(_service, registration))
+                        registration.ConfigurationEndpoint.AbsoluteUri,
+                        new OpenIddictClientRetriever(_provider.GetRequiredService<OpenIddictClientService>(), registration))
                     {
                         AutomaticRefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultAutomaticRefreshInterval,
                         RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval
@@ -145,75 +101,6 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             .Where(uri => !options.PostLogoutRedirectionEndpointUris.Contains(uri))
             .Distinct()
             .ToList());
-
-        // Ensure at least one flow has been enabled.
-        if (options.GrantTypes.Count is 0 && options.ResponseTypes.Count is 0)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
-        }
-
-        var uris = options.RedirectionEndpointUris.Distinct()
-            .Concat(options.PostLogoutRedirectionEndpointUris.Distinct())
-            .ToList();
-
-        // Ensure endpoint URIs are unique across endpoints.
-        if (uris.Count != uris.Distinct().Count())
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0285));
-        }
-
-        // Ensure the redirection endpoint has been enabled when the authorization code or implicit grants are supported.
-        if (options.RedirectionEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
-                                                           options.GrantTypes.Contains(GrantTypes.Implicit)))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0356));
-        }
-
-        // Ensure the grant types/response types configuration is consistent.
-        foreach (var type in options.ResponseTypes)
-        {
-            var types = type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
-            if (types.Contains(ResponseTypes.Code) && !options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
-            {
-                throw new InvalidOperationException(SR.FormatID0281(ResponseTypes.Code));
-            }
-
-            if (types.Contains(ResponseTypes.IdToken) && !options.GrantTypes.Contains(GrantTypes.Implicit))
-            {
-                throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.IdToken));
-            }
-
-            if (types.Contains(ResponseTypes.Token) && !options.GrantTypes.Contains(GrantTypes.Implicit))
-            {
-                throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.Token));
-            }
-        }
-
-        // When the redirection or post-logout redirection endpoint has been enabled, ensure signing
-        // and encryption credentials have been provided as they are required to protect state tokens.
-        if (options.RedirectionEndpointUris.Count is not 0 || options.PostLogoutRedirectionEndpointUris.Count is not 0)
-        {
-            if (options.EncryptionCredentials.Count is 0)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0357));
-            }
-
-            if (options.SigningCredentials.Count is 0)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0358));
-            }
-        }
-
-        // Ensure registration identifiers are not used in multiple client registrations.
-        //
-        // Note: a string comparer ignoring casing is deliberately used to prevent two
-        // registrations using the same identifier with a different casing from being added.
-        if (options.Registrations.Count != options.Registrations.Select(registration => registration.RegistrationId)
-                                                                .Distinct(StringComparer.OrdinalIgnoreCase)
-                                                                .Count())
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0347));
-        }
 
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
@@ -333,6 +220,146 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 var buffer = Encoding.UTF8.GetBytes(input);
                 algorithm.TransformBlock(buffer, 0, buffer.Length, outputBuffer: null, outputOffset: 0);
             }
+        }
+    }
+
+    /// <inheritdoc/>
+    public ValidateOptionsResult Validate(string? name, OpenIddictClientOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        if (options.JsonWebTokenHandler is null)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0075));
+        }
+
+        foreach (var registration in options.Registrations)
+        {
+            if (string.IsNullOrEmpty(registration.RegistrationId))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0521));
+            }
+
+            // Ensure the registration identifier doesn't contain U+001E or U+001F separators as they are
+            // used by the System.Net.Http integration to separate properties in the HTTP client names.
+            else if (registration.RegistrationId.Any(static character => character is '\u001e' or '\u001f'))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0455));
+            }
+
+            if (registration.Issuer is null)
+            {
+                builder.AddError(string.IsNullOrEmpty(registration.ProviderType)
+                    ? SR.GetResourceString(SR.ID0405)
+                    : SR.GetResourceString(SR.ID0411));
+            }
+
+            else if (!registration.Issuer.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(registration.Issuer))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0136));
+            }
+
+            else if (!string.IsNullOrEmpty(registration.Issuer.Fragment) || !string.IsNullOrEmpty(registration.Issuer.Query))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0137));
+            }
+
+            // If an issuer was attached to the static configuration, ensure it matches the issuer specified in the client registration.
+            if (registration.Configuration?.Issuer is not null && registration.Configuration.Issuer != registration.Issuer)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0395));
+            }
+
+            if (registration.ConfigurationManager is null)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0522));
+            }
+
+            // If a non-static configuration manager is used, ensure that the required discovery handlers are registered.
+            else if (!typeof(StaticConfigurationManager<OpenIddictConfiguration>).IsAssignableFrom(registration.ConfigurationManager.GetType()) &&
+                    (!options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
+                     !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyJsonWebKeySetRequestContext))))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0313));
+            }
+        }
+
+        // Ensure at least one flow has been enabled.
+        if (options.GrantTypes.Count is 0 && options.ResponseTypes.Count is 0)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0076));
+        }
+
+        // Ensure endpoint URIs are unique across endpoints.
+        if (!ValidateUniqueEndpointUris(options))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0285));
+        }
+
+        // Ensure the redirection endpoint has been enabled when the authorization code or implicit grants are supported.
+        if (options.RedirectionEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
+                                                           options.GrantTypes.Contains(GrantTypes.Implicit)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0356));
+        }
+
+        // Ensure the grant types/response types configuration is consistent.
+        foreach (var type in options.ResponseTypes)
+        {
+            var types = type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
+            if (types.Contains(ResponseTypes.Code) && !options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
+            {
+                builder.AddError(SR.FormatID0281(ResponseTypes.Code));
+            }
+
+            if (types.Contains(ResponseTypes.IdToken) && !options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                builder.AddError(SR.FormatID0282(ResponseTypes.IdToken));
+            }
+
+            if (types.Contains(ResponseTypes.Token) && !options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                builder.AddError(SR.FormatID0282(ResponseTypes.Token));
+            }
+        }
+
+        // When the redirection or post-logout redirection endpoint has been enabled, ensure signing
+        // and encryption credentials have been provided as they are required to protect state tokens.
+        if (options.RedirectionEndpointUris.Count is not 0 || options.PostLogoutRedirectionEndpointUris.Count is not 0)
+        {
+            if (options.EncryptionCredentials.Count is 0)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0357));
+            }
+
+            if (options.SigningCredentials.Count is 0)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0358));
+            }
+        }
+
+        // Ensure registration identifiers are not used in multiple client registrations.
+        //
+        // Note: a string comparer ignoring casing is deliberately used to prevent two
+        // registrations using the same identifier with a different casing from being added.
+        if (options.Registrations.Count != options.Registrations.Select(registration => registration.RegistrationId)
+                                                                .Distinct(StringComparer.OrdinalIgnoreCase)
+                                                                .Count())
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0347));
+        }
+
+        return builder.Build();
+
+        static bool ValidateUniqueEndpointUris(OpenIddictClientOptions options)
+        {
+            var uris = options.RedirectionEndpointUris.Distinct()
+                .Concat(options.PostLogoutRedirectionEndpointUris.Distinct())
+                .ToList();
+
+            return uris.Count == uris.Distinct().Count();
         }
     }
 }

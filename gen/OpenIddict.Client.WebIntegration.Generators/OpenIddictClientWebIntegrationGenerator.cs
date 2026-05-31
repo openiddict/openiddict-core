@@ -908,6 +908,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
             var template = Template.Parse(@"#nullable enable
 #pragma warning disable CS0618
 
+using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -926,7 +927,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
         ArgumentNullException.ThrowIfNull(registration);
 
         {{~ for provider in providers ~}}
-        {{~ if for.index == 0 ~}}
+        {{~ if for.first ~}}
         if (registration.ProviderType is ProviderTypes.{{ provider.name }})
         {{~ else ~}}
         else if (registration.ProviderType is ProviderTypes.{{ provider.name }})
@@ -934,7 +935,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
         {
             if (registration.ProviderSettings is not OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0406));
+                return;
             }
 
             {{~ for setting in provider.settings ~}}
@@ -947,7 +948,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             {{~ else if setting.type == 'Uri' ~}} 
             if (settings.{{ setting.property_name }} is null)
             {
-                settings.{{ setting.property_name }} = new Uri(""{{ setting.default_value }}"", UriKind.RelativeOrAbsolute);
+                settings.{{ setting.property_name }} = CreateUri(""{{ setting.default_value }}"", UriKind.RelativeOrAbsolute);
             }
             {{~ else if setting.type == 'Boolean' ~}}
             if (settings.{{ setting.property_name }} is null)
@@ -995,26 +996,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             }
             {{~ end ~}}
 
-            {{~ for setting in provider.settings ~}}
-            {{~ if setting.required ~}}
-            {{~ if setting.type == 'String' ~}}
-            if (string.IsNullOrEmpty(settings.{{ setting.property_name }}))
-            {{~ else ~}}
-            if (settings.{{ setting.property_name }} is null)
-            {{~ end ~}}
-            {
-                throw new InvalidOperationException(SR.FormatID0332(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
-            }
-            {{~ end ~}}
-
-            {{~ if setting.type == 'Uri' ~}}
-            if (!settings.{{ setting.property_name }}.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(settings.{{ setting.property_name }}))
-            {
-                throw new InvalidOperationException(SR.FormatID0350(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
-            }
-            {{~ end ~}}
-            {{~ end ~}}
-
             registration.ProviderName ??= Providers.{{ provider.name }};
             registration.ProviderDisplayName ??= ""{{ provider.display_name }}"";
 
@@ -1022,10 +1003,10 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             {
                 {{~ for environment in provider.environments ~}}
                 OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
-                    => new Uri($""{{ environment.issuer | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    => CreateUri($""{{ environment.issuer | string.replace '\'' '""' }}"", UriKind.Absolute),
                 {{~ end ~}}
 
-                _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
+                _ => null
             };
 
             registration.ConfigurationEndpoint ??= settings.Environment switch
@@ -1033,13 +1014,13 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 {{~ for environment in provider.environments ~}}
                 OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
                 {{~ if environment.configuration_endpoint ~}}
-                    => new Uri($""{{ environment.configuration_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    => CreateUri($""{{ environment.configuration_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                 {{~ else ~}}
                     => null,
                 {{~ end ~}}
                 {{~ end ~}}
 
-                _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
+                _ => null
             };
 
             registration.Configuration ??= settings.Environment switch
@@ -1049,27 +1030,27 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} => new OpenIddictConfiguration
                 {
                     {{~ if environment.configuration.authorization_endpoint ~}}
-                    AuthorizationEndpoint = new Uri($""{{ environment.configuration.authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    AuthorizationEndpoint = CreateUri($""{{ environment.configuration.authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     {{~ if environment.configuration.device_authorization_endpoint ~}}
-                    DeviceAuthorizationEndpoint = new Uri($""{{ environment.configuration.device_authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    DeviceAuthorizationEndpoint = CreateUri($""{{ environment.configuration.device_authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     {{~ if environment.configuration.introspection_endpoint ~}}
-                    IntrospectionEndpoint = new Uri($""{{ environment.configuration.introspection_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    IntrospectionEndpoint = CreateUri($""{{ environment.configuration.introspection_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     {{~ if environment.configuration.revocation_endpoint ~}}
-                    RevocationEndpoint = new Uri($""{{ environment.configuration.revocation_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    RevocationEndpoint = CreateUri($""{{ environment.configuration.revocation_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     {{~ if environment.configuration.token_endpoint ~}}
-                    TokenEndpoint = new Uri($""{{ environment.configuration.token_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    TokenEndpoint = CreateUri($""{{ environment.configuration.token_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     {{~ if environment.configuration.user_info_endpoint ~}}
-                    UserInfoEndpoint = new Uri($""{{ environment.configuration.user_info_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
+                    UserInfoEndpoint = CreateUri($""{{ environment.configuration.user_info_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     CodeChallengeMethodsSupported =
@@ -1140,7 +1121,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 {{~ end ~}}
                 {{~ end ~}}
 
-                _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
+                _ => null
             };
 
             {{~ for setting in provider.settings ~}}
@@ -1182,22 +1163,11 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
                 }
-
-                else
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
-                }
             }
             {{~ end ~}}
             {{~ if setting.type == 'SigningKey' ~}}
-            if (settings.{{ setting.property_name }} is not null)
+            if (settings.{{ setting.property_name }} is not null and not AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
             {
-                // If the signing key is an asymmetric security key, ensure it has a private key.
-                if (settings.{{ setting.property_name }} is AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
-                }
-
                 {{~ if setting.signing_algorithm ~}}
                 registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, ""{{ setting.signing_algorithm }}""));
                 {{~ else ~}}
@@ -1226,11 +1196,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha512));
                 }
-
-                else
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
-                }
                 {{~ end ~}}
             }
             {{~ end ~}}
@@ -1239,9 +1204,111 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
         {{~ end ~}}
 
-        else
+        static Uri? CreateUri(string? value, UriKind kind) => Uri.TryCreate(value, kind, out Uri? uri) ? uri : null;
+    }
+
+    public static partial IEnumerable<ValidationResult> ValidateProvider(OpenIddictClientRegistration registration)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+
+        return Execute();
+
+        IEnumerable<ValidationResult> Execute()
         {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0407));
+            {{~ for provider in providers ~}}
+            {{~ if for.index == 0 ~}}
+            if (registration.ProviderType is ProviderTypes.{{ provider.name }})
+            {{~ else ~}}
+            else if (registration.ProviderType is ProviderTypes.{{ provider.name }})
+            {{~ end ~}}
+            {
+                if (registration.ProviderSettings is not OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings)
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID0406));
+
+                    // Note: if the settings instance is missing or of the wrong type, abort any further validation.
+                    yield break;
+                }
+
+                // Ensure the specified environment is valid.
+                if (settings.Environment is not (
+                    {{~ for environment in provider.environments ~}}
+                        {{~ if !for.last ~}}
+                        OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} or
+                        {{~ else ~}}
+                        OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
+                        {{~ end ~}}
+                    {{~ end ~}}
+                ))
+                {
+                    yield return new ValidationResult(SR.FormatID0194(nameof(settings.Environment)));
+                }
+
+                {{~ for setting in provider.settings ~}}
+                {{~ if setting.required ~}}
+                {{~ if setting.type == 'String' ~}}
+                if (string.IsNullOrEmpty(settings.{{ setting.property_name }}))
+                {{~ else ~}}
+                if (settings.{{ setting.property_name }} is null)
+                {{~ end ~}}
+                {
+                    yield return new ValidationResult(SR.FormatID0332(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
+                }
+                {{~ end ~}}
+
+                {{~ if setting.type == 'Uri' ~}}
+                else if (!settings.{{ setting.property_name }}.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(settings.{{ setting.property_name }}))
+                {
+                    yield return new ValidationResult(SR.FormatID0350(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
+                }
+                {{~ end ~}}
+                {{~ end ~}}
+
+                {{~ for setting in provider.settings ~}}
+                {{~ if setting.type == 'SigningCertificate' ~}}
+                if (settings.{{ setting.property_name }} is not null)
+                {
+                    var key = new X509SecurityKey(settings.{{ setting.property_name }});
+                    if (!key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256)   &&
+                        !key.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256)  &&
+                        !key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
+                        !key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
+                        !key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                    {
+                        yield return new ValidationResult(SR.GetResourceString(SR.ID0068));
+                    }
+                }
+                {{~ end ~}}
+                {{~ if setting.type == 'SigningKey' ~}}
+                if (settings.{{ setting.property_name }} is not null)
+                {
+                    // If the signing key is an asymmetric security key, ensure it has a private key.
+                    if (settings.{{ setting.property_name }} is AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
+                    {
+                        yield return new ValidationResult(SR.GetResourceString(SR.ID0067));
+                    }
+
+                    {{~ if !setting.signing_algorithm ~}}
+                    if (!settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256)   &&
+                        !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256)  &&
+                        !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
+                        !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
+                        !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                    {
+                        yield return new ValidationResult(SR.GetResourceString(SR.ID0068));
+                    }
+                    {{~ end ~}}
+                }
+                {{~ end ~}}
+                {{~ end ~}}
+            }
+
+            {{~ end ~}}
+
+            else
+            {
+                yield return new ValidationResult(SR.GetResourceString(SR.ID0407));
+            }
         }
     }
 }

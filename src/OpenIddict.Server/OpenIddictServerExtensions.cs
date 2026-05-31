@@ -98,9 +98,12 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireUserCodeValidated>();
         builder.Services.TryAddSingleton<RequireUserInfoRequest>();
 
-        // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
+        // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IValidateOptions<OpenIddictServerOptions>, OpenIddictServerConfiguration>());
 
         return new OpenIddictServerBuilder(builder.Services);
     }

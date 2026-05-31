@@ -81,9 +81,12 @@ public static class OpenIddictClientExtensions
         // Note: the order used here is not important, as the actual order is set in the options.
         builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
-        // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
+        // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<OpenIddictClientOptions>, OpenIddictClientConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IValidateOptions<OpenIddictClientOptions>, OpenIddictClientConfiguration>());
 
         return new OpenIddictClientBuilder(builder.Services);
     }

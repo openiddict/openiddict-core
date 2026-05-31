@@ -112,9 +112,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
 #if NET
             else if (options.CurrentValue.HttpResiliencePipeline is ResiliencePipeline<HttpResponseMessage> pipeline)
             {
-#pragma warning disable EXTEXP0001
                 builder.AdditionalHandlers.Add(new ResilienceHandler(pipeline));
-#pragma warning restore EXTEXP0001
             }
 #endif
             if (builder.PrimaryHandler is not HttpClientHandler handler)

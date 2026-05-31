@@ -17,7 +17,9 @@ namespace OpenIddict.Client.AspNetCore;
 public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
                                                               IConfigureOptions<OpenIddictClientOptions>,
                                                               IPostConfigureOptions<AuthenticationOptions>,
-                                                              IPostConfigureOptions<OpenIddictClientAspNetCoreOptions>
+                                                              IPostConfigureOptions<OpenIddictClientAspNetCoreOptions>,
+                                                              IValidateOptions<AuthenticationOptions>,
+                                                              IValidateOptions<OpenIddictClientAspNetCoreOptions>
 {
     private readonly IServiceProvider _provider;
 
@@ -33,28 +35,22 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
-        if (options.SchemeMap.TryGetValue(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
-            builder.HandlerType != typeof(OpenIddictClientAspNetCoreHandler))
+        // Register the authentication scheme handler used by the OpenIddict ASP.NET Core client integration.
+        if (!options.SchemeMap.ContainsKey(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme))
         {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0288));
+            options.AddScheme<OpenIddictClientAspNetCoreHandler>(
+                OpenIddictClientAspNetCoreDefaults.AuthenticationScheme, displayName: null);
         }
-
-        options.AddScheme<OpenIddictClientAspNetCoreHandler>(
-            OpenIddictClientAspNetCoreDefaults.AuthenticationScheme, displayName: null);
 
         // Resolve the forwarded authentication schemes managed by the OpenIddict ASP.NET Core
         // client host and add an entry for each scheme in the ASP.NET Core authentication options.
         foreach (var scheme in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientAspNetCoreOptions>>()
             .CurrentValue.ForwardedAuthenticationSchemes)
         {
-            if (options.SchemeMap.TryGetValue(scheme.Name, out builder) &&
-                builder.HandlerType != typeof(OpenIddictClientAspNetCoreForwarder))
+            if (!options.SchemeMap.ContainsKey(scheme.Name))
             {
-                throw new InvalidOperationException(SR.FormatID0414(scheme.Name));
+                options.AddScheme<OpenIddictClientAspNetCoreForwarder>(scheme.Name, scheme.DisplayName);
             }
-
-            options.AddScheme<OpenIddictClientAspNetCoreForwarder>(scheme.Name, scheme.DisplayName);
         }
     }
 
@@ -67,9 +63,9 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
         {
             foreach (var (provider, registrations) in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>()
                 .CurrentValue.Registrations
-                .Where(registration => !string.IsNullOrEmpty(registration.ProviderName))
-                .GroupBy(registration => registration.ProviderName)
-                .Select(group => (ProviderName: group.Key, Registrations: group.ToList())))
+                .Where(static registration => !string.IsNullOrEmpty(registration.ProviderName))
+                .GroupBy(static registration => registration.ProviderName)
+                .Select(static group => (ProviderName: group.Key, Registrations: group.ToList())))
             {
                 // If an explicit mapping was already added, don't overwrite it.
                 if (options.ForwardedAuthenticationSchemes.Exists(scheme =>
@@ -78,11 +74,9 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
                     continue;
                 }
 
-                // Ensure multiple client registrations don't share the same provider
-                // name when automatic authentication scheme forwarding is enabled.
                 if (registrations is not [OpenIddictClientRegistration registration])
                 {
-                    throw new InvalidOperationException(SR.FormatID0415(provider));
+                    continue;
                 }
 
                 options.ForwardedAuthenticationSchemes.Add(new AuthenticationScheme(
@@ -107,14 +101,6 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (!TryValidate(options.SchemeMap, options.DefaultAuthenticateScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
-            !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0289));
-        }
-
         // Starting in ASP.NET 7.0, the authentication stack integrates a fallback
         // mechanism to select the default scheme to use when no value is set, but
         // only if a single handler has been registered in the authentication options.
@@ -131,8 +117,44 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
         {
             options.AddScheme<IAuthenticationHandler>(Guid.NewGuid().ToString(), displayName: null);
         }
+    }
 
-        static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
+    /// <inheritdoc/>
+    public ValidateOptionsResult Validate(string? name, AuthenticationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        // Ensure the default schemes are not mapped to the OpenIddict client handler or forwarder.
+        if (!ValidateDefaultScheme(options.SchemeMap, options.DefaultAuthenticateScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultSignInScheme) ||
+            !ValidateDefaultScheme(options.SchemeMap, options.DefaultSignOutScheme))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0289));
+        }
+
+        // Ensure the main authentication scheme was not hijacked by another component
+        // and that the handler type corresponds to the OpenIddict client handler.
+        if (!ValidateHandlerType<OpenIddictClientAspNetCoreHandler>(
+            options.SchemeMap, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0288));
+        }
+
+        // Ensure the forwarded authentication schemes are mapped to the OpenIddict client forwarder.
+        foreach (var group in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientAspNetCoreOptions>>()
+            .CurrentValue.ForwardedAuthenticationSchemes
+            .GroupBy(static scheme => scheme.Name)
+            .Where(group => !ValidateHandlerType<OpenIddictClientAspNetCoreForwarder>(options.SchemeMap, group.Key)))
+        {
+            builder.AddError(SR.FormatID0414(group.Key));
+        }
+
+        return builder.Build();
+
+        static bool ValidateDefaultScheme(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
         {
             // If the scheme was not set or if it cannot be found in the map, return true.
             if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
@@ -143,5 +165,42 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
             return builder.HandlerType != typeof(OpenIddictClientAspNetCoreHandler) &&
                    builder.HandlerType != typeof(OpenIddictClientAspNetCoreForwarder);
         }
+
+        static bool ValidateHandlerType<THandler>(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
+            where THandler : IAuthenticationHandler
+        {
+            // If the scheme was not set or if it cannot be found in the map, return true.
+            if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
+            {
+                return true;
+            }
+
+            return builder.HandlerType == typeof(THandler);
+        }
+    }
+
+    /// <inheritdoc/>
+    public ValidateOptionsResult Validate(string? name, OpenIddictClientAspNetCoreOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        // Ensure multiple client registrations don't share the same provider
+        // name when automatic authentication scheme forwarding is enabled.
+        if (!options.DisableAutomaticAuthenticationSchemeForwarding)
+        {
+            foreach (var (provider, registrations) in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>()
+                .CurrentValue.Registrations
+                .Where(static registration => !string.IsNullOrEmpty(registration.ProviderName))
+                .GroupBy(static registration => registration.ProviderName)
+                .Select(static group => (ProviderName: group.Key, Registrations: group.ToList()))
+                .Where(static group => group.Registrations.Count is > 1))
+            {
+                builder.AddError(SR.FormatID0415(provider));
+            }
+        }
+
+        return builder.Build();
     }
 }

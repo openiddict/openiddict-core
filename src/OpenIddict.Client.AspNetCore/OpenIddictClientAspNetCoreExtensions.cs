@@ -49,13 +49,19 @@ public static class OpenIddictClientAspNetCoreExtensions
             IConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IPostConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>());
-
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientAspNetCoreConfiguration>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IPostConfigureOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<OpenIddictClientAspNetCoreOptions>, OpenIddictClientAspNetCoreConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IValidateOptions<AuthenticationOptions>, OpenIddictClientAspNetCoreConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IValidateOptions<OpenIddictClientAspNetCoreOptions>, OpenIddictClientAspNetCoreConfiguration>());
 
         return new OpenIddictClientAspNetCoreBuilder(builder.Services);
     }

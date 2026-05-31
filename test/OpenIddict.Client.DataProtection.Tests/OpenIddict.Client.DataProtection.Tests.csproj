@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OpenIddict.Server.DataProtection\OpenIddict.Server.DataProtection.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Client.DataProtection\OpenIddict.Client.DataProtection.csproj" />
   </ItemGroup>
 
   <ItemGroup>

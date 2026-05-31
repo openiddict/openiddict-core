@@ -17,14 +17,14 @@ namespace OpenIddict.Client.DataProtection;
 public sealed class OpenIddictClientDataProtectionConfiguration : IConfigureOptions<OpenIddictClientOptions>,
                                                                   IPostConfigureOptions<OpenIddictClientDataProtectionOptions>
 {
-    private readonly IDataProtectionProvider _dataProtectionProvider;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientDataProtectionConfiguration"/> class.
     /// </summary>
-    /// <param name="dataProtectionProvider">The ASP.NET Core Data Protection provider.</param>
-    public OpenIddictClientDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider)
-        => _dataProtectionProvider = dataProtectionProvider;
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictClientDataProtectionConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
@@ -40,6 +40,6 @@ public sealed class OpenIddictClientDataProtectionConfiguration : IConfigureOpti
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        options.DataProtectionProvider ??= _dataProtectionProvider;
+        options.DataProtectionProvider ??= _provider.GetDataProtectionProvider();
     }
 }

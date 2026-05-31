@@ -472,11 +472,10 @@ This may indicate that it was not properly registered in the dependency injectio
     <value>The realm cannot be null or empty.</value>
   </data>
   <data name="ID0108" xml:space="preserve">
-    <value>The OpenIddict ASP.NET Core server handler cannot be registered as an authentication scheme.
-This may indicate that an instance of another handler was registered with the same scheme.</value>
+    <value>The '{0}' authentication scheme already exists and cannot be registered as an authentication scheme by the OpenIddict ASP.NET Core server integration. Consider removing the conflicting authentication handler.</value>
   </data>
   <data name="ID0109" xml:space="preserve">
-    <value>The OpenIddict ASP.NET Core server handler cannot be used as the default scheme handler.
+    <value>The OpenIddict ASP.NET Core server handler cannot be used as a default authentication scheme handler.
 Make sure that neither DefaultAuthenticateScheme, DefaultChallengeScheme, DefaultForbidScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme point to an instance of the OpenIddict ASP.NET Core server handler.</value>
   </data>
   <data name="ID0110" xml:space="preserve">
@@ -685,11 +684,10 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   Error URI: {2}</value>
   </data>
   <data name="ID0164" xml:space="preserve">
-    <value>The OpenIddict ASP.NET Core validation handler cannot be registered as an authentication scheme.
-This may indicate that an instance of another handler was registered with the same scheme.</value>
+    <value>The '{0}' authentication scheme already exists and cannot be registered as an authentication scheme by the OpenIddict ASP.NET Core validation integration. Consider removing the conflicting authentication handler.</value>
   </data>
   <data name="ID0165" xml:space="preserve">
-    <value>The OpenIddict ASP.NET Core validation handler cannot be used as the default sign-in/sign-out handler.
+    <value>The OpenIddict ASP.NET Core validation handler cannot be used as a default authentication scheme handler.
 Make sure that neither DefaultSignInScheme nor DefaultSignOutScheme point to an instance of the OpenIddict ASP.NET Core validation handler.</value>
   </data>
   <data name="ID0166" xml:space="preserve">
@@ -1016,11 +1014,10 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>The payload of this authentication ticket was serialized using an unsupported formatter version.</value>
   </data>
   <data name="ID0288" xml:space="preserve">
-    <value>The OpenIddict ASP.NET Core client handler cannot be registered as an authentication scheme.
-This may indicate that an instance of another handler was registered with the same scheme.</value>
+    <value>The '{0}' authentication scheme already exists and cannot be registered as an authentication scheme by the OpenIddict ASP.NET Core client integration. Consider removing the conflicting authentication handler.</value>
   </data>
   <data name="ID0289" xml:space="preserve">
-    <value>The OpenIddict ASP.NET Core client handler cannot be used as the default authentication/sign-in/sign-out handler.
+    <value>The OpenIddict ASP.NET Core client handler cannot be used as a default authentication scheme handler.
 Make sure that neither DefaultAuthenticateScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme point to an instance of the OpenIddict ASP.NET Core client handler.</value>
   </data>
   <data name="ID0290" xml:space="preserve">
@@ -1347,7 +1344,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The default system browser couldn't be started. If the application executes inside a sandbox, make sure it is allowed to launch URIs or spawn new processes.</value>
   </data>
   <data name="ID0386" xml:space="preserve">
-    <value>An application discriminator must be manually set in the OpenIddict client system integration options when no application name is provided by the .NET generic host. To set the application discriminator, call 'services.AddOpenIddict().AddClient().UseSystemIntegration().SetApplicationDiscriminator()'.</value>
+    <value>A pipe name must be manually set in the OpenIddict client system integration options when enabling activation redirection or the built-in pipe server. To set an application discriminator from which the pipe name will be derived, call 'services.AddOpenIddict().AddClient().UseSystemIntegration().SetApplicationDiscriminator()'. Alternatively, you can directly set the pipe name using 'services.AddOpenIddict().AddClient().UseSystemIntegration().SetPipeName()'.</value>
   </data>
   <data name="ID0387" xml:space="preserve">
     <value>The type extracted from the inter-process notification ({0}) is unknown or invalid, which may indicate that different versions of the OpenIddict client are used for the same application.</value>
@@ -1877,6 +1874,15 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   </data>
   <data name="ID0520" xml:space="preserve">
     <value>The output length used for derivation of client secrets cannot be lower than {0} or higher than {1} bits.</value>
+  </data>
+  <data name="ID0521" xml:space="preserve">
+    <value>Client registrations must be assigned a unique registration identifier.</value>
+  </data>
+  <data name="ID0522" xml:space="preserve">
+    <value>Client registrations must be assigned a configuration manager.</value>
+  </data>
+  <data name="ID0523" xml:space="preserve">
+    <value>A configuration manager must be attached to the validation options.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
