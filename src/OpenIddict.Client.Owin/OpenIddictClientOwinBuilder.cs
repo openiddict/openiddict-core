@@ -4,11 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
-using Microsoft.Owin;
-using Microsoft.Owin.Infrastructure;
-using Microsoft.Owin.Security;
 using OpenIddict.Client;
 using OpenIddict.Client.Owin;
 using Owin;
