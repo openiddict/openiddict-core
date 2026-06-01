@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace OpenIddict.Client.AspNetCore;
 
@@ -19,7 +20,8 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
                                                               IPostConfigureOptions<AuthenticationOptions>,
                                                               IPostConfigureOptions<OpenIddictClientAspNetCoreOptions>,
                                                               IValidateOptions<AuthenticationOptions>,
-                                                              IValidateOptions<OpenIddictClientAspNetCoreOptions>
+                                                              IValidateOptions<OpenIddictClientAspNetCoreOptions>,
+                                                              IOptionsChangeTokenSource<OpenIddictClientAspNetCoreOptions>
 {
     private readonly IServiceProvider _provider;
 
@@ -203,4 +205,15 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
 
         return builder.Build();
     }
+
+    /// <inheritdoc/>
+    IChangeToken IOptionsChangeTokenSource<OpenIddictClientAspNetCoreOptions>.GetChangeToken() => new CompositeChangeToken(
+    [
+        // Force the options to be re-evaluated when the related instances from which they are populated are changed.
+        .. from source in _provider.GetServices<IOptionsChangeTokenSource<OpenIddictClientOptions>>()
+           select source.GetChangeToken()
+    ]);
+
+    /// <inheritdoc/>
+    string? IOptionsChangeTokenSource<OpenIddictClientAspNetCoreOptions>.Name => Options.DefaultName;
 }

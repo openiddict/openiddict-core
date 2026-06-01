@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using OpenIddict.Server;
 
 namespace OpenIddict.Validation.ServerIntegration;
@@ -16,7 +17,8 @@ namespace OpenIddict.Validation.ServerIntegration;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
-                                                                         IValidateOptions<OpenIddictValidationOptions>
+                                                                         IValidateOptions<OpenIddictValidationOptions>,
+                                                                         IOptionsChangeTokenSource<OpenIddictValidationOptions>
 {
     private readonly IServiceProvider _provider;
 
@@ -87,4 +89,15 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
 
         return builder.Build();
     }
+
+    /// <inheritdoc/>
+    IChangeToken IOptionsChangeTokenSource<OpenIddictValidationOptions>.GetChangeToken() => new CompositeChangeToken(
+    [
+        // Force the options to be re-evaluated when the related instances from which they are populated are changed.
+        .. from source in _provider.GetServices<IOptionsChangeTokenSource<OpenIddictServerOptions>>()
+           select source.GetChangeToken()
+    ]);
+
+    /// <inheritdoc/>
+    string? IOptionsChangeTokenSource<OpenIddictValidationOptions>.Name => Options.DefaultName;
 }

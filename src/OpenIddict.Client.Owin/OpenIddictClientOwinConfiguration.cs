@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Owin;
 
 namespace OpenIddict.Client.Owin;
@@ -17,7 +18,8 @@ namespace OpenIddict.Client.Owin;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenIddictClientOptions>,
                                                         IPostConfigureOptions<OpenIddictClientOwinOptions>,
-                                                        IValidateOptions<OpenIddictClientOwinOptions>
+                                                        IValidateOptions<OpenIddictClientOwinOptions>,
+                                                        IOptionsChangeTokenSource<OpenIddictClientOwinOptions>
 {
     private readonly IServiceProvider _provider;
 
@@ -117,4 +119,15 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
 
         return builder.Build();
     }
+
+    /// <inheritdoc/>
+    IChangeToken IOptionsChangeTokenSource<OpenIddictClientOwinOptions>.GetChangeToken() => new CompositeChangeToken(
+    [
+        // Force the options to be re-evaluated when the related instances from which they are populated are changed.
+        .. from source in _provider.GetServices<IOptionsChangeTokenSource<OpenIddictClientOptions>>()
+           select source.GetChangeToken()
+    ]);
+
+    /// <inheritdoc/>
+    string? IOptionsChangeTokenSource<OpenIddictClientOwinOptions>.Name => Options.DefaultName;
 }

@@ -56,6 +56,9 @@ public static class OpenIddictClientOwinExtensions
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IValidateOptions<OpenIddictClientOwinOptions>, OpenIddictClientOwinConfiguration>());
 
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IOptionsChangeTokenSource<OpenIddictClientOwinOptions>, OpenIddictClientOwinConfiguration>());
+
         return new OpenIddictClientOwinBuilder(builder.Services);
     }
 

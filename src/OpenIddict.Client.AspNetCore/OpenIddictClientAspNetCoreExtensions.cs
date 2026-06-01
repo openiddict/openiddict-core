@@ -63,6 +63,9 @@ public static class OpenIddictClientAspNetCoreExtensions
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IValidateOptions<OpenIddictClientAspNetCoreOptions>, OpenIddictClientAspNetCoreConfiguration>());
 
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IOptionsChangeTokenSource<OpenIddictClientAspNetCoreOptions>, OpenIddictClientAspNetCoreConfiguration>());
+
         return new OpenIddictClientAspNetCoreBuilder(builder.Services);
     }
 
