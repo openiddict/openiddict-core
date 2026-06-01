@@ -497,10 +497,6 @@ This may indicate that the event handler responsible for processing OpenID Conne
   <data name="ID0115" xml:space="preserve">
     <value>Only strings, booleans, integers, arrays of strings and instances of type 'OpenIddictParameter', 'JsonElement' or derived from 'JsonNode' can be returned as custom parameters.</value>
   </data>
-  <data name="ID0119" xml:space="preserve">
-    <value>The OpenIddict OWIN server handler cannot be used as an active authentication handler.
-Make sure that 'OpenIddictServerOwinOptions.AuthenticationMode' is not set to 'Active'.</value>
-  </data>
   <data name="ID0120" xml:space="preserve">
     <value>The OWIN request cannot be resolved.</value>
   </data>
@@ -510,8 +506,8 @@ For the OpenIddict server services to work correctly, a per-request 'IServicePro
 Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictServer()' extension MUST NOT be called.</value>
   </data>
   <data name="ID0122" xml:space="preserve">
-    <value>The OpenIddict server services cannot be resolved from the DI container.
-To register the server services, use 'services.AddOpenIddict().AddServer()'.</value>
+    <value>The authentication handler used by the OpenIddict server components cannot be resolved from the DI container.
+To register the OWIN integration, use 'services.AddOpenIddict().AddServer().UseOwin()'.</value>
   </data>
   <data name="ID0123" xml:space="preserve">
     <value>Audiences cannot be null or empty.</value>
@@ -702,8 +698,8 @@ For the OpenIddict validation services to work correctly, a per-request 'IServic
 Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictValidation()' extension MUST NOT be called.</value>
   </data>
   <data name="ID0169" xml:space="preserve">
-    <value>The OpenIddict validation services cannot be resolved from the DI container.
-To register the validation services, use 'services.AddOpenIddict().AddValidation()'.</value>
+    <value>The authentication handler used by the OpenIddict validation components cannot be resolved from the DI container.
+To register the OWIN integration, use 'services.AddOpenIddict().AddValidation().UseOwin()'.</value>
   </data>
   <data name="ID0170" xml:space="preserve">
     <value>The local server integration can only be used with direct validation.</value>
@@ -1098,10 +1094,6 @@ This may indicate that it was not properly registered in the dependency injectio
     <value>A discovery client must be registered when using server discovery.
 Reference the 'OpenIddict.Client.SystemNetHttp' package and call 'services.AddOpenIddict().AddClient().UseSystemNetHttp()' to register the default System.Net.Http-based integration.</value>
   </data>
-  <data name="ID0314" xml:space="preserve">
-    <value>The OpenIddict OWIN client handler cannot be used as an active authentication handler.
-Make sure that 'OpenIddictClientOwinOptions.AuthenticationMode' is not set to 'Active'.</value>
-  </data>
   <data name="ID0315" xml:space="preserve">
     <value>An error occurred while retrieving the OpenIddict client context. On ASP.NET Core, this may indicate that the authentication middleware was not registered early enough in the request pipeline. Make sure that 'app.UseAuthentication()' is registered before 'app.UseAuthorization()' and 'app.UseEndpoints()' (or 'app.UseMvc()') and try again.</value>
   </data>
@@ -1111,8 +1103,8 @@ For the OpenIddict client services to work correctly, a per-request 'IServicePro
 Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictClient()' extension MUST NOT be called.</value>
   </data>
   <data name="ID0317" xml:space="preserve">
-    <value>The OpenIddict client services cannot be resolved from the DI container.
-To register the client services, use 'services.AddOpenIddict().AddClient()'.</value>
+    <value>The authentication handler used by the OpenIddict client components cannot be resolved from the DI container.
+To register the OWIN integration, use 'services.AddOpenIddict().AddClient().UseOwin()'.</value>
   </data>
   <data name="ID0318" xml:space="preserve">
     <value>The core services must be registered when enabling the OpenIddict client feature.

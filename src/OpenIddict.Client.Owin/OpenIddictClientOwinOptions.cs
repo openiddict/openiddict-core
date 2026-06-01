@@ -11,15 +11,8 @@ namespace OpenIddict.Client.Owin;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict OWIN client integration.
 /// </summary>
-public sealed class OpenIddictClientOwinOptions : AuthenticationOptions
+public sealed class OpenIddictClientOwinOptions
 {
-    /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictClientOwinOptions"/> class.
-    /// </summary>
-    public OpenIddictClientOwinOptions()
-        : base(OpenIddictClientOwinDefaults.AuthenticationType)
-        => AuthenticationMode = AuthenticationMode.Passive;
-
     /// <summary>
     /// Gets or sets a boolean indicating whether the static client registrations with a non-null
     /// provider name attached are automatically added to <see cref="ForwardedAuthenticationTypes"/>.

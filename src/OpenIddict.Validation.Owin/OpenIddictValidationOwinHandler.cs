@@ -16,7 +16,7 @@ namespace OpenIddict.Validation.Owin;
 /// Provides the entry point necessary to register the OpenIddict validation in an OWIN pipeline.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<OpenIddictValidationOwinOptions>
+public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<AuthenticationOptions>
 {
     private readonly IOpenIddictValidationDispatcher _dispatcher;
     private readonly IOpenIddictValidationFactory _factory;

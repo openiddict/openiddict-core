@@ -9,7 +9,7 @@ namespace OpenIddict.Validation.AspNetCore;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict ASP.NET Core validation integration.
 /// </summary>
-public sealed class OpenIddictValidationAspNetCoreOptions : AuthenticationSchemeOptions
+public sealed class OpenIddictValidationAspNetCoreOptions
 {
     /// <summary>
     /// Gets or sets a boolean indicating whether the built-in logic extracting

@@ -31,6 +31,7 @@ public static class OpenIddictServerOwinExtensions
         // Note: unlike regular OWIN middleware, the OpenIddict server middleware is registered
         // as a scoped service in the DI container. This allows containers that support middleware
         // resolution (like Autofac) to use it without requiring additional configuration.
+        builder.Services.TryAddScoped<OpenIddictServerOwinHandler>();
         builder.Services.TryAddScoped<OpenIddictServerOwinMiddleware>();
 
         // Register the built-in event handlers used by the OpenIddict OWIN server components.
@@ -54,9 +55,6 @@ public static class OpenIddictServerOwinExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerOwinConfiguration>());
-
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IValidateOptions<OpenIddictServerOwinOptions>, OpenIddictServerOwinConfiguration>());
 
         return new OpenIddictServerOwinBuilder(builder.Services);
     }

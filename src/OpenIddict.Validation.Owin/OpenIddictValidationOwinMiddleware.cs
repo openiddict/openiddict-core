@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security.Infrastructure;
 
@@ -17,33 +18,43 @@ namespace OpenIddict.Validation.Owin;
 /// it is NOT recommended to instantiate it as a singleton like a regular OWIN middleware.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictValidationOwinMiddleware : AuthenticationMiddleware<OpenIddictValidationOwinOptions>
+public sealed class OpenIddictValidationOwinMiddleware : AuthenticationMiddleware<AuthenticationOptions>
 {
-    private readonly IOpenIddictValidationDispatcher _dispatcher;
-    private readonly IOpenIddictValidationFactory _factory;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationOwinMiddleware"/> class.
     /// </summary>
     /// <param name="next">The next middleware in the pipeline, if applicable.</param>
-    /// <param name="options">The OpenIddict validation OWIN options.</param>
-    /// <param name="dispatcher">The OpenIddict validation dispatcher.</param>
-    /// <param name="factory">The OpenIddict validation factory.</param>
+    /// <param name="provider">The service provider.</param>
     public OpenIddictValidationOwinMiddleware(
         OwinMiddleware? next,
-        IOptionsMonitor<OpenIddictValidationOwinOptions> options,
-        IOpenIddictValidationDispatcher dispatcher,
-        IOpenIddictValidationFactory factory)
-        : base(next, options.CurrentValue)
-    {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-    }
+        IServiceProvider provider)
+        : base(next, new InternalOptions()
+        {
+            AuthenticationMode = provider.GetService<IOptionsMonitor<OpenIddictValidationOwinOptions>>()
+                ?.CurrentValue.AuthenticationMode
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0169))
+        })
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Creates and returns a new <see cref="OpenIddictValidationOwinHandler"/> instance.
     /// </summary>
     /// <returns>A new instance of the <see cref="OpenIddictValidationOwinHandler"/> class.</returns>
-    protected override AuthenticationHandler<OpenIddictValidationOwinOptions> CreateHandler()
-        => new OpenIddictValidationOwinHandler(_dispatcher, _factory);
+    protected override AuthenticationHandler<AuthenticationOptions> CreateHandler()
+        => _provider.GetService<OpenIddictValidationOwinHandler>()
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0169));
+
+    /// <summary>
+    /// Provides the options used by the <see cref="OpenIddictValidationOwinMiddleware"/> class.
+    /// </summary>
+    private sealed class InternalOptions : AuthenticationOptions
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="InternalOptions"/> class.
+        /// </summary>
+        public InternalOptions() : base(OpenIddictValidationOwinDefaults.AuthenticationType)
+            => AuthenticationMode = AuthenticationMode.Passive;
+    }
 }

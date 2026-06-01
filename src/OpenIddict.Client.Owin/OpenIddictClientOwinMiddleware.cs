@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Principal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security.Infrastructure;
 
@@ -32,33 +33,29 @@ using AuthenticateDelegate = Func<
 /// it is NOT recommended to instantiate it as a singleton like a regular OWIN middleware.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<OpenIddictClientOwinOptions>
+public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<AuthenticationOptions>
 {
-    private readonly IOpenIddictClientDispatcher _dispatcher;
-    private readonly IOpenIddictClientFactory _factory;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientOwinMiddleware"/> class.
     /// </summary>
     /// <param name="next">The next middleware in the pipeline, if applicable.</param>
-    /// <param name="options">The OpenIddict client OWIN options.</param>
-    /// <param name="dispatcher">The OpenIddict client dispatcher.</param>
-    /// <param name="factory">The OpenIddict client factory.</param>
+    /// <param name="provider">The service provider.</param>
     public OpenIddictClientOwinMiddleware(
         OwinMiddleware? next,
-        IOptionsMonitor<OpenIddictClientOwinOptions> options,
-        IOpenIddictClientDispatcher dispatcher,
-        IOpenIddictClientFactory factory)
-        : base(next, options.CurrentValue)
-    {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-    }
+        IServiceProvider provider)
+        : base(next, new InternalOptions())
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     public override async Task Invoke(IOwinContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+
+        // Resolve the list of forwarded authentication types from the options.
+        var options = _provider.GetService<IOptionsMonitor<OpenIddictClientOwinOptions>>()
+            ?.CurrentValue ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0316));
 
         // Retrieve the existing authentication delegate.
         var function = context.Get<AuthenticateDelegate?>("security.Authenticate");
@@ -73,7 +70,7 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Op
                 // In this case, iterate all the forwarded authentication types and call the callback action for each type.
                 if (types is null)
                 {
-                    foreach (var description in Options.ForwardedAuthenticationTypes)
+                    foreach (var description in options.ForwardedAuthenticationTypes)
                     {
                         callback(null, null, description.Properties, state);
                     }
@@ -88,7 +85,7 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Op
                         // corresponding authentication middleware handle it if it matches a registered type.
                         if (string.IsNullOrEmpty(type) ||
                             string.Equals(type, OpenIddictClientOwinDefaults.AuthenticationType, StringComparison.Ordinal) ||
-                            !TryGetForwardedAuthenticationType(type, out AuthenticationDescription? description))
+                            !TryGetForwardedAuthenticationType(options.ForwardedAuthenticationTypes, type, out AuthenticationDescription? description))
                         {
                             continue;
                         }
@@ -134,10 +131,12 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Op
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool TryGetForwardedAuthenticationType(string type, [NotNullWhen(true)] out AuthenticationDescription? result)
+        static bool TryGetForwardedAuthenticationType(IReadOnlyList<AuthenticationDescription> descriptions,
+            string type, [NotNullWhen(true)] out AuthenticationDescription? result)
         {
-            foreach (var description in Options.ForwardedAuthenticationTypes)
+            for (var index = 0; index < descriptions.Count; index++)
             {
+                var description = descriptions[index];
                 if (string.Equals(description.AuthenticationType, type, StringComparison.Ordinal))
                 {
                     result = description;
@@ -154,6 +153,19 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Op
     /// Creates and returns a new <see cref="OpenIddictClientOwinHandler"/> instance.
     /// </summary>
     /// <returns>A new instance of the <see cref="OpenIddictClientOwinHandler"/> class.</returns>
-    protected override AuthenticationHandler<OpenIddictClientOwinOptions> CreateHandler()
-        => new OpenIddictClientOwinHandler(_dispatcher, _factory);
+    protected override AuthenticationHandler<AuthenticationOptions> CreateHandler()
+        => _provider.GetService<OpenIddictClientOwinHandler>()
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0317));
+
+    /// <summary>
+    /// Provides the options used by the <see cref="OpenIddictClientOwinMiddleware"/> class.
+    /// </summary>
+    private sealed class InternalOptions : AuthenticationOptions
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="InternalOptions"/> class.
+        /// </summary>
+        public InternalOptions() : base(OpenIddictClientOwinDefaults.AuthenticationType)
+            => AuthenticationMode = AuthenticationMode.Passive;
+    }
 }

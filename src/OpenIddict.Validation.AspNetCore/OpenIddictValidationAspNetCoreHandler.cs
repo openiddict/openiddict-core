@@ -18,7 +18,7 @@ namespace OpenIddict.Validation.AspNetCore;
 /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandler<OpenIddictValidationAspNetCoreOptions>,
+public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandler<AuthenticationSchemeOptions>,
     IAuthenticationRequestHandler
 {
     private readonly IOpenIddictValidationDispatcher _dispatcher;
@@ -30,7 +30,7 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
     public OpenIddictValidationAspNetCoreHandler(
         IOpenIddictValidationDispatcher dispatcher,
         IOpenIddictValidationFactory factory,
-        IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> options,
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder)
         : base(options, logger, encoder)
