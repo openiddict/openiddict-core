@@ -28,6 +28,13 @@ public sealed class OpenIddictValidationAspNetCoreBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictValidationAspNetCoreBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictValidationAspNetCoreOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict validation ASP.NET Core configuration.
     /// </summary>

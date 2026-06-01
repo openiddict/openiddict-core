@@ -32,6 +32,13 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictClientSystemIntegrationBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictClientSystemIntegrationOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict client system integration configuration.
     /// </summary>

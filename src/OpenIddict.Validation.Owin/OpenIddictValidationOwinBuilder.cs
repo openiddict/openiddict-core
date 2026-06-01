@@ -28,6 +28,13 @@ public sealed class OpenIddictValidationOwinBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictValidationOwinBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictValidationOwinOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict validation OWIN/Katana configuration.
     /// </summary>

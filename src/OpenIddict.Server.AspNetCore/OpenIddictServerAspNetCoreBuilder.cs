@@ -29,6 +29,13 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictServerAspNetCoreBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictServerAspNetCoreOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict server ASP.NET Core configuration.
     /// </summary>

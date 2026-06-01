@@ -27,6 +27,13 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictClientWebIntegrationBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictClientWebIntegrationOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict client Web integration configuration.
     /// </summary>

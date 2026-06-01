@@ -32,6 +32,13 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictValidationSystemNetHttpBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictValidationSystemNetHttpOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict validation/System.Net.Http configuration.
     /// </summary>

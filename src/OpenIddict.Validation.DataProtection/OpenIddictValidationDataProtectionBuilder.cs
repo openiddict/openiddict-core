@@ -29,6 +29,13 @@ public sealed class OpenIddictValidationDataProtectionBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictValidationDataProtectionBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictValidationDataProtectionOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict validation ASP.NET Core Data Protection configuration.
     /// </summary>

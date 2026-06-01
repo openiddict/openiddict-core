@@ -31,6 +31,13 @@ public sealed class OpenIddictMongoDbBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictMongoDbBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictMongoDbOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict MongoDB configuration.
     /// </summary>

@@ -27,6 +27,13 @@ public sealed class OpenIddictValidationServerIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictValidationServerIntegrationBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictValidationServerIntegrationOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict validation/server integration configuration.
     /// </summary>

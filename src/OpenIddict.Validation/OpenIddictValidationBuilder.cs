@@ -33,6 +33,13 @@ public sealed class OpenIddictValidationBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictValidationBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictValidationOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Registers an event handler using the specified configuration delegate.
     /// </summary>

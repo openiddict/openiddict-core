@@ -29,7 +29,14 @@ public sealed class OpenIddictServerOwinBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
-    /// <summary>
+    public OpenIddictServerOwinBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictServerOwinOptions>();
+
+        return this;
+    }
+
+    /// <summary>   
     /// Amends the default OpenIddict server OWIN/Katana configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

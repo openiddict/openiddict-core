@@ -31,6 +31,13 @@ public sealed class OpenIddictEntityFrameworkBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictEntityFrameworkBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictEntityFrameworkOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict Entity Framework 6.x configuration.
     /// </summary>

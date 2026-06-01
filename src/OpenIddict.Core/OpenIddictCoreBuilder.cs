@@ -30,6 +30,13 @@ public sealed class OpenIddictCoreBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictCoreBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictCoreOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict core configuration.
     /// </summary>

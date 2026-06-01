@@ -27,6 +27,13 @@ public sealed class OpenIddictQuartzBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictQuartzBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictQuartzOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict Quartz.NET configuration.
     /// </summary>

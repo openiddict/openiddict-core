@@ -34,6 +34,13 @@ public sealed class OpenIddictClientBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictClientBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictClientOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Registers an event handler using the specified configuration delegate.
     /// </summary>

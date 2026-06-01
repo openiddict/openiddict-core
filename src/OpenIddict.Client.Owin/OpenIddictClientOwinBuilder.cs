@@ -4,7 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using System.ComponentModel;
+using Microsoft.Owin;
+using Microsoft.Owin.Infrastructure;
+using Microsoft.Owin.Security;
 using OpenIddict.Client;
 using OpenIddict.Client.Owin;
 using Owin;
@@ -29,6 +33,13 @@ public sealed class OpenIddictClientOwinBuilder
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
+
+    public OpenIddictClientOwinBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictClientOwinOptions>();
+
+        return this;
+    }
 
     /// <summary>
     /// Amends the default OpenIddict client OWIN/Katana configuration.

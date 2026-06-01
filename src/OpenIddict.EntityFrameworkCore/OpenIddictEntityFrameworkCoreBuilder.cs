@@ -31,6 +31,13 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    public OpenIddictEntityFrameworkCoreBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictEntityFrameworkCoreOptions>();
+
+        return this;
+    }
+
     /// <summary>
     /// Amends the default OpenIddict Entity Framework Core configuration.
     /// </summary>
