@@ -11,7 +11,7 @@ namespace OpenIddict.Client.AspNetCore;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict ASP.NET Core client integration.
 /// </summary>
-public sealed class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOptions
+public sealed class OpenIddictClientAspNetCoreOptions
 {
     /// <summary>
     /// Gets or sets a boolean indicating whether the static client registrations with a non-null

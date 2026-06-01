@@ -16,7 +16,7 @@ namespace OpenIddict.Server.Owin;
 /// Provides the entry point necessary to register the OpenIddict server in an OWIN pipeline.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddictServerOwinOptions>
+public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<AuthenticationOptions>
 {
     private readonly IOpenIddictServerDispatcher _dispatcher;
     private readonly IOpenIddictServerFactory _factory;

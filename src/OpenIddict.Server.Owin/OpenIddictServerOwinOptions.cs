@@ -11,15 +11,8 @@ namespace OpenIddict.Server.Owin;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict OWIN server integration.
 /// </summary>
-public sealed class OpenIddictServerOwinOptions : AuthenticationOptions
+public sealed class OpenIddictServerOwinOptions
 {
-    /// <summary>
-    /// Creates a new instance of the <see cref="OpenIddictServerOwinOptions"/> class.
-    /// </summary>
-    public OpenIddictServerOwinOptions()
-        : base(OpenIddictServerOwinDefaults.AuthenticationType)
-        => AuthenticationMode = AuthenticationMode.Passive;
-
     /// <summary>
     /// Gets or sets a boolean indicating whether incoming requests arriving on insecure endpoints should be rejected.
     /// By default, this property is set to <see langword="false"/> to help mitigate man-in-the-middle attacks.

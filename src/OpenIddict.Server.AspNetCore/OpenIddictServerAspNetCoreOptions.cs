@@ -11,7 +11,7 @@ namespace OpenIddict.Server.AspNetCore;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict ASP.NET Core server integration.
 /// </summary>
-public sealed class OpenIddictServerAspNetCoreOptions : AuthenticationSchemeOptions
+public sealed class OpenIddictServerAspNetCoreOptions
 {
     /// <summary>
     /// Gets or sets a boolean indicating whether incoming requests arriving on insecure endpoints should be rejected.

@@ -100,11 +100,6 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
 
         var builder = new ValidateOptionsResultBuilder();
 
-        if (options.AuthenticationMode is AuthenticationMode.Active)
-        {
-            builder.AddError(SR.GetResourceString(SR.ID0314));
-        }
-
         // Ensure multiple client registrations don't share the same provider
         // name when automatic authentication type forwarding is enabled.
         if (!options.DisableAutomaticAuthenticationTypeForwarding)

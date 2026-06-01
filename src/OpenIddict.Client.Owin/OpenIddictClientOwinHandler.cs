@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security.Infrastructure;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 using Properties = OpenIddict.Client.Owin.OpenIddictClientOwinConstants.Properties;
@@ -20,22 +21,26 @@ namespace OpenIddict.Client.Owin;
 /// Provides the entry point necessary to register the OpenIddict client in an OWIN pipeline.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddictClientOwinOptions>
+public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<AuthenticationOptions>
 {
     private readonly IOpenIddictClientDispatcher _dispatcher;
     private readonly IOpenIddictClientFactory _factory;
+    private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientOwinHandler"/> class.
     /// </summary>
     /// <param name="dispatcher">The OpenIddict client dispatcher used by this instance.</param>
     /// <param name="factory">The OpenIddict client factory used by this instance.</param>
+    /// <param name="options">The OpenIddict client OWIN options.</param>
     public OpenIddictClientOwinHandler(
         IOpenIddictClientDispatcher dispatcher,
-        IOpenIddictClientFactory factory)
+        IOpenIddictClientFactory factory,
+        IOptionsMonitor<OpenIddictClientOwinOptions> options)
     {
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <inheritdoc/>
@@ -280,10 +285,14 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
         // OpenIddictClientOwinMiddleware is assumed to be the only middleware allowed to write
         // to the response stream when a response grant (sign-in/out or challenge) was applied.
 
+        var descriptions = _options.CurrentValue.ForwardedAuthenticationTypes;
+
         // Note: unlike the ASP.NET Core host, the OWIN host MUST check whether the status code
         // corresponds to a challenge response, as LookupChallenge() will always return a non-null
         // value when active authentication is used, even if no challenge was actually triggered.
-        var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode) ?? LookupForwardedChallenge();
+        var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode)
+            ?? LookupForwardedChallenge(Context.Authentication, descriptions);
+
         if (challenge is not null && Response.StatusCode is 401 or 403)
         {
             var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName) ??
@@ -327,7 +336,9 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
             }
         }
 
-        var signout = Helper.LookupSignOut(Options.AuthenticationType, Options.AuthenticationMode) ?? LookupForwardedSignOut();
+        var signout = Helper.LookupSignOut(Options.AuthenticationType, Options.AuthenticationMode)
+            ?? LookupForwardedSignOut(Context.Authentication, descriptions);
+
         if (signout is not null)
         {
             var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName) ??
@@ -371,7 +382,8 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
             }
         }
 
-        AuthenticationResponseChallenge? LookupForwardedChallenge()
+        static AuthenticationResponseChallenge? LookupForwardedChallenge(
+            IAuthenticationManager manager, IReadOnlyList<AuthenticationDescription> descriptions)
         {
             // Note: unlike its server counterpart, the OpenIddict OWIN client authentication handler allows
             // associating additional authentication types to trigger a provider-specific challenge. For that,
@@ -379,14 +391,14 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
             // managed by OpenIddict, a challenge pointing to the OpenIddict OWIN client authentication handler
             // is dynamically forwarded with the appropriate provider name authentication property attached.
 
-            if (Context.Authentication.AuthenticationResponseChallenge?.AuthenticationTypes is { Length: > 0 } types)
+            if (manager.AuthenticationResponseChallenge?.AuthenticationTypes is { Length: > 0 } types)
             {
                 foreach (var type in types)
                 {
-                    if (TryGetForwardedAuthenticationType(type, out _))
+                    if (TryGetForwardedAuthenticationType(descriptions, type, out _))
                     {
                         // Ensure no client registration information was attached to the authentication properties.
-                        if (Context.Authentication.AuthenticationResponseChallenge.Properties is AuthenticationProperties properties &&
+                        if (manager.AuthenticationResponseChallenge.Properties is AuthenticationProperties properties &&
                            (properties.Dictionary.ContainsKey(Properties.Issuer) ||
                             properties.Dictionary.ContainsKey(Properties.ProviderName) ||
                             properties.Dictionary.ContainsKey(Properties.RegistrationId)))
@@ -397,7 +409,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                         return new AuthenticationResponseChallenge(
                             authenticationTypes: [OpenIddictClientOwinDefaults.AuthenticationType],
                             properties         : new AuthenticationProperties(dictionary: new Dictionary<string, string>(
-                                Context.Authentication.AuthenticationResponseChallenge.Properties.Dictionary ??
+                                manager.AuthenticationResponseChallenge.Properties.Dictionary ??
                                 ImmutableDictionary.Create<string, string>())
                                 {
                                     [Properties.ProviderName] = type
@@ -409,7 +421,8 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
             return null;
         }
 
-        AuthenticationResponseRevoke? LookupForwardedSignOut()
+        static AuthenticationResponseRevoke? LookupForwardedSignOut(
+            IAuthenticationManager manager, IReadOnlyList<AuthenticationDescription> descriptions)
         {
             // Note: unlike its server counterpart, the OpenIddict OWIN client authentication handler allows
             // associating additional authentication types to trigger a provider-specific sign-out. For that,
@@ -417,14 +430,14 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
             // managed by OpenIddict, a sign-out pointing to the OpenIddict OWIN client authentication handler
             // is dynamically forwarded with the appropriate provider name authentication property attached.
 
-            if (Context.Authentication.AuthenticationResponseRevoke?.AuthenticationTypes is { Length: > 0 } types)
+            if (manager.AuthenticationResponseRevoke?.AuthenticationTypes is { Length: > 0 } types)
             {
                 foreach (var type in types)
                 {
-                    if (TryGetForwardedAuthenticationType(type, out _))
+                    if (TryGetForwardedAuthenticationType(descriptions, type, out _))
                     {
                         // Ensure no client registration information was attached to the authentication properties.
-                        if (Context.Authentication.AuthenticationResponseRevoke.Properties is AuthenticationProperties properties &&
+                        if (manager.AuthenticationResponseRevoke.Properties is AuthenticationProperties properties &&
                            (properties.Dictionary.ContainsKey(Properties.Issuer) ||
                             properties.Dictionary.ContainsKey(Properties.ProviderName) ||
                             properties.Dictionary.ContainsKey(Properties.RegistrationId)))
@@ -435,7 +448,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                         return new AuthenticationResponseRevoke(
                             authenticationTypes: [OpenIddictClientOwinDefaults.AuthenticationType],
                             properties         : new AuthenticationProperties(dictionary: new Dictionary<string, string>(
-                                Context.Authentication.AuthenticationResponseRevoke.Properties.Dictionary ??
+                                manager.AuthenticationResponseRevoke.Properties.Dictionary ??
                                 ImmutableDictionary.Create<string, string>())
                                 {
                                     [Properties.ProviderName] = type
@@ -448,10 +461,12 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool TryGetForwardedAuthenticationType(string type, [NotNullWhen(true)] out AuthenticationDescription? result)
+        static bool TryGetForwardedAuthenticationType(IReadOnlyList<AuthenticationDescription> descriptions,
+            string type, [NotNullWhen(true)] out AuthenticationDescription? result)
         {
-            foreach (var description in Options.ForwardedAuthenticationTypes)
+            for (var index = 0; index < descriptions.Count; index++)
             {
+                var description = descriptions[index];
                 if (string.Equals(description.AuthenticationType, type, StringComparison.Ordinal))
                 {
                     result = description;
