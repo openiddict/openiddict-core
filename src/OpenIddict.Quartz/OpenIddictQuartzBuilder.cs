@@ -27,6 +27,10 @@ public sealed class OpenIddictQuartzBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder ValidateOnStart()
     {
         Services.AddOptionsWithValidateOnStart<OpenIddictQuartzOptions>();

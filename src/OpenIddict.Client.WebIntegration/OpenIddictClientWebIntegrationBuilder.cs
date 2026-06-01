@@ -27,6 +27,10 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/> instance.</returns>
     public OpenIddictClientWebIntegrationBuilder ValidateOnStart()
     {
         Services.AddOptionsWithValidateOnStart<OpenIddictClientWebIntegrationOptions>();

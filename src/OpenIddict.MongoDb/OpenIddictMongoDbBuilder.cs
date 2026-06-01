@@ -31,6 +31,10 @@ public sealed class OpenIddictMongoDbBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder ValidateOnStart()
     {
         Services.AddOptionsWithValidateOnStart<OpenIddictMongoDbOptions>();

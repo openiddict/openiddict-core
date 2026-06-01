@@ -28,6 +28,10 @@ public sealed class OpenIddictValidationOwinBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/> instance.</returns>
     public OpenIddictValidationOwinBuilder ValidateOnStart()
     {
         Services.AddOptionsWithValidateOnStart<OpenIddictValidationOwinOptions>();

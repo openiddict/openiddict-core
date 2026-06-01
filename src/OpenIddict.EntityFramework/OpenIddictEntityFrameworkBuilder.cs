@@ -31,6 +31,10 @@ public sealed class OpenIddictEntityFrameworkBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkBuilder ValidateOnStart()
     {
         Services.AddOptionsWithValidateOnStart<OpenIddictEntityFrameworkOptions>();

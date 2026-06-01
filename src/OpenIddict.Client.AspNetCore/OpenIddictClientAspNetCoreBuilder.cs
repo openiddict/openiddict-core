@@ -30,6 +30,10 @@ public sealed class OpenIddictClientAspNetCoreBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictClientAspNetCoreBuilder ValidateOnStart()
     {
         Services.AddOptionsWithValidateOnStart<OpenIddictClientAspNetCoreOptions>();

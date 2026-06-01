@@ -32,6 +32,10 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IServiceCollection Services { get; }
 
+    /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictValidationSystemNetHttpBuilder ValidateOnStart()
     {
         Services.AddOptionsWithValidateOnStart<OpenIddictValidationSystemNetHttpOptions>();
