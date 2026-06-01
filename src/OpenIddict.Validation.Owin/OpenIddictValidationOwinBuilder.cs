@@ -29,6 +29,17 @@ public sealed class OpenIddictValidationOwinBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/> instance.</returns>
+    public OpenIddictValidationOwinBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictValidationOwinOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Amends the default OpenIddict validation OWIN/Katana configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

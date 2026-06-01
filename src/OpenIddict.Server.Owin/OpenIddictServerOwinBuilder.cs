@@ -30,6 +30,17 @@ public sealed class OpenIddictServerOwinBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    public OpenIddictServerOwinBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictServerOwinOptions>();
+
+        return this;
+    }
+
+    /// <summary>   
     /// Amends the default OpenIddict server OWIN/Katana configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

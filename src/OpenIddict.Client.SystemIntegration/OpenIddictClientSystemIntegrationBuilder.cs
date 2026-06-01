@@ -33,6 +33,17 @@ public sealed class OpenIddictClientSystemIntegrationBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientSystemIntegrationBuilder"/> instance.</returns>
+    public OpenIddictClientSystemIntegrationBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictClientSystemIntegrationOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Amends the default OpenIddict client system integration configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

@@ -30,6 +30,17 @@ public sealed class OpenIddictServerDataProtectionBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
+    public OpenIddictServerDataProtectionBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictServerDataProtectionOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Amends the default OpenIddict server ASP.NET Core Data Protection configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

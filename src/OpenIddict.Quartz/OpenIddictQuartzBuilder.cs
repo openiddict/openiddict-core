@@ -28,6 +28,17 @@ public sealed class OpenIddictQuartzBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
+    public OpenIddictQuartzBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictQuartzOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Amends the default OpenIddict Quartz.NET configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

@@ -31,6 +31,17 @@ public sealed class OpenIddictClientAspNetCoreBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictClientAspNetCoreBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictClientAspNetCoreOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Amends the default OpenIddict client ASP.NET Core configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

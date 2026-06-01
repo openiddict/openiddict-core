@@ -35,6 +35,17 @@ public sealed class OpenIddictServerBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictServerOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Registers an event handler using the specified configuration delegate.
     /// </summary>
     /// <typeparam name="TContext">The event context type.</typeparam>

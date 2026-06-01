@@ -34,6 +34,17 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictClientSystemNetHttpBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictClientSystemNetHttpOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Amends the default OpenIddict client/System.Net.Http configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

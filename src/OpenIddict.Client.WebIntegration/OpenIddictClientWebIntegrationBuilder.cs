@@ -28,6 +28,17 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/> instance.</returns>
+    public OpenIddictClientWebIntegrationBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictClientWebIntegrationOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Amends the default OpenIddict client Web integration configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>

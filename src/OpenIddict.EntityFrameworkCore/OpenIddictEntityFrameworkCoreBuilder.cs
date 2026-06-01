@@ -32,6 +32,17 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Enables validation of options during application startup.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
+    public OpenIddictEntityFrameworkCoreBuilder ValidateOnStart()
+    {
+        Services.AddOptionsWithValidateOnStart<OpenIddictEntityFrameworkCoreOptions>();
+
+        return this;
+    }
+
+    /// <summary>
     /// Amends the default OpenIddict Entity Framework Core configuration.
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
