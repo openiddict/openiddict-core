@@ -30,16 +30,12 @@ public partial class MainPage : ContentPage
     private async void OnLocalLogoutButtonClicked(object sender, EventArgs e)
         => await LogOutAsync("Local");
 
-    private async void OnTwitterLoginButtonClicked(object sender, EventArgs e)
-        => await LogInAsync(Providers.Twitter);
-
     private async Task LogInAsync(string provider, Dictionary<string, OpenIddictParameter>? parameters = null)
     {
         // Disable the buttons to prevent concurrent operations.
         LocalLogin.IsEnabled = false;
         LocalLoginWithGitHub.IsEnabled = false;
         LocalLogout.IsEnabled = false;
-        TwitterLogin.IsEnabled = false;
 
         try
         {
@@ -87,7 +83,6 @@ public partial class MainPage : ContentPage
             LocalLogin.IsEnabled = true;
             LocalLoginWithGitHub.IsEnabled = true;
             LocalLogout.IsEnabled = true;
-            TwitterLogin.IsEnabled = true;
         }
     }
 
@@ -97,7 +92,6 @@ public partial class MainPage : ContentPage
         LocalLogin.IsEnabled = false;
         LocalLoginWithGitHub.IsEnabled = false;
         LocalLogout.IsEnabled = false;
-        TwitterLogin.IsEnabled = false;
 
         try
         {
@@ -143,7 +137,6 @@ public partial class MainPage : ContentPage
             LocalLogin.IsEnabled = true;
             LocalLoginWithGitHub.IsEnabled = true;
             LocalLogout.IsEnabled = true;
-            TwitterLogin.IsEnabled = true;
         }
     }
 }
