@@ -81,20 +81,6 @@ public static class MauiProgram
 
                     Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" }
                 });
-
-                // Register the Web providers integrations.
-                //
-                // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-                // address per provider, unless all the registered providers support returning an "iss"
-                // parameter containing their URL as part of authorization responses. For more information,
-                // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                options.UseWebProviders()
-                       .AddTwitter(options =>
-                       {
-                           options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
-                                  // Note: Twitter doesn't support the recommended ":/" syntax and requires using "://".
-                                  .SetRedirectUri("com.openiddict.sandbox.maui.client://callback/login/twitter");
-                       });
             });
 
         builder.UseMauiApp<App>()

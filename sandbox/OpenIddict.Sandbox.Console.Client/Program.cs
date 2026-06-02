@@ -121,11 +121,6 @@ builder.Services.AddOpenIddict()
                           .AddGrantTypes(GrantTypes.DeviceCode)
                           .SetProviderName("Google [device flow]")
                           .SetProviderDisplayName("Google (device code grant-only)");
-               })
-               .AddTwitter(options =>
-               {
-                   options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
-                          .SetRedirectUri("callback/login/twitter");
                });
     });
 

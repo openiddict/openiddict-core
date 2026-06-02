@@ -44,13 +44,6 @@
                 HorizontalOptions="Center" />
 
             <Button
-                x:Name="TwitterLogin"
-                Text="Log in using Twitter"
-                SemanticProperties.Hint="Starts a new authentication flow"
-                Clicked="OnTwitterLoginButtonClicked"
-                HorizontalOptions="Center" />
-
-            <Button
                 x:Name="LocalLogout"
                 Text="Log out from the local server"
                 SemanticProperties.Hint="Starts a new logout flow"
