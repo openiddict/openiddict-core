@@ -172,7 +172,7 @@
     on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
   -->
   <ItemGroup Label="Package versions for all targets">
-    <GlobalPackageReference Include="Meziantou.Polyfill"                            Version="1.0.116"         />
+    <GlobalPackageReference Include="Meziantou.Polyfill"                            Version="1.0.140"         />
   </ItemGroup>
 
 </Project>
