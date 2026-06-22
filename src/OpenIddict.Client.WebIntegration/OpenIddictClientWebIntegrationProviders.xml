@@ -1226,6 +1226,31 @@
   </Provider>
 
   <!--
+                                     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                     █▄ ▄██ ▄▄▀███ ▄▄▀██ ██ ██ ▄▄▄ █▄▄ ▄▄██ ▄▄▀█▄ ▄█ ▄▄▀██
+                                     ██ ███ ██ ███ ▀▀ ██ ██ ██▄▄▄▀▀███ ████ ▀▀▄██ ██ ▀▀ ██
+                                     █▀ ▀██ ▀▀ ███ ██ ██▄▀▀▄██ ▀▀▀ ███ ████ ██ █▀ ▀█ ██ ██
+                                     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+  
+  <Provider Name="IdAustria" DisplayName="ID Austria" Id="3d66449c-ce7b-46cf-b2f2-6c1fb81bb5fd"
+            Documentation="https://www.id-austria.gv.at/de/developer/anbinden/anbindung-mit-openid-connect">
+    <!--
+      Note: the profile scope is not technically required, but the documentation strongly suggests using it:
+      when it is not requested, ID Austria doesn't return any useful claims, including the vendor-specific
+      "urn:pvpgvat:oidc.bpk" claim needed as substitute for the non-stable "sub" claim returned by ID Austria.
+    -->
+
+    <Environment Name="Production" Issuer="https://idp.id-austria.gv.at/">
+      <Scope Name="profile" Default="true" Required="true"/>
+    </Environment>
+
+    <Environment Name="Reference" Issuer="https://idp.ref.id-austria.gv.at/">
+      <Scope Name="profile" Default="true" Required="true"/>
+    </Environment>
+  </Provider>
+
+  <!--
                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                   █████ ██ ██ ██ ▄▀▄ ██ ▄▄ ██ ▄▄▀██ █████ ▄▄▄ ██ ██ ██ ▄▄▀██
                                   █████ ██ ██ ██ █ █ ██ ▀▀ ██ █████ █████ ███ ██ ██ ██ ██ ██
