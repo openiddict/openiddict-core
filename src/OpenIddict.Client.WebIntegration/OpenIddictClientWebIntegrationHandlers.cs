@@ -1516,6 +1516,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // HubSpot returns the username as a custom "user" node:
                     ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
 
+                    // ID Austria doesn't return a username so one is created using the standard "given_name"
+                    // and "family_name" claims extracted from the backchannel or frontchannel identity token:
+                    ProviderTypes.IdAustria
+                        when (context.BackchannelIdentityTokenPrincipal ?? // Always prefer the backchannel identity token when available.
+                              context.FrontchannelIdentityTokenPrincipal) is ClaimsPrincipal principal &&
+                              principal.HasClaim(Claims.GivenName) && principal.HasClaim(Claims.FamilyName)
+                         => $"{principal.GetClaim(Claims.GivenName)} {principal.GetClaim(Claims.FamilyName)}",
+
                     // Mailchimp returns the username as a custom "accountname" node:
                     ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["accountname"],
 
@@ -1678,6 +1686,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.MergedPrincipal.AddClaim(ClaimTypes.NameIdentifier, value, issuer);
                 }
+            }
+
+            // Note: ID Austria doesn't return a stable "sub" claim and encourages clients to use
+            // the custom "urn:pvpgvat:oidc.bpk" claim to identify users across logins. To ensure
+            // the WS-Federation name identifier claim returned to the application is stable,
+            // the "urn:pvpgvat:oidc.bpk" claim is always used instead of the "sub" claim.
+            //
+            // For more information, see
+            // https://www.id-austria.gv.at/de/developer/anbinden/anbindung-mit-openid-connect.
+            if (context.Registration.ProviderType is ProviderTypes.IdAustria)
+            {
+                context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier,
+                    context.BackchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk") ??
+                    context.FrontchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk"));
             }
 
             return ValueTask.CompletedTask;
