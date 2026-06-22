@@ -1515,6 +1515,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                     // HubSpot returns the username as a custom "user" node:
                     ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
+                    
+                    // ID Austria returns a "given_name" and "family_name" node.
+                    // Both are optional.
+                    ProviderTypes.IdAustria => $"{context.BackchannelIdentityTokenPrincipal?.GetClaim("given_name")}{
+                        (context.BackchannelIdentityTokenPrincipal?.GetClaim("given_name") != null ||
+                         context.BackchannelIdentityTokenPrincipal?.GetClaim("family_name") != null
+                            ? " " // Only add a space if both name nodes are set
+                            : string.Empty)}{context.BackchannelIdentityTokenPrincipal?.GetClaim("family_name")}",
 
                     // Mailchimp returns the username as a custom "accountname" node:
                     ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["accountname"],
@@ -1677,6 +1685,19 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 if (!string.IsNullOrEmpty(value))
                 {
                     context.MergedPrincipal.AddClaim(ClaimTypes.NameIdentifier, value, issuer);
+                }
+            }
+            
+            // Force override NameIdentifier claim for ID Austria
+            // In MapStandardWebServicesFederationClaims, Subject is mapped to NameIdentifier.
+            // ID Austria's documentation specifies the "sub" node to be a transient value, and refers
+            // to using their custom "bPK" for recognizing users across logins instead.
+            if (context.Registration.ProviderType == ProviderTypes.IdAustria)
+            {
+                if (context.BackchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk") is { } bpk)
+                {
+                    context.MergedPrincipal.RemoveClaims(ClaimTypes.NameIdentifier);
+                    context.MergedPrincipal.AddClaim(ClaimTypes.NameIdentifier, bpk, issuer);
                 }
             }
 
