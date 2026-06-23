@@ -1516,13 +1516,14 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // HubSpot returns the username as a custom "user" node:
                     ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
                     
-                    // ID Austria returns a "given_name" and "family_name" node.
-                    // Both are optional.
-                    ProviderTypes.IdAustria => $"{context.BackchannelIdentityTokenPrincipal?.GetClaim("given_name")}{
-                        (context.BackchannelIdentityTokenPrincipal?.GetClaim("given_name") != null ||
-                         context.BackchannelIdentityTokenPrincipal?.GetClaim("family_name") != null
-                            ? " " // Only add a space if both name nodes are set
-                            : string.Empty)}{context.BackchannelIdentityTokenPrincipal?.GetClaim("family_name")}",
+                    // ID Austria returns a "given_name" and "family_name" node, both of which are optional:
+                    // when context.UserInfoResponse?.HasParameter("first_name") is true &&
+                    // context.UserInfoResponse?.HasParameter("last_name")  is true
+                    // => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
+                    // however, BackchannelIdentityTokenPrincipal must be used
+                    ProviderTypes.IdAustria  when context.BackchannelIdentityTokenPrincipal?.HasClaim("given_name") is true &&
+                         context.BackchannelIdentityTokenPrincipal?.HasClaim("family_name")  is true
+                         => $"{(string?) context.BackchannelIdentityTokenPrincipal?.GetClaim("given_name")} {(string?) context.BackchannelIdentityTokenPrincipal?.GetClaim("family_name")}",
 
                     // Mailchimp returns the username as a custom "accountname" node:
                     ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["accountname"],
@@ -1692,13 +1693,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // In MapStandardWebServicesFederationClaims, Subject is mapped to NameIdentifier.
             // ID Austria's documentation specifies the "sub" node to be a transient value, and refers
             // to using their custom "bPK" for recognizing users across logins instead.
-            if (context.Registration.ProviderType == ProviderTypes.IdAustria)
+            if (context.Registration.ProviderType is ProviderTypes.IdAustria)
             {
-                if (context.BackchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk") is { } bpk)
-                {
-                    context.MergedPrincipal.RemoveClaims(ClaimTypes.NameIdentifier);
-                    context.MergedPrincipal.AddClaim(ClaimTypes.NameIdentifier, bpk, issuer);
-                }
+                context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier,
+                    context.BackchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk") ??
+                    context.FrontchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk"));
             }
 
             return ValueTask.CompletedTask;
