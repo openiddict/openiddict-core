@@ -24,6 +24,17 @@
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!--
+      Note: the EF Core SQLite package depends on a vulnerable version of SQLitePCLRaw.core.
+      Unfortunately, this package hasn't been updated to use the newer SourceGear.sqlite3 package,
+      which is not vulnerable. To work around that, this specific vulnerability is suppressed until
+      the EF Core team updates the package to use SourceGear.sqlite3 instead of SQLitePCLRaw.core.
+    -->
+
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
+
   <PropertyGroup>
     <StrongNameKeyId>OpenIddict</StrongNameKeyId>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\key.snk</AssemblyOriginatorKeyFile>
