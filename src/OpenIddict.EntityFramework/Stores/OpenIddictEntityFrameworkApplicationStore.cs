@@ -170,6 +170,11 @@ public class OpenIddictEntityFrameworkApplicationStore<
             foreach (var authorization in authorizations)
             {
                 context.Entry(authorization).State = EntityState.Unchanged;
+
+                foreach (var token in authorization.Tokens)
+                {
+                    context.Entry(token).State = EntityState.Unchanged;
+                }
             }
 
             foreach (var token in tokens)
