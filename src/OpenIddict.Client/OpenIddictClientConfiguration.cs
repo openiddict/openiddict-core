@@ -4,11 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -178,14 +178,14 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 Debug.Assert(parameters.Q.X is not null, SR.GetResourceString(SR.ID4004));
 
                 // Only use the 40 first chars of the base64url-encoded X coordinate.
-                var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
+                var identifier = Base64Url.EncodeToString(parameters.Q.X);
                 return identifier[.. Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
             static string GetMLDsaSecurityKeyIdentifier(MlDsaSecurityKey key)
             {
                 // Only use the 40 first chars of the base64url-encoded SHA256 of the ML-DSA public key.
-                var identifier = Base64UrlEncoder.Encode(SHA256.HashData(key.MLDsa.ExportMLDsaPublicKey()));
+                var identifier = Base64Url.EncodeToString(SHA256.HashData(key.MLDsa.ExportMLDsaPublicKey()));
                 return identifier[.. Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
@@ -202,7 +202,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 }
 
                 // Only use the 40 first chars of the base64url-encoded modulus.
-                var identifier = Base64UrlEncoder.Encode(parameters.Modulus);
+                var identifier = Base64Url.EncodeToString(parameters.Modulus);
                 return identifier[.. Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
         }
@@ -222,7 +222,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 
             algorithm.TransformFinalBlock([], 0, 0);
 
-            return Base64UrlEncoder.Encode(algorithm.Hash);
+            return Base64Url.EncodeToString(algorithm.Hash);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void TransformBlock(HashAlgorithm algorithm, string input)

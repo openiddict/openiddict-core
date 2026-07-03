@@ -5,6 +5,7 @@
  */
 
 using System.Buffers.Binary;
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -15,7 +16,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 using Owin;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 using Properties = OpenIddict.Client.Owin.OpenIddictClientOwinConstants.Properties;
@@ -432,7 +432,7 @@ public static partial class OpenIddictClientOwinHandlers
             try
             {
                 // Extract the payload and validate the version marker.
-                var payload = Base64UrlEncoder.DecodeBytes(value);
+                var payload = Base64Url.DecodeFromChars(value);
                 if (payload.Length < (1 + sizeof(uint)) || payload[0] is not 0x01)
                 {
                     context.Reject(
@@ -846,7 +846,7 @@ public static partial class OpenIddictClientOwinHandlers
                 _options.CurrentValue.CookieOptions);
 
             // Add the correlation cookie to the response headers.
-            manager.AppendResponseCookie(response.Context, name, Base64UrlEncoder.Encode(payload), new CookieOptions
+            manager.AppendResponseCookie(response.Context, name, Base64Url.EncodeToString(payload), new CookieOptions
             {
                 Domain = options.Domain,
                 HttpOnly = options.HttpOnly,
@@ -1090,7 +1090,7 @@ public static partial class OpenIddictClientOwinHandlers
                 _options.CurrentValue.CookieOptions);
 
             // Add the correlation cookie to the response headers.
-            manager.AppendResponseCookie(response.Context, name, Base64UrlEncoder.Encode(payload), new CookieOptions
+            manager.AppendResponseCookie(response.Context, name, Base64Url.EncodeToString(payload), new CookieOptions
             {
                 Domain = options.Domain,
                 HttpOnly = options.HttpOnly,

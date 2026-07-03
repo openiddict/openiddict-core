@@ -24,6 +24,7 @@ To use the validation feature on ASP.NET Core or OWIN/Katana, reference the Open
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <PackageReference Include="Microsoft.Bcl.Cryptography" />
+    <PackageReference Include="Microsoft.Bcl.Memory" />
   </ItemGroup>
 
   <ItemGroup>

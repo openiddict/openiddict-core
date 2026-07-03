@@ -5,6 +5,7 @@
  */
 
 using System.Buffers.Binary;
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -18,7 +19,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Properties = OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants.Properties;
 
@@ -421,7 +421,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             try
             {
                 // Extract the payload and validate the version marker.
-                var payload = Base64UrlEncoder.DecodeBytes(value);
+                var payload = Base64Url.DecodeFromChars(value);
                 if (payload.Length < (1 + sizeof(uint)) || payload[0] is not 0x01)
                 {
                     context.Reject(
@@ -818,7 +818,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             Debug.Assert(written == count, SR.FormatID4016(written, count));
 
             // Add the correlation cookie to the response headers.
-            response.Cookies.Append(name, Base64UrlEncoder.Encode(payload), options);
+            response.Cookies.Append(name, Base64Url.EncodeToString(payload), options);
 
             return ValueTask.CompletedTask;
         }
@@ -1041,7 +1041,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             Debug.Assert(written == count, SR.FormatID4016(written, count));
 
             // Add the correlation cookie to the response headers.
-            response.Cookies.Append(name, Base64UrlEncoder.Encode(payload), options);
+            response.Cookies.Append(name, Base64Url.EncodeToString(payload), options);
 
             return ValueTask.CompletedTask;
         }

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.ComponentModel;
 using System.IO.Pipes;
 using System.Net;
@@ -14,7 +15,6 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Client.SystemIntegration.OpenIddictClientSystemIntegrationAuthenticationMode;
 
 namespace OpenIddict.Client.SystemIntegration;
@@ -96,13 +96,13 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             // Note: only the left-most half of the hash is used to limit the length of the resulting discriminator,
             // which is required on platforms like macOS, where the name of pipes is always prefixed with a static part
             // (e.g /var/folders/5j/jjxtct5j1gvg35z6sdh2fz0w0000gn/T/CoreFxPipe_) and must not exceed 104 characters.
-            options.ApplicationDiscriminator = Base64UrlEncoder.Encode(digest, 0, digest.Length / 2);
+            options.ApplicationDiscriminator = Base64Url.EncodeToString(digest.AsSpan(0, digest.Length / 2));
         }
 
         // If no explicit instance identifier was specified, use a 96-bit random identifier.
         if (string.IsNullOrEmpty(options.InstanceIdentifier))
         {
-            options.InstanceIdentifier = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 96 / 8));
+            options.InstanceIdentifier = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(count: 96 / 8));
         }
 
         // If no explicit pipe name was specified, build one using the application discriminator.

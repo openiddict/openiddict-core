@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -3667,7 +3668,7 @@ public static partial class OpenIddictServerHandlers
 
             static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
             {
-                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256))
+                [JsonWebKeyParameterNames.X5tS256] = Base64Url.EncodeToString(certificate.GetCertHash(HashAlgorithmName.SHA256))
             };
         }
     }
@@ -4196,7 +4197,7 @@ public static partial class OpenIddictServerHandlers
 
             static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
             {
-                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256))
+                [JsonWebKeyParameterNames.X5tS256] = Base64Url.EncodeToString(certificate.GetCertHash(HashAlgorithmName.SHA256))
             };
         }
     }
@@ -4489,7 +4490,7 @@ public static partial class OpenIddictServerHandlers
 
             static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
             {
-                [JsonWebKeyParameterNames.X5tS256] = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256))
+                [JsonWebKeyParameterNames.X5tS256] = Base64Url.EncodeToString(certificate.GetCertHash(HashAlgorithmName.SHA256))
             };
         }
     }
@@ -5316,7 +5317,7 @@ public static partial class OpenIddictServerHandlers
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
-                context.IdentityTokenPrincipal.SetClaim(Claims.AccessTokenHash, Base64UrlEncoder.Encode(digest, 0, digest.Length / 2));
+                context.IdentityTokenPrincipal.SetClaim(Claims.AccessTokenHash, Base64Url.EncodeToString(digest.AsSpan(0, digest.Length / 2)));
             }
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
@@ -5325,7 +5326,7 @@ public static partial class OpenIddictServerHandlers
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
-                context.IdentityTokenPrincipal.SetClaim(Claims.CodeHash, Base64UrlEncoder.Encode(digest, 0, digest.Length / 2));
+                context.IdentityTokenPrincipal.SetClaim(Claims.CodeHash, Base64Url.EncodeToString(digest.AsSpan(0, digest.Length / 2)));
             }
 
             return ValueTask.CompletedTask;
