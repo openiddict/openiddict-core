@@ -50,6 +50,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -659,6 +660,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ if setting.obsolete ~}}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
         {{~ end ~}}
+        [UnsupportedOSPlatform(""linux"")]
         public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint)
         {
             ArgumentException.ThrowIfNullOrEmpty(thumbprint);

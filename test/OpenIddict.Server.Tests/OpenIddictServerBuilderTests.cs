@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,17 @@ namespace OpenIddict.Server.Tests;
 
 public class OpenIddictServerBuilderTests
 {
+    [Fact]
+    public void ValidateOnStart_CanBeInvoked()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        Assert.Same(builder, builder.ValidateOnStart());
+    }
+
     [Fact]
     public void Constructor_ThrowsAnExceptionForNullServices()
     {
@@ -136,6 +148,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void AddEncryptionCredentials_EncryptingCredentialsAreCorrectlyAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        var credentials = new EncryptingCredentials(
+            Mock.Of<SecurityKey>(key => key.KeySize == 256),
+            SecurityAlgorithms.Aes256KW,
+            SecurityAlgorithms.Aes256CbcHmacSha512);
+
+        // Act
+        builder.AddEncryptionCredentials(credentials);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Same(credentials, options.EncryptionCredentials[0]);
+    }
+
+    [Fact]
     public void AddEncryptionKey_ThrowsExceptionWhenKeyIsNull()
     {
         // Arrange
@@ -202,6 +235,74 @@ public class OpenIddictServerBuilderTests
         var key = Mock.Of<SecurityKey>(mock => mock.KeySize == 384 && mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW));
         var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionKey(key));
         Assert.Equal(SR.FormatID0283(256, 384), exception.Message);
+    }
+
+    [Fact]
+    public void AddEncryptionKey_UsesRsaOaepWhenSupported()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        var key = Mock.Of<SecurityKey>(mock => mock.IsSupportedAlgorithm(SecurityAlgorithms.RsaOAEP));
+
+        // Act
+        builder.AddEncryptionKey(key);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(SecurityAlgorithms.RsaOAEP, options.EncryptionCredentials[0].Alg);
+    }
+
+    [Fact]
+    public void AddEncryptionKey_ThrowsExceptionWhenNoSupportedAlgorithmIsFound()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        var key = Mock.Of<SecurityKey>(mock =>
+            !mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW) &&
+            !mock.IsSupportedAlgorithm(SecurityAlgorithms.RsaOAEP));
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionKey(key));
+        Assert.Equal(SR.GetResourceString(SR.ID0056), exception.Message);
+    }
+
+    [Fact]
+    public void AddEncryptionKeys_ThrowsExceptionWhenKeysAreNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionKeys(keys: null!));
+        Assert.Equal("keys", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddEncryptionKeys_KeysAreCorrectlyAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        var keys = new SecurityKey[]
+        {
+            Mock.Of<SecurityKey>(mock => mock.KeySize == 256 && mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW)),
+            Mock.Of<SecurityKey>(mock => mock.IsSupportedAlgorithm(SecurityAlgorithms.RsaOAEP))
+        };
+
+        // Act
+        builder.AddEncryptionKeys(keys);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(2, options.EncryptionCredentials.Count);
     }
 
     [Fact]
@@ -277,6 +378,220 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void AddEphemeralEncryptionKey_ThrowsAnExceptionForNullOrEmptyAlgorithm()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var nullException = Assert.ThrowsAny<ArgumentException>(() => builder.AddEphemeralEncryptionKey(algorithm: null!));
+        var emptyException = Assert.ThrowsAny<ArgumentException>(() => builder.AddEphemeralEncryptionKey(string.Empty));
+
+        Assert.Equal("algorithm", nullException.ParamName);
+        Assert.Equal("algorithm", emptyException.ParamName);
+    }
+
+    [Fact]
+    public void AddEphemeralEncryptionKey_DefaultAlgorithmIsRsaOaep()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.AddEphemeralEncryptionKey();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(SecurityAlgorithms.RsaOAEP, options.EncryptionCredentials[0].Alg);
+    }
+
+    [Theory]
+    [InlineData(SecurityAlgorithms.Aes256KW)]
+    [InlineData(SecurityAlgorithms.RsaOAEP)]
+    [InlineData(SecurityAlgorithms.RsaOaepKeyWrap)]
+    public void AddEphemeralEncryptionKey_EncryptionCredentialsUseSpecifiedAlgorithm(string algorithm)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.AddEphemeralEncryptionKey(algorithm);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(algorithm, options.EncryptionCredentials[0].Alg);
+    }
+
+    [Fact]
+    public void AddEphemeralEncryptionKey_ThrowsExceptionForUnsupportedAlgorithm()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEphemeralEncryptionKey("unsupported"));
+        Assert.Equal(SR.GetResourceString(SR.ID0058), exception.Message);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_ThrowsAnExceptionForNullCertificate()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionCertificate(certificate: null!));
+        Assert.Equal("certificate", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_ThrowsExceptionWhenPrivateKeyIsMissing()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        using var certificate = CreateEncryptionCertificate(includePrivateKey: false);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionCertificate(certificate));
+        Assert.Equal(SR.GetResourceString(SR.ID0061), exception.Message);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_ThrowsExceptionWhenKeyUsageIsInvalid()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        using var certificate = CreateCertificate(X509KeyUsageFlags.DigitalSignature, includePrivateKey: true);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionCertificate(certificate));
+        Assert.Equal(SR.GetResourceString(SR.ID0060), exception.Message);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_Stream_ThrowsExceptionWhenStreamIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionCertificate(stream: null!, password: "password"));
+        Assert.Equal("stream", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_Stream_ThrowsExceptionWhenContentTypeIsInvalid()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        using var stream = new MemoryStream([0x01, 0x02, 0x03]);
+
+        // Act and assert
+        Assert.ThrowsAny<Exception>(() => builder.AddEncryptionCertificate(stream, "password", X509KeyStorageFlags.Exportable));
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_Stream_CertificateIsCorrectlyAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        using var certificate = CreateEncryptionCertificate(includePrivateKey: true);
+        var payload = certificate.Export(X509ContentType.Pfx, "password");
+        using var stream = new MemoryStream(payload);
+
+        // Act
+        builder.AddEncryptionCertificate(stream, "password", X509KeyStorageFlags.Exportable);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.IsType<X509SecurityKey>(options.EncryptionCredentials[0].Key);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_Assembly_ThrowsExceptionWhenAssemblyIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionCertificate(
+            assembly: null!, resource: "resource", password: "password", flags: X509KeyStorageFlags.Exportable));
+
+        Assert.Equal("assembly", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_Assembly_ThrowsExceptionWhenResourceIsNullOrEmpty()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var assembly = typeof(OpenIddictServerBuilderTests).GetTypeInfo().Assembly;
+
+        // Act and assert
+        var nullException = Assert.ThrowsAny<ArgumentException>(() => builder.AddEncryptionCertificate(
+            assembly, resource: null!, password: "password", flags: X509KeyStorageFlags.Exportable));
+        var emptyException = Assert.ThrowsAny<ArgumentException>(() => builder.AddEncryptionCertificate(
+            assembly, resource: string.Empty, password: "password", flags: X509KeyStorageFlags.Exportable));
+
+        Assert.Equal("resource", nullException.ParamName);
+        Assert.Equal("resource", emptyException.ParamName);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificate_Assembly_ThrowsExceptionWhenResourceCannotBeFound()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var assembly = typeof(OpenIddictServerBuilderTests).GetTypeInfo().Assembly;
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionCertificate(
+            assembly, resource: "missing.pfx", password: "password", flags: X509KeyStorageFlags.Exportable));
+
+        Assert.Equal(SR.GetResourceString(SR.ID0064), exception.Message);
+    }
+
+    [SkippableFact, UnsupportedOSPlatform("linux")]
+    public void AddEncryptionCertificate_ThrowsExceptionWhenCertificateCannotBeFoundInStores()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionCertificate(Guid.NewGuid().ToString("N")));
+        Assert.Equal(SR.GetResourceString(SR.ID0066), exception.Message);
+    }
+
+    [Fact]
+    public void AddEncryptionCertificates_ThrowsExceptionWhenCertificatesAreNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionCertificates(certificates: null!));
+        Assert.Equal("certificates", exception.ParamName);
+    }
+
+    [Fact]
     public void AddDevelopmentEncryptionCertificate_CanGenerateCertificate()
     {
         // Arrange
@@ -309,6 +624,35 @@ public class OpenIddictServerBuilderTests
         });
 
         Assert.Equal("subject", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddSigningCredentials_ThrowsExceptionWhenCredentialsAreNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddSigningCredentials(credentials: null!));
+        Assert.Equal("credentials", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddSigningCredentials_SigningCredentialsAreCorrectlyAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var credentials = new SigningCredentials(Mock.Of<SecurityKey>(), SecurityAlgorithms.HmacSha256);
+
+        // Act
+        builder.AddSigningCredentials(credentials);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Same(credentials, options.SigningCredentials[0]);
     }
 
     [Fact]
@@ -345,13 +689,16 @@ public class OpenIddictServerBuilderTests
         Assert.Single(options.SigningCredentials);
     }
 
-    [Theory]
+    [SkippableTheory(typeof(PlatformNotSupportedException))]
     [InlineData(SecurityAlgorithms.RsaSha256)]
     [InlineData(SecurityAlgorithms.RsaSha384)]
     [InlineData(SecurityAlgorithms.RsaSha512)]
     [InlineData(SecurityAlgorithms.EcdsaSha256)]
     [InlineData(SecurityAlgorithms.EcdsaSha384)]
     [InlineData(SecurityAlgorithms.EcdsaSha512)]
+    [InlineData(SecurityAlgorithms.MlDsa44)]
+    [InlineData(SecurityAlgorithms.MlDsa65)]
+    [InlineData(SecurityAlgorithms.MlDsa87)]
     public void AddEphemeralSigningKey_SigningCredentialsUseSpecifiedAlgorithm(string algorithm)
     {
         // Arrange
@@ -399,6 +746,9 @@ public class OpenIddictServerBuilderTests
     [InlineData(SecurityAlgorithms.EcdsaSha256)]
     [InlineData(SecurityAlgorithms.EcdsaSha384)]
     [InlineData(SecurityAlgorithms.EcdsaSha512)]
+    [InlineData(SecurityAlgorithms.MlDsa44)]
+    [InlineData(SecurityAlgorithms.MlDsa65)]
+    [InlineData(SecurityAlgorithms.MlDsa87)]
     public void AddSigningKey_SigningKeyIsCorrectlyAdded(string algorithm)
     {
         // Arrange
@@ -414,6 +764,254 @@ public class OpenIddictServerBuilderTests
 
         // Assert
         Assert.Same(key, options.SigningCredentials[0].Key);
+    }
+
+    [Fact]
+    public void AddSigningKey_ThrowsExceptionWhenNoSupportedAlgorithmIsFound()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var key = Mock.Of<SecurityKey>(mock =>
+            !mock.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
+            !mock.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
+            !mock.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512) &&
+            !mock.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256) &&
+            !mock.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256));
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddSigningKey(key));
+        Assert.Equal(SR.GetResourceString(SR.ID0068), exception.Message);
+    }
+
+    [Fact]
+    public void AddSigningKeys_ThrowsExceptionWhenKeysAreNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddSigningKeys(keys: null!));
+        Assert.Equal("keys", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddSigningKeys_KeysAreCorrectlyAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        var keys = new SecurityKey[]
+        {
+            Mock.Of<SecurityKey>(mock => mock.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256)),
+            Mock.Of<SecurityKey>(mock => mock.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
+        };
+
+        // Act
+        builder.AddSigningKeys(keys);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(2, options.SigningCredentials.Count);
+    }
+
+    [Fact]
+    public void AddEphemeralSigningKey_ThrowsAnExceptionForNullOrEmptyAlgorithm()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var nullException = Assert.ThrowsAny<ArgumentException>(() => builder.AddEphemeralSigningKey(algorithm: null!));
+        var emptyException = Assert.ThrowsAny<ArgumentException>(() => builder.AddEphemeralSigningKey(string.Empty));
+
+        Assert.Equal("algorithm", nullException.ParamName);
+        Assert.Equal("algorithm", emptyException.ParamName);
+    }
+
+    [Fact]
+    public void AddEphemeralSigningKey_DefaultSigningAlgorithmIsRsaSha256()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.AddEphemeralSigningKey();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Single(options.SigningCredentials);
+        Assert.Equal(SecurityAlgorithms.RsaSha256, options.SigningCredentials[0].Algorithm);
+    }
+
+    [Fact]
+    public void AddEphemeralSigningKey_ThrowsExceptionForUnsupportedAlgorithm()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEphemeralSigningKey("unsupported"));
+        Assert.Equal(SR.GetResourceString(SR.ID0058), exception.Message);
+    }
+
+    [Fact]
+    public void AddSigningCertificate_ThrowsAnExceptionForNullCertificate()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddSigningCertificate(certificate: null!));
+        Assert.Equal("certificate", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddSigningCertificate_ThrowsExceptionWhenPrivateKeyIsMissing()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        using var certificate = CreateSigningCertificate(includePrivateKey: false);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddSigningCertificate(certificate));
+        Assert.Equal(SR.GetResourceString(SR.ID0061), exception.Message);
+    }
+
+    [Fact]
+    public void AddSigningCertificate_ThrowsExceptionWhenKeyUsageIsInvalid()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        using var certificate = CreateCertificate(X509KeyUsageFlags.KeyEncipherment, includePrivateKey: true);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddSigningCertificate(certificate));
+        Assert.Equal(SR.GetResourceString(SR.ID0070), exception.Message);
+    }
+
+    [Fact]
+    public void AddSigningCertificate_Stream_ThrowsExceptionWhenStreamIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddSigningCertificate(stream: null!, password: "password"));
+        Assert.Equal("stream", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddSigningCertificate_Stream_ThrowsExceptionWhenContentTypeIsInvalid()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        using var stream = new MemoryStream([0x01, 0x02, 0x03]);
+
+        // Act and assert
+        Assert.ThrowsAny<Exception>(() => builder.AddSigningCertificate(stream, "password", X509KeyStorageFlags.Exportable));
+    }
+
+    [Fact]
+    public void AddSigningCertificate_Stream_CertificateIsCorrectlyAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        using var certificate = CreateSigningCertificate(includePrivateKey: true);
+        var payload = certificate.Export(X509ContentType.Pfx, "password");
+        using var stream = new MemoryStream(payload);
+
+        // Act
+        builder.AddSigningCertificate(stream, "password", X509KeyStorageFlags.Exportable);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.IsType<X509SecurityKey>(options.SigningCredentials[0].Key);
+    }
+
+    [Fact]
+    public void AddSigningCertificate_Assembly_ThrowsExceptionWhenAssemblyIsNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddSigningCertificate(
+            assembly: null!, resource: "resource", password: "password", flags: X509KeyStorageFlags.Exportable));
+
+        Assert.Equal("assembly", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddSigningCertificate_Assembly_ThrowsExceptionWhenResourceIsNullOrEmpty()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var assembly = typeof(OpenIddictServerBuilderTests).GetTypeInfo().Assembly;
+
+        // Act and assert
+        var nullException = Assert.ThrowsAny<ArgumentException>(() => builder.AddSigningCertificate(
+            assembly, resource: null!, password: "password", flags: X509KeyStorageFlags.Exportable));
+        var emptyException = Assert.ThrowsAny<ArgumentException>(() => builder.AddSigningCertificate(
+            assembly, resource: string.Empty, password: "password", flags: X509KeyStorageFlags.Exportable));
+
+        Assert.Equal("resource", nullException.ParamName);
+        Assert.Equal("resource", emptyException.ParamName);
+    }
+
+    [Fact]
+    public void AddSigningCertificate_Assembly_ThrowsExceptionWhenResourceCannotBeFound()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var assembly = typeof(OpenIddictServerBuilderTests).GetTypeInfo().Assembly;
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddSigningCertificate(
+            assembly, resource: "missing.pfx", password: "password", flags: X509KeyStorageFlags.Exportable));
+
+        Assert.Equal(SR.GetResourceString(SR.ID0064), exception.Message);
+    }
+
+    [SkippableFact, UnsupportedOSPlatform("linux")]
+    public void AddSigningCertificate_ThrowsExceptionWhenCertificateCannotBeFoundInStores()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.AddSigningCertificate(Guid.NewGuid().ToString("N")));
+        Assert.Equal(SR.GetResourceString(SR.ID0066), exception.Message);
+    }
+
+    [Fact]
+    public void AddSigningCertificates_ThrowsExceptionWhenCertificatesAreNull()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddSigningCertificates(certificates: null!));
+        Assert.Equal("certificates", exception.ParamName);
     }
 
     [Fact]
@@ -3178,6 +3776,36 @@ public class OpenIddictServerBuilderTests
         // Assert
         Assert.True(options.UseClientCertificateBoundRefreshTokens);
     }
+
+    private static X509Certificate2 CreateCertificate(X509KeyUsageFlags usages, bool includePrivateKey)
+    {
+        using var algorithm = RSA.Create(keySizeInBits: 2048);
+
+        var request = new CertificateRequest(
+            subjectName: "CN=OpenIddict Server Tests",
+            key: algorithm,
+            hashAlgorithm: HashAlgorithmName.SHA256,
+            padding: RSASignaturePadding.Pkcs1);
+
+        request.CertificateExtensions.Add(new X509KeyUsageExtension(usages, critical: true));
+
+        var certificate = request.CreateSelfSigned(
+            notBefore: DateTimeOffset.UtcNow.AddDays(-1),
+            notAfter: DateTimeOffset.UtcNow.AddDays(1));
+
+        if (includePrivateKey)
+        {
+            return certificate;
+        }
+
+        return X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
+    }
+
+    private static X509Certificate2 CreateEncryptionCertificate(bool includePrivateKey)
+        => CreateCertificate(X509KeyUsageFlags.KeyEncipherment, includePrivateKey);
+
+    private static X509Certificate2 CreateSigningCertificate(bool includePrivateKey)
+        => CreateCertificate(X509KeyUsageFlags.DigitalSignature, includePrivateKey);
 
     private static IServiceCollection CreateServices()
     {

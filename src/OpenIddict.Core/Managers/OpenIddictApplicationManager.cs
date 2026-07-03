@@ -159,8 +159,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             throw new ArgumentException(SR.GetResourceString(SR.ID0206), nameof(application));
         }
 
-        // If no client type was specified, assume it's a confidential application if a secret was
-        // provided or a JSON Web Key Set was attached and contains at least one RSA/ECDSA signing key.
+        // If no client type was specified, assume it's a confidential application if a
+        // secret was provided or a JSON Web Key Set was attached and contains at least
+        // one AKP (typically used with the ML-DSA algorithm), ECDSA or RSA signing key.
         var type = await Store.GetClientTypeAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(type))
         {
@@ -173,7 +174,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             {
                 var set = await Store.GetJsonWebKeySetAsync(application, cancellationToken);
                 if (set is not null && set.Keys.Any(static key =>
-                    key.Kty is JsonWebAlgorithmsKeyTypes.EllipticCurve or JsonWebAlgorithmsKeyTypes.RSA &&
+                    key.Kty is JsonWebAlgorithmsKeyTypes.Akp or JsonWebAlgorithmsKeyTypes.EllipticCurve or JsonWebAlgorithmsKeyTypes.RSA &&
                     key.Use is JsonWebKeyUseNames.Sig or null))
                 {
                     await Store.SetClientTypeAsync(application, ClientTypes.Confidential, cancellationToken);
@@ -1304,7 +1305,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 {
                     var set = await Store.GetJsonWebKeySetAsync(application, cancellationToken);
                     if (set?.Keys is null || !set.Keys.Any(static key =>
-                        key.Kty is JsonWebAlgorithmsKeyTypes.EllipticCurve or JsonWebAlgorithmsKeyTypes.RSA &&
+                        key.Kty is JsonWebAlgorithmsKeyTypes.Akp or JsonWebAlgorithmsKeyTypes.EllipticCurve or JsonWebAlgorithmsKeyTypes.RSA &&
                         key.Use is JsonWebKeyUseNames.Sig or null))
                     {
                         yield return new ValidationResult(SR.GetResourceString(SR.ID2113));

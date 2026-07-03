@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -19,6 +20,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+
+#if !NET
+using Org.BouncyCastle.Crypto.Digests;
+#endif
 
 namespace OpenIddict.Server;
 
@@ -5302,7 +5307,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             var credentials = context.Options.SigningCredentials.Find(
-                credentials => credentials.Key is AsymmetricSecurityKey) ??
+                static credentials => credentials.Key is AsymmetricSecurityKey) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
 
             if (!string.IsNullOrEmpty(context.AccessToken))
@@ -5351,8 +5356,29 @@ public static partial class OpenIddictServerHandlers
                 { Algorithm: SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature }
                     => SHA512.HashData(Encoding.ASCII.GetBytes(token)),
 
+                // Note: while not officially adopted yet, the OpenID Connect Working Group has proposed to use SHAKE256
+                // for ML-DSA-based algorithms. See https://bitbucket.org/openid/connect/issues/1125 for more information.
+                { Algorithm: SecurityAlgorithms.MlDsa44 or SecurityAlgorithms.MlDsa65 or SecurityAlgorithms.MlDsa87 }
+                    => GetShake256Digest(Encoding.ASCII.GetBytes(token), length: 64),
+
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
             };
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static byte[] GetShake256Digest(byte[] data, int length)
+            {
+#if NET
+                return Shake256.HashData(data, length);
+#else
+                var digest = new ShakeDigest(256);
+                digest.BlockUpdate(data, 0, data.Length);
+
+                var hash = new byte[length];
+                digest.DoFinal(hash, 0);
+
+                return hash;
+#endif
+            }
         }
     }
 

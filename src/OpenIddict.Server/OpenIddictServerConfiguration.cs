@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -123,41 +124,50 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             // inferred from the hexadecimal representation of the certificate thumbprint (SHA-1)
             // when the key is bound to a X.509 certificate or from the public part of the signing key.
 
-            if (key is X509SecurityKey x509SecurityKey)
+            return key switch
             {
-                return x509SecurityKey.Certificate.Thumbprint;
+                X509SecurityKey  value => value.Certificate.Thumbprint,
+                RsaSecurityKey   value => GetRsaSecurityKeyIdentifier(value),
+                ECDsaSecurityKey value => GetEcdsaSecurityKeyIdentifier(value),
+                MlDsaSecurityKey value => GetMLDsaSecurityKeyIdentifier(value),
+
+                _ => null
+            };
+
+            static string GetEcdsaSecurityKeyIdentifier(ECDsaSecurityKey key)
+            {
+                var parameters = key.ECDsa.ExportParameters(includePrivateParameters: false);
+
+                Debug.Assert(parameters.Q.X is not null, SR.GetResourceString(SR.ID4004));
+
+                // Only use the 40 first chars of the base64url-encoded X coordinate.
+                var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
+                return identifier[.. Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
-            if (key is RsaSecurityKey rsaSecurityKey)
+            static string GetMLDsaSecurityKeyIdentifier(MlDsaSecurityKey key)
+            {
+                // Only use the 40 first chars of the base64url-encoded SHA256 of the ML-DSA public key.
+                var identifier = Base64UrlEncoder.Encode(SHA256.HashData(key.MLDsa.ExportMLDsaPublicKey()));
+                return identifier[.. Math.Min(identifier.Length, 40)].ToUpperInvariant();
+            }
+
+            static string GetRsaSecurityKeyIdentifier(RsaSecurityKey key)
             {
                 // Note: if the RSA parameters are not attached to the signing key,
                 // extract them by calling ExportParameters on the RSA instance.
-                var parameters = rsaSecurityKey.Parameters;
+                var parameters = key.Parameters;
                 if (parameters.Modulus is null)
                 {
-                    parameters = rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false);
+                    parameters = key.Rsa.ExportParameters(includePrivateParameters: false);
 
                     Debug.Assert(parameters.Modulus is not null, SR.GetResourceString(SR.ID4003));
                 }
 
                 // Only use the 40 first chars of the base64url-encoded modulus.
                 var identifier = Base64UrlEncoder.Encode(parameters.Modulus);
-                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
+                return identifier[.. Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
-
-            if (key is ECDsaSecurityKey ecsdaSecurityKey)
-            {
-                // Extract the ECDSA parameters from the signing credentials.
-                var parameters = ecsdaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false);
-
-                Debug.Assert(parameters.Q.X is not null, SR.GetResourceString(SR.ID4004));
-
-                // Only use the 40 first chars of the base64url-encoded X coordinate.
-                var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
-                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
-            }
-
-            return null;
         }
     }
 

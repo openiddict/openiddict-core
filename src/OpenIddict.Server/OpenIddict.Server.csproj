@@ -22,6 +22,7 @@ To use the server feature on ASP.NET Core or OWIN/Katana, reference the OpenIddi
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="BouncyCastle.Cryptography" />
     <PackageReference Include="Microsoft.Bcl.Cryptography" />
   </ItemGroup>
 

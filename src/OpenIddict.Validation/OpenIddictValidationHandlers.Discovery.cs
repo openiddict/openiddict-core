@@ -517,11 +517,11 @@ public static partial class OpenIddictValidationHandlers
 
                     var key = (string?) keys[index][JsonWebKeyParameterNames.Kty] switch
                     {
-                        JsonWebAlgorithmsKeyTypes.RSA => new JsonWebKey
+                        JsonWebAlgorithmsKeyTypes.Akp => new JsonWebKey
                         {
-                            Kty = JsonWebAlgorithmsKeyTypes.RSA,
-                            E = (string?) keys[index][JsonWebKeyParameterNames.E],
-                            N = (string?) keys[index][JsonWebKeyParameterNames.N]
+                            Kty = JsonWebAlgorithmsKeyTypes.Akp,
+                            Alg = (string?) keys[index][JsonWebKeyParameterNames.Alg],
+                            Pub = (string?) keys[index][JsonWebKeyParameterNames.Pub]
                         },
 
                         JsonWebAlgorithmsKeyTypes.EllipticCurve => new JsonWebKey
@@ -530,6 +530,13 @@ public static partial class OpenIddictValidationHandlers
                             Crv = (string?) keys[index][JsonWebKeyParameterNames.Crv],
                             X = (string?) keys[index][JsonWebKeyParameterNames.X],
                             Y = (string?) keys[index][JsonWebKeyParameterNames.Y]
+                        },
+
+                        JsonWebAlgorithmsKeyTypes.RSA => new JsonWebKey
+                        {
+                            Kty = JsonWebAlgorithmsKeyTypes.RSA,
+                            E = (string?) keys[index][JsonWebKeyParameterNames.E],
+                            N = (string?) keys[index][JsonWebKeyParameterNames.N]
                         },
 
                         _ => null
@@ -545,9 +552,9 @@ public static partial class OpenIddictValidationHandlers
                         return ValueTask.CompletedTask;
                     }
 
-                    // If the key is a RSA key, ensure the mandatory parameters are all present.
-                    if (string.Equals(key.Kty, JsonWebAlgorithmsKeyTypes.RSA, StringComparison.Ordinal) &&
-                       (string.IsNullOrEmpty(key.E) || string.IsNullOrEmpty(key.N)))
+                    // If the key is an AKP key, ensure the mandatory parameters are all present.
+                    if (string.Equals(key.Kty, JsonWebAlgorithmsKeyTypes.Akp, StringComparison.Ordinal) &&
+                       (string.IsNullOrEmpty(key.Alg) || string.IsNullOrEmpty(key.Pub)))
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -560,6 +567,18 @@ public static partial class OpenIddictValidationHandlers
                     // If the key is an EC key, ensure the mandatory parameters are all present.
                     if (string.Equals(key.Kty, JsonWebAlgorithmsKeyTypes.EllipticCurve, StringComparison.Ordinal) &&
                        (string.IsNullOrEmpty(key.Crv) || string.IsNullOrEmpty(key.X) || string.IsNullOrEmpty(key.Y)))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.GetResourceString(SR.ID2104),
+                            uri: SR.FormatID8000(SR.ID2104));
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    // If the key is a RSA key, ensure the mandatory parameters are all present.
+                    if (string.Equals(key.Kty, JsonWebAlgorithmsKeyTypes.RSA, StringComparison.Ordinal) &&
+                       (string.IsNullOrEmpty(key.E) || string.IsNullOrEmpty(key.N)))
                     {
                         context.Reject(
                             error: Errors.ServerError,
