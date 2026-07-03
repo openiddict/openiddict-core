@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -154,7 +155,7 @@ public sealed class OpenIddictClientBuilder
 
         if (key.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW))
         {
-            if (key.KeySize != 256)
+            if (key.KeySize is not 256)
             {
                 throw new InvalidOperationException(SR.FormatID0283(256, key.KeySize));
             }
@@ -414,6 +415,7 @@ public sealed class OpenIddictClientBuilder
     /// </summary>
     /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [UnsupportedOSPlatform("linux")]
     public OpenIddictClientBuilder AddEncryptionCertificate(string thumbprint)
     {
         ArgumentException.ThrowIfNullOrEmpty(thumbprint);
@@ -493,16 +495,6 @@ public sealed class OpenIddictClientBuilder
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
         }
 
-        if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
-        {
-            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
-        }
-
-        if (key.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256))
-        {
-            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
-        }
-
         // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
         if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
         {
@@ -517,6 +509,31 @@ public sealed class OpenIddictClientBuilder
         if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
         {
             return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa44))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.MlDsa44));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa65))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.MlDsa65));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa87))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.MlDsa87));
+        }
+
+        if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
+        {
+            return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
         }
 
         throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
@@ -644,21 +661,6 @@ public sealed class OpenIddictClientBuilder
 
         return algorithm switch
         {
-            SecurityAlgorithms.RsaSha256 or
-            SecurityAlgorithms.RsaSha384 or
-            SecurityAlgorithms.RsaSha512 or
-            SecurityAlgorithms.RsaSha256Signature or
-            SecurityAlgorithms.RsaSha384Signature or
-            SecurityAlgorithms.RsaSha512Signature or
-            SecurityAlgorithms.RsaSsaPssSha256 or
-            SecurityAlgorithms.RsaSsaPssSha384 or
-            SecurityAlgorithms.RsaSsaPssSha512 or
-            SecurityAlgorithms.RsaSsaPssSha256Signature or
-            SecurityAlgorithms.RsaSsaPssSha384Signature or
-            SecurityAlgorithms.RsaSsaPssSha512Signature
-                => AddSigningCredentials(new SigningCredentials(new RsaSecurityKey(
-                    RSA.Create(keySizeInBits: 4096)), algorithm)),
-
             SecurityAlgorithms.EcdsaSha256 or
             SecurityAlgorithms.EcdsaSha256Signature
                 => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
@@ -673,6 +675,33 @@ public sealed class OpenIddictClientBuilder
             SecurityAlgorithms.EcdsaSha512Signature
                 => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
                     ECDsa.Create(ECCurve.NamedCurves.nistP521)), algorithm)),
+
+            SecurityAlgorithms.MlDsa44
+                => AddSigningCredentials(new SigningCredentials(new MlDsaSecurityKey(
+                    MLDsa.GenerateKey(MLDsaAlgorithm.MLDsa44)), algorithm)),
+
+            SecurityAlgorithms.MlDsa65
+                => AddSigningCredentials(new SigningCredentials(new MlDsaSecurityKey(
+                    MLDsa.GenerateKey(MLDsaAlgorithm.MLDsa65)), algorithm)),
+
+            SecurityAlgorithms.MlDsa87
+                => AddSigningCredentials(new SigningCredentials(new MlDsaSecurityKey(
+                    MLDsa.GenerateKey(MLDsaAlgorithm.MLDsa87)), algorithm)),
+
+            SecurityAlgorithms.RsaSha256 or
+            SecurityAlgorithms.RsaSha384 or
+            SecurityAlgorithms.RsaSha512 or
+            SecurityAlgorithms.RsaSha256Signature or
+            SecurityAlgorithms.RsaSha384Signature or
+            SecurityAlgorithms.RsaSha512Signature or
+            SecurityAlgorithms.RsaSsaPssSha256 or
+            SecurityAlgorithms.RsaSsaPssSha384 or
+            SecurityAlgorithms.RsaSsaPssSha512 or
+            SecurityAlgorithms.RsaSsaPssSha256Signature or
+            SecurityAlgorithms.RsaSsaPssSha384Signature or
+            SecurityAlgorithms.RsaSsaPssSha512Signature
+                => AddSigningCredentials(new SigningCredentials(new RsaSecurityKey(
+                    RSA.Create(keySizeInBits: 4096)), algorithm)),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058))
         };
@@ -782,6 +811,7 @@ public sealed class OpenIddictClientBuilder
     /// </summary>
     /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [UnsupportedOSPlatform("linux")]
     public OpenIddictClientBuilder AddSigningCertificate(string thumbprint)
     {
         ArgumentException.ThrowIfNullOrEmpty(thumbprint);

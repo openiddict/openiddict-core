@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -283,6 +284,7 @@ public sealed class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    [UnsupportedOSPlatform("linux")]
     public OpenIddictValidationBuilder AddEncryptionCertificate(string thumbprint)
     {
         ArgumentException.ThrowIfNullOrEmpty(thumbprint);
@@ -508,6 +510,7 @@ public sealed class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    [UnsupportedOSPlatform("linux")]
     public OpenIddictValidationBuilder AddSigningCertificate(string thumbprint)
     {
         ArgumentException.ThrowIfNullOrEmpty(thumbprint);

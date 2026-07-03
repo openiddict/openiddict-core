@@ -353,9 +353,6 @@ Consider using 'options.AddEncryptionCredentials(EncryptingCredentials)' instead
     <value>A signature algorithm cannot be automatically inferred from the signing key.
 Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</value>
   </data>
-  <data name="ID0069" xml:space="preserve">
-    <value>ECDSA signing keys are not supported on this platform.</value>
-  </data>
   <data name="ID0070" xml:space="preserve">
     <value>The specified certificate is not a signing certificate.</value>
   </data>
@@ -2721,7 +2718,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>A JSON Web Key was excluded from the key set because it didn't contain the mandatory '{Parameter}' parameter.</value>
   </data>
   <data name="ID6071" xml:space="preserve">
-    <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA and ECDSA asymmetric security keys can be exposed via the JSON Web Key Set endpoint.</value>
+    <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA, ECDSA and ML-DSA asymmetric security keys can be exposed via the JSON Web Key Set endpoint.</value>
   </data>
   <data name="ID6072" xml:space="preserve">
     <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA asymmetric security keys can be exposed via the JSON Web Key Set endpoint.</value>
@@ -3347,6 +3344,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6295" xml:space="preserve">
     <value>The client secret attached to the client application {ClientId} couldn't be automatically re-hashed due to a concurency exception.</value>
+  </data>
+  <data name="ID6296" xml:space="preserve">
+    <value>A signing key of type '{Type}' was ignored because its ML-DSA public key couldn't be extracted.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

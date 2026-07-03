@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Client;
 
@@ -62,6 +63,22 @@ public sealed class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddi
         foreach (var key in configuration.JsonWebKeySet.GetSigningKeys())
         {
             configuration.SigningKeys.Add(key);
+        }
+
+        // Note: IdentityModel doesn't currently return AKP keys when calling GetSigningKeys(), so a
+        // second pass is made to ensure that all AKP keys are added to the signing keys collection.
+        //
+        // For more information, see
+        // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/issues/3534.
+        for (var index = 0; index < configuration.JsonWebKeySet.Keys.Count; index++)
+        {
+            if (configuration.JsonWebKeySet.Keys[index] is {
+                Kty: JsonWebAlgorithmsKeyTypes.Akp,
+                Alg: SecurityAlgorithms.MlDsa44 or SecurityAlgorithms.MlDsa65 or SecurityAlgorithms.MlDsa87 } &&
+                JsonWebKeyConverter.TryConvertToSecurityKey(configuration.JsonWebKeySet.Keys[index], out SecurityKey? key))
+            {
+                configuration.SigningKeys.Add(key);
+            }
         }
 
         return configuration;

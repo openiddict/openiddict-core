@@ -900,6 +900,9 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData(Algorithms.EcdsaSha256)]
     [InlineData(Algorithms.EcdsaSha384)]
     [InlineData(Algorithms.EcdsaSha512)]
+    [InlineData(SecurityAlgorithms.MlDsa44)]
+    [InlineData(SecurityAlgorithms.MlDsa65)]
+    [InlineData(SecurityAlgorithms.MlDsa87)]
     public async Task HandleConfigurationRequest_SigningAlgorithmsAreCorrectlyReturned(string algorithm)
     {
         // Arrange
@@ -1536,6 +1539,31 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         Assert.Equal(parameters.Q.X, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.X]));
         Assert.Equal(parameters.Q.Y, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.Y]));
+    }
+
+    [SkippableFact(typeof(PlatformNotSupportedException))]
+    public async Task HandleJsonWebKeySetRequest_MlDsaSecurityKeysAreCorrectlyExposed()
+    {
+        // Arrange
+        using var algorithm = MLDsa.GenerateKey(MLDsaAlgorithm.MLDsa44);
+        var blob = algorithm.ExportMLDsaPublicKey();
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Configure(options => options.SigningCredentials.Clear());
+            options.AddSigningKey(new MlDsaSecurityKey(algorithm));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/jwks");
+        var key = response[Parameters.Keys]?[0];
+
+        // Assert
+        Assert.Equal(JsonWebAlgorithmsKeyTypes.Akp, (string?) key?[JsonWebKeyParameterNames.Kty]);
+        Assert.Equal(SecurityAlgorithms.MlDsa44, (string?) key?[JsonWebKeyParameterNames.Alg]);
+        Assert.Equal(blob, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.Pub]));
     }
 
     [Fact]

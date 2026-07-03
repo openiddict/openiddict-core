@@ -18,6 +18,11 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
+using System.Runtime.CompilerServices;
+
+#if !NET
+using Org.BouncyCastle.Crypto.Digests;
+#endif
 
 namespace OpenIddict.Client;
 
@@ -2057,12 +2062,33 @@ public static partial class OpenIddictClientHandlers
                     SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
                         => SHA512.HashData(Encoding.ASCII.GetBytes(token)),
 
+                    // Note: while not officially adopted yet, the OpenID Connect Working Group has proposed to use SHAKE256
+                    // for ML-DSA-based algorithms. See https://bitbucket.org/openid/connect/issues/1125 for more information.
+                    SecurityAlgorithms.MlDsa44 or SecurityAlgorithms.MlDsa65 or SecurityAlgorithms.MlDsa87
+                        => GetShake256Digest(Encoding.ASCII.GetBytes(token), length: 64),
+
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0293))
                 };
 
                 // Warning: only the left-most half of the access token and authorization code digest is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
                 return Base64UrlEncoder.Encode(hash, 0, hash.Length / 2).AsSpan();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static byte[] GetShake256Digest(byte[] data, int length)
+            {
+#if NET
+                return Shake256.HashData(data, length);
+#else
+                var digest = new ShakeDigest(256);
+                digest.BlockUpdate(data, 0, data.Length);
+
+                var hash = new byte[length];
+                digest.DoFinal(hash, 0);
+
+                return hash;
+#endif
             }
 
             static bool ValidateTokenHash(string algorithm, string token, string hash) =>
@@ -3736,12 +3762,33 @@ public static partial class OpenIddictClientHandlers
                     SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
                         => SHA512.HashData(Encoding.ASCII.GetBytes(token)),
 
+                    // Note: while not officially adopted yet, the OpenID Connect Working Group has proposed to use SHAKE256
+                    // for ML-DSA-based algorithms. See https://bitbucket.org/openid/connect/issues/1125 for more information.
+                    SecurityAlgorithms.MlDsa44 or SecurityAlgorithms.MlDsa65 or SecurityAlgorithms.MlDsa87
+                        => GetShake256Digest(Encoding.ASCII.GetBytes(token), length: 64),
+
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0295))
                 };
 
                 // Warning: only the left-most half of the access token and authorization code digest is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
                 return Base64UrlEncoder.Encode(hash, 0, hash.Length / 2).AsSpan();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static byte[] GetShake256Digest(byte[] data, int length)
+            {
+#if NET
+                return Shake256.HashData(data, length);
+#else
+                var digest = new ShakeDigest(256);
+                digest.BlockUpdate(data, 0, data.Length);
+
+                var hash = new byte[length];
+                digest.DoFinal(hash, 0);
+
+                return hash;
+#endif
             }
 
             static bool ValidateTokenHash(string algorithm, string token, string hash) =>

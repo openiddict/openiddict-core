@@ -6,9 +6,9 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -770,6 +770,10 @@ public static partial class OpenIddictServerHandlers
                         SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
                             => SecurityAlgorithms.EcdsaSha512,
 
+                        SecurityAlgorithms.MlDsa44 => SecurityAlgorithms.MlDsa44,
+                        SecurityAlgorithms.MlDsa65 => SecurityAlgorithms.MlDsa65,
+                        SecurityAlgorithms.MlDsa87 => SecurityAlgorithms.MlDsa87,
+
                         SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
                             => SecurityAlgorithms.RsaSha256,
                         SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
@@ -1025,76 +1029,102 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                using var stream = new MemoryStream();
-                using var writer = new Utf8JsonWriter(stream);
+                List<JsonObject> keys = [];
 
-                writer.WriteStartArray();
-
-                foreach (var key in notification.Keys)
+                for (var index = 0; index < notification.Keys.Count; index++)
                 {
                     // Ensure a key type has been provided.
                     // See https://tools.ietf.org/html/rfc7517#section-4.1
-                    if (string.IsNullOrEmpty(key.Kty))
+                    if (string.IsNullOrEmpty(notification.Keys[index].Kty))
                     {
                         context.Logger.LogWarning(6070, SR.GetResourceString(SR.ID6070), JsonWebKeyParameterNames.Kty);
 
                         continue;
                     }
 
-                    writer.WriteStartObject();
+                    // Important: the JSON Web Keys returned to the caller MUST NOT
+                    // include ANY parameter containing private key material.
 
-                    if (!string.IsNullOrEmpty(key.Kid)) writer.WriteString(JsonWebKeyParameterNames.Kid, key.Kid);
-                    if (!string.IsNullOrEmpty(key.Use)) writer.WriteString(JsonWebKeyParameterNames.Use, key.Use);
-                    if (!string.IsNullOrEmpty(key.Kty)) writer.WriteString(JsonWebKeyParameterNames.Kty, key.Kty);
-                    if (!string.IsNullOrEmpty(key.Alg)) writer.WriteString(JsonWebKeyParameterNames.Alg, key.Alg);
-                    if (!string.IsNullOrEmpty(key.Crv)) writer.WriteString(JsonWebKeyParameterNames.Crv, key.Crv);
-                    if (!string.IsNullOrEmpty(key.E))   writer.WriteString(JsonWebKeyParameterNames.E, key.E);
-                    if (!string.IsNullOrEmpty(key.N))   writer.WriteString(JsonWebKeyParameterNames.N, key.N);
-                    if (!string.IsNullOrEmpty(key.X))   writer.WriteString(JsonWebKeyParameterNames.X, key.X);
-                    if (!string.IsNullOrEmpty(key.Y))   writer.WriteString(JsonWebKeyParameterNames.Y, key.Y);
-                    if (!string.IsNullOrEmpty(key.X5t)) writer.WriteString(JsonWebKeyParameterNames.X5t, key.X5t);
-                    if (!string.IsNullOrEmpty(key.X5u)) writer.WriteString(JsonWebKeyParameterNames.X5u, key.X5u);
+                    var key = new JsonObject();
 
-                    if (key.KeyOps.Count is not 0)
+                    if (!string.IsNullOrEmpty(notification.Keys[index].Kid))
                     {
-                        writer.WritePropertyName(JsonWebKeyParameterNames.KeyOps);
-                        writer.WriteStartArray();
-
-                        for (var index = 0; index < key.KeyOps.Count; index++)
-                        {
-                            writer.WriteStringValue(key.KeyOps[index]);
-                        }
-
-                        writer.WriteEndArray();
+                        key[JsonWebKeyParameterNames.Kid] = notification.Keys[index].Kid;
                     }
 
-                    if (key.X5c.Count is not 0)
+                    if (!string.IsNullOrEmpty(notification.Keys[index].Use))
                     {
-                        writer.WritePropertyName(JsonWebKeyParameterNames.X5c);
-                        writer.WriteStartArray();
-
-                        for (var index = 0; index < key.X5c.Count; index++)
-                        {
-                            writer.WriteStringValue(key.X5c[index]);
-                        }
-
-                        writer.WriteEndArray();
+                        key[JsonWebKeyParameterNames.Use] = notification.Keys[index].Use;
                     }
 
-                    writer.WriteEndObject();
+                    if (!string.IsNullOrEmpty(notification.Keys[index].Kty))
+                    {
+                        key[JsonWebKeyParameterNames.Kty] = notification.Keys[index].Kty;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].Alg))
+                    {
+                        key[JsonWebKeyParameterNames.Alg] = notification.Keys[index].Alg;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].Crv))
+                    {
+                        key[JsonWebKeyParameterNames.Crv] = notification.Keys[index].Crv;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].E))
+                    {
+                        key[JsonWebKeyParameterNames.E] = notification.Keys[index].E;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].N))
+                    {
+                        key[JsonWebKeyParameterNames.N] = notification.Keys[index].N;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].X))
+                    {
+                        key[JsonWebKeyParameterNames.X] = notification.Keys[index].X;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].Y))
+                    {
+                        key[JsonWebKeyParameterNames.Y] = notification.Keys[index].Y;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].Pub))
+                    {
+                        key[JsonWebKeyParameterNames.Pub] = notification.Keys[index].Pub;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].X5t))
+                    {
+                        key[JsonWebKeyParameterNames.X5t] = notification.Keys[index].X5t;
+                    }
+
+                    if (!string.IsNullOrEmpty(notification.Keys[index].X5u))
+                    {
+                        key[JsonWebKeyParameterNames.X5u] = notification.Keys[index].X5u;
+                    }
+
+                    if (notification.Keys[index].KeyOps.Count is not 0)
+                    {
+                        key[JsonWebKeyParameterNames.KeyOps] = new JsonArray([.. notification.Keys[index].KeyOps]);
+                    }
+
+                    if (notification.Keys[index].X5c.Count is not 0)
+                    {
+                        key[JsonWebKeyParameterNames.X5c] = new JsonArray([.. notification.Keys[index].X5c]);
+                    }
+
+                    keys.Add(key);
                 }
-
-                writer.WriteEndArray();
-                writer.Flush();
-                stream.Seek(0L, SeekOrigin.Begin);
-
-                using var document = JsonDocument.Parse(stream);
 
                 // Note: AddParameter() is used here to ensure the mandatory "keys" node
                 // is returned to the caller, even if the key set doesn't expose any key.
                 // See https://tools.ietf.org/html/rfc7517#section-5 for more information.
                 var response = new OpenIddictResponse();
-                response.AddParameter(Parameters.Keys, document.RootElement.Clone());
+                response.AddParameter(Parameters.Keys, new JsonArray([.. keys]));
 
                 context.Transaction.Response = response;
             }
@@ -1167,16 +1197,22 @@ public static partial class OpenIddictServerHandlers
 
                 foreach (var credentials in context.Options.SigningCredentials)
                 {
-                    if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
-                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256) &&
-                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
+                    if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
                         !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
-                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512) &&
+                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa44)     &&
+                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa65)     &&
+                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa87)     &&
+                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256)   &&
+                        !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
                     {
                         context.Logger.LogInformation(6071, SR.GetResourceString(SR.ID6071), credentials.Key.GetType().Name);
 
                         continue;
                     }
+
+                    // Important: the JSON Web Keys returned to the caller MUST NOT
+                    // include ANY parameter containing private key material.
 
                     var key = new JsonWebKey
                     {
@@ -1206,6 +1242,10 @@ public static partial class OpenIddictServerHandlers
                             SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature
                                 => SecurityAlgorithms.RsaSsaPssSha512,
 
+                            SecurityAlgorithms.MlDsa44 => SecurityAlgorithms.MlDsa44,
+                            SecurityAlgorithms.MlDsa65 => SecurityAlgorithms.MlDsa65,
+                            SecurityAlgorithms.MlDsa87 => SecurityAlgorithms.MlDsa87,
+
                             _ => null
                         },
 
@@ -1213,56 +1253,11 @@ public static partial class OpenIddictServerHandlers
                         Kid = credentials.Kid
                     };
 
-                    if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) ||
-                        credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
-                    {
-                        // Note: IdentityModel 5 doesn't expose a method allowing to retrieve the underlying algorithm
-                        // from a generic asymmetric security key. To work around this limitation, try to cast
-                        // the security key to the built-in IdentityModel types to extract the required RSA instance.
-                        // See https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/issues/395.
-
-                        var parameters = credentials.Key switch
-                        {
-                            X509SecurityKey { PublicKey: RSA algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
-
-                            RsaSecurityKey { Rsa:        RSA algorithm       } => algorithm.ExportParameters(includePrivateParameters: false),
-                            RsaSecurityKey { Parameters: RSAParameters value } => value,
-
-                            _ => (RSAParameters?) null
-                        };
-
-                        if (parameters is null)
-                        {
-                            context.Logger.LogWarning(6073, SR.GetResourceString(SR.ID6073), credentials.Key.GetType().Name);
-
-                            continue;
-                        }
-
-                        Debug.Assert(parameters.Value.Exponent is not null &&
-                                     parameters.Value.Modulus is not null, SR.GetResourceString(SR.ID4003));
-
-                        key.Kty = JsonWebAlgorithmsKeyTypes.RSA;
-
-                        // Note: both E and N must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7518#section-6.3.1.1.
-                        key.E = Base64UrlEncoder.Encode(parameters.Value.Exponent);
-                        key.N = Base64UrlEncoder.Encode(parameters.Value.Modulus);
-                    }
-
-                    else if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
-                             credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
-                             credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
-                    {
-                        var parameters = credentials.Key switch
-                        {
-                            X509SecurityKey { PublicKey: ECDsa algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
-
-                            ECDsaSecurityKey { ECDsa: ECDsa algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
-
-                            _ => (ECParameters?) null
-                        };
-
-                        if (parameters is null)
+                    if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
+                        credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
+                        credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                    {;
+                        if (!TryGetECParameters(credentials.Key, out var parameters))
                         {
                             context.Logger.LogWarning(6074, SR.GetResourceString(SR.ID6074), credentials.Key.GetType().Name);
 
@@ -1272,7 +1267,7 @@ public static partial class OpenIddictServerHandlers
                         // Warning: on .NET Framework 4.x, exported ECParameters generally have a null OID
                         // value attached. To work around this limitation, both the raw OID values and the
                         // friendly names are compared to determine whether the curve is of the specified type.
-                        var curve = parameters.Value.Curve.Oid switch
+                        var curve = parameters.Curve.Oid switch
                         {
                             { FriendlyName: "nistP256" } or { Value: "1.2.840.10045.3.1.7" } => JsonWebKeyECTypes.P256,
                             { FriendlyName: "nistP384" } or { Value: "1.3.132.0.34"        } => JsonWebKeyECTypes.P384,
@@ -1288,16 +1283,54 @@ public static partial class OpenIddictServerHandlers
                             continue;
                         }
 
-                        Debug.Assert(parameters.Value.Q.X is not null &&
-                                     parameters.Value.Q.Y is not null, SR.GetResourceString(SR.ID4004));
+                        Debug.Assert(parameters.Q.X is not null && parameters.Q.Y is not null, SR.GetResourceString(SR.ID4004));
 
                         key.Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
                         key.Crv = curve;
 
                         // Note: both X and Y must be base64url-encoded.
                         // See https://tools.ietf.org/html/rfc7518#section-6.2.1.2.
-                        key.X = Base64UrlEncoder.Encode(parameters.Value.Q.X);
-                        key.Y = Base64UrlEncoder.Encode(parameters.Value.Q.Y);
+                        key.X = Base64UrlEncoder.Encode(parameters.Q.X);
+                        key.Y = Base64UrlEncoder.Encode(parameters.Q.Y);
+                    }
+
+                    // Note: while ML-DSA is supported on .NET Framework via the Microsoft.Bcl.Cryptography package, SHAKE256 - used
+                    // to produce and validate access token and authorization code hashes when a ML-DSA key is used - is not supported.
+                    //
+                    // As a result, ML-DSA keys are not supported by OpenIddict on .NET Framework and are ignored here.
+                    else if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa44) ||
+                             credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa65) ||
+                             credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.MlDsa87))
+                    {
+                        if (!TryGetMLDsaPublicKey(credentials.Key, out byte[]? blob))
+                        {
+                            context.Logger.LogWarning(6297, SR.GetResourceString(SR.ID6296), credentials.Key.GetType().Name);
+
+                            continue;
+                        }
+
+                        key.Kty = JsonWebAlgorithmsKeyTypes.Akp;
+                        key.Pub = Base64UrlEncoder.Encode(blob);
+                    }
+
+                    else if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) ||
+                             credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
+                    {
+                        if (!TryGetRSAParameters(credentials.Key, out RSAParameters parameters))
+                        {
+                            context.Logger.LogWarning(6073, SR.GetResourceString(SR.ID6073), credentials.Key.GetType().Name);
+
+                            continue;
+                        }
+
+                        Debug.Assert(parameters.Exponent is not null && parameters.Modulus is not null, SR.GetResourceString(SR.ID4003));
+
+                        key.Kty = JsonWebAlgorithmsKeyTypes.RSA;
+
+                        // Note: both E and N must be base64url-encoded.
+                        // See https://tools.ietf.org/html/rfc7518#section-6.3.1.1.
+                        key.E = Base64UrlEncoder.Encode(parameters.Exponent);
+                        key.N = Base64UrlEncoder.Encode(parameters.Modulus);
                     }
 
                     // If the signing key is embedded in a X.509 certificate, set
@@ -1322,6 +1355,73 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 return ValueTask.CompletedTask;
+
+                // Note: IdentityModel 5+ doesn't expose a method allowing to retrieve the underlying algorithm
+                // from a generic security key. To work around this limitation, these local functions try to
+                // cast the security key to the built-in IdentityModel types to extract the required instance.
+                //
+                // See https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/issues/395.
+
+                static bool TryGetECParameters(SecurityKey key, out ECParameters parameters)
+                {
+                    switch (key)
+                    {
+                        case X509SecurityKey { PublicKey: ECDsa algorithm }:
+                            parameters = algorithm.ExportParameters(includePrivateParameters: false);
+                            return true;
+
+                        case ECDsaSecurityKey { ECDsa: ECDsa algorithm }:
+                            parameters = algorithm.ExportParameters(includePrivateParameters: false);
+                            return true;
+
+                        default:
+                            parameters = default;
+                            return false;
+                    }
+                }
+
+                static bool TryGetMLDsaPublicKey(SecurityKey key, [NotNullWhen(true)] out byte[]? blob)
+                {
+                    switch (key)
+                    {
+                        case X509SecurityKey { Certificate: X509Certificate2 certificate }
+#pragma warning disable SYSLIB5006
+                            when certificate.GetMLDsaPublicKey() is MLDsa algorithm:
+#pragma warning restore SYSLIB5006
+                            blob = algorithm.ExportMLDsaPublicKey();
+                            return true;
+
+                        case MlDsaSecurityKey { MLDsa: MLDsa algorithm }:
+                            blob = algorithm.ExportMLDsaPublicKey();
+                            return true;
+
+                        default:
+                            blob = default;
+                            return false;
+                    }
+                }
+
+                static bool TryGetRSAParameters(SecurityKey key, out RSAParameters parameters)
+                {
+                    switch (key)
+                    {
+                        case X509SecurityKey { PublicKey: RSA algorithm }:
+                            parameters = algorithm.ExportParameters(includePrivateParameters: false);
+                            return true;
+
+                        case RsaSecurityKey { Rsa: RSA algorithm }:
+                            parameters = algorithm.ExportParameters(includePrivateParameters: false);
+                            return true;
+
+                        case RsaSecurityKey { Parameters: RSAParameters value }:
+                            parameters = value;
+                            return true;
+
+                        default:
+                            parameters = default;
+                            return false;
+                    }
+                }
             }
         }
     }
