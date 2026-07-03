@@ -9,6 +9,7 @@ using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
@@ -418,40 +419,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 return ValueTask.CompletedTask;
             }
 
-            try
-            {
-                // Extract the payload and validate the version marker.
-                var payload = Base64Url.DecodeFromChars(value);
-                if (payload.Length < (1 + sizeof(uint)) || payload[0] is not 0x01)
-                {
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2163),
-                        uri: SR.FormatID8000(SR.ID2163));
-
-                    return ValueTask.CompletedTask;
-                }
-
-                // Extract the length of the request forgery protection.
-                var length = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.AsSpan(1, sizeof(uint)));
-                if (length is 0 || length != (payload.Length - (1 + sizeof(uint))))
-                {
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2163),
-                        uri: SR.FormatID8000(SR.ID2163));
-
-                    return ValueTask.CompletedTask;
-                }
-
-                // Note: since the correlation cookie is not protected against tampering, an unexpected
-                // value may be present in the cookie payload and this call may return a string whose
-                // length doesn't match the expected value. In any case, any tampering attempt will be
-                // detected when comparing the resolved value with the expected value stored in the state.
-                context.RequestForgeryProtection = Encoding.UTF8.GetString(payload, index: 5, length);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            // Try to extract the request forgery protection from the correlation cookie. If the value
+            // cannot be extracted, return a generic error indicating the cookie is invalid or malformed.
+            if (!TryGetRequestForgeryProtection(value, out string? result))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -461,12 +431,49 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 return ValueTask.CompletedTask;
             }
 
+            context.RequestForgeryProtection = result;
+
             // Return a response header asking the browser to delete the state cookie.
             //
             // Note: when deleting a cookie, the same options used when creating it MUST be specified.
             request.HttpContext.Response.Cookies.Delete(name, builder.Build(request.HttpContext));
 
             return ValueTask.CompletedTask;
+
+            static bool TryGetRequestForgeryProtection(ReadOnlySpan<char> input, [NotNullWhen(true)] out string? output)
+            {
+                try
+                {
+                    // Extract the payload and validate the version marker.
+                    var payload = Base64Url.DecodeFromChars(input);
+                    if (payload.Length < (1 + sizeof(uint)) || payload[0] is not 0x01)
+                    {
+                        output = null;
+                        return false;
+                    }
+
+                    // Extract the length of the request forgery protection.
+                    var length = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.AsSpan(1, sizeof(uint)));
+                    if (length is 0 || length != (payload.Length - (1 + sizeof(uint))))
+                    {
+                        output = null;
+                        return false;
+                    }
+
+                    // Note: since the correlation cookie is not protected against tampering, an unexpected
+                    // value may be present in the cookie payload and this call may return a string whose
+                    // length doesn't match the expected value. In any case, any tampering attempt will be
+                    // detected when comparing the resolved value with the expected value stored in the state.
+                    output = Encoding.UTF8.GetString(payload, index: 5, length);
+                    return true;
+                }
+
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                {
+                    output = null;
+                    return false;
+                }
+            }
         }
     }
 
