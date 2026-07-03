@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
@@ -1179,7 +1180,7 @@ public static partial class OpenIddictServerHandlers
 
                     // If the thumbprint of the certificate doesn't match the hash
                     // resolved from the confirmation claim, return an error.
-                    var hash = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256));
+                    var hash = Base64Url.EncodeToString(certificate.GetCertHash(HashAlgorithmName.SHA256));
                     if (!CryptographicOperations.FixedTimeEquals(
                         left : MemoryMarshal.AsBytes<char>(hash),
                         right: MemoryMarshal.AsBytes<char>(thumbprint)))
@@ -1844,7 +1845,7 @@ public static partial class OpenIddictServerHandlers
                     else
                     {
                         // For other tokens, generate a base64url-encoded 256-bit random identifier.
-                        descriptor.ReferenceId = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
+                        descriptor.ReferenceId = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(count: 256 / 8));
                     }
                 }
 

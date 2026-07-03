@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
-using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 

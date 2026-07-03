@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 using System.Runtime.CompilerServices;
+using System.Buffers.Text;
 
 #if !NET
 using Org.BouncyCastle.Crypto.Digests;
@@ -1942,7 +1943,7 @@ public static partial class OpenIddictClientHandlers
                 case { FrontchannelIdentityTokenNonce: string left, StateTokenNonce: string right } when
                     !CryptographicOperations.FixedTimeEquals(
                         left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
-                        right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
+                        right: MemoryMarshal.AsBytes(Base64Url.EncodeToString(
                             SHA256.HashData(Encoding.UTF8.GetBytes(right))).AsSpan())):
                     context.Logger.LogWarning(6210, SR.GetResourceString(SR.ID6210));
 
@@ -2072,7 +2073,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Warning: only the left-most half of the access token and authorization code digest is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
-                return Base64UrlEncoder.Encode(hash, 0, hash.Length / 2).AsSpan();
+                return Base64Url.EncodeToString(hash.AsSpan(0, hash.Length / 2)).AsSpan();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3678,7 +3679,7 @@ public static partial class OpenIddictClientHandlers
                 case { BackchannelIdentityTokenNonce: string left, StateTokenNonce: string right } when
                     !CryptographicOperations.FixedTimeEquals(
                         left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
-                        right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
+                        right: MemoryMarshal.AsBytes(Base64Url.EncodeToString(
                             SHA256.HashData(Encoding.UTF8.GetBytes(right))).AsSpan())):
                     context.Logger.LogWarning(6211, SR.GetResourceString(SR.ID6211));
 
@@ -3772,7 +3773,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Warning: only the left-most half of the access token and authorization code digest is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
-                return Base64UrlEncoder.Encode(hash, 0, hash.Length / 2).AsSpan();
+                return Base64Url.EncodeToString(hash.AsSpan(0, hash.Length / 2)).AsSpan();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -5481,7 +5482,7 @@ public static partial class OpenIddictClientHandlers
 
             // Generate a new crypto-secure random identifier that will
             // be used as the non-guessable part of the state token.
-            context.RequestForgeryProtection = Base64UrlEncoder.Encode(
+            context.RequestForgeryProtection = Base64Url.EncodeToString(
                 RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             return ValueTask.CompletedTask;
@@ -5519,7 +5520,7 @@ public static partial class OpenIddictClientHandlers
             // attached to the authorization request so that the identity provider can bind
             // the issued identity tokens to the generated value, which helps detect token
             // replays (and authorization code injection attacks when PKCE is not available).
-            context.Nonce = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
+            context.Nonce = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             return ValueTask.CompletedTask;
         }
@@ -5598,7 +5599,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Generate a new crypto-secure random identifier that will be used as the code challenge.
-            context.CodeVerifier = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
+            context.CodeVerifier = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             context.CodeChallenge = context.CodeChallengeMethod switch
             {
@@ -5609,7 +5610,7 @@ public static partial class OpenIddictClientHandlers
                 //
                 // Note: ASCII is deliberately used here, as it's the encoding required by the specification.
                 // For more information, see https://datatracker.ietf.org/doc/html/rfc7636#section-4.2.
-                CodeChallengeMethods.Sha256 => Base64UrlEncoder.Encode(
+                CodeChallengeMethods.Sha256 => Base64Url.EncodeToString(
                     SHA256.HashData(Encoding.ASCII.GetBytes(context.CodeVerifier))),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0045))
@@ -5921,7 +5922,7 @@ public static partial class OpenIddictClientHandlers
                 context.ResponseType?.Split(Separators.Space) is IList<string> types &&
                 (types.Contains(ResponseTypes.Code) || types.Contains(ResponseTypes.IdToken)))
             {
-                context.Request.Nonce = Base64UrlEncoder.Encode(
+                context.Request.Nonce = Base64Url.EncodeToString(
                     SHA256.HashData(Encoding.UTF8.GetBytes(context.Nonce)));
             }
 
@@ -9180,7 +9181,7 @@ public static partial class OpenIddictClientHandlers
 
             // Generate a new crypto-secure random identifier that will
             // be used as the non-guessable part of the state token.
-            context.RequestForgeryProtection = Base64UrlEncoder.Encode(
+            context.RequestForgeryProtection = Base64Url.EncodeToString(
                 RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             return ValueTask.CompletedTask;
@@ -9207,7 +9208,7 @@ public static partial class OpenIddictClientHandlers
             ArgumentNullException.ThrowIfNull(context);
 
             // Generate a new crypto-secure random identifier that will be used as the nonce.
-            context.Nonce = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
+            context.Nonce = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(count: 256 / 8));
 
             return ValueTask.CompletedTask;
         }

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -13,7 +14,6 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Server;
 
@@ -1993,7 +1993,7 @@ public static partial class OpenIddictServerHandlers
                     // In this case, the raw bytes of the verifier are directly compared to the challenge.
                     CodeChallengeMethods.Plain => context.Request.CodeVerifier,
 
-                    CodeChallengeMethods.Sha256 => Base64UrlEncoder.Encode(
+                    CodeChallengeMethods.Sha256 => Base64Url.EncodeToString(
                         SHA256.HashData(Encoding.ASCII.GetBytes(context.Request.CodeVerifier))),
 
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0268)),

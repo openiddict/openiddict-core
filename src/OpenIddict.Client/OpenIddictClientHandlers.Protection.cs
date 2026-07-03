@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
@@ -1183,7 +1184,7 @@ public static partial class OpenIddictClientHandlers
 
                 if (context.IsReferenceToken)
                 {
-                    descriptor.ReferenceId = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(count: 256 / 8));
+                    descriptor.ReferenceId = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(count: 256 / 8));
                 }
 
                 await _tokenManager.UpdateAsync(token, descriptor);

@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
 

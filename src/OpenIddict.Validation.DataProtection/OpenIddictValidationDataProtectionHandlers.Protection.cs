@@ -4,12 +4,12 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Security.Claims;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes;
 using static OpenIddict.Validation.OpenIddictValidationHandlers.Protection;
 using Schemes = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes.Schemes;
@@ -127,7 +127,7 @@ public static partial class OpenIddictValidationDataProtectionHandlers
 
                     try
                     {
-                        using var buffer = new MemoryStream(protector.Unprotect(Base64UrlEncoder.DecodeBytes(context.Token)));
+                        using var buffer = new MemoryStream(protector.Unprotect(Base64Url.DecodeFromChars(context.Token)));
                         using var reader = new BinaryReader(buffer);
 
                         // Note: since the data format relies on a data protector using different "purposes" strings

@@ -4,10 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Validation.SystemNetHttp;
 
@@ -52,6 +52,6 @@ public sealed class OpenIddictValidationSystemNetHttpContext
 
         algorithm.TransformFinalBlock([], 0, 0);
 
-        return Base64UrlEncoder.Encode(algorithm.Hash);
+        return Base64Url.EncodeToString(algorithm.Hash);
     }
 }

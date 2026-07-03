@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -1290,8 +1291,8 @@ public static partial class OpenIddictServerHandlers
 
                         // Note: both X and Y must be base64url-encoded.
                         // See https://tools.ietf.org/html/rfc7518#section-6.2.1.2.
-                        key.X = Base64UrlEncoder.Encode(parameters.Q.X);
-                        key.Y = Base64UrlEncoder.Encode(parameters.Q.Y);
+                        key.X = Base64Url.EncodeToString(parameters.Q.X);
+                        key.Y = Base64Url.EncodeToString(parameters.Q.Y);
                     }
 
                     // Note: while ML-DSA is supported on .NET Framework via the Microsoft.Bcl.Cryptography package, SHAKE256 - used
@@ -1310,7 +1311,7 @@ public static partial class OpenIddictServerHandlers
                         }
 
                         key.Kty = JsonWebAlgorithmsKeyTypes.Akp;
-                        key.Pub = Base64UrlEncoder.Encode(blob);
+                        key.Pub = Base64Url.EncodeToString(blob);
                     }
 
                     else if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) ||
@@ -1329,8 +1330,8 @@ public static partial class OpenIddictServerHandlers
 
                         // Note: both E and N must be base64url-encoded.
                         // See https://tools.ietf.org/html/rfc7518#section-6.3.1.1.
-                        key.E = Base64UrlEncoder.Encode(parameters.Exponent);
-                        key.N = Base64UrlEncoder.Encode(parameters.Modulus);
+                        key.E = Base64Url.EncodeToString(parameters.Exponent);
+                        key.N = Base64Url.EncodeToString(parameters.Modulus);
                     }
 
                     // If the signing key is embedded in a X.509 certificate, set
@@ -1339,11 +1340,11 @@ public static partial class OpenIddictServerHandlers
                     {
                         // x5t must be base64url-encoded.
                         // See https://tools.ietf.org/html/rfc7517#section-4.8.
-                        key.X5t = Base64UrlEncoder.Encode(certificate.GetCertHash());
+                        key.X5t = Base64Url.EncodeToString(certificate.GetCertHash());
 
                         // x5t#S256 must be base64url-encoded.
                         // See https://tools.ietf.org/html/rfc7517#section-4.9.
-                        key.X5tS256 = Base64UrlEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256));
+                        key.X5tS256 = Base64Url.EncodeToString(certificate.GetCertHash(HashAlgorithmName.SHA256));
 
                         // Unlike E or N, the certificates contained in x5c
                         // must be base64-encoded and not base64url-encoded.

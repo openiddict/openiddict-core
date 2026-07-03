@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -1486,8 +1487,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Null(key?[JsonWebKeyParameterNames.P]);
         Assert.Null(key?[JsonWebKeyParameterNames.Q]);
 
-        Assert.Equal(parameters.Exponent, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.E]));
-        Assert.Equal(parameters.Modulus, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.N]));
+        Assert.Equal(parameters.Exponent, Base64Url.DecodeFromChars((string?) key?[JsonWebKeyParameterNames.E]));
+        Assert.Equal(parameters.Modulus, Base64Url.DecodeFromChars((string?) key?[JsonWebKeyParameterNames.N]));
     }
 
     [Theory]
@@ -1537,8 +1538,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.Null(key?[JsonWebKeyParameterNames.D]);
 
-        Assert.Equal(parameters.Q.X, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.X]));
-        Assert.Equal(parameters.Q.Y, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.Y]));
+        Assert.Equal(parameters.Q.X, Base64Url.DecodeFromChars((string?) key?[JsonWebKeyParameterNames.X]));
+        Assert.Equal(parameters.Q.Y, Base64Url.DecodeFromChars((string?) key?[JsonWebKeyParameterNames.Y]));
     }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
@@ -1563,7 +1564,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.Equal(JsonWebAlgorithmsKeyTypes.Akp, (string?) key?[JsonWebKeyParameterNames.Kty]);
         Assert.Equal(SecurityAlgorithms.MlDsa44, (string?) key?[JsonWebKeyParameterNames.Alg]);
-        Assert.Equal(blob, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.Pub]));
+        Assert.Equal(blob, Base64Url.DecodeFromChars((string?) key?[JsonWebKeyParameterNames.Pub]));
     }
 
     [Fact]
