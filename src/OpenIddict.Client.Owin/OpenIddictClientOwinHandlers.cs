@@ -402,11 +402,6 @@ public static partial class OpenIddictClientOwinHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0354));
             }
 
-            // Resolve the cookie manager and the cookie options from the OWIN integration options.
-            var (manager, options) = (
-                _options.CurrentValue.CookieManager,
-                _options.CurrentValue.CookieOptions);
-
             // Compute the name of the cookie name based on the prefix and the random nonce.
             var name = new StringBuilder(_options.CurrentValue.CookieName)
                 .Append(Separators.Dot)
@@ -419,7 +414,7 @@ public static partial class OpenIddictClientOwinHandlers
             //
             // In any case, the authentication demand MUST be rejected as it's impossible to ensure
             // it's not an injection or session fixation attack without the correlation cookie.
-            var value = manager.GetRequestCookie(request.Context, name);
+            var value = _options.CurrentValue.CookieManager.GetRequestCookie(request.Context, name);
             if (string.IsNullOrEmpty(value))
             {
                 context.Reject(
@@ -447,14 +442,7 @@ public static partial class OpenIddictClientOwinHandlers
             // Return a response header asking the browser to delete the state cookie.
             //
             // Note: when deleting a cookie, the same options used when creating it MUST be specified.
-            manager.DeleteCookie(request.Context, name, new CookieOptions
-            {
-                Domain = options.Domain,
-                HttpOnly = options.HttpOnly,
-                Path = options.Path,
-                SameSite = options.SameSite,
-                Secure = options.Secure
-            });
+            _options.CurrentValue.CookieManager.DeleteCookie(request.Context, name, _options.CurrentValue.CookieOptions);
 
             return ValueTask.CompletedTask;
 
@@ -464,7 +452,7 @@ public static partial class OpenIddictClientOwinHandlers
                 {
                     // Extract the payload and validate the version marker.
                     var payload = Base64Url.DecodeFromChars(input);
-                    if (payload.Length < (1 + sizeof(uint)) || payload[0] is not 0x01)
+                    if (payload.Length is < (1 + sizeof(uint)) || payload[0] is not 0x01)
                     {
                         output = null;
                         return false;
@@ -472,7 +460,7 @@ public static partial class OpenIddictClientOwinHandlers
 
                     // Extract the length of the request forgery protection.
                     var length = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.AsSpan(1, sizeof(uint)));
-                    if (length is 0 || length != (payload.Length - (1 + sizeof(uint))))
+                    if (length != (payload.Length - (1 + sizeof(uint))))
                     {
                         output = null;
                         return false;

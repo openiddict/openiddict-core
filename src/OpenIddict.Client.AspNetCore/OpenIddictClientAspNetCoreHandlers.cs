@@ -446,7 +446,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 {
                     // Extract the payload and validate the version marker.
                     var payload = Base64Url.DecodeFromChars(input);
-                    if (payload.Length < (1 + sizeof(uint)) || payload[0] is not 0x01)
+                    if (payload.Length is < (1 + sizeof(uint)) || payload[0] is not 0x01)
                     {
                         output = null;
                         return false;
@@ -454,7 +454,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
 
                     // Extract the length of the request forgery protection.
                     var length = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.AsSpan(1, sizeof(uint)));
-                    if (length is 0 || length != (payload.Length - (1 + sizeof(uint))))
+                    if (length != (payload.Length - (1 + sizeof(uint))))
                     {
                         output = null;
                         return false;
