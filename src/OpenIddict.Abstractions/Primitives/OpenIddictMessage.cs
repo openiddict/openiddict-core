@@ -59,12 +59,7 @@ public class OpenIddictMessage
 
             // While generally discouraged, JSON objects can contain multiple properties with
             // the same name. In this case, the last occurrence replaces the previous ones.
-            if (HasParameter(parameter.Name))
-            {
-                RemoveParameter(parameter.Name);
-            }
-
-            AddParameter(parameter.Name, parameter.Value);
+            Parameters[parameter.Name] = parameter.Value;
         }
     }
 
@@ -87,12 +82,7 @@ public class OpenIddictMessage
 
             // While generally discouraged, JSON objects can contain multiple properties with
             // the same name. In this case, the last occurrence replaces the previous ones.
-            if (HasParameter(parameter.Key))
-            {
-                RemoveParameter(parameter.Key);
-            }
-
-            AddParameter(parameter.Key, parameter.Value);
+            Parameters[parameter.Key] = parameter.Value;
         }
     }
 
@@ -113,7 +103,12 @@ public class OpenIddictMessage
                 continue;
             }
 
-            AddParameter(parameter.Key, parameter.Value);
+            if (Parameters.ContainsKey(parameter.Key))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0191), nameof(parameters));
+            }
+
+            Parameters.Add(parameter.Key, parameter.Value);
         }
     }
 
@@ -138,7 +133,7 @@ public class OpenIddictMessage
             // not be present more than once but derived specifications like the
             // token exchange specification deliberately allow specifying multiple
             // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(parameter.Key, parameter.Select(parameter => parameter.Value).ToArray() switch
+            Parameters.Add(parameter.Key, parameter.Select(parameter => parameter.Value).ToArray() switch
             {
                       []       => default,
                 [string value] => new OpenIddictParameter(value),
@@ -168,7 +163,7 @@ public class OpenIddictMessage
             // not be present more than once but derived specifications like the
             // token exchange specification deliberately allow specifying multiple
             // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(parameter.Key, parameter.Value switch
+            Parameters.Add(parameter.Key, parameter.Value switch
             {
                 { IsDefaultOrEmpty: true } => default,
                       [string value]       => new OpenIddictParameter(value),
@@ -198,7 +193,7 @@ public class OpenIddictMessage
             // not be present more than once but derived specifications like the
             // token exchange specification deliberately allow specifying multiple
             // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(parameter.Key, parameter.Value switch
+            Parameters.Add(parameter.Key, parameter.Value switch
             {
                       []       => default,
                 [string value] => new OpenIddictParameter(value),
@@ -229,7 +224,7 @@ public class OpenIddictMessage
             // not be present more than once but derived specifications like the
             // token exchange specification deliberately allow specifying multiple
             // parameters with the same name to represent a multi-valued parameter.
-            AddParameter(name, parameters.GetValues(name) switch
+            Parameters.Add(name, parameters.GetValues(name) switch
             {
                   null or []   => default,
                 [string value] => new OpenIddictParameter(value),
