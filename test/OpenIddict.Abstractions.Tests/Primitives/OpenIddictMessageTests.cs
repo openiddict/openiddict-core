@@ -41,7 +41,7 @@ public class OpenIddictMessageTests
             ]);
         });
 
-        Assert.Equal("name", exception.ParamName);
+        Assert.Equal("parameters", exception.ParamName);
         Assert.StartsWith(SR.GetResourceString(SR.ID0191), exception.Message);
     }
 
