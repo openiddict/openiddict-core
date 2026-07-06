@@ -1523,7 +1523,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // however, BackchannelIdentityTokenPrincipal must be used
                     ProviderTypes.IdAustria  when context.BackchannelIdentityTokenPrincipal?.HasClaim("given_name") is true &&
                          context.BackchannelIdentityTokenPrincipal?.HasClaim("family_name")  is true
-                         => $"{(string?) context.BackchannelIdentityTokenPrincipal?.GetClaim("given_name")} {(string?) context.BackchannelIdentityTokenPrincipal?.GetClaim("family_name")}",
+                         => $"{context.BackchannelIdentityTokenPrincipal?.GetClaim("given_name")} {context.BackchannelIdentityTokenPrincipal?.GetClaim("family_name")}",
 
                     // Mailchimp returns the username as a custom "accountname" node:
                     ProviderTypes.Mailchimp => (string?) context.UserInfoResponse?["accountname"],
