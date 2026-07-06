@@ -1516,11 +1516,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // HubSpot returns the username as a custom "user" node:
                     ProviderTypes.HubSpot => (string?) context.UserInfoResponse?["user"],
                     
-                    // ID Austria returns a "given_name" and "family_name" node, both of which are optional:
-                    // when context.UserInfoResponse?.HasParameter("first_name") is true &&
-                    // context.UserInfoResponse?.HasParameter("last_name")  is true
-                    // => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
-                    // however, BackchannelIdentityTokenPrincipal must be used
+                    // ID Austria returns a "given_name" and "family_name" node
                     ProviderTypes.IdAustria  when context.BackchannelIdentityTokenPrincipal?.HasClaim("given_name") is true &&
                          context.BackchannelIdentityTokenPrincipal?.HasClaim("family_name")  is true
                          => $"{context.BackchannelIdentityTokenPrincipal?.GetClaim("given_name")} {context.BackchannelIdentityTokenPrincipal?.GetClaim("family_name")}",
