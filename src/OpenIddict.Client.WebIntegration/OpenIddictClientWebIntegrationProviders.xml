@@ -1232,15 +1232,16 @@
                                      █▀ ▀██ ▀▀ ███ ██ ██▄▀▀▄██ ▀▀▀ ███ ████ ██ █▀ ▀█ ██ ██
                                      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
-  
+
   <Provider Name="IdAustria" Id="3d66449c-ce7b-46cf-b2f2-6c1fb81bb5fd" Documentation="https://www.id-austria.gv.at/de/developer">
+    <!-- The profile scope is technically not required, but documentation strongly suggests it.
+         Also, without the profile scope set, this provider returns no useful claims,
+         including the custom "urn:pvpgvat:oidc.bpk" claim needed as substitute for the sub claim. -->
     <Environment Name="Production" Issuer="https://idp.id-austria.gv.at/">
-      <!-- Required in practice, documentation strongly suggests it -->
-      <Scope Name="profile" Default="true" Required="true" />
+      <Scope Name="profile" Default="true" Required="true"/>
     </Environment>
     <Environment Name="Reference" Issuer="https://idp.ref.id-austria.gv.at/">
-      <!-- Required in practice, documentation strongly suggests it -->
-      <Scope Name="profile" Default="true" Required="true" />
+      <Scope Name="profile" Default="true" Required="true"/>
     </Environment>
   </Provider>
 
