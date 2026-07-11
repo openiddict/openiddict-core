@@ -21,6 +21,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              */
             AmendIssuer.Descriptor,
             AmendGrantTypes.Descriptor,
+            AmendResponseModes.Descriptor,
             AmendCodeChallengeMethods.Descriptor,
             AmendScopes.Descriptor,
             AmendClientAuthenticationMethods.Descriptor,
@@ -158,6 +159,42 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for amending the supported response modes for the providers that require it.
+        /// </summary>
+        public sealed class AmendResponseModes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendResponseModes>()
+                    .SetOrder(ExtractGrantTypes.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                // Note: some providers don't list the response modes they support, which prevents the OpenIddict
+                // client from using them (unless they are assumed to be enabled by default, like the query or
+                // fragment response modes). To work around that, the list of supported response modes is amended
+                // to include the known supported modes for the providers that require it.
+
+                // Note: Vercel supports the "query" response mode but exclusively lists
+                // the "web_message.opener" mode in its server configuration metadata.
+                if (context.Registration.ProviderType is ProviderTypes.Vercel)
+                {
+                    context.Configuration.ResponseModesSupported.Add(ResponseModes.Query);
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for amending the supported
         /// code challenge methods for the providers that require it.
         /// </summary>
@@ -169,7 +206,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<AmendCodeChallengeMethods>()
-                    .SetOrder(ExtractCodeChallengeMethods.Descriptor.Order + 500)
+                    .SetOrder(AmendResponseModes.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -395,7 +432,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 else if (context.Registration.ProviderType is ProviderTypes.Auth0)
                 {
                     context.Configuration.EndSessionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
-                        context.Registration.Issuer, "oidc/logout");
+                        context.Registration.Issuer, new Uri("oidc/logout", UriKind.Relative));
                 }
 
                 // While Huawei supports OpenID Connect discovery, the configuration

@@ -115,19 +115,19 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     /// Tries to resolve the request forgery protection associated with the specified authentication demand.
     /// </summary>
     /// <param name="nonce">The nonce, used as a unique identifier.</param>
-    /// <param name="protection">The request forgery protection associated with the specified authentication demand.</param>
+    /// <param name="result">The request forgery protection associated with the specified authentication demand.</param>
     /// <returns><see langword="true"/> if the operation could be validated, <see langword="false"/> otherwise.</returns>
-    internal bool TryGetRequestForgeryProtection(string nonce, [NotNullWhen(true)] out string? protection)
+    internal bool TryGetRequestForgeryProtection(string nonce, [NotNullWhen(true)] out string? result)
     {
         ArgumentException.ThrowIfNullOrEmpty(nonce);
 
         if (_tracker.TryGetValue(nonce, out var operation))
         {
-            protection = operation.Value.RequestForgeryProtection;
+            result = operation.Value.RequestForgeryProtection;
             return true;
         }
 
-        protection = null;
+        result = null;
         return false;
     }
 

@@ -798,9 +798,9 @@
   <Provider Name="ExactOnline" DisplayName="Exact Online" Id="7fbc91df-e1c0-4f7e-9c65-f86b1d173ab9"
             Documentation="https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-oauth-eol-oauth-dev-impleovervw">
     <Environment Issuer="{settings.Issuer}">
-      <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/oauth2/auth')}"
-                     TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/oauth2/token')}"
-                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/v1/current/Me')}">
+      <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('api/oauth2/auth', UriKind.Relative))}"
+                     TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('api/oauth2/token', UriKind.Relative))}"
+                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('api/v1/current/Me', UriKind.Relative))}">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -1517,9 +1517,9 @@
     -->
 
     <Environment Issuer="{settings.Issuer}">
-      <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, 'oauth/authorize')}"
-                     TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, 'oauth/token')}"
-                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'api/v1/accounts/verify_credentials')}">
+      <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('oauth/authorize', UriKind.Relative))}"
+                     TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('oauth/token', UriKind.Relative))}"
+                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('api/v1/accounts/verify_credentials', UriKind.Relative))}">
         <GrantType Value="authorization_code" />
         <GrantType Value="client_credentials" />
         <GrantType Value="password" />
@@ -1696,9 +1696,9 @@
   <Provider Name="Nextcloud" Id="f256847d-c720-4b2f-bda0-69e8f4bceac2"
             Documentation="https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/oauth2.html">
     <Environment Issuer="{settings.Issuer}">
-      <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, 'index.php/apps/oauth2/authorize')}"
-                     TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, 'index.php/apps/oauth2/api/v1/token')}"
-                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, 'ocs/v2.php/cloud/user?format=json')}">
+      <Configuration AuthorizationEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('index.php/apps/oauth2/authorize', UriKind.Relative))}"
+                     TokenEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('index.php/apps/oauth2/api/v1/token', UriKind.Relative))}"
+                     UserInfoEndpoint="{CreateAbsoluteUri(settings.Issuer, new Uri('ocs/v2.php/cloud/user?format=json', UriKind.Relative))}">
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -2536,6 +2536,19 @@
 
       <Scope Name="accounts:read" Default="true" Required="true" />
     </Environment>
+  </Provider>
+
+  <!--
+                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                            ██ ███ ██ ▄▄▄██ ▄▄▀██ ▄▄▀██ ▄▄▄██ █████
+                                            ███ █ ███ ▄▄▄██ ▀▀▄██ █████ ▄▄▄██ █████
+                                            ███▄▀▄███ ▀▀▀██ ██ ██ ▀▀▄██ ▀▀▀██ ▀▀ ██
+                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Vercel" Id="f44fc1d8-8575-4271-aae5-3e6bdc030d46"
+            Documentation="https://vercel.com/docs/sign-in-with-vercel/getting-started">
+    <Environment Issuer="https://vercel.com/" />
   </Provider>
 
   <!--
