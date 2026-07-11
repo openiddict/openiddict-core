@@ -1236,7 +1236,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             // Ensure the authentication demand is tracked by the OpenIddict client system integration
             // marshal and resolve the corresponding request forgery protection. If it can't be found,
             // this may indicate a session fixation attack: in this case, reject the authentication demand.
-            if (!_marshal.TryGetRequestForgeryProtection(context.Nonce, out string? protection))
+            if (!_marshal.TryGetRequestForgeryProtection(context.Nonce, out string? result))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -1246,7 +1246,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 return ValueTask.CompletedTask;
             }
 
-            context.RequestForgeryProtection = protection;
+            context.RequestForgeryProtection = result;
 
             return ValueTask.CompletedTask;
         }
