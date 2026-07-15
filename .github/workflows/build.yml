@@ -78,7 +78,7 @@ jobs:
       run: ./eng/common/build.sh -configuration Release -ci -prepareMachine -restore -build -test -sign -pack -integrationTest /p:RestoreDotNetWorkloads=true
 
     - name: Attest artifacts
-      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      uses: actions/attest-build-provenance@bdd51370e0416ac948727f861e03c2f05d32d78e # v1.3.2
       if: |
         runner.os == 'Windows' &&
         github.event.repository.fork == false &&
