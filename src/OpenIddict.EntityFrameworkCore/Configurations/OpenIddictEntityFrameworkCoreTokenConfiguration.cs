@@ -39,10 +39,7 @@ public sealed class OpenIddictEntityFrameworkCoreTokenConfiguration<
 
         builder.HasKey(static token => token.Id);
 
-        // Warning: the non-generic overlord is deliberately used to work around
-        // a breaking change introduced in Entity Framework Core 3.x (where a
-        // generic entity type builder is now returned by the HasIndex() method).
-        builder.HasIndex(nameof(OpenIddictEntityFrameworkCoreToken.ReferenceId))
+        builder.HasIndex(static token => token.ReferenceId)
                .IsUnique();
 
         builder.HasIndex(

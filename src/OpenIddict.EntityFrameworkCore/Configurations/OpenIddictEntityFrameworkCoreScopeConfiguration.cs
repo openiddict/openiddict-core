@@ -33,10 +33,7 @@ public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<
 
         builder.HasKey(static scope => scope.Id);
 
-        // Warning: the non-generic overlord is deliberately used to work around
-        // a breaking change introduced in Entity Framework Core 3.x (where a
-        // generic entity type builder is now returned by the HasIndex() method).
-        builder.HasIndex(nameof(OpenIddictEntityFrameworkCoreScope.Name))
+        builder.HasIndex(static scope => scope.Name)
                .IsUnique();
 
         builder.Property(static scope => scope.ConcurrencyToken)

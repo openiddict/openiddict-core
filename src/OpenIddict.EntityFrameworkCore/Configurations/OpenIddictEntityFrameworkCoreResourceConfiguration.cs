@@ -33,10 +33,7 @@ public sealed class OpenIddictEntityFrameworkCoreResourceConfiguration<
 
         builder.HasKey(static resource => resource.Id);
 
-        // Warning: the non-generic overlord is deliberately used to work around
-        // a breaking change introduced in Entity Framework Core 3.x (where a
-        // generic entity type builder is now returned by the HasIndex() method).
-        builder.HasIndex(nameof(OpenIddictEntityFrameworkCoreResource.Name))
+        builder.HasIndex(static resource => resource.Name)
                .IsUnique();
 
         builder.Property(static resource => resource.ConcurrencyToken)
