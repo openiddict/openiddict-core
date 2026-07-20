@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace OpenIddict.MongoDb.Models;
@@ -48,7 +49,7 @@ public class OpenIddictMongoDbAuthorization
     /// Gets or sets the scopes associated with the current authorization.
     /// </summary>
     [BsonElement("scopes"), BsonIgnoreIfNull]
-    public virtual IReadOnlyList<string>? Scopes { get; set; } = [];
+    public virtual ImmutableArray<string>? Scopes { get; set; }
 
     /// <summary>
     /// Gets or sets the status of the current authorization.

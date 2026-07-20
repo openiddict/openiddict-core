@@ -279,12 +279,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        if (authorization.Scopes is not { Count: > 0 })
-        {
-            return new([]);
-        }
-
-        return new([.. authorization.Scopes]);
+        return new(authorization.Scopes is { IsDefaultOrEmpty: false } scopes ? scopes : []);
     }
 
     /// <inheritdoc/>
@@ -542,14 +537,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        if (scopes.IsDefaultOrEmpty)
-        {
-            authorization.Scopes = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        authorization.Scopes = scopes.ToImmutableList();
+        authorization.Scopes = scopes is { IsDefaultOrEmpty: false } ? scopes : null;
 
         return ValueTask.CompletedTask;
     }
