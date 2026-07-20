@@ -177,14 +177,9 @@ public class OpenIddictMongoDbResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (resource.Descriptions is not { Count: > 0 })
-        {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
-        }
-
-        return new(resource.Descriptions.ToImmutableDictionary(
-            static pair => CultureInfo.GetCultureInfo(pair.Key),
-            static pair => pair.Value));
+        return new(resource.Descriptions is { Count: > 0 } descriptions
+            ? descriptions.ToImmutableDictionary(static pair => CultureInfo.GetCultureInfo(pair.Key), static pair => pair.Value)
+            : []);
     }
 
     /// <inheritdoc/>
@@ -200,14 +195,9 @@ public class OpenIddictMongoDbResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (resource.DisplayNames is not { Count: > 0 })
-        {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
-        }
-
-        return new(resource.DisplayNames.ToImmutableDictionary(
-            static pair => CultureInfo.GetCultureInfo(pair.Key),
-            static pair => pair.Value));
+        return new(resource.DisplayNames is { Count: > 0 } names
+            ? names.ToImmutableDictionary(static pair => CultureInfo.GetCultureInfo(pair.Key), static pair => pair.Value)
+            : []);
     }
 
     /// <inheritdoc/>
@@ -324,16 +314,9 @@ public class OpenIddictMongoDbResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (descriptions is not { Count: > 0 })
-        {
-            resource.Descriptions = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        resource.Descriptions = descriptions.ToImmutableDictionary(
-            static pair => pair.Key.Name,
-            static pair => pair.Value);
+        resource.Descriptions = descriptions is { Count: > 0 }
+            ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            : null;
 
         return ValueTask.CompletedTask;
     }
@@ -344,16 +327,9 @@ public class OpenIddictMongoDbResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (names is not { Count: > 0 })
-        {
-            resource.DisplayNames = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        resource.DisplayNames = names.ToImmutableDictionary(
-            static pair => pair.Key.Name,
-            static pair => pair.Value);
+        resource.DisplayNames = names is { Count: > 0 }
+            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            : null;
 
         return ValueTask.CompletedTask;
     }

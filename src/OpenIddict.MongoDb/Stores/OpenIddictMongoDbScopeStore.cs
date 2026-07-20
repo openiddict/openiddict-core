@@ -196,14 +196,9 @@ public class OpenIddictMongoDbScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (scope.Descriptions is not { Count: > 0 })
-        {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
-        }
-
-        return new(scope.Descriptions.ToImmutableDictionary(
-            static pair => CultureInfo.GetCultureInfo(pair.Key),
-            static pair => pair.Value));
+        return new(scope.Descriptions is { Count: > 0 } descriptions
+            ? descriptions.ToImmutableDictionary(static pair => CultureInfo.GetCultureInfo(pair.Key), static pair => pair.Value)
+            : []);
     }
 
     /// <inheritdoc/>
@@ -219,14 +214,9 @@ public class OpenIddictMongoDbScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (scope.DisplayNames is not { Count: > 0 })
-        {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
-        }
-
-        return new(scope.DisplayNames.ToImmutableDictionary(
-            static pair => CultureInfo.GetCultureInfo(pair.Key),
-            static pair => pair.Value));
+        return new(scope.DisplayNames is { Count: > 0 } names
+            ? names.ToImmutableDictionary(static pair => CultureInfo.GetCultureInfo(pair.Key), static pair => pair.Value)
+            : []);
     }
 
     /// <inheritdoc/>
@@ -271,12 +261,7 @@ public class OpenIddictMongoDbScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (scope.Resources is not { Count: > 0 })
-        {
-            return new([]);
-        }
-
-        return new([.. scope.Resources]);
+        return new(scope.Resources is { IsDefaultOrEmpty: false } resources ? resources : []);
     }
 
     /// <inheritdoc/>
@@ -356,16 +341,9 @@ public class OpenIddictMongoDbScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (descriptions is not { Count: > 0 })
-        {
-            scope.Descriptions = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        scope.Descriptions = descriptions.ToImmutableDictionary(
-            static pair => pair.Key.Name,
-            static pair => pair.Value);
+        scope.Descriptions = descriptions is { Count: > 0 }
+            ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            : null;
 
         return ValueTask.CompletedTask;
     }
@@ -376,16 +354,9 @@ public class OpenIddictMongoDbScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (names is not { Count: > 0 })
-        {
-            scope.DisplayNames = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        scope.DisplayNames = names.ToImmutableDictionary(
-            static pair => pair.Key.Name,
-            static pair => pair.Value);
+        scope.DisplayNames = names is { Count: > 0 }
+            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            : null;
 
         return ValueTask.CompletedTask;
     }
@@ -451,14 +422,7 @@ public class OpenIddictMongoDbScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (resources.IsDefaultOrEmpty)
-        {
-            scope.Resources = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        scope.Resources = resources.ToImmutableList();
+        scope.Resources = resources is { IsDefaultOrEmpty: false } ? resources : null;
 
         return ValueTask.CompletedTask;
     }

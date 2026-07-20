@@ -31,8 +31,7 @@ public class OpenIddictMongoDbScope
     /// Gets or sets the localized public descriptions associated with the current scope.
     /// </summary>
     [BsonElement("descriptions"), BsonIgnoreIfNull]
-    public virtual IReadOnlyDictionary<string, string>? Descriptions { get; set; }
-        = ImmutableDictionary.Create<string, string>();
+    public virtual ImmutableDictionary<string, string>? Descriptions { get; set; }
 
     /// <summary>
     /// Gets or sets the display name associated with the current scope.
@@ -44,8 +43,7 @@ public class OpenIddictMongoDbScope
     /// Gets or sets the localized display names associated with the current scope.
     /// </summary>
     [BsonElement("display_names"), BsonIgnoreIfNull]
-    public virtual IReadOnlyDictionary<string, string>? DisplayNames { get; set; }
-        = ImmutableDictionary.Create<string, string>();
+    public virtual ImmutableDictionary<string, string>? DisplayNames { get; set; }
 
     /// <summary>
     /// Gets or sets the unique identifier associated with the current scope.
@@ -69,5 +67,5 @@ public class OpenIddictMongoDbScope
     /// Gets or sets the resources associated with the current scope.
     /// </summary>
     [BsonElement("resources"), BsonIgnoreIfNull]
-    public virtual IReadOnlyList<string>? Resources { get; set; } = [];
+    public virtual ImmutableArray<string>? Resources { get; set; }
 }

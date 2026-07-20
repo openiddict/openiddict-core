@@ -69,8 +69,7 @@ public class OpenIddictMongoDbApplication
     /// Gets or sets the localized display names associated with the current application.
     /// </summary>
     [BsonElement("display_names"), BsonIgnoreIfNull]
-    public virtual IReadOnlyDictionary<string, string>? DisplayNames { get; set; }
-        = ImmutableDictionary.Create<string, string>();
+    public virtual ImmutableDictionary<string, string>? DisplayNames { get; set; }
 
     /// <summary>
     /// Gets or sets the unique identifier associated with the current application.
@@ -88,13 +87,13 @@ public class OpenIddictMongoDbApplication
     /// Gets or sets the permissions associated with the current application.
     /// </summary>
     [BsonElement("permissions"), BsonIgnoreIfNull]
-    public virtual IReadOnlyList<string>? Permissions { get; set; } = [];
+    public virtual ImmutableArray<string>? Permissions { get; set; }
 
     /// <summary>
     /// Gets or sets the post-logout redirect URIs associated with the current application.
     /// </summary>
     [BsonElement("post_logout_redirect_uris"), BsonIgnoreIfNull]
-    public virtual IReadOnlyList<string>? PostLogoutRedirectUris { get; set; } = [];
+    public virtual ImmutableArray<string>? PostLogoutRedirectUris { get; set; }
 
     /// <summary>
     /// Gets or sets the additional properties associated with the current application.
@@ -106,18 +105,17 @@ public class OpenIddictMongoDbApplication
     /// Gets or sets the redirect URIs associated with the current application.
     /// </summary>
     [BsonElement("redirect_uris"), BsonIgnoreIfNull]
-    public virtual IReadOnlyList<string>? RedirectUris { get; set; } = [];
+    public virtual ImmutableArray<string>? RedirectUris { get; set; }
 
     /// <summary>
     /// Gets or sets the requirements associated with the current application.
     /// </summary>
     [BsonElement("requirements"), BsonIgnoreIfNull]
-    public virtual IReadOnlyList<string>? Requirements { get; set; } = [];
+    public virtual ImmutableArray<string>? Requirements { get; set; }
 
     /// <summary>
     /// Gets or sets the settings associated with the current application.
     /// </summary>
     [BsonElement("settings"), BsonIgnoreIfNull]
-    public virtual IReadOnlyDictionary<string, string>? Settings { get; set; }
-        = ImmutableDictionary.Create<string, string>();
+    public virtual ImmutableDictionary<string, string>? Settings { get; set; }
 }
