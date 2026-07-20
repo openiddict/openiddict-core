@@ -31,11 +31,13 @@ public static class OpenIddictCoreExtensions
 
         builder.Services.TryAddScoped(typeof(IOpenIddictApplicationCache<>), typeof(OpenIddictApplicationCache<>));
         builder.Services.TryAddScoped(typeof(IOpenIddictAuthorizationCache<>), typeof(OpenIddictAuthorizationCache<>));
+        builder.Services.TryAddScoped(typeof(IOpenIddictResourceCache<>), typeof(OpenIddictResourceCache<>));
         builder.Services.TryAddScoped(typeof(IOpenIddictScopeCache<>), typeof(OpenIddictScopeCache<>));
         builder.Services.TryAddScoped(typeof(IOpenIddictTokenCache<>), typeof(OpenIddictTokenCache<>));
 
         builder.Services.TryAddScoped(typeof(OpenIddictApplicationManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationManager<>));
+        builder.Services.TryAddScoped(typeof(OpenIddictResourceManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictScopeManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictTokenManager<>));
 
@@ -45,6 +47,8 @@ public static class OpenIddictCoreExtensions
         builder.Services.TryAddScoped<IOpenIddictApplicationManager>(static provider =>
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
         builder.Services.TryAddScoped<IOpenIddictAuthorizationManager>(static provider =>
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
+        builder.Services.TryAddScoped<IOpenIddictResourceManager>(static provider =>
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
         builder.Services.TryAddScoped<IOpenIddictScopeManager>(static provider =>
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));

@@ -58,6 +58,10 @@ public class OpenIddictMongoDbExtensionsTests
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
             service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictResourceManager) &&
+            service.ImplementationFactory is not null);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
@@ -85,6 +89,10 @@ public class OpenIddictMongoDbExtensionsTests
             service.Lifetime == ServiceLifetime.Singleton &&
             service.ServiceType == typeof(IOpenIddictAuthorizationStore<OpenIddictMongoDbAuthorization>) &&
             service.ImplementationType == typeof(OpenIddictMongoDbAuthorizationStore));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Singleton &&
+            service.ServiceType == typeof(IOpenIddictResourceStore<OpenIddictMongoDbResource>) &&
+            service.ImplementationType == typeof(OpenIddictMongoDbResourceStore));
         Assert.Contains(services, service =>
             service.Lifetime == ServiceLifetime.Singleton &&
             service.ServiceType == typeof(IOpenIddictScopeStore<OpenIddictMongoDbScope>) &&

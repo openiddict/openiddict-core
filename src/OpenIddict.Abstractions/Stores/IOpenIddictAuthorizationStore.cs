@@ -12,7 +12,7 @@ namespace OpenIddict.Abstractions;
 /// <summary>
 /// Provides methods allowing to manage the authorizations stored in a database.
 /// </summary>
-/// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+/// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
 public interface IOpenIddictAuthorizationStore<TAuthorization> where TAuthorization : class
 {
     /// <summary>

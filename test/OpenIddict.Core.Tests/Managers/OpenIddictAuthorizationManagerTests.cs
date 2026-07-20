@@ -1286,5 +1286,5 @@ public class OpenIddictAuthorizationManagerTests
         Assert.DoesNotContain(results, static result => result != ValidationResult.Success);
     }
 
-    public class CustomAuthorization { }
+    public class CustomAuthorization;
 }

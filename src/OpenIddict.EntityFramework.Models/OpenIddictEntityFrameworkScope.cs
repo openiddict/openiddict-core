@@ -14,11 +14,7 @@ namespace OpenIddict.EntityFramework.Models;
 /// </summary>
 public class OpenIddictEntityFrameworkScope : OpenIddictEntityFrameworkScope<string>
 {
-    public OpenIddictEntityFrameworkScope()
-    {
-        // Generate a new string identifier.
-        Id = Guid.NewGuid().ToString();
-    }
+    public OpenIddictEntityFrameworkScope() => Id = Guid.NewGuid().ToString();
 }
 
 /// <summary>

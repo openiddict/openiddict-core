@@ -810,10 +810,10 @@ To register the OWIN integration, use 'services.AddOpenIddict().AddValidation().
     <value>The client secret hash cannot be set on the application entity.</value>
   </data>
   <data name="ID0207" xml:space="preserve">
-    <value>One or more validation error(s) occurred while trying to create a new application:</value>
+    <value>One or more validation error(s) occurred while trying to create a new entity:</value>
   </data>
   <data name="ID0208" xml:space="preserve">
-    <value>An error occurred while trying to create a new application.</value>
+    <value>An error occurred while trying to create a new entity.</value>
   </data>
   <data name="ID0209" xml:space="preserve">
     <value>The client type cannot be null or empty.</value>
@@ -834,7 +834,7 @@ To register the OWIN integration, use 'services.AddOpenIddict().AddValidation().
     <value>Callback URIs must be valid absolute URIs.</value>
   </data>
   <data name="ID0215" xml:space="preserve">
-    <value>One or more validation error(s) occurred while trying to update an existing application:</value>
+    <value>One or more validation error(s) occurred while trying to update an existing entity:</value>
   </data>
   <data name="ID0216" xml:space="preserve">
     <value>The secret cannot be null or empty.</value>
@@ -844,33 +844,6 @@ To register the OWIN integration, use 'services.AddOpenIddict().AddValidation().
   </data>
   <data name="ID0218" xml:space="preserve">
     <value>The client secret payload stored in the database is malformed, uses an unsupported version or doesn't meet the minimum security requirements and may have been tampered with.</value>
-  </data>
-  <data name="ID0219" xml:space="preserve">
-    <value>One or more validation error(s) occurred while trying to create a new authorization:</value>
-  </data>
-  <data name="ID0220" xml:space="preserve">
-    <value>An error occurred while trying to create a new authorization.</value>
-  </data>
-  <data name="ID0221" xml:space="preserve">
-    <value>One or more validation error(s) occurred while trying to update an existing authorization:</value>
-  </data>
-  <data name="ID0222" xml:space="preserve">
-    <value>One or more validation error(s) occurred while trying to create a new scope:</value>
-  </data>
-  <data name="ID0223" xml:space="preserve">
-    <value>An error occurred while trying to create a new scope.</value>
-  </data>
-  <data name="ID0224" xml:space="preserve">
-    <value>One or more validation error(s) occurred while trying to update an existing scope:</value>
-  </data>
-  <data name="ID0225" xml:space="preserve">
-    <value>One or more validation error(s) occurred while trying to create a new token:</value>
-  </data>
-  <data name="ID0226" xml:space="preserve">
-    <value>An error occurred while trying to create a new token.</value>
-  </data>
-  <data name="ID0227" xml:space="preserve">
-    <value>One or more validation error(s) occurred while trying to update an existing token:</value>
   </data>
   <data name="ID0232" xml:space="preserve">
     <value>The specified type is invalid.</value>
@@ -883,42 +856,18 @@ To register the OWIN integration, use 'services.AddOpenIddict().AddValidation().
 To configure the OpenIddict Entity Framework 6.x stores to use a specific 'DbContext', use 'options.UseEntityFramework().UseDbContext&lt;TContext&gt;()'.</value>
   </data>
   <data name="ID0239" xml:space="preserve">
-    <value>The application was concurrently updated and cannot be persisted in its current state.
-Reload the application from the database and retry the operation.</value>
+    <value>The entity was concurrently updated and cannot be persisted in its current state.
+Reload the entity from the database and retry the operation.</value>
   </data>
   <data name="ID0240" xml:space="preserve">
-    <value>An error occurred while trying to create a new application instance.
-Make sure that the application entity is not abstract and has a public parameterless constructor or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.</value>
-  </data>
-  <data name="ID0241" xml:space="preserve">
-    <value>The authorization was concurrently updated and cannot be persisted in its current state.
-Reload the authorization from the database and retry the operation.</value>
-  </data>
-  <data name="ID0242" xml:space="preserve">
-    <value>An error occurred while trying to create a new authorization instance.
-Make sure that the authorization entity is not abstract and has a public parameterless constructor or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.</value>
+    <value>An error occurred while trying to create a new entity instance.
+Make sure that the entity is not abstract and has a public parameterless constructor or create a custom store that overrides 'InstantiateAsync()' to use a custom factory.</value>
   </data>
   <data name="ID0243" xml:space="preserve">
     <value>An error occurred while pruning authorizations.</value>
   </data>
   <data name="ID0244" xml:space="preserve">
     <value>The application associated with the authorization cannot be found.</value>
-  </data>
-  <data name="ID0245" xml:space="preserve">
-    <value>The scope was concurrently updated and cannot be persisted in its current state.
-Reload the scope from the database and retry the operation.</value>
-  </data>
-  <data name="ID0246" xml:space="preserve">
-    <value>An error occurred while trying to create a new scope instance.
-Make sure that the scope entity is not abstract and has a public parameterless constructor or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.</value>
-  </data>
-  <data name="ID0247" xml:space="preserve">
-    <value>The token was concurrently updated and cannot be persisted in its current state.
-Reload the token from the database and retry the operation.</value>
-  </data>
-  <data name="ID0248" xml:space="preserve">
-    <value>An error occurred while trying to create a new token instance.
-Make sure that the token entity is not abstract and has a public parameterless constructor or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.</value>
   </data>
   <data name="ID0249" xml:space="preserve">
     <value>An error occurred while pruning tokens.</value>
@@ -2489,6 +2438,15 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   </data>
   <data name="ID2205" xml:space="preserve">
     <value>The specified TLS client certificate is not allowed or valid for this operation.</value>
+  </data>
+  <data name="ID2206" xml:space="preserve">
+    <value>The resource name cannot be null or empty.</value>
+  </data>
+  <data name="ID2207" xml:space="preserve">
+    <value>The resource name must be a valid absolute URI.</value>
+  </data>
+  <data name="ID2208" xml:space="preserve">
+    <value>A resource with the same name already exists.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>

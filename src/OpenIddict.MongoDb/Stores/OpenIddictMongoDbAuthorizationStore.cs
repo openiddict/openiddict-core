@@ -32,7 +32,7 @@ public class OpenIddictMongoDbAuthorizationStore : OpenIddictMongoDbAuthorizatio
 /// <summary>
 /// Provides methods allowing to manage the authorizations stored in a database.
 /// </summary>
-/// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+/// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
 public class OpenIddictMongoDbAuthorizationStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization> : IOpenIddictAuthorizationStore<TAuthorization>
     where TAuthorization : OpenIddictMongoDbAuthorization
@@ -100,7 +100,7 @@ public class OpenIddictMongoDbAuthorizationStore<
             entity.Id == authorization.Id &&
             entity.ConcurrencyToken == authorization.ConcurrencyToken, cancellationToken)).DeletedCount is 0)
         {
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0241));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
 
         // Delete the tokens associated with the authorization.
@@ -322,7 +322,7 @@ public class OpenIddictMongoDbAuthorizationStore<
         catch (MemberAccessException exception)
         {
             return new(Task.FromException<TAuthorization>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0242), exception)));
+                new InvalidOperationException(SR.GetResourceString(SR.ID0240), exception)));
         }
     }
 
@@ -601,7 +601,7 @@ public class OpenIddictMongoDbAuthorizationStore<
             entity.Id == authorization.Id &&
             entity.ConcurrencyToken == timestamp, authorization, null as ReplaceOptions, cancellationToken)).MatchedCount is 0)
         {
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0241));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
     }
 }

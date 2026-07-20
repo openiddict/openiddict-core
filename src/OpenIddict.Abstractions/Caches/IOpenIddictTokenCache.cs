@@ -9,7 +9,7 @@ namespace OpenIddict.Abstractions;
 /// <summary>
 /// Provides methods allowing to cache tokens after retrieving them from the store.
 /// </summary>
-/// <typeparam name="TToken">The type of the Token entity.</typeparam>
+/// <typeparam name="TToken">The type of the token entity.</typeparam>
 public interface IOpenIddictTokenCache<TToken> where TToken : class
 {
     /// <summary>

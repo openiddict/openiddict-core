@@ -413,5 +413,5 @@ public class OpenIddictScopeCacheTests
             () => cache.RemoveAsync(scope, CancellationToken.None).AsTask());
     }
 
-    public sealed class OpenIddictScope { }
+    public sealed class OpenIddictScope;
 }

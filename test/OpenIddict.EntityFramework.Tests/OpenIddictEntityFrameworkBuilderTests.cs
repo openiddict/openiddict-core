@@ -33,7 +33,7 @@ public class OpenIddictEntityFrameworkBuilderTests
         var builder = CreateBuilder(services);
 
         // Act
-        builder.ReplaceDefaultEntities<CustomApplication, CustomAuthorization, CustomScope, CustomToken, long>();
+        builder.ReplaceDefaultEntities<CustomApplication, CustomAuthorization, CustomResource, CustomScope, CustomToken, long>();
 
         // Assert
         Assert.Contains(services, service =>
@@ -44,6 +44,10 @@ public class OpenIddictEntityFrameworkBuilderTests
             service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictAuthorizationStore<CustomAuthorization>) &&
             service.ImplementationType == typeof(OpenIddictEntityFrameworkAuthorizationStore<CustomAuthorization, CustomApplication, CustomToken, long>));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictResourceStore<CustomResource>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkResourceStore<CustomResource, long>));
         Assert.Contains(services, service =>
             service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeStore<CustomScope>) &&
@@ -82,10 +86,11 @@ public class OpenIddictEntityFrameworkBuilderTests
         return services;
     }
 
-    public class CustomApplication : OpenIddictEntityFrameworkApplication<long, CustomAuthorization, CustomToken> { }
-    public class CustomAuthorization : OpenIddictEntityFrameworkAuthorization<long, CustomApplication, CustomToken> { }
-    public class CustomScope : OpenIddictEntityFrameworkScope<long> { }
-    public class CustomToken : OpenIddictEntityFrameworkToken<long, CustomApplication, CustomAuthorization> { }
+    public class CustomApplication : OpenIddictEntityFrameworkApplication<long, CustomAuthorization, CustomToken>;
+    public class CustomAuthorization : OpenIddictEntityFrameworkAuthorization<long, CustomApplication, CustomToken>;
+    public class CustomResource : OpenIddictEntityFrameworkResource<long>;
+    public class CustomScope : OpenIddictEntityFrameworkScope<long>;
+    public class CustomToken : OpenIddictEntityFrameworkToken<long, CustomApplication, CustomAuthorization>;
 
     public class CustomDbContext : DbContext
     {

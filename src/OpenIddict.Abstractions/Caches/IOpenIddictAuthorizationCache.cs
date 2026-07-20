@@ -11,7 +11,7 @@ namespace OpenIddict.Abstractions;
 /// <summary>
 /// Provides methods allowing to cache authorizations after retrieving them from the store.
 /// </summary>
-/// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+/// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
 public interface IOpenIddictAuthorizationCache<TAuthorization> where TAuthorization : class
 {
     /// <summary>

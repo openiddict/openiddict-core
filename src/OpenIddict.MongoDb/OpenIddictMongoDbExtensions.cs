@@ -32,6 +32,7 @@ public static class OpenIddictMongoDbExtensions
 
         builder.SetDefaultApplicationEntity<OpenIddictMongoDbApplication>()
                .SetDefaultAuthorizationEntity<OpenIddictMongoDbAuthorization>()
+               .SetDefaultResourceEntity<OpenIddictMongoDbResource>()
                .SetDefaultScopeEntity<OpenIddictMongoDbScope>()
                .SetDefaultTokenEntity<OpenIddictMongoDbToken>();
 
@@ -39,6 +40,7 @@ public static class OpenIddictMongoDbExtensions
         // be safely registered as singleton services and shared/reused across requests.
         builder.ReplaceApplicationStore<OpenIddictMongoDbApplication, OpenIddictMongoDbApplicationStore>(ServiceLifetime.Singleton)
                .ReplaceAuthorizationStore<OpenIddictMongoDbAuthorization, OpenIddictMongoDbAuthorizationStore>(ServiceLifetime.Singleton)
+               .ReplaceResourceStore<OpenIddictMongoDbResource, OpenIddictMongoDbResourceStore>(ServiceLifetime.Singleton)
                .ReplaceScopeStore<OpenIddictMongoDbScope, OpenIddictMongoDbScopeStore>(ServiceLifetime.Singleton)
                .ReplaceTokenStore<OpenIddictMongoDbToken, OpenIddictMongoDbTokenStore>(ServiceLifetime.Singleton);
 

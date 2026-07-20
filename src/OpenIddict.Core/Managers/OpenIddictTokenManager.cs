@@ -24,7 +24,7 @@ namespace OpenIddict.Core;
 /// Applications that do not want to depend on a specific entity type can use the non-generic
 /// <see cref="IOpenIddictTokenManager"/> instead, for which the actual entity type is resolved at runtime.
 /// </remarks>
-/// <typeparam name="TToken">The type of the Token entity.</typeparam>
+/// <typeparam name="TToken">The type of the token entity.</typeparam>
 public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TToken : class
 {
     /// <summary>
@@ -146,7 +146,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         if (results.Any(result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
-            builder.AppendLine(SR.GetResourceString(SR.ID0225));
+            builder.AppendLine(SR.GetResourceString(SR.ID0207));
             builder.AppendLine();
 
             foreach (var result in results)
@@ -192,7 +192,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         ArgumentNullException.ThrowIfNull(descriptor);
 
         var token = await Store.InstantiateAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0226));
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
 
         await PopulateAsync(token, descriptor, cancellationToken);
         await CreateAsync(token, cancellationToken);
@@ -1052,7 +1052,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         if (results.Any(result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
-            builder.AppendLine(SR.GetResourceString(SR.ID0227));
+            builder.AppendLine(SR.GetResourceString(SR.ID0215));
             builder.AppendLine();
 
             foreach (var result in results)

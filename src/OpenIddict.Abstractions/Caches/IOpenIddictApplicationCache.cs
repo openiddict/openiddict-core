@@ -11,7 +11,7 @@ namespace OpenIddict.Abstractions;
 /// <summary>
 /// Provides methods allowing to cache applications after retrieving them from the store.
 /// </summary>
-/// <typeparam name="TApplication">The type of the Application entity.</typeparam>
+/// <typeparam name="TApplication">The type of the application entity.</typeparam>
 public interface IOpenIddictApplicationCache<TApplication> where TApplication : class
 {
     /// <summary>

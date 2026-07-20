@@ -3537,7 +3537,7 @@ public class OpenIddictApplicationManagerTests
         Assert.Equal("certificate", exception.ParamName);
     }
 
-    public class CustomApplication { }
+    public class CustomApplication;
 
     private class CustomApplicationManagerWithProtectedAccess : OpenIddictApplicationManager<CustomApplication>
     {
