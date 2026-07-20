@@ -499,5 +499,5 @@ public class OpenIddictTokenCacheTests
             () => cache.RemoveAsync(token, CancellationToken.None).AsTask());
     }
 
-    public sealed class OpenIddictToken { }
+    public sealed class OpenIddictToken;
 }

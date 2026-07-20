@@ -23,7 +23,7 @@ namespace OpenIddict.Core;
 /// Applications that do not want to depend on a specific entity type can use the non-generic
 /// <see cref="IOpenIddictScopeManager"/> instead, for which the actual entity type is resolved at runtime.
 /// </remarks>
-/// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+/// <typeparam name="TScope">The type of the scope entity.</typeparam>
 public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TScope : class
 {
     /// <summary>
@@ -131,7 +131,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         if (results.Any(result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
-            builder.AppendLine(SR.GetResourceString(SR.ID0222));
+            builder.AppendLine(SR.GetResourceString(SR.ID0207));
             builder.AppendLine();
 
             foreach (var result in results)
@@ -177,7 +177,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         ArgumentNullException.ThrowIfNull(descriptor);
 
         var scope = await Store.InstantiateAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0223));
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
 
         await PopulateAsync(scope, descriptor, cancellationToken);
         await CreateAsync(scope, cancellationToken);
@@ -792,7 +792,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         if (results.Any(result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
-            builder.AppendLine(SR.GetResourceString(SR.ID0224));
+            builder.AppendLine(SR.GetResourceString(SR.ID0215));
             builder.AppendLine();
 
             foreach (var result in results)

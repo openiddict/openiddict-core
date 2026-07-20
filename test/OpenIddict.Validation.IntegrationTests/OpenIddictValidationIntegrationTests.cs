@@ -449,6 +449,6 @@ public abstract partial class OpenIddictValidationIntegrationTests
         return manager.Object;
     }
 
-    public class OpenIddictAuthorization { }
-    public class OpenIddictToken { }
+    public class OpenIddictAuthorization;
+    public class OpenIddictToken;
 }

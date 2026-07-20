@@ -53,7 +53,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 /// <summary>
 /// Provides methods allowing to manage the scopes stored in a database.
 /// </summary>
-/// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+/// <typeparam name="TScope">The type of the scope entity.</typeparam>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
 public class OpenIddictEntityFrameworkCoreScopeStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
@@ -137,7 +137,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
             context.Entry(scope).State = EntityState.Unchanged;
 
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
         }
     }
 
@@ -208,8 +208,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TScope> FindByResourceAsync(
-        string resource, CancellationToken cancellationToken)
+    public virtual IAsyncEnumerable<TScope> FindByResourceAsync(string resource, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(resource);
 
@@ -441,7 +440,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         catch (MemberAccessException exception)
         {
             return new(Task.FromException<TScope>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0246), exception)));
+                new InvalidOperationException(SR.GetResourceString(SR.ID0240), exception)));
         }
     }
 
@@ -686,7 +685,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
             context.Entry(scope).State = EntityState.Unchanged;
 
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
         }
     }
 

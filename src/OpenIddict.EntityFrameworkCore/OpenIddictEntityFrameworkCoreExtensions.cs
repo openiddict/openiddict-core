@@ -33,11 +33,13 @@ public static class OpenIddictEntityFrameworkCoreExtensions
 
         builder.SetDefaultApplicationEntity<OpenIddictEntityFrameworkCoreApplication>()
                .SetDefaultAuthorizationEntity<OpenIddictEntityFrameworkCoreAuthorization>()
+               .SetDefaultResourceEntity<OpenIddictEntityFrameworkCoreResource>()
                .SetDefaultScopeEntity<OpenIddictEntityFrameworkCoreScope>()
                .SetDefaultTokenEntity<OpenIddictEntityFrameworkCoreToken>();
 
         builder.ReplaceApplicationStore<OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreApplicationStore>()
                .ReplaceAuthorizationStore<OpenIddictEntityFrameworkCoreAuthorization, OpenIddictEntityFrameworkCoreAuthorizationStore>()
+               .ReplaceResourceStore<OpenIddictEntityFrameworkCoreResource, OpenIddictEntityFrameworkCoreResourceStore>()
                .ReplaceScopeStore<OpenIddictEntityFrameworkCoreScope, OpenIddictEntityFrameworkCoreScopeStore>()
                .ReplaceTokenStore<OpenIddictEntityFrameworkCoreToken, OpenIddictEntityFrameworkCoreTokenStore>();
 

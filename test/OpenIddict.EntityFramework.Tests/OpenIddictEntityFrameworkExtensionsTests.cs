@@ -58,6 +58,10 @@ public class OpenIddictEntityFrameworkExtensionsTests
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
             service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictResourceManager) &&
+            service.ImplementationFactory is not null);
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
@@ -85,6 +89,10 @@ public class OpenIddictEntityFrameworkExtensionsTests
             service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictAuthorizationStore<OpenIddictEntityFrameworkAuthorization>) &&
             service.ImplementationType == typeof(OpenIddictEntityFrameworkAuthorizationStore));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictResourceStore<OpenIddictEntityFrameworkResource>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkResourceStore));
         Assert.Contains(services, service =>
             service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeStore<OpenIddictEntityFrameworkScope>) &&

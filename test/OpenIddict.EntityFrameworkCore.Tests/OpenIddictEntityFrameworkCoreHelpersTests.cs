@@ -23,6 +23,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreAuthorization>>()))
             .Returns(builder.Object);
+        builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreResource>>()))
+            .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreScope>>()))
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreToken>>()))
@@ -36,6 +38,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             It.IsAny<OpenIddictEntityFrameworkCoreApplicationConfiguration<OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreAuthorization, OpenIddictEntityFrameworkCoreToken, string>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreAuthorizationConfiguration<OpenIddictEntityFrameworkCoreAuthorization, OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreToken, string>>()), Times.Once());
+        builder.Verify(mock => mock.ApplyConfiguration(
+            It.IsAny<OpenIddictEntityFrameworkCoreResourceConfiguration<OpenIddictEntityFrameworkCoreResource, string>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreScopeConfiguration<OpenIddictEntityFrameworkCoreScope, string>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
@@ -51,6 +55,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreAuthorization<long>>>()))
             .Returns(builder.Object);
+        builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreResource<long>>>()))
+            .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreScope<long>>>()))
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreToken<long>>>()))
@@ -64,6 +70,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             It.IsAny<OpenIddictEntityFrameworkCoreApplicationConfiguration<OpenIddictEntityFrameworkCoreApplication<long>, OpenIddictEntityFrameworkCoreAuthorization<long>, OpenIddictEntityFrameworkCoreToken<long>, long>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreAuthorizationConfiguration<OpenIddictEntityFrameworkCoreAuthorization<long>, OpenIddictEntityFrameworkCoreApplication<long>, OpenIddictEntityFrameworkCoreToken<long>, long>>()), Times.Once());
+        builder.Verify(mock => mock.ApplyConfiguration(
+            It.IsAny<OpenIddictEntityFrameworkCoreResourceConfiguration<OpenIddictEntityFrameworkCoreResource<long>, long>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreScopeConfiguration<OpenIddictEntityFrameworkCoreScope<long>, long>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
@@ -79,13 +87,15 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<CustomAuthorization>>()))
             .Returns(builder.Object);
+        builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<CustomResource>>()))
+            .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<CustomScope>>()))
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<CustomToken>>()))
             .Returns(builder.Object);
 
         // Act
-        builder.Object.UseOpenIddict<CustomApplication, CustomAuthorization, CustomScope, CustomToken, Guid>();
+        builder.Object.UseOpenIddict<CustomApplication, CustomAuthorization, CustomResource, CustomScope, CustomToken, Guid>();
 
         // Assert
         builder.Verify(mock => mock.ApplyConfiguration(
@@ -93,13 +103,16 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreAuthorizationConfiguration<CustomAuthorization, CustomApplication, CustomToken, Guid>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
+            It.IsAny<OpenIddictEntityFrameworkCoreResourceConfiguration<CustomResource, Guid>>()), Times.Once());
+        builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreScopeConfiguration<CustomScope, Guid>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreTokenConfiguration<CustomToken, CustomApplication, CustomAuthorization, Guid>>()), Times.Once());
     }
 
-    public class CustomApplication : OpenIddictEntityFrameworkCoreApplication<Guid, CustomAuthorization, CustomToken> { }
-    public class CustomAuthorization : OpenIddictEntityFrameworkCoreAuthorization<Guid, CustomApplication, CustomToken> { }
-    public class CustomScope : OpenIddictEntityFrameworkCoreScope<Guid> { }
-    public class CustomToken : OpenIddictEntityFrameworkCoreToken<Guid, CustomApplication, CustomAuthorization> { }
+    public class CustomApplication : OpenIddictEntityFrameworkCoreApplication<Guid, CustomAuthorization, CustomToken>;
+    public class CustomAuthorization : OpenIddictEntityFrameworkCoreAuthorization<Guid, CustomApplication, CustomToken>;
+    public class CustomResource : OpenIddictEntityFrameworkCoreResource<Guid>;
+    public class CustomScope : OpenIddictEntityFrameworkCoreScope<Guid>;
+    public class CustomToken : OpenIddictEntityFrameworkCoreToken<Guid, CustomApplication, CustomAuthorization>;
 }

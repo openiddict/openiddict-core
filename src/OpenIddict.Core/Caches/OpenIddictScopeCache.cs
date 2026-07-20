@@ -16,7 +16,7 @@ namespace OpenIddict.Core;
 /// <summary>
 /// Provides methods allowing to cache scopes after retrieving them from the store.
 /// </summary>
-/// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+/// <typeparam name="TScope">The type of the scope entity.</typeparam>
 public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisposable where TScope : class
 {
     private readonly MemoryCache _cache;

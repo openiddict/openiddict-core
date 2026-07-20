@@ -15,10 +15,10 @@ using OpenIddict.EntityFramework.Models;
 namespace OpenIddict.EntityFramework;
 
 /// <summary>
-/// Defines a relational mapping for the Scope entity.
+/// Defines a relational mapping for the scope entity.
 /// </summary>
-/// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-/// <typeparam name="TKey">The type of the Key entity.</typeparam>
+/// <typeparam name="TScope">The type of the scope entity.</typeparam>
+/// <typeparam name="TKey">The type of the primary key.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictEntityFrameworkScopeConfiguration<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,

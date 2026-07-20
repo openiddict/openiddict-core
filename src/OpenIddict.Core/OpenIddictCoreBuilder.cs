@@ -217,6 +217,86 @@ public sealed class OpenIddictCoreBuilder
     }
 
     /// <summary>
+    /// Replaces the resource manager by the specified type.
+    /// </summary>
+    /// <typeparam name="TResource">The type of the entity.</typeparam>
+    /// <typeparam name="TManager">The type of the manager.</typeparam>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceResourceManager<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TManager>()
+        where TResource : class
+        where TManager : OpenIddictResourceManager<TResource>
+    {
+        Services.Replace(ServiceDescriptor.Scoped<OpenIddictResourceManager<TResource>, TManager>());
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the resource manager by the specified type.
+    /// </summary>
+    /// <remarks>
+    /// Note: the specified type MUST be an open generic type definition containing exactly one generic argument.
+    /// </remarks>
+    /// <param name="type">The type of the manager.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceResourceManager(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
+    {
+        if (!type.IsGenericTypeDefinition || type.GetGenericArguments() is not { Length: 1 })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+
+        Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictResourceManager<>), type));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the resource store by the specified type.
+    /// </summary>
+    /// <typeparam name="TResource">The type of the entity.</typeparam>
+    /// <typeparam name="TStore">The type of the store.</typeparam>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceResourceStore<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>(
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        where TResource : class
+        where TStore : IOpenIddictResourceStore<TResource>
+    {
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictResourceStore<TResource>), typeof(TStore), lifetime));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the resource store by the specified type.
+    /// </summary>
+    /// <remarks>
+    /// Note: the specified type MUST be an open generic type definition containing exactly one generic argument.
+    /// </remarks>
+    /// <param name="type">The type of the store.</param>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceResourceStore(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        if (!type.IsGenericTypeDefinition || type.GetGenericArguments() is not { Length: 1 })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictResourceStore<>), type, lifetime));
+
+        return this;
+    }
+
+    /// <summary>
     /// Replaces the scope manager by the specified type.
     /// </summary>
     /// <typeparam name="TScope">The type of the entity.</typeparam>
@@ -489,6 +569,19 @@ public sealed class OpenIddictCoreBuilder
     {
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationManager>(static provider =>
             provider.GetRequiredService<OpenIddictAuthorizationManager<TAuthorization>>()));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures OpenIddict to use the specified entity as the default resource entity.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder SetDefaultResourceEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource>() where TResource : class
+    {
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictResourceManager>(static provider =>
+            provider.GetRequiredService<OpenIddictResourceManager<TResource>>()));
 
         return this;
     }

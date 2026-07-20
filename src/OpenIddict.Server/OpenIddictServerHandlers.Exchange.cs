@@ -1118,26 +1118,62 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateResources : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
+            private readonly IOpenIddictResourceManager? _resourceManager;
+
+            public ValidateResources(IOpenIddictResourceManager? resourceManager = null)
+                => _resourceManager = resourceManager;
+
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                     .AddFilter<RequireResourceValidationEnabled>()
-                    .UseSingletonHandler<ValidateResources>()
+                    .UseScopedHandler(static provider =>
+                    {
+                        // Note: the resource manager is only resolved if the degraded mode was not enabled to ensure
+                        // invalid core configuration exceptions are not thrown even if the managers were registered.
+                        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                        return options.EnableDegradedMode ?
+                            new ValidateResources() :
+                            new ValidateResources(provider.GetService<IOpenIddictResourceManager>() ??
+                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                    })
                     .SetOrder(ValidateAudiences.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                // If at least one resource was not recognized, return an error.
+                // If all the specified resources are registered in the options, avoid making a database lookup.
                 var resources = context.Request.GetResources().ToHashSet(StringComparer.Ordinal);
                 resources.ExceptWith(context.Options.Resources.Select(static resource => resource.AbsoluteUri));
 
+                // Note: the remaining resources are only checked if the degraded mode was not enabled,
+                // as this requires using the resource manager, which is never used with the degraded mode,
+                // even if the service was registered and resolved from the dependency injection container.
+                if (resources.Count is not 0 && !context.Options.EnableDegradedMode)
+                {
+                    if (_resourceManager is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                    }
+
+                    await foreach (var resource in _resourceManager.FindByNamesAsync([.. resources]))
+                    {
+                        var name = await _resourceManager.GetNameAsync(resource);
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            resources.Remove(name);
+                        }
+                    }
+                }
+
+                // If at least one resource was not recognized, return an error.
                 if (resources.Count is not 0)
                 {
                     context.Logger.LogInformation(6273, SR.GetResourceString(SR.ID6273), resources);
@@ -1147,10 +1183,8 @@ public static partial class OpenIddictServerHandlers
                         description: SR.FormatID2190(Parameters.Resource),
                         uri: SR.FormatID8000(SR.ID2190));
 
-                    return ValueTask.CompletedTask;
+                    return;
                 }
-
-                return ValueTask.CompletedTask;
             }
         }
 

@@ -326,5 +326,5 @@ public class OpenIddictAuthorizationCacheTests
             () => cache.RemoveAsync(authorization, CancellationToken.None).AsTask());
     }
 
-    public sealed class OpenIddictAuthorization { }
+    public sealed class OpenIddictAuthorization;
 }

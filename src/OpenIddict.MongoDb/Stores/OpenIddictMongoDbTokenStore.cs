@@ -32,7 +32,7 @@ public class OpenIddictMongoDbTokenStore : OpenIddictMongoDbTokenStore<OpenIddic
 /// <summary>
 /// Provides methods allowing to manage the tokens stored in a database.
 /// </summary>
-/// <typeparam name="TToken">The type of the Token entity.</typeparam>
+/// <typeparam name="TToken">The type of the token entity.</typeparam>
 public class OpenIddictMongoDbTokenStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken> : IOpenIddictTokenStore<TToken>
     where TToken : OpenIddictMongoDbToken
@@ -100,7 +100,7 @@ public class OpenIddictMongoDbTokenStore<
             entity.Id == token.Id &&
             entity.ConcurrencyToken == token.ConcurrencyToken, cancellationToken)).DeletedCount is 0)
         {
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0247));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
     }
 
@@ -379,7 +379,7 @@ public class OpenIddictMongoDbTokenStore<
         catch (MemberAccessException exception)
         {
             return new(Task.FromException<TToken>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0248), exception)));
+                new InvalidOperationException(SR.GetResourceString(SR.ID0240), exception)));
         }
     }
 
@@ -712,7 +712,7 @@ public class OpenIddictMongoDbTokenStore<
             entity.Id == token.Id &&
             entity.ConcurrencyToken == timestamp, token, null as ReplaceOptions, cancellationToken)).MatchedCount is 0)
         {
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0247));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
     }
 }

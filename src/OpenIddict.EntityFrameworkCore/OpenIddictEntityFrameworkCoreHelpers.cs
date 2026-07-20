@@ -26,6 +26,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     public static DbContextOptionsBuilder UseOpenIddict(this DbContextOptionsBuilder builder)
         => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication,
                                  OpenIddictEntityFrameworkCoreAuthorization,
+                                 OpenIddictEntityFrameworkCoreResource,
                                  OpenIddictEntityFrameworkCoreScope,
                                  OpenIddictEntityFrameworkCoreToken, string>();
 
@@ -57,6 +58,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         where TKey : notnull, IEquatable<TKey>
         => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication<TKey>,
                                  OpenIddictEntityFrameworkCoreAuthorization<TKey>,
+                                 OpenIddictEntityFrameworkCoreResource<TKey>,
                                  OpenIddictEntityFrameworkCoreScope<TKey>,
                                  OpenIddictEntityFrameworkCoreToken<TKey>, TKey>();
 
@@ -86,19 +88,21 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// </summary>
     /// <remarks>
     /// Note: when using custom entities, the new entities MUST be registered by calling
-    /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TScope, TToken, TKey}"/>.
+    /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TResource, TScope, TToken, TKey}"/>.
     /// </remarks>
     /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
     /// <returns>The Entity Framework Core context builder.</returns>
     public static DbContextOptionsBuilder UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(
         this DbContextOptionsBuilder builder)
         where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+        where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
@@ -106,7 +110,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         ArgumentNullException.ThrowIfNull(builder);
 
         return ReplaceService<IModelCustomizer,
-            OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TScope, TToken, TKey>>(builder);
+            OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TResource, TScope, TToken, TKey>>(builder);
 
         static DbContextOptionsBuilder ReplaceService<
             TService,
@@ -121,13 +125,14 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// </summary>
     /// <remarks>
     /// Note: when using custom entities, the new entities MUST be registered by calling
-    /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TScope, TToken, TKey}"/>.
+    /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TResource, TScope, TToken, TKey}"/>.
     /// </remarks>
     /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
     /// <returns>The Entity Framework Core context builder.</returns>
     public static DbContextOptionsBuilder<TContext> UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey,
@@ -135,12 +140,13 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         this DbContextOptionsBuilder<TContext> builder)
         where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+        where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
         where TContext : DbContext
     {
-        builder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>();
+        builder.UseOpenIddict<TApplication, TAuthorization, TResource, TScope, TToken, TKey>();
         return builder;
     }
 
@@ -153,6 +159,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     public static ModelBuilder UseOpenIddict(this ModelBuilder builder)
         => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication,
                                  OpenIddictEntityFrameworkCoreAuthorization,
+                                 OpenIddictEntityFrameworkCoreResource,
                                  OpenIddictEntityFrameworkCoreScope,
                                  OpenIddictEntityFrameworkCoreToken, string>();
 
@@ -170,6 +177,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(this ModelBuilder builder) where TKey : notnull, IEquatable<TKey>
         => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication<TKey>,
                                  OpenIddictEntityFrameworkCoreAuthorization<TKey>,
+                                 OpenIddictEntityFrameworkCoreResource<TKey>,
                                  OpenIddictEntityFrameworkCoreScope<TKey>,
                                  OpenIddictEntityFrameworkCoreToken<TKey>, TKey>();
 
@@ -179,18 +187,20 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// </summary>
     /// <remarks>
     /// Note: when using custom entities, the new entities MUST be registered by calling
-    /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TScope, TToken, TKey}"/>.
+    /// <see cref="OpenIddictEntityFrameworkCoreBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TResource, TScope, TToken, TKey}"/>.
     /// </remarks>
     /// <param name="builder">The builder used to configure the Entity Framework Core context.</param>
     /// <returns>The Entity Framework Core context builder.</returns>
     public static ModelBuilder UseOpenIddict<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(this ModelBuilder builder)
         where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+        where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
@@ -200,6 +210,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         return builder
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
+            .ApplyConfiguration(new OpenIddictEntityFrameworkCoreResourceConfiguration<TResource, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
     }

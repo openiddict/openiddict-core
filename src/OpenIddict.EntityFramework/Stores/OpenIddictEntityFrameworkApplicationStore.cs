@@ -42,9 +42,9 @@ public class OpenIddictEntityFrameworkApplicationStore :
 /// <summary>
 /// Provides methods allowing to manage the applications stored in a database.
 /// </summary>
-/// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-/// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-/// <typeparam name="TToken">The type of the Token entity.</typeparam>
+/// <typeparam name="TApplication">The type of the application entity.</typeparam>
+/// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
+/// <typeparam name="TToken">The type of the token entity.</typeparam>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
 public class OpenIddictEntityFrameworkApplicationStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,

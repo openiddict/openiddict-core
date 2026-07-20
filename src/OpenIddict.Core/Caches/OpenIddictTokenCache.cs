@@ -16,7 +16,7 @@ namespace OpenIddict.Core;
 /// <summary>
 /// Provides methods allowing to cache tokens after retrieving them from the store.
 /// </summary>
-/// <typeparam name="TToken">The type of the Token entity.</typeparam>
+/// <typeparam name="TToken">The type of the token entity.</typeparam>
 public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisposable where TToken : class
 {
     private readonly MemoryCache _cache;

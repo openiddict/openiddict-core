@@ -13,12 +13,12 @@ using OpenIddict.EntityFramework.Models;
 namespace OpenIddict.EntityFramework;
 
 /// <summary>
-/// Defines a relational mapping for the Authorization entity.
+/// Defines a relational mapping for the authorization entity.
 /// </summary>
-/// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-/// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-/// <typeparam name="TToken">The type of the Token entity.</typeparam>
-/// <typeparam name="TKey">The type of the Key entity.</typeparam>
+/// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
+/// <typeparam name="TApplication">The type of the application entity.</typeparam>
+/// <typeparam name="TToken">The type of the token entity.</typeparam>
+/// <typeparam name="TKey">The type of the primary key.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictEntityFrameworkAuthorizationConfiguration<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,

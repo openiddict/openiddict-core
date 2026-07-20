@@ -92,6 +92,23 @@ public sealed class OpenIddictMongoDbBuilder
     }
 
     /// <summary>
+    /// Configures OpenIddict to use the specified entity as the default resource entity.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
+    public OpenIddictMongoDbBuilder ReplaceDefaultResourceEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource>()
+        where TResource : OpenIddictMongoDbResource
+    {
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictResourceManager>(static provider =>
+            provider.GetRequiredService<OpenIddictResourceManager<TResource>>()));
+
+        Services.Replace(ServiceDescriptor.Scoped<
+            IOpenIddictResourceStore<TResource>, OpenIddictMongoDbResourceStore<TResource>>());
+
+        return this;
+    }
+
+    /// <summary>
     /// Configures OpenIddict to use the specified entity as the default scope entity.
     /// </summary>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
@@ -147,6 +164,18 @@ public sealed class OpenIddictMongoDbBuilder
         ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Configure(options => options.AuthorizationsCollectionName = name);
+    }
+
+    /// <summary>
+    /// Replaces the default resources collection name (by default, openiddict.resources).
+    /// </summary>
+    /// <param name="name">The collection name</param>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
+    public OpenIddictMongoDbBuilder SetResourcesCollectionName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        return Configure(options => options.ResourcesCollectionName = name);
     }
 
     /// <summary>

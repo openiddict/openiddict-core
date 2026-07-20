@@ -14,11 +14,7 @@ namespace OpenIddict.EntityFrameworkCore.Models;
 /// </summary>
 public class OpenIddictEntityFrameworkCoreToken : OpenIddictEntityFrameworkCoreToken<string, OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreAuthorization>
 {
-    public OpenIddictEntityFrameworkCoreToken()
-    {
-        // Generate a new string identifier.
-        Id = Guid.NewGuid().ToString();
-    }
+    public OpenIddictEntityFrameworkCoreToken() => Id = Guid.NewGuid().ToString();
 }
 
 /// <summary>

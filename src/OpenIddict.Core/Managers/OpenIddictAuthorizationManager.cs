@@ -24,7 +24,7 @@ namespace OpenIddict.Core;
 /// Applications that do not want to depend on a specific entity type can use the non-generic
 /// <see cref="IOpenIddictAuthorizationManager"/> instead, for which the actual entity type is resolved at runtime.
 /// </remarks>
-/// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+/// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
 public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthorizationManager where TAuthorization : class
 {
     /// <summary>
@@ -138,7 +138,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         if (results.Any(result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
-            builder.AppendLine(SR.GetResourceString(SR.ID0219));
+            builder.AppendLine(SR.GetResourceString(SR.ID0207));
             builder.AppendLine();
 
             foreach (var result in results)
@@ -184,7 +184,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         ArgumentNullException.ThrowIfNull(descriptor);
 
         var authorization = await Store.InstantiateAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0220));
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
 
         await PopulateAsync(authorization, descriptor, cancellationToken);
         await CreateAsync(authorization, cancellationToken);
@@ -858,7 +858,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         if (results.Any(result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
-            builder.AppendLine(SR.GetResourceString(SR.ID0221));
+            builder.AppendLine(SR.GetResourceString(SR.ID0215));
             builder.AppendLine();
 
             foreach (var result in results)

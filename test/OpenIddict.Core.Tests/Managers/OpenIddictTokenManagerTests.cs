@@ -1339,5 +1339,5 @@ public class OpenIddictTokenManagerTests
         Assert.DoesNotContain(results, static result => result != ValidationResult.Success);
     }
 
-    public class CustomToken { }
+    public class CustomToken;
 }

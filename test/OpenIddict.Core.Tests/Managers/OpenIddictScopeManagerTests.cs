@@ -574,7 +574,7 @@ public class OpenIddictScopeManagerTests
         store.Setup(store => store.GetDescriptionsAsync(scope, It.IsAny<CancellationToken>()))
              .ReturnsAsync(ImmutableDictionary.Create<CultureInfo, string>()
                  .Add(CultureInfo.GetCultureInfo("en-US"), "English description")
-                 .Add(CultureInfo.GetCultureInfo("fr-FR"), "Description fran�aise"));
+                 .Add(CultureInfo.GetCultureInfo("fr-FR"), "Description française"));
 
         var manager = new OpenIddictScopeManager<CustomScope>(cache, logger, options, store.Object);
 
@@ -582,7 +582,7 @@ public class OpenIddictScopeManagerTests
         var description = await manager.GetLocalizedDescriptionAsync(scope, CultureInfo.GetCultureInfo("fr-FR"));
 
         // Assert
-        Assert.Equal("Description fran�aise", description);
+        Assert.Equal("Description française", description);
     }
 
     [Fact]
@@ -973,5 +973,5 @@ public class OpenIddictScopeManagerTests
         Assert.DoesNotContain(results, static result => result != ValidationResult.Success);
     }
 
-    public class CustomScope { }
+    public class CustomScope;
 }

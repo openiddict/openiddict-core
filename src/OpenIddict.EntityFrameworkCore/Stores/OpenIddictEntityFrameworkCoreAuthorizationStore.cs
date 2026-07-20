@@ -59,9 +59,9 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 /// <summary>
 /// Provides methods allowing to manage the authorizations stored in a database.
 /// </summary>
-/// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-/// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-/// <typeparam name="TToken">The type of the Token entity.</typeparam>
+/// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
+/// <typeparam name="TApplication">The type of the application entity.</typeparam>
+/// <typeparam name="TToken">The type of the token entity.</typeparam>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
 public class OpenIddictEntityFrameworkCoreAuthorizationStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
@@ -168,7 +168,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
                     // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                     context.Entry(authorization).State = EntityState.Unchanged;
 
-                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0241), exception);
+                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
                 }
             });
         }
@@ -219,7 +219,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
                         context.Entry(token).State = EntityState.Unchanged;
                     }
 
-                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0241), exception);
+                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
                 }
             });
         }
@@ -514,7 +514,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
         catch (MemberAccessException exception)
         {
             return new(Task.FromException<TAuthorization>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0242), exception)));
+                new InvalidOperationException(SR.GetResourceString(SR.ID0240), exception)));
         }
     }
 
@@ -1062,7 +1062,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
             context.Entry(authorization).State = EntityState.Unchanged;
 
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0241), exception);
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
         }
     }
 

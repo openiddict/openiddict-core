@@ -17,7 +17,7 @@ namespace OpenIddict.Core;
 /// <summary>
 /// Provides methods allowing to cache applications after retrieving them from the store.
 /// </summary>
-/// <typeparam name="TApplication">The type of the Application entity.</typeparam>
+/// <typeparam name="TApplication">The type of the application entity.</typeparam>
 public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCache<TApplication>, IDisposable where TApplication : class
 {
     private readonly MemoryCache _cache;

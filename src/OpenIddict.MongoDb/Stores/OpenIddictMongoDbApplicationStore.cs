@@ -34,7 +34,7 @@ public class OpenIddictMongoDbApplicationStore : OpenIddictMongoDbApplicationSto
 /// <summary>
 /// Provides methods allowing to manage the applications stored in a database.
 /// </summary>
-/// <typeparam name="TApplication">The type of the Application entity.</typeparam>
+/// <typeparam name="TApplication">The type of the application entity.</typeparam>
 public class OpenIddictMongoDbApplicationStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication> : IOpenIddictApplicationStore<TApplication>
     where TApplication : OpenIddictMongoDbApplication
@@ -251,8 +251,8 @@ public class OpenIddictMongoDbApplicationStore<
         }
 
         return new(application.DisplayNames.ToImmutableDictionary(
-            pair => CultureInfo.GetCultureInfo(pair.Key),
-            pair => pair.Value));
+            static pair => CultureInfo.GetCultureInfo(pair.Key),
+            static pair => pair.Value));
     }
 
     /// <inheritdoc/>
@@ -506,8 +506,8 @@ public class OpenIddictMongoDbApplicationStore<
         }
 
         application.DisplayNames = names.ToImmutableDictionary(
-            pair => pair.Key.Name,
-            pair => pair.Value);
+            static pair => pair.Key.Name,
+            static pair => pair.Value);
 
         return ValueTask.CompletedTask;
     }

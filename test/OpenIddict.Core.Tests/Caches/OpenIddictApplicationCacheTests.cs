@@ -433,5 +433,5 @@ public class OpenIddictApplicationCacheTests
             () => cache.RemoveAsync(application, CancellationToken.None).AsTask());
     }
 
-    public sealed class OpenIddictApplication { }
+    public sealed class OpenIddictApplication;
 }

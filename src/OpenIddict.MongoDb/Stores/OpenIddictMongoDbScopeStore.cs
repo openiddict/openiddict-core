@@ -33,7 +33,7 @@ public class OpenIddictMongoDbScopeStore : OpenIddictMongoDbScopeStore<OpenIddic
 /// <summary>
 /// Provides methods allowing to manage the scopes stored in a database.
 /// </summary>
-/// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+/// <typeparam name="TScope">The type of the scope entity.</typeparam>
 public class OpenIddictMongoDbScopeStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope> : IOpenIddictScopeStore<TScope>
     where TScope : OpenIddictMongoDbScope
@@ -101,7 +101,7 @@ public class OpenIddictMongoDbScopeStore<
             entity.Id == scope.Id &&
             entity.ConcurrencyToken == scope.ConcurrencyToken, cancellationToken)).DeletedCount is 0)
         {
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0245));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
     }
 
@@ -202,8 +202,8 @@ public class OpenIddictMongoDbScopeStore<
         }
 
         return new(scope.Descriptions.ToImmutableDictionary(
-            pair => CultureInfo.GetCultureInfo(pair.Key),
-            pair => pair.Value));
+            static pair => CultureInfo.GetCultureInfo(pair.Key),
+            static pair => pair.Value));
     }
 
     /// <inheritdoc/>
@@ -225,8 +225,8 @@ public class OpenIddictMongoDbScopeStore<
         }
 
         return new(scope.DisplayNames.ToImmutableDictionary(
-            pair => CultureInfo.GetCultureInfo(pair.Key),
-            pair => pair.Value));
+            static pair => CultureInfo.GetCultureInfo(pair.Key),
+            static pair => pair.Value));
     }
 
     /// <inheritdoc/>
@@ -290,7 +290,7 @@ public class OpenIddictMongoDbScopeStore<
         catch (MemberAccessException exception)
         {
             return new(Task.FromException<TScope>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0246), exception)));
+                new InvalidOperationException(SR.GetResourceString(SR.ID0240), exception)));
         }
     }
 
@@ -364,8 +364,8 @@ public class OpenIddictMongoDbScopeStore<
         }
 
         scope.Descriptions = descriptions.ToImmutableDictionary(
-            pair => pair.Key.Name,
-            pair => pair.Value);
+            static pair => pair.Key.Name,
+            static pair => pair.Value);
 
         return ValueTask.CompletedTask;
     }
@@ -384,8 +384,8 @@ public class OpenIddictMongoDbScopeStore<
         }
 
         scope.DisplayNames = names.ToImmutableDictionary(
-            pair => pair.Key.Name,
-            pair => pair.Value);
+            static pair => pair.Key.Name,
+            static pair => pair.Value);
 
         return ValueTask.CompletedTask;
     }
@@ -480,7 +480,7 @@ public class OpenIddictMongoDbScopeStore<
             entity.Id == scope.Id &&
             entity.ConcurrencyToken == timestamp, scope, null as ReplaceOptions, cancellationToken)).MatchedCount is 0)
         {
-            throw new ConcurrencyException(SR.GetResourceString(SR.ID0245));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
     }
 }

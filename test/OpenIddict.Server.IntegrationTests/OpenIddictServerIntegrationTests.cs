@@ -5201,11 +5201,13 @@ public abstract partial class OpenIddictServerIntegrationTests
             {
                 options.SetDefaultApplicationEntity<OpenIddictApplication>()
                        .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                       .SetDefaultResourceEntity<OpenIddictResource>()
                        .SetDefaultScopeEntity<OpenIddictScope>()
                        .SetDefaultTokenEntity<OpenIddictToken>();
 
                 options.Services.AddSingleton(CreateApplicationManager())
                                 .AddSingleton(CreateAuthorizationManager())
+                                .AddSingleton(CreateResourceManager())
                                 .AddSingleton(CreateScopeManager())
                                 .AddSingleton(CreateTokenManager());
             })
@@ -5313,6 +5315,20 @@ public abstract partial class OpenIddictServerIntegrationTests
         return manager.Object;
     }
 
+    protected OpenIddictResourceManager<OpenIddictResource> CreateResourceManager(
+        Action<Mock<OpenIddictResourceManager<OpenIddictResource>>>? configuration = null)
+    {
+        var manager = new Mock<OpenIddictResourceManager<OpenIddictResource>>(
+            Mock.Of<IOpenIddictResourceCache<OpenIddictResource>>(),
+            OutputHelper.ToLogger<OpenIddictResourceManager<OpenIddictResource>>(),
+            Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
+            Mock.Of<IOpenIddictResourceStore<OpenIddictResource>>());
+
+        configuration?.Invoke(manager);
+
+        return manager.Object;
+    }
+
     protected OpenIddictScopeManager<OpenIddictScope> CreateScopeManager(
         Action<Mock<OpenIddictScopeManager<OpenIddictScope>>>? configuration = null)
     {
@@ -5341,8 +5357,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         return manager.Object;
     }
 
-    public class OpenIddictApplication { }
-    public class OpenIddictAuthorization { }
-    public class OpenIddictScope { }
-    public class OpenIddictToken { }
+    public class OpenIddictApplication;
+    public class OpenIddictAuthorization;
+    public class OpenIddictResource;
+    public class OpenIddictScope;
+    public class OpenIddictToken;
 }

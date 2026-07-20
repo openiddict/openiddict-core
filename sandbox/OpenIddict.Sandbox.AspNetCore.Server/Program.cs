@@ -234,7 +234,7 @@ builder.Services.AddOpenIddict()
 
         options.EnableSelfSignedTlsClientAuthentication();
 
-        // Note: setting a static issuer is mandatory when using mTLS aliases to ensure it not
+        // Note: setting a static issuer is mandatory when using mTLS aliases to ensure it is not
         // dynamically computed based on the request URI, as this would result in two different
         // issuers being used (one pointing to the mTLS domain and one pointing to the regular one).
         options.SetIssuer("https://localhost:44395/");

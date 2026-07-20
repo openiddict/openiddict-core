@@ -13,7 +13,7 @@ namespace OpenIddict.Abstractions;
 /// <summary>
 /// Provides methods allowing to manage the scopes stored in a database.
 /// </summary>
-/// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+/// <typeparam name="TScope">The type of the scope entity.</typeparam>
 public interface IOpenIddictScopeStore<TScope> where TScope : class
 {
     /// <summary>
