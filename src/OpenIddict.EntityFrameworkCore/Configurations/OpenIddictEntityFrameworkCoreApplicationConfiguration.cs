@@ -42,10 +42,7 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
         builder.Property(static application => application.ApplicationType)
                .HasMaxLength(50);
 
-        // Warning: the non-generic overlord is deliberately used to work around
-        // a breaking change introduced in Entity Framework Core 3.x (where a
-        // generic entity type builder is now returned by the HasIndex() method).
-        builder.HasIndex(nameof(OpenIddictEntityFrameworkCoreApplication.ClientId))
+        builder.HasIndex(static application => application.ClientId)
                .IsUnique();
 
         builder.Property(static application => application.ClientId)
