@@ -5,7 +5,7 @@
  */
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace OpenIddict.EntityFrameworkCore.Models;
 
@@ -24,49 +24,42 @@ public class OpenIddictEntityFrameworkCoreResource : OpenIddictEntityFrameworkCo
 public class OpenIddictEntityFrameworkCoreResource<TKey> where TKey : notnull, IEquatable<TKey>
 {
     /// <summary>
-    /// Gets or sets the concurrency token.
+    /// Gets or sets the concurrency token of the resource.
     /// </summary>
     public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Gets or sets the public description associated with the current resource.
+    /// Gets or sets the public description of the resource.
     /// </summary>
     public virtual string? Description { get; set; }
 
     /// <summary>
-    /// Gets or sets the localized public descriptions associated
-    /// with the current resource, serialized as a JSON object.
+    /// Gets or sets the localized public descriptions of the resource.
     /// </summary>
-    [StringSyntax(StringSyntaxAttribute.Json)]
-    public virtual string? Descriptions { get; set; }
+    public virtual IDictionary<string, string>? Descriptions { get; set; }
 
     /// <summary>
-    /// Gets or sets the display name associated with the current resource.
+    /// Gets or sets the display name of the resource.
     /// </summary>
     public virtual string? DisplayName { get; set; }
 
     /// <summary>
-    /// Gets or sets the localized display names
-    /// associated with the current application,
-    /// serialized as a JSON object.
+    /// Gets or sets the localized display names of the resource.
     /// </summary>
-    [StringSyntax(StringSyntaxAttribute.Json)]
-    public virtual string? DisplayNames { get; set; }
+    public virtual IDictionary<string, string>? DisplayNames { get; set; }
 
     /// <summary>
-    /// Gets or sets the unique identifier associated with the current resource.
+    /// Gets or sets the unique identifier of the resource.
     /// </summary>
     public virtual TKey? Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the unique name associated with the current resource.
+    /// Gets or sets the unique name of the resource.
     /// </summary>
     public virtual string? Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the additional properties serialized as a JSON object,
-    /// or <see langword="null"/> if no bag was associated with the current resource.
+    /// Gets or sets the additional properties of the resource.
     /// </summary>
-    [StringSyntax(StringSyntaxAttribute.Json)]
-    public virtual string? Properties { get; set; }
+    public virtual IDictionary<string, JsonElement>? Properties { get; set; }
 }

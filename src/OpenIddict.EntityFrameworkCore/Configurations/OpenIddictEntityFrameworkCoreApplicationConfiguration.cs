@@ -6,7 +6,9 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.EntityFrameworkCore.Models;
 
 namespace OpenIddict.EntityFrameworkCore;
@@ -37,10 +39,14 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        builder.HasKey(static application => application.Id);
-
         builder.Property(static application => application.ApplicationType)
                .HasMaxLength(50);
+
+        builder.HasMany(static application => application.Authorizations)
+               .WithOne(static authorization => authorization.Application!)
+               .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreAuthorization.Application) +
+                              nameof(OpenIddictEntityFrameworkCoreApplication.Id))
+               .IsRequired(required: false);
 
         builder.HasIndex(static application => application.ClientId)
                .IsUnique();
@@ -58,6 +64,13 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
         builder.Property(static application => application.ConsentType)
                .HasMaxLength(50);
 
+        builder.Property(static application => application.DisplayNames)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+
+        builder.HasKey(static application => application.Id);
+
         builder.Property(static application => application.Id)
                .ValueGeneratedOnAdd();
 
@@ -67,11 +80,20 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
                    .HasMaxLength(100);
         }
 
-        builder.HasMany(static application => application.Authorizations)
-               .WithOne(static authorization => authorization.Application!)
-               .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreAuthorization.Application) +
-                              nameof(OpenIddictEntityFrameworkCoreApplication.Id))
-               .IsRequired(required: false);
+        builder.Property(static application => application.JsonWebKeySet)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.JsonWebKeySet),
+                   static value => JsonWebKeySet.Create(value));
+
+        builder.Property(static application => application.Properties)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement));
+
+        builder.Property(static application => application.Settings)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
 
         builder.HasMany(static application => application.Tokens)
                .WithOne(static token => token.Application!)

@@ -5,8 +5,6 @@
  */
 
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
@@ -32,11 +30,11 @@ public sealed class OpenIddictEntityFrameworkResourceConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        HasKey(static resource => resource.Id);
-
         Property(static resource => resource.ConcurrencyToken)
             .HasMaxLength(50)
             .IsConcurrencyToken();
+
+        HasKey(static resource => resource.Id);
 
         if (typeof(TKey) == typeof(string))
         {
@@ -49,11 +47,10 @@ public sealed class OpenIddictEntityFrameworkResourceConfiguration<
         }
 
         Property(static resource => resource.Name)
-            .HasMaxLength(200)
-            .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
-            {
-                IsUnique = true
-            }));
+            .HasMaxLength(200);
+
+        HasIndex(static resource => resource.Name)
+            .IsUnique();
 
         ToTable("OpenIddictResources");
     }

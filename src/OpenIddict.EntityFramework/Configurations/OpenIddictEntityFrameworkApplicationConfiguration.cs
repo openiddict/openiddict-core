@@ -5,8 +5,6 @@
  */
 
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
@@ -38,17 +36,22 @@ public sealed class OpenIddictEntityFrameworkApplicationConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        HasKey(static application => application.Id);
+        HasMany(static application => application.Authorizations)
+            .WithOptional(static authorization => authorization.Application!)
+            .Map(static association =>
+            {
+                association.MapKey(nameof(OpenIddictEntityFrameworkAuthorization.Application) +
+                                   nameof(OpenIddictEntityFrameworkApplication.Id));
+            });
 
         Property(static application => application.ApplicationType)
             .HasMaxLength(50);
 
         Property(static application => application.ClientId)
-            .HasMaxLength(100)
-            .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
-            {
-                IsUnique = true
-            }));
+            .HasMaxLength(100);
+
+        HasIndex(static application => application.ClientId)
+            .IsUnique();
 
         Property(static application => application.ClientType)
             .HasMaxLength(50);
@@ -60,6 +63,8 @@ public sealed class OpenIddictEntityFrameworkApplicationConfiguration<
         Property(static application => application.ConsentType)
             .HasMaxLength(50);
 
+        HasKey(static application => application.Id);
+
         if (typeof(TKey) == typeof(string))
         {
             var parameter = Expression.Parameter(typeof(TApplication), "application");
@@ -69,14 +74,6 @@ public sealed class OpenIddictEntityFrameworkApplicationConfiguration<
 
             Property(lambda).HasMaxLength(100);
         }
-
-        HasMany(static application => application.Authorizations)
-            .WithOptional(static authorization => authorization.Application!)
-            .Map(static association =>
-            {
-                association.MapKey(nameof(OpenIddictEntityFrameworkAuthorization.Application) +
-                                   nameof(OpenIddictEntityFrameworkApplication.Id));
-            });
 
         HasMany(static application => application.Tokens)
             .WithOptional(static token => token.Application!)

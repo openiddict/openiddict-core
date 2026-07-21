@@ -263,12 +263,7 @@ public class OpenIddictMongoDbApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (application.JsonWebKeySet is null)
-        {
-            return new(result: null);
-        }
-
-        return new(JsonWebKeySet.Create(application.JsonWebKeySet.ToJson()));
+        return new(application.JsonWebKeySet is BsonDocument set ? JsonWebKeySet.Create(set.ToJson()) : null);
     }
 
     /// <inheritdoc/>

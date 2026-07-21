@@ -145,6 +145,7 @@
     <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.Wpf"               Version="1.0.14"          />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"     Version="10.0.10"         />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite"                  Version="10.0.10"         />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer"               Version="10.0.10"         />
     <PackageVersion Include="Microsoft.Extensions.Hosting"                          Version="10.0.10"         />
     <PackageVersion Include="Microsoft.Maui.Controls"                               Version="10.0.80"         />
     <PackageVersion Include="Microsoft.Maui.Controls.Compatibility"                 Version="10.0.80"         />

@@ -36,11 +36,11 @@ public sealed class OpenIddictEntityFrameworkAuthorizationConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        HasKey(static authorization => authorization.Id);
-
         Property(static authorization => authorization.ConcurrencyToken)
             .HasMaxLength(50)
             .IsConcurrencyToken();
+
+        HasKey(static authorization => authorization.Id);
 
         if (typeof(TKey) == typeof(string))
         {
@@ -58,14 +58,14 @@ public sealed class OpenIddictEntityFrameworkAuthorizationConfiguration<
         Property(static authorization => authorization.Subject)
             .HasMaxLength(400);
 
-        Property(static authorization => authorization.Type)
-            .HasMaxLength(50);
-
         HasMany(static authorization => authorization.Tokens)
             .WithOptional(static token => token.Authorization!)
             .Map(static association => association.MapKey(nameof(OpenIddictEntityFrameworkToken.Authorization) +
                                                           nameof(OpenIddictEntityFrameworkAuthorization.Id)))
             .WillCascadeOnDelete();
+
+        Property(static authorization => authorization.Type)
+            .HasMaxLength(50);
 
         ToTable("OpenIddictAuthorizations");
     }

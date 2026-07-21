@@ -211,12 +211,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        if (authorization.ApplicationId == ObjectId.Empty)
-        {
-            return new(result: null);
-        }
-
-        return new(authorization.ApplicationId.ToString());
+        return new(authorization.ApplicationId != ObjectId.Empty ? authorization.ApplicationId.ToString() : null);
     }
 
     /// <inheritdoc/>
@@ -237,12 +232,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        if (authorization.CreationDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(authorization.CreationDate.Value, DateTimeKind.Utc));
+        return new(authorization.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
