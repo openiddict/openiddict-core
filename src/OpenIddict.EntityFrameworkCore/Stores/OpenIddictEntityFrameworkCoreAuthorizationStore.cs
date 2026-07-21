@@ -163,17 +163,6 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         else
         {
-            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
-            // filtered using token.Application.Id.Equals(key). To work around this issue,
-            // this local method uses an explicit join before applying the equality check.
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-            Task<List<TToken>> ListTokensAsync()
-                => (from token in context.Set<TToken>().AsTracking()
-                    join element in context.Set<TAuthorization>().AsTracking() on token.Authorization!.Id equals element.Id
-                    where element.Id!.Equals(authorization.Id)
-                    select token).ToListAsync(cancellationToken);
-
             var strategy = context.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
             {
@@ -183,7 +172,10 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
                 using var transaction = await context.CreateTransactionAsync(IsolationLevel.Serializable, cancellationToken);
 
                 // Remove all the tokens associated with the authorization.
-                var tokens = await ListTokensAsync();
+                var tokens = await (from token in context.Set<TToken>().AsTracking()
+                                    where token.Authorization!.Id!.Equals(authorization.Id)
+                                    select token).ToListAsync(cancellationToken);
+
                 foreach (var token in tokens)
                 {
                     context.Remove(token);
@@ -230,17 +222,9 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         if (!string.IsNullOrEmpty(client))
         {
-            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-            // can't be filtered using authorization.Application.Id.Equals(key). To work around
-            // this issue, this query uses use an explicit join to apply the equality check.
-            //
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
             var key = ConvertIdentifierFromString(client);
 
-            query = from authorization in query
-                    join application in context.Set<TApplication>().AsTracking() on authorization.Application!.Id equals application.Id
-                    where application.Id!.Equals(key)
-                    select authorization;
+            query = query.Where(authorization => authorization.Application!.Id!.Equals(key));
         }
 
         if (!string.IsNullOrEmpty(status))
@@ -276,16 +260,9 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
             var context = await Context.GetDbContextAsync(cancellationToken);
             var key = ConvertIdentifierFromString(identifier);
 
-            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-            // can't be filtered using authorization.Application.Id.Equals(key). To work around
-            // this issue, this query uses use an explicit join to apply the equality check.
-            //
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
             await foreach (var authorization in
                 (from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Application).AsTracking()
-                 join application in context.Set<TApplication>().AsTracking() on authorization.Application!.Id equals application.Id
-                 where application.Id!.Equals(key)
+                 where authorization.Application!.Id!.Equals(key)
                  select authorization).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return authorization;
@@ -624,17 +601,9 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         if (!string.IsNullOrEmpty(client))
         {
-            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-            // can't be filtered using authorization.Application.Id.Equals(key). To work around
-            // this issue, this query uses use an explicit join to apply the equality check.
-            //
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
             var key = ConvertIdentifierFromString(client);
 
-            query = from authorization in query
-                    join application in context.Set<TApplication>().AsTracking() on authorization.Application!.Id equals application.Id
-                    where application.Id!.Equals(key)
-                    select authorization;
+            query = query.Where(authorization => authorization.Application!.Id!.Equals(key));
         }
 
         if (!string.IsNullOrEmpty(status))
@@ -659,12 +628,6 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
         List<Exception>? exceptions = null;
 
         var result = 0L;
-
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-        // can't be filtered using authorization.Application.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         foreach (var authorization in await query.ToListAsync(cancellationToken))
         {
@@ -721,15 +684,8 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
 
         var result = 0L;
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-        // can't be filtered using authorization.Application.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
         foreach (var authorization in await (from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Application).AsTracking()
-                                             join application in context.Set<TApplication>().AsTracking() on authorization.Application!.Id equals application.Id
-                                             where application.Id!.Equals(key)
+                                             where authorization.Application!.Id!.Equals(key)
                                              select authorization).ToListAsync(cancellationToken))
         {
             authorization.Status = Statuses.Revoked;
