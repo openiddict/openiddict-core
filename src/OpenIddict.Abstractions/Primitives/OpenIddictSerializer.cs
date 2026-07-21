@@ -13,6 +13,8 @@ namespace OpenIddict.Abstractions;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 [JsonSerializable(typeof(bool))]
+[JsonSerializable(typeof(IDictionary<string, JsonElement>))]
+[JsonSerializable(typeof(IDictionary<string, string>))]
 [JsonSerializable(typeof(JsonArray))]
 [JsonSerializable(typeof(JsonElement))]
 [JsonSerializable(typeof(JsonNode))]

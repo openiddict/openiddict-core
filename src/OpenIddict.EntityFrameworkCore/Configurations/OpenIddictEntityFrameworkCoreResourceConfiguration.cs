@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -31,14 +32,21 @@ public sealed class OpenIddictEntityFrameworkCoreResourceConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        builder.HasKey(static resource => resource.Id);
-
-        builder.HasIndex(static resource => resource.Name)
-               .IsUnique();
-
         builder.Property(static resource => resource.ConcurrencyToken)
                .HasMaxLength(50)
                .IsConcurrencyToken();
+
+        builder.Property(static resource => resource.Descriptions)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+
+        builder.Property(static resource => resource.DisplayNames)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+
+        builder.HasKey(static resource => resource.Id);
 
         builder.Property(static resource => resource.Id)
                .ValueGeneratedOnAdd();
@@ -51,6 +59,14 @@ public sealed class OpenIddictEntityFrameworkCoreResourceConfiguration<
 
         builder.Property(static resource => resource.Name)
                .HasMaxLength(200);
+
+        builder.HasIndex(static resource => resource.Name)
+               .IsUnique();
+
+        builder.Property(static resource => resource.Properties)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement));
 
         builder.ToTable("OpenIddictResources");
     }

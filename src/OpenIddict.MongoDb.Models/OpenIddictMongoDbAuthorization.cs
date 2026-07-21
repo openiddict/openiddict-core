@@ -16,55 +16,55 @@ namespace OpenIddict.MongoDb.Models;
 public class OpenIddictMongoDbAuthorization
 {
     /// <summary>
-    /// Gets or sets the identifier of the application associated with the current authorization.
+    /// Gets or sets the identifier of the application associated with the authorization.
     /// </summary>
     [BsonElement("application_id"), BsonIgnoreIfDefault]
     public virtual ObjectId ApplicationId { get; set; }
 
     /// <summary>
-    /// Gets or sets the concurrency token.
+    /// Gets or sets the concurrency token of the authorization.
     /// </summary>
     [BsonElement("concurrency_token"), BsonIgnoreIfNull]
     public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Gets or sets the UTC creation date of the current authorization.
+    /// Gets or sets the UTC creation date of the authorization.
     /// </summary>
     [BsonElement("creation_date"), BsonIgnoreIfNull]
     public virtual DateTime? CreationDate { get; set; }
 
     /// <summary>
-    /// Gets or sets the unique identifier associated with the current authorization.
+    /// Gets or sets the unique identifier of the authorization.
     /// </summary>
     [BsonId, BsonRequired]
     public virtual ObjectId Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the additional properties associated with the current authorization.
+    /// Gets or sets the additional properties of the authorization.
     /// </summary>
     [BsonElement("properties"), BsonIgnoreIfNull]
     public virtual BsonDocument? Properties { get; set; }
 
     /// <summary>
-    /// Gets or sets the scopes associated with the current authorization.
+    /// Gets or sets the scopes of the authorization.
     /// </summary>
     [BsonElement("scopes"), BsonIgnoreIfNull]
     public virtual ImmutableArray<string>? Scopes { get; set; }
 
     /// <summary>
-    /// Gets or sets the status of the current authorization.
+    /// Gets or sets the status of the authorization.
     /// </summary>
     [BsonElement("status"), BsonIgnoreIfNull]
     public virtual string? Status { get; set; }
 
     /// <summary>
-    /// Gets or sets the subject associated with the current authorization.
+    /// Gets or sets the subject associated with the authorization.
     /// </summary>
     [BsonElement("subject"), BsonIgnoreIfNull]
     public virtual string? Subject { get; set; }
 
     /// <summary>
-    /// Gets or sets the type of the current authorization.
+    /// Gets or sets the type of the authorization.
     /// </summary>
     [BsonElement("type"), BsonIgnoreIfNull]
     public virtual string? Type { get; set; }

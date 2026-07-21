@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -31,14 +32,21 @@ public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        builder.HasKey(static scope => scope.Id);
-
-        builder.HasIndex(static scope => scope.Name)
-               .IsUnique();
-
         builder.Property(static scope => scope.ConcurrencyToken)
                .HasMaxLength(50)
                .IsConcurrencyToken();
+
+        builder.Property(static scope => scope.Descriptions)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+
+        builder.Property(static scope => scope.DisplayNames)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+
+        builder.HasKey(static scope => scope.Id);
 
         builder.Property(static scope => scope.Id)
                .ValueGeneratedOnAdd();
@@ -51,6 +59,14 @@ public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<
 
         builder.Property(static scope => scope.Name)
                .HasMaxLength(200);
+
+        builder.HasIndex(static scope => scope.Name)
+               .IsUnique();
+
+        builder.Property(static scope => scope.Properties)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement));
 
         builder.ToTable("OpenIddictScopes");
     }

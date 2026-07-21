@@ -353,12 +353,7 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.CreationDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.CreationDate.Value, DateTimeKind.Utc));
+        return new(token.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
@@ -366,12 +361,7 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.ExpirationDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.ExpirationDate.Value, DateTimeKind.Utc));
+        return new(token.ExpirationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
@@ -427,12 +417,7 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.RedemptionDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.RedemptionDate.Value, DateTimeKind.Utc));
+        return new(token.RedemptionDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>

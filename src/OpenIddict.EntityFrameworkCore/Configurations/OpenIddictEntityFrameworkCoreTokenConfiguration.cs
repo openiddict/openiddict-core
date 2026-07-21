@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -37,11 +38,6 @@ public sealed class OpenIddictEntityFrameworkCoreTokenConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        builder.HasKey(static token => token.Id);
-
-        builder.HasIndex(static token => token.ReferenceId)
-               .IsUnique();
-
         builder.HasIndex(
             nameof(OpenIddictEntityFrameworkCoreToken.Application) + nameof(OpenIddictEntityFrameworkCoreApplication.Id),
             nameof(OpenIddictEntityFrameworkCoreToken.Status),
@@ -51,6 +47,8 @@ public sealed class OpenIddictEntityFrameworkCoreTokenConfiguration<
         builder.Property(static token => token.ConcurrencyToken)
                .HasMaxLength(50)
                .IsConcurrencyToken();
+
+        builder.HasKey(static token => token.Id);
 
         builder.Property(static token => token.Id)
                .ValueGeneratedOnAdd();
@@ -64,11 +62,19 @@ public sealed class OpenIddictEntityFrameworkCoreTokenConfiguration<
         builder.Property(static token => token.ReferenceId)
                .HasMaxLength(100);
 
+        builder.HasIndex(static token => token.ReferenceId)
+               .IsUnique();
+
         builder.Property(static token => token.Status)
                .HasMaxLength(50);
 
         builder.Property(static token => token.Subject)
                .HasMaxLength(400);
+
+        builder.Property(static token => token.Properties)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement));
 
         builder.Property(static token => token.Type)
                .HasMaxLength(150);

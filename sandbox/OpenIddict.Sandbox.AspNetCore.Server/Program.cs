@@ -20,6 +20,12 @@ builder.Services.AddMvc();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlite($"Filename={Path.Combine(Path.GetTempPath(), "openiddict-sandbox-aspnetcore-server.sqlite3")}");
+
+    // Developers who prefer using Microsoft SQL Server instead of SQLite can remove
+    // the previous line and configure OpenIddict to use the specified database:
+    //
+    // options.UseSqlServer($"Server=(localdb)\\MSSQLLocalDB;Database=openiddict-sandbox-aspnetcore-server;Trusted_Connection=True");
+
     options.UseOpenIddict();
 });
 

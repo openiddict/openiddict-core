@@ -10,10 +10,7 @@ using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -30,10 +27,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore :
                                                   OpenIddictEntityFrameworkCoreToken, string>
 {
     public OpenIddictEntityFrameworkCoreApplicationStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(context, options)
     {
     }
 }
@@ -50,10 +46,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreApplicationStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(context, options)
     {
     }
 }
@@ -76,19 +71,12 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreApplicationStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
     {
-        Cache = cache ?? throw new ArgumentNullException(nameof(cache));
         Context = context ?? throw new ArgumentNullException(nameof(context));
         Options = options ?? throw new ArgumentNullException(nameof(options));
     }
-
-    /// <summary>
-    /// Gets the memory cache associated with the current store.
-    /// </summary>
-    protected IMemoryCache Cache { get; }
 
     /// <summary>
     /// Gets the database context associated with the current store.
@@ -314,29 +302,18 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentException.ThrowIfNullOrEmpty(uri);
 
-        // To optimize the efficiency of the query a bit, only applications whose stringified
-        // PostLogoutRedirectUris contains the specified URI are returned. Once the applications
-        // are retrieved, a second pass is made to ensure only valid elements are returned.
-        // Implementers that use this method in a hot path may want to override this method
-        // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-
         return ExecuteAsync(cancellationToken);
 
         async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            var applications = (from application in context.Set<TApplication>().AsTracking()
-                                where application.PostLogoutRedirectUris!.Contains(uri)
-                                select application).AsAsyncEnumerable().WithCancellation(cancellationToken);
-
-            await foreach (var application in applications)
+            await foreach (var application in
+                (from application in context.Set<TApplication>().AsTracking()
+                 where application.PostLogoutRedirectUris!.Contains(uri)
+                 select application).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
-                var uris = await GetPostLogoutRedirectUrisAsync(application, cancellationToken);
-                if (uris.Contains(uri, StringComparer.Ordinal))
-                {
-                    yield return application;
-                }
+                yield return application;
             }
         }
     }
@@ -347,29 +324,18 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentException.ThrowIfNullOrEmpty(uri);
 
-        // To optimize the efficiency of the query a bit, only applications whose stringified
-        // RedirectUris property contains the specified URI are returned. Once the applications
-        // are retrieved, a second pass is made to ensure only valid elements are returned.
-        // Implementers that use this method in a hot path may want to override this method
-        // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-
         return ExecuteAsync(cancellationToken);
 
         async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            var applications = (from application in context.Set<TApplication>().AsTracking()
-                                where application.RedirectUris!.Contains(uri)
-                                select application).AsAsyncEnumerable().WithCancellation(cancellationToken);
-
-            await foreach (var application in applications)
+            await foreach (var application in
+                (from application in context.Set<TApplication>().AsTracking()
+                 where application.RedirectUris!.Contains(uri)
+                 select application).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
-                var uris = await GetRedirectUrisAsync(application, cancellationToken);
-                if (uris.Contains(uri, StringComparer.Ordinal))
-                {
-                    yield return application;
-                }
+                yield return application;
             }
         }
     }
@@ -439,37 +405,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (string.IsNullOrEmpty(application.DisplayNames))
-        {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
-        }
-
-        // Note: parsing the stringified display names is an expensive operation.
-        // To mitigate that, the resulting object is stored in the memory cache.
-        var key = string.Concat("7762c378-c113-4564-b14b-1402b3949aaa", "\x1e", application.DisplayNames);
-        var names = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(application.DisplayNames);
-            var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
-
-            foreach (var property in document.RootElement.EnumerateObject())
-            {
-                var value = property.Value.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder[CultureInfo.GetCultureInfo(property.Name)] = value;
-            }
-
-            return builder.ToImmutable();
-        })!;
-
-        return new(names);
+        return new(application.DisplayNames is { Count: > 0 } names
+            ? names.ToImmutableDictionary(static pair => CultureInfo.GetCultureInfo(pair.Key), static pair => pair.Value)
+            : []);
     }
 
     /// <inheritdoc/>
@@ -485,23 +423,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (string.IsNullOrEmpty(application.JsonWebKeySet))
-        {
-            return new(result: null);
-        }
-
-        // Note: parsing the stringified JSON Web Key Set is an expensive operation.
-        // To mitigate that, the resulting object is stored in the memory cache.
-        var key = string.Concat("1e0a697d-0623-481a-927a-5e6c31458782", "\x1e", application.JsonWebKeySet);
-        var set = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            return JsonWebKeySet.Create(application.JsonWebKeySet);
-        })!;
-
-        return new(set);
+        return new(application.JsonWebKeySet);
     }
 
     /// <inheritdoc/>
@@ -509,37 +431,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (string.IsNullOrEmpty(application.Permissions))
-        {
-            return new([]);
-        }
-
-        // Note: parsing the stringified permissions is an expensive operation.
-        // To mitigate that, the resulting array is stored in the memory cache.
-        var key = string.Concat("0347e0aa-3a26-410a-97e8-a83bdeb21a1f", "\x1e", application.Permissions);
-        var permissions = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(application.Permissions);
-            var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
-
-            foreach (var element in document.RootElement.EnumerateArray())
-            {
-                var value = element.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder.Add(value);
-            }
-
-            return builder.ToImmutable();
-        });
-
-        return new(permissions);
+        return new(application.Permissions is { Length: > 0 } permissions ? [.. permissions] : []);
     }
 
     /// <inheritdoc/>
@@ -547,37 +439,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (string.IsNullOrEmpty(application.PostLogoutRedirectUris))
-        {
-            return new([]);
-        }
-
-        // Note: parsing the stringified URIs is an expensive operation.
-        // To mitigate that, the resulting array is stored in the memory cache.
-        var key = string.Concat("fb14dfb9-9216-4b77-bfa9-7e85f8201ff4", "\x1e", application.PostLogoutRedirectUris);
-        var uris = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(application.PostLogoutRedirectUris);
-            var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
-
-            foreach (var element in document.RootElement.EnumerateArray())
-            {
-                var value = element.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder.Add(value);
-            }
-
-            return builder.ToImmutable();
-        });
-
-        return new(uris);
+        return new(application.PostLogoutRedirectUris is { Length: > 0 } uris ? [.. uris] : []);
     }
 
     /// <inheritdoc/>
@@ -585,31 +447,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (string.IsNullOrEmpty(application.Properties))
-        {
-            return new(ImmutableDictionary.Create<string, JsonElement>());
-        }
-
-        // Note: parsing the stringified properties is an expensive operation.
-        // To mitigate that, the resulting object is stored in the memory cache.
-        var key = string.Concat("2e3e9680-5654-48d8-a27d-b8bb4f0f1d50", "\x1e", application.Properties);
-        var properties = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(application.Properties);
-            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
-
-            foreach (var property in document.RootElement.EnumerateObject())
-            {
-                builder[property.Name] = property.Value.Clone();
-            }
-
-            return builder.ToImmutable();
-        })!;
-
-        return new(properties);
+        return new(application.Properties is { Count: > 0 } properties ? [.. properties] : []);
     }
 
     /// <inheritdoc/>
@@ -617,37 +455,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (string.IsNullOrEmpty(application.RedirectUris))
-        {
-            return new([]);
-        }
-
-        // Note: parsing the stringified URIs is an expensive operation.
-        // To mitigate that, the resulting array is stored in the memory cache.
-        var key = string.Concat("851d6f08-2ee0-4452-bbe5-ab864611ecaa", "\x1e", application.RedirectUris);
-        var uris = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(application.RedirectUris);
-            var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
-
-            foreach (var element in document.RootElement.EnumerateArray())
-            {
-                var value = element.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder.Add(value);
-            }
-
-            return builder.ToImmutable();
-        });
-
-        return new(uris);
+        return new(application.RedirectUris is { Length: > 0 } uris ? [.. uris] : []);
     }
 
     /// <inheritdoc/>
@@ -655,37 +463,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (string.IsNullOrEmpty(application.Requirements))
-        {
-            return new([]);
-        }
-
-        // Note: parsing the stringified requirements is an expensive operation.
-        // To mitigate that, the resulting array is stored in the memory cache.
-        var key = string.Concat("b4808a89-8969-4512-895f-a909c62a8995", "\x1e", application.Requirements);
-        var requirements = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(application.Requirements);
-            var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
-
-            foreach (var element in document.RootElement.EnumerateArray())
-            {
-                var value = element.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder.Add(value);
-            }
-
-            return builder.ToImmutable();
-        });
-
-        return new(requirements);
+        return new(application.Requirements is { Length: > 0 } requirements ? [.. requirements] : []);
     }
 
     /// <inheritdoc/>
@@ -693,37 +471,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (string.IsNullOrEmpty(application.Settings))
-        {
-            return new(ImmutableDictionary.Create<string, string>());
-        }
-
-        // Note: parsing the stringified settings is an expensive operation.
-        // To mitigate that, the resulting object is stored in the memory cache.
-        var key = string.Concat("492ea63f-c26f-47ea-bf9b-b0a0c3d02656", "\x1e", application.Settings);
-        var settings = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(application.Settings);
-            var builder = ImmutableDictionary.CreateBuilder<string, string>();
-
-            foreach (var property in document.RootElement.EnumerateObject())
-            {
-                var value = property.Value.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder[property.Name] = value;
-            }
-
-            return builder.ToImmutable();
-        })!;
-
-        return new(settings);
+        return new(application.Settings is { Count: > 0 } settings ? [.. settings] : []);
     }
 
     /// <inheritdoc/>
@@ -852,32 +600,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (names is not { Count: > 0 })
-        {
-            application.DisplayNames = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartObject();
-
-        foreach (var pair in names)
-        {
-            writer.WritePropertyName(pair.Key.Name);
-            writer.WriteStringValue(pair.Value);
-        }
-
-        writer.WriteEndObject();
-        writer.Flush();
-
-        application.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
+        application.DisplayNames = names is { Count: > 0 }
+            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            : null;
 
         return ValueTask.CompletedTask;
     }
@@ -887,7 +612,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        application.JsonWebKeySet = set is not null ? JsonSerializer.Serialize(set, OpenIddictSerializer.Default.JsonWebKeySet) : null;
+        application.JsonWebKeySet = set;
 
         return ValueTask.CompletedTask;
     }
@@ -904,24 +629,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             return ValueTask.CompletedTask;
         }
 
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartArray();
-
-        foreach (var permission in permissions)
-        {
-            writer.WriteStringValue(permission);
-        }
-
-        writer.WriteEndArray();
-        writer.Flush();
-
-        application.Permissions = Encoding.UTF8.GetString(stream.ToArray());
+        application.Permissions = permissions.ToArray();
 
         return ValueTask.CompletedTask;
     }
@@ -939,24 +647,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             return ValueTask.CompletedTask;
         }
 
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartArray();
-
-        foreach (var uri in uris)
-        {
-            writer.WriteStringValue(uri);
-        }
-
-        writer.WriteEndArray();
-        writer.Flush();
-
-        application.PostLogoutRedirectUris = Encoding.UTF8.GetString(stream.ToArray());
+        application.PostLogoutRedirectUris = uris.ToArray();
 
         return ValueTask.CompletedTask;
     }
@@ -967,32 +658,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (properties is not { Count: > 0 })
-        {
-            application.Properties = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartObject();
-
-        foreach (var property in properties)
-        {
-            writer.WritePropertyName(property.Key);
-            property.Value.WriteTo(writer);
-        }
-
-        writer.WriteEndObject();
-        writer.Flush();
-
-        application.Properties = Encoding.UTF8.GetString(stream.ToArray());
+        application.Properties = properties;
 
         return ValueTask.CompletedTask;
     }
@@ -1010,24 +676,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             return ValueTask.CompletedTask;
         }
 
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartArray();
-
-        foreach (var uri in uris)
-        {
-            writer.WriteStringValue(uri);
-        }
-
-        writer.WriteEndArray();
-        writer.Flush();
-
-        application.RedirectUris = Encoding.UTF8.GetString(stream.ToArray());
+        application.RedirectUris = uris.ToArray();
 
         return ValueTask.CompletedTask;
     }
@@ -1044,24 +693,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             return ValueTask.CompletedTask;
         }
 
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartArray();
-
-        foreach (var requirement in requirements)
-        {
-            writer.WriteStringValue(requirement);
-        }
-
-        writer.WriteEndArray();
-        writer.Flush();
-
-        application.Requirements = Encoding.UTF8.GetString(stream.ToArray());
+        application.Requirements = requirements.ToArray();
 
         return ValueTask.CompletedTask;
     }
@@ -1072,32 +704,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (settings is not { Count: > 0 })
-        {
-            application.Settings = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartObject();
-
-        foreach (var setting in settings)
-        {
-            writer.WritePropertyName(setting.Key);
-            writer.WriteStringValue(setting.Value);
-        }
-
-        writer.WriteEndObject();
-        writer.Flush();
-
-        application.Settings = Encoding.UTF8.GetString(stream.ToArray());
+        application.Settings = settings;
 
         return ValueTask.CompletedTask;
     }

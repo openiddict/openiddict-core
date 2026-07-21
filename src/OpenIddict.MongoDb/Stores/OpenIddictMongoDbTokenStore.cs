@@ -226,12 +226,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.ApplicationId == ObjectId.Empty)
-        {
-            return new(result: null);
-        }
-
-        return new(token.ApplicationId.ToString());
+        return new(token.ApplicationId != ObjectId.Empty ? token.ApplicationId.ToString() : null);
     }
 
     /// <inheritdoc/>
@@ -252,12 +247,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.AuthorizationId == ObjectId.Empty)
-        {
-            return new(result: null);
-        }
-
-        return new(token.AuthorizationId.ToString());
+        return new(token.AuthorizationId != ObjectId.Empty ? token.AuthorizationId.ToString() : null);
     }
 
     /// <inheritdoc/>
@@ -265,12 +255,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.CreationDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.CreationDate.Value, DateTimeKind.Utc));
+        return new(token.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
@@ -278,12 +263,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.ExpirationDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.ExpirationDate.Value, DateTimeKind.Utc));
+        return new(token.ExpirationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
@@ -328,12 +308,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.RedemptionDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.RedemptionDate.Value, DateTimeKind.Utc));
+        return new(token.RedemptionDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>

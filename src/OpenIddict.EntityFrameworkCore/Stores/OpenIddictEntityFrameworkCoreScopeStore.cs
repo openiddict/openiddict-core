@@ -9,10 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFrameworkCore.Models;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
@@ -25,10 +22,9 @@ namespace OpenIddict.EntityFrameworkCore;
 public class OpenIddictEntityFrameworkCoreScopeStore : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope, string>
 {
     public OpenIddictEntityFrameworkCoreScopeStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(context, options)
     {
     }
 }
@@ -42,10 +38,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreScopeStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(context, options)
     {
     }
 }
@@ -62,19 +57,12 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreScopeStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
     {
-        Cache = cache ?? throw new ArgumentNullException(nameof(cache));
         Context = context ?? throw new ArgumentNullException(nameof(context));
         Options = options ?? throw new ArgumentNullException(nameof(options));
     }
-
-    /// <summary>
-    /// Gets the memory cache associated with the current store.
-    /// </summary>
-    protected IMemoryCache Cache { get; }
 
     /// <summary>
     /// Gets the database context associated with the current store.
@@ -212,29 +200,17 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentException.ThrowIfNullOrEmpty(resource);
 
-        // To optimize the efficiency of the query a bit, only scopes whose stringified
-        // Resources column contains the specified resource are returned. Once the scopes
-        // are retrieved, a second pass is made to ensure only valid elements are returned.
-        // Implementers that use this method in a hot path may want to override this method
-        // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-
         return ExecuteAsync(cancellationToken);
 
         async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            var scopes = (from scope in context.Set<TScope>().AsTracking()
-                          where scope.Resources!.Contains(resource)
-                          select scope).AsAsyncEnumerable().WithCancellation(cancellationToken);
-
-            await foreach (var scope in scopes)
+            await foreach (var scope in (from scope in context.Set<TScope>().AsTracking()
+                                         where scope.Resources!.Contains(resource)
+                                         select scope).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
-                var resources = await GetResourcesAsync(scope, cancellationToken);
-                if (resources.Contains(resource, StringComparer.Ordinal))
-                {
-                    yield return scope;
-                }
+                yield return scope;
             }
         }
     }
@@ -264,37 +240,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (string.IsNullOrEmpty(scope.Descriptions))
-        {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
-        }
-
-        // Note: parsing the stringified descriptions is an expensive operation.
-        // To mitigate that, the resulting object is stored in the memory cache.
-        var key = string.Concat("42891062-8f69-43ba-9111-db7e8ded2553", "\x1e", scope.Descriptions);
-        var descriptions = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(scope.Descriptions);
-            var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
-
-            foreach (var property in document.RootElement.EnumerateObject())
-            {
-                var value = property.Value.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder[CultureInfo.GetCultureInfo(property.Name)] = value;
-            }
-
-            return builder.ToImmutable();
-        })!;
-
-        return new(descriptions);
+        return new(scope.Descriptions is { Count: > 0 } descriptions
+            ? descriptions.ToImmutableDictionary(static pair => CultureInfo.GetCultureInfo(pair.Key), static pair => pair.Value)
+            : ImmutableDictionary.Create<CultureInfo, string>());
     }
 
     /// <inheritdoc/>
@@ -310,37 +258,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (string.IsNullOrEmpty(scope.DisplayNames))
-        {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
-        }
-
-        // Note: parsing the stringified display names is an expensive operation.
-        // To mitigate that, the resulting object is stored in the memory cache.
-        var key = string.Concat("e17d437b-bdd2-43f3-974e-46d524f4bae1", "\x1e", scope.DisplayNames);
-        var names = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(scope.DisplayNames);
-            var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
-
-            foreach (var property in document.RootElement.EnumerateObject())
-            {
-                var value = property.Value.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder[CultureInfo.GetCultureInfo(property.Name)] = value;
-            }
-
-            return builder.ToImmutable();
-        })!;
-
-        return new(names);
+        return new(scope.DisplayNames is { Count: > 0 } names
+            ? names.ToImmutableDictionary(static pair => CultureInfo.GetCultureInfo(pair.Key), static pair => pair.Value)
+            : []);
     }
 
     /// <inheritdoc/>
@@ -364,31 +284,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (string.IsNullOrEmpty(scope.Properties))
-        {
-            return new(ImmutableDictionary.Create<string, JsonElement>());
-        }
-
-        // Note: parsing the stringified properties is an expensive operation.
-        // To mitigate that, the resulting object is stored in the memory cache.
-        var key = string.Concat("78d8dfdd-3870-442e-b62e-dc9bf6eaeff7", "\x1e", scope.Properties);
-        var properties = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(scope.Properties);
-            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
-
-            foreach (var property in document.RootElement.EnumerateObject())
-            {
-                builder[property.Name] = property.Value.Clone();
-            }
-
-            return builder.ToImmutable();
-        })!;
-
-        return new(properties);
+        return new(scope.Properties is { Count: > 0 } properties ? [.. properties] : []);
     }
 
     /// <inheritdoc/>
@@ -396,37 +292,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (string.IsNullOrEmpty(scope.Resources))
-        {
-            return new([]);
-        }
-
-        // Note: parsing the stringified resources is an expensive operation.
-        // To mitigate that, the resulting array is stored in the memory cache.
-        var key = string.Concat("b6148250-aede-4fb9-a621-07c9bcf238c3", "\x1e", scope.Resources);
-        var resources = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(scope.Resources);
-            var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
-
-            foreach (var element in document.RootElement.EnumerateArray())
-            {
-                var value = element.GetString();
-                if (string.IsNullOrEmpty(value))
-                {
-                    continue;
-                }
-
-                builder.Add(value);
-            }
-
-            return builder.ToImmutable();
-        });
-
-        return new(resources);
+        return new(scope.Resources is { Length: > 0 } resources ? [.. resources] : []);
     }
 
     /// <inheritdoc/>
@@ -504,32 +370,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (descriptions is not { Count: > 0 })
-        {
-            scope.Descriptions = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartObject();
-
-        foreach (var description in descriptions)
-        {
-            writer.WritePropertyName(description.Key.Name);
-            writer.WriteStringValue(description.Value);
-        }
-
-        writer.WriteEndObject();
-        writer.Flush();
-
-        scope.Descriptions = Encoding.UTF8.GetString(stream.ToArray());
+        scope.Descriptions = descriptions is { Count: > 0 }
+            ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            : null;
 
         return ValueTask.CompletedTask;
     }
@@ -550,32 +393,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (names is not { Count: > 0 })
-        {
-            scope.DisplayNames = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartObject();
-
-        foreach (var name in names)
-        {
-            writer.WritePropertyName(name.Key.Name);
-            writer.WriteStringValue(name.Value);
-        }
-
-        writer.WriteEndObject();
-        writer.Flush();
-
-        scope.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
+        scope.DisplayNames = names is { Count: > 0 }
+            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            : null;
 
         return ValueTask.CompletedTask;
     }
@@ -596,32 +416,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (properties is not { Count: > 0 })
-        {
-            scope.Properties = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartObject();
-
-        foreach (var property in properties)
-        {
-            writer.WritePropertyName(property.Key);
-            property.Value.WriteTo(writer);
-        }
-
-        writer.WriteEndObject();
-        writer.Flush();
-
-        scope.Properties = Encoding.UTF8.GetString(stream.ToArray());
+        scope.Properties = properties;
 
         return ValueTask.CompletedTask;
     }
@@ -638,24 +433,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             return ValueTask.CompletedTask;
         }
 
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartArray();
-
-        foreach (var resource in resources)
-        {
-            writer.WriteStringValue(resource);
-        }
-
-        writer.WriteEndArray();
-        writer.Flush();
-
-        scope.Resources = Encoding.UTF8.GetString(stream.ToArray());
+        scope.Resources = resources.ToArray();
 
         return ValueTask.CompletedTask;
     }

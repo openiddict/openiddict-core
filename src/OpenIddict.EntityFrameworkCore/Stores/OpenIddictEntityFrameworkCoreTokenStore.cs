@@ -9,10 +9,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFrameworkCore.Models;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
@@ -28,10 +25,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore :
                                             OpenIddictEntityFrameworkCoreAuthorization, string>
 {
     public OpenIddictEntityFrameworkCoreTokenStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(context, options)
     {
     }
 }
@@ -48,10 +44,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreTokenStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-        : base(cache, context, options)
+        : base(context, options)
     {
     }
 }
@@ -74,19 +69,12 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreTokenStore(
-        IMemoryCache cache,
         IOpenIddictEntityFrameworkCoreContext context,
         IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
     {
-        Cache = cache ?? throw new ArgumentNullException(nameof(cache));
         Context = context ?? throw new ArgumentNullException(nameof(context));
         Options = options ?? throw new ArgumentNullException(nameof(options));
     }
-
-    /// <summary>
-    /// Gets the memory cache associated with the current store.
-    /// </summary>
-    protected IMemoryCache Cache { get; }
 
     /// <summary>
     /// Gets the database context associated with the current store.
@@ -400,12 +388,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.CreationDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.CreationDate.Value, DateTimeKind.Utc));
+        return new(token.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
@@ -413,12 +396,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.ExpirationDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.ExpirationDate.Value, DateTimeKind.Utc));
+        return new(token.ExpirationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
@@ -442,31 +420,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (string.IsNullOrEmpty(token.Properties))
-        {
-            return new(ImmutableDictionary.Create<string, JsonElement>());
-        }
-
-        // Note: parsing the stringified properties is an expensive operation.
-        // To mitigate that, the resulting object is stored in the memory cache.
-        var key = string.Concat("d0509397-1bbf-40e7-97e1-5e6d7bc2536c", "\x1e", token.Properties);
-        var properties = Cache.GetOrCreate(key, entry =>
-        {
-            entry.SetPriority(CacheItemPriority.High)
-                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-            using var document = JsonDocument.Parse(token.Properties);
-            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
-
-            foreach (var property in document.RootElement.EnumerateObject())
-            {
-                builder[property.Name] = property.Value.Clone();
-            }
-
-            return builder.ToImmutable();
-        })!;
-
-        return new(properties);
+        return new(token.Properties is { Count: > 0 } properties ? [.. properties] : []);
     }
 
     /// <inheritdoc/>
@@ -474,12 +428,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.RedemptionDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(token.RedemptionDate.Value, DateTimeKind.Utc));
+        return new(token.RedemptionDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
@@ -1070,32 +1019,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (properties is not { Count: > 0 })
-        {
-            token.Properties = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false
-        });
-
-        writer.WriteStartObject();
-
-        foreach (var property in properties)
-        {
-            writer.WritePropertyName(property.Key);
-            property.Value.WriteTo(writer);
-        }
-
-        writer.WriteEndObject();
-        writer.Flush();
-
-        token.Properties = Encoding.UTF8.GetString(stream.ToArray());
+        token.Properties = properties;
 
         return ValueTask.CompletedTask;
     }

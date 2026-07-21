@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -37,8 +38,6 @@ public sealed class OpenIddictEntityFrameworkCoreAuthorizationConfiguration<
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.
 
-        builder.HasKey(static authorization => authorization.Id);
-
         builder.HasIndex(
             nameof(OpenIddictEntityFrameworkCoreAuthorization.Application) + nameof(OpenIddictEntityFrameworkCoreApplication.Id),
             nameof(OpenIddictEntityFrameworkCoreAuthorization.Status),
@@ -49,6 +48,8 @@ public sealed class OpenIddictEntityFrameworkCoreAuthorizationConfiguration<
                .HasMaxLength(50)
                .IsConcurrencyToken();
 
+        builder.HasKey(static authorization => authorization.Id);
+
         builder.Property(static authorization => authorization.Id)
                .ValueGeneratedOnAdd();
 
@@ -58,20 +59,25 @@ public sealed class OpenIddictEntityFrameworkCoreAuthorizationConfiguration<
                    .HasMaxLength(100);
         }
 
+        builder.Property(static authorization => authorization.Properties)
+               .HasConversion(
+                   static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement));
+
         builder.Property(static authorization => authorization.Status)
                .HasMaxLength(50);
 
         builder.Property(static authorization => authorization.Subject)
                .HasMaxLength(400);
 
-        builder.Property(static authorization => authorization.Type)
-               .HasMaxLength(50);
-
         builder.HasMany(static authorization => authorization.Tokens)
                .WithOne(static token => token.Authorization!)
                .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreToken.Authorization) +
                               nameof(OpenIddictEntityFrameworkCoreAuthorization.Id))
                .IsRequired(required: false);
+
+        builder.Property(static authorization => authorization.Type)
+               .HasMaxLength(50);
 
         builder.ToTable("OpenIddictAuthorizations");
     }

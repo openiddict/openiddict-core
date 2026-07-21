@@ -309,12 +309,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        if (authorization.CreationDate is null)
-        {
-            return new(result: null);
-        }
-
-        return new(DateTime.SpecifyKind(authorization.CreationDate.Value, DateTimeKind.Utc));
+        return new(authorization.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
     }
 
     /// <inheritdoc/>
