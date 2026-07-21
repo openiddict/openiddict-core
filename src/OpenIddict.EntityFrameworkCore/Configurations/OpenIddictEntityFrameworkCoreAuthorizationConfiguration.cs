@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -62,7 +63,8 @@ public sealed class OpenIddictEntityFrameworkCoreAuthorizationConfiguration<
         builder.Property(static authorization => authorization.Properties)
                .HasConversion(
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
-                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement));
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
+                   CreateDictionaryComparer<JsonElement>());
 
         builder.Property(static authorization => authorization.Status)
                .HasMaxLength(50);
@@ -80,5 +82,10 @@ public sealed class OpenIddictEntityFrameworkCoreAuthorizationConfiguration<
                .HasMaxLength(50);
 
         builder.ToTable("OpenIddictAuthorizations");
+
+        static ValueComparer CreateDictionaryComparer<TValue>() => new ValueComparer<IDictionary<string, TValue>>(
+            static (left, right) => ReferenceEquals(left, right) || (left != null && right != null && left.SequenceEqual(right)),
+            static value => value.Aggregate(0, static (hash, value) => HashCode.Combine(hash, value)),
+            static value => value.ToDictionary());
     }
 }

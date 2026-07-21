@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -67,7 +68,8 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
         builder.Property(static application => application.DisplayNames)
                .HasConversion(
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
-                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   CreateDictionaryComparer<string>());
 
         builder.HasKey(static application => application.Id);
 
@@ -88,12 +90,14 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
         builder.Property(static application => application.Properties)
                .HasConversion(
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
-                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement));
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
+                   CreateDictionaryComparer<JsonElement>());
 
         builder.Property(static application => application.Settings)
                .HasConversion(
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
-                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   CreateDictionaryComparer<string>());
 
         builder.HasMany(static application => application.Tokens)
                .WithOne(static token => token.Application!)
@@ -101,5 +105,10 @@ public sealed class OpenIddictEntityFrameworkCoreApplicationConfiguration<
                .IsRequired(required: false);
 
         builder.ToTable("OpenIddictApplications");
+
+        static ValueComparer CreateDictionaryComparer<TValue>() => new ValueComparer<IDictionary<string, TValue>>(
+            static (left, right) => ReferenceEquals(left, right) || (left != null && right != null && left.SequenceEqual(right)),
+            static value => value.Aggregate(0, static (hash, value) => HashCode.Combine(hash, value)),
+            static value => value.ToDictionary());
     }
 }
