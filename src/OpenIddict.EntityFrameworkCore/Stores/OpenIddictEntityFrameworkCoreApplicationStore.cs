@@ -170,29 +170,6 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         else
         {
-            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-            // this local method uses an explicit join before applying the equality check.
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-            Task<List<TAuthorization>> ListAuthorizationsAsync()
-                => (from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Tokens).AsTracking()
-                    join element in context.Set<TApplication>().AsTracking() on authorization.Application!.Id equals element.Id
-                    where element.Id!.Equals(application.Id)
-                    select authorization).ToListAsync(cancellationToken);
-
-            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
-            // filtered using token.Application.Id.Equals(key). To work around this issue,
-            // this local method uses an explicit join before applying the equality check.
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-            Task<List<TToken>> ListTokensAsync()
-                => (from token in context.Set<TToken>().AsTracking()
-                    where token.Authorization == null
-                    join element in context.Set<TApplication>().AsTracking() on token.Application!.Id equals element.Id
-                    where element.Id!.Equals(application.Id)
-                    select token).ToListAsync(cancellationToken);
-
             var strategy = context.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
             {
@@ -203,7 +180,10 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
                 // Remove all the authorizations associated with the application and
                 // the tokens attached to these implicit or explicit authorizations.
-                var authorizations = await ListAuthorizationsAsync();
+                var authorizations = await (from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Tokens).AsTracking()
+                                            where authorization.Application!.Id!.Equals(application.Id)
+                                            select authorization).ToListAsync(cancellationToken);
+
                 foreach (var authorization in authorizations)
                 {
                     foreach (var token in authorization.Tokens)
@@ -215,7 +195,11 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
                 }
 
                 // Remove all the tokens associated with the application.
-                var tokens = await ListTokensAsync();
+                var tokens = await (from token in context.Set<TToken>().AsTracking()
+                                    where token.Authorization == null
+                                    where token.Application!.Id!.Equals(application.Id)
+                                    select token).ToListAsync(cancellationToken);
+
                 foreach (var token in tokens)
                 {
                     context.Remove(token);
