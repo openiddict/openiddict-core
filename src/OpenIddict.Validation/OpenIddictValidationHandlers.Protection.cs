@@ -492,8 +492,8 @@ public static partial class OpenIddictValidationHandlers
                 // the "azp" or "client_id" claim if no "oi_prst" claim was found in the principal.
                 if (!context.Principal.HasClaim(Claims.Private.Presenter))
                 {
-                    var presenter = context.Principal.GetClaim(Claims.AuthorizedParty) ??
-                                    context.Principal.GetClaim(Claims.ClientId);
+                    var presenter = context.Principal.GetClaim(Claims.AuthorizedParty)
+                                    ?? context.Principal.GetClaim(Claims.ClientId);
 
                     if (!string.IsNullOrEmpty(presenter))
                     {
@@ -922,8 +922,8 @@ public static partial class OpenIddictValidationHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
                 Debug.Assert(!string.IsNullOrEmpty(context.TokenId), SR.GetResourceString(SR.ID4017));
 
-                var token = await _tokenManager.FindByIdAsync(context.TokenId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
+                var token = await _tokenManager.FindByIdAsync(context.TokenId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
 
                 if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
@@ -1078,9 +1078,9 @@ public static partial class OpenIddictValidationHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                var claims = context.SecurityTokenDescriptor.Claims is not null ?
-                    new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal) :
-                    new Dictionary<string, object>(StringComparer.Ordinal);
+                var claims = context.SecurityTokenDescriptor.Claims is not null
+                    ? new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal)
+                    : new Dictionary<string, object>(StringComparer.Ordinal);
 
                 // For client assertions, set the public audience claims
                 // using the private audience claims from the security principal.

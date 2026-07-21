@@ -111,9 +111,9 @@ public sealed class OpenIddictClientSystemIntegrationConfiguration : IConfigureO
             // Note: on Windows, the name is deliberately prefixed with "LOCAL\" to support
             // partial trust/sandboxed applications that are executed in an AppContainer
             // and cannot communicate with applications outside the sandbox container.
-            options.PipeName = OperatingSystem.IsWindows() ?
-                @$"LOCAL\{options.ApplicationDiscriminator}" :
-                options.ApplicationDiscriminator;
+            options.PipeName = OperatingSystem.IsWindows()
+                ? @$"LOCAL\{options.ApplicationDiscriminator}"
+                : options.ApplicationDiscriminator;
         }
 
 #if NET

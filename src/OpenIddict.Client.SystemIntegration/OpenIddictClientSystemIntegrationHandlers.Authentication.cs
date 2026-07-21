@@ -636,8 +636,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetHttpListenerContext()?.Response ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
+                var response = context.Transaction.GetHttpListenerContext()?.Response
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
 
                 // Always return a 200 status, even for responses indicating that the authentication failed.
                 response.StatusCode = 200;

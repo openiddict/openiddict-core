@@ -79,8 +79,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
-            var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+            var response = context.Transaction.GetHttpRequest()?.HttpContext.Response
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
             // Note: this handler only redirects the user agent to the URI specified in the
             // properties when there's no error or if the error is an access_denied error.

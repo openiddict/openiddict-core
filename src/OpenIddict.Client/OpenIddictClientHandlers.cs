@@ -417,9 +417,9 @@ public static partial class OpenIddictClientHandlers
                         context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
                         context.Options.Registrations.Count is not 1)
                     {
-                        throw context.Options.Registrations.Count is 0 ?
-                            new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
-                            new InvalidOperationException(SR.GetResourceString(SR.ID0355));
+                        throw context.Options.Registrations.Count is 0
+                            ? new InvalidOperationException(SR.GetResourceString(SR.ID0304))
+                            : new InvalidOperationException(SR.GetResourceString(SR.ID0355));
                     }
 
                     break;
@@ -525,8 +525,8 @@ public static partial class OpenIddictClientHandlers
                 {
                     context.Configuration = await context.Registration.ConfigurationManager
                         .GetConfigurationAsync(context.CancellationToken)
-                        .WaitAsync(context.CancellationToken) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+                        .WaitAsync(context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
                 }
 
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
@@ -1148,8 +1148,8 @@ public static partial class OpenIddictClientHandlers
                     // Resolve and attach the server configuration to the context.
                     context.Configuration = await context.Registration.ConfigurationManager
                         .GetConfigurationAsync(context.CancellationToken)
-                        .WaitAsync(context.CancellationToken) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+                        .WaitAsync(context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
                 }
 
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
@@ -1521,8 +1521,9 @@ public static partial class OpenIddictClientHandlers
             context.FrontchannelAccessTokenExpirationDate = context.EndpointType switch
             {
                 OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelAccessToken
-                    => (long?) context.Request[Parameters.ExpiresIn] is long value ?
-                        context.Options.TimeProvider.GetUtcNow().AddSeconds(value) : null,
+                    => (long?) context.Request[Parameters.ExpiresIn] is long value
+                        ? context.Options.TimeProvider.GetUtcNow().AddSeconds(value)
+                        : null,
 
                 _ => null
             };
@@ -4267,8 +4268,8 @@ public static partial class OpenIddictClientHandlers
                 // the backchannel access token (retrieved from the token endpoint) is always preferred to the
                 // frontchannel access token if available, as it may grant a greater access to user's resources.
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit
-                    => context.BackchannelAccessToken ?? context.FrontchannelAccessToken ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0162)),
+                    => context.BackchannelAccessToken ?? context.FrontchannelAccessToken
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0162)),
 
                 // For the OAuth 2.0 token exchange flow, use the issued token as the access token,
                 // but only if the "issued_token_type" node indicates it's an access token.
@@ -4687,12 +4688,12 @@ public static partial class OpenIddictClientHandlers
                 //
                 // Note: if WS-Federation claim mapping was not disabled, the resulting identity
                 // will use the default WS-Federation claims as the name/role claim types.
-                var identity = context.Options.DisableWebServicesFederationClaimMapping ?
-                    new ClaimsIdentity(
+                var identity = context.Options.DisableWebServicesFederationClaimMapping
+                    ? new ClaimsIdentity(
                         context.Registration.TokenValidationParameters.AuthenticationType,
                         context.Registration.TokenValidationParameters.NameClaimType,
-                        context.Registration.TokenValidationParameters.RoleClaimType) :
-                    new ClaimsIdentity(
+                        context.Registration.TokenValidationParameters.RoleClaimType)
+                    : new ClaimsIdentity(
                         context.Registration.TokenValidationParameters.AuthenticationType,
                         nameType: ClaimTypes.Name,
                         roleType: ClaimTypes.Role);
@@ -4769,9 +4770,9 @@ public static partial class OpenIddictClientHandlers
                 return ValueTask.CompletedTask;
             }
 
-            var issuer = context.Registration.ClaimsIssuer ??
-                         context.Registration.ProviderName ??
-                         context.Registration.Issuer.AbsoluteUri;
+            var issuer = context.Registration.ClaimsIssuer
+                         ?? context.Registration.ProviderName
+                         ?? context.Registration.Issuer.AbsoluteUri;
 
             MapClaim(ClaimTypes.Email,          ClaimValueTypes.String, [Claims.Email]);
             MapClaim(ClaimTypes.Gender,         ClaimValueTypes.String, [Claims.Gender]);
@@ -4883,9 +4884,9 @@ public static partial class OpenIddictClientHandlers
                 context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
                 context.Options.Registrations.Count is not 1)
             {
-                throw context.Options.Registrations.Count is 0 ?
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0305));
+                throw context.Options.Registrations.Count is 0
+                    ? new InvalidOperationException(SR.GetResourceString(SR.ID0304))
+                    : new InvalidOperationException(SR.GetResourceString(SR.ID0305));
             }
 
             if (context.Principal is not { Identity: ClaimsIdentity })
@@ -5012,8 +5013,8 @@ public static partial class OpenIddictClientHandlers
                 {
                     context.Configuration = await context.Registration.ConfigurationManager
                         .GetConfigurationAsync(context.CancellationToken)
-                        .WaitAsync(context.CancellationToken) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+                        .WaitAsync(context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
                 }
 
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
@@ -7341,9 +7342,9 @@ public static partial class OpenIddictClientHandlers
                 context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
                 context.Options.Registrations.Count is not 1)
             {
-                throw context.Options.Registrations.Count is 0 ?
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0305));
+                throw context.Options.Registrations.Count is 0
+                    ? new InvalidOperationException(SR.GetResourceString(SR.ID0304))
+                    : new InvalidOperationException(SR.GetResourceString(SR.ID0305));
             }
 
             return ValueTask.CompletedTask;
@@ -7425,8 +7426,8 @@ public static partial class OpenIddictClientHandlers
                 {
                     context.Configuration = await context.Registration.ConfigurationManager
                         .GetConfigurationAsync(context.CancellationToken)
-                        .WaitAsync(context.CancellationToken) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+                        .WaitAsync(context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
                 }
 
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
@@ -8081,9 +8082,9 @@ public static partial class OpenIddictClientHandlers
                 return ValueTask.CompletedTask;
             }
 
-            var issuer = context.Registration.ClaimsIssuer ??
-                         context.Registration.ProviderName ??
-                         context.Registration.Issuer.AbsoluteUri;
+            var issuer = context.Registration.ClaimsIssuer
+                         ?? context.Registration.ProviderName
+                         ?? context.Registration.Issuer.AbsoluteUri;
 
             MapClaim(ClaimTypes.Name,           ClaimValueTypes.String, [Claims.Username]);
             MapClaim(ClaimTypes.NameIdentifier, ClaimValueTypes.String, [Claims.Subject]);
@@ -8230,8 +8231,8 @@ public static partial class OpenIddictClientHandlers
                 {
                     context.Configuration = await context.Registration.ConfigurationManager
                         .GetConfigurationAsync(context.CancellationToken)
-                        .WaitAsync(context.CancellationToken) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+                        .WaitAsync(context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
                 }
 
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
@@ -8884,9 +8885,9 @@ public static partial class OpenIddictClientHandlers
                 context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
                 context.Options.Registrations.Count is not 1)
             {
-                throw context.Options.Registrations.Count is 0 ?
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0305));
+                throw context.Options.Registrations.Count is 0
+                    ? new InvalidOperationException(SR.GetResourceString(SR.ID0304))
+                    : new InvalidOperationException(SR.GetResourceString(SR.ID0305));
             }
 
             if (context.Principal is not { Identity: ClaimsIdentity })
@@ -9013,8 +9014,8 @@ public static partial class OpenIddictClientHandlers
                 {
                     context.Configuration = await context.Registration.ConfigurationManager
                         .GetConfigurationAsync(context.CancellationToken)
-                        .WaitAsync(context.CancellationToken) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+                        .WaitAsync(context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
                 }
 
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&

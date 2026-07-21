@@ -76,8 +76,8 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         // To work around this limitation, the OpenIddict System.Net.Http integration uses
         // an async-local context to flow per-instance properties and uses dynamic client
         // names to ensure the inner HttpClientHandler is not reused if the context differs.
-        var context = OpenIddictClientSystemNetHttpContext.Current ??
-            throw new InvalidOperationException(SR.FormatID0516(nameof(OpenIddictClientSystemNetHttpContext)));
+        var context = OpenIddictClientSystemNetHttpContext.Current
+            ?? throw new InvalidOperationException(SR.FormatID0516(nameof(OpenIddictClientSystemNetHttpContext)));
 
         var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientSystemNetHttpOptions>>().CurrentValue;
 
@@ -141,8 +141,8 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
         foreach (var action in settings.HttpClientHandlerActions)
         {
             options.HttpMessageHandlerBuilderActions.Add(builder => action(context.Registration,
-                builder.PrimaryHandler as HttpClientHandler ??
-                    throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
+                builder.PrimaryHandler as HttpClientHandler
+                    ?? throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
         }
     }
 

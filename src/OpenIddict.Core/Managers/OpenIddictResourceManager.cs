@@ -176,8 +176,8 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
-        var resource = await Store.InstantiateAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
+        var resource = await Store.InstantiateAsync(cancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
 
         await PopulateAsync(resource, descriptor, cancellationToken);
         await CreateAsync(resource, cancellationToken);
@@ -218,9 +218,9 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var resource = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByIdAsync(identifier, cancellationToken) :
-            await Cache.FindByIdAsync(identifier, cancellationToken);
+        var resource = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByIdAsync(identifier, cancellationToken)
+            : await Cache.FindByIdAsync(identifier, cancellationToken);
 
         if (resource is null)
         {
@@ -252,9 +252,9 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var resource = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByNameAsync(name, cancellationToken) :
-            await Cache.FindByNameAsync(name, cancellationToken);
+        var resource = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByNameAsync(name, cancellationToken)
+            : await Cache.FindByNameAsync(name, cancellationToken);
 
         if (resource is null)
         {
@@ -288,9 +288,9 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
             throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
         }
 
-        var resources = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByNamesAsync(names, cancellationToken) :
-            Cache.FindByNamesAsync(names, cancellationToken);
+        var resources = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindByNamesAsync(names, cancellationToken)
+            : Cache.FindByNamesAsync(names, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {

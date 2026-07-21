@@ -107,8 +107,8 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Au
     /// <inheritdoc/>
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+        var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
         // Note: in many cases, the authentication token was already validated by the time this action is called
         // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -386,8 +386,8 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Au
     /// <inheritdoc/>
     protected override async Task HandleChallengeAsync(AuthenticationProperties? properties)
     {
-        var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+        var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
         transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 
@@ -435,8 +435,8 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Au
     {
         ArgumentNullException.ThrowIfNull(user);
 
-        var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+        var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
         transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 
@@ -478,8 +478,8 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Au
     /// <inheritdoc/>
     public async Task SignOutAsync(AuthenticationProperties? properties)
     {
-        var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+        var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
         var context = new ProcessSignOutContext(transaction)
         {

@@ -469,8 +469,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the revocation endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Revocation))
@@ -615,8 +615,8 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 var notification = context.Transaction.GetProperty<ValidateRevocationRequestContext>(
-                    typeof(ValidateRevocationRequestContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+                    typeof(ValidateRevocationRequestContext).FullName!)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 Debug.Assert(notification.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 

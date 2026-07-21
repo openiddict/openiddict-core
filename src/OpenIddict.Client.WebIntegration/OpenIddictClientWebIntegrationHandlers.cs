@@ -1358,9 +1358,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Registration.TokenValidationParameters.RoleClaimType);
 
             // Resolve the issuer that will be attached to the claims created by this handler.
-            var issuer = context.Registration.ClaimsIssuer ??
-                         context.Registration.ProviderName ??
-                         context.Registration.Issuer.AbsoluteUri;
+            var issuer = context.Registration.ClaimsIssuer
+                         ?? context.Registration.ProviderName
+                         ?? context.Registration.Issuer.AbsoluteUri;
 
             foreach (var parameter in parameters)
             {
@@ -1432,9 +1432,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 return ValueTask.CompletedTask;
             }
 
-            var issuer = context.Registration.ClaimsIssuer ??
-                         context.Registration.ProviderName ??
-                         context.Registration.Issuer.AbsoluteUri;
+            var issuer = context.Registration.ClaimsIssuer
+                         ?? context.Registration.ProviderName
+                         ?? context.Registration.Issuer.AbsoluteUri;
 
             if (!context.MergedPrincipal.HasClaim(ClaimTypes.Email))
             {
@@ -1531,8 +1531,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.MusicBrainz => (string?) context.UserInfoResponse?["sub"],
 
                     // Nextcloud returns the username as a custom "displayname" or "display-name" node:
-                    ProviderTypes.Nextcloud => (string?) context.UserInfoResponse?["displayname"] ??
-                                               (string?) context.UserInfoResponse?["display-name"],
+                    ProviderTypes.Nextcloud => (string?) context.UserInfoResponse?["displayname"]
+                                               ?? (string?) context.UserInfoResponse?["display-name"],
 
                     // Notion returns the username as a custom "bot/owner/user/name" node but
                     // requires a special capability to access this node, that may not be present:
@@ -1698,8 +1698,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             if (context.Registration.ProviderType is ProviderTypes.IdAustria)
             {
                 context.MergedPrincipal.SetClaim(ClaimTypes.NameIdentifier,
-                    context.BackchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk") ??
-                    context.FrontchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk"));
+                    context.BackchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk")
+                    ?? context.FrontchannelIdentityTokenPrincipal?.GetClaim("urn:pvpgvat:oidc.bpk"));
             }
 
             return ValueTask.CompletedTask;

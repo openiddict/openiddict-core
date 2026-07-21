@@ -176,8 +176,8 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
-        var scope = await Store.InstantiateAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
+        var scope = await Store.InstantiateAsync(cancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
 
         await PopulateAsync(scope, descriptor, cancellationToken);
         await CreateAsync(scope, cancellationToken);
@@ -218,9 +218,9 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var scope = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByIdAsync(identifier, cancellationToken) :
-            await Cache.FindByIdAsync(identifier, cancellationToken);
+        var scope = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByIdAsync(identifier, cancellationToken)
+            : await Cache.FindByIdAsync(identifier, cancellationToken);
 
         if (scope is null)
         {
@@ -252,9 +252,9 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var scope = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByNameAsync(name, cancellationToken) :
-            await Cache.FindByNameAsync(name, cancellationToken);
+        var scope = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByNameAsync(name, cancellationToken)
+            : await Cache.FindByNameAsync(name, cancellationToken);
 
         if (scope is null)
         {
@@ -288,9 +288,9 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
             throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
         }
 
-        var scopes = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByNamesAsync(names, cancellationToken) :
-            Cache.FindByNamesAsync(names, cancellationToken);
+        var scopes = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindByNamesAsync(names, cancellationToken)
+            : Cache.FindByNamesAsync(names, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -327,9 +327,9 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     {
         ArgumentException.ThrowIfNullOrEmpty(resource);
 
-        var scopes = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByResourceAsync(resource, cancellationToken) :
-            Cache.FindByResourceAsync(resource, cancellationToken);
+        var scopes = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindByResourceAsync(resource, cancellationToken)
+            : Cache.FindByResourceAsync(resource, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {

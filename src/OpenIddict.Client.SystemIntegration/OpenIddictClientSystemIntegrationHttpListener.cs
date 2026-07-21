@@ -208,9 +208,9 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                 }
             }
 
-            throw exceptions is { Count: > 0 } ?
-                new InvalidOperationException(SR.GetResourceString(SR.ID0391), new AggregateException(exceptions.Take(3))) :
-                new InvalidOperationException(SR.GetResourceString(SR.ID0391));
+            throw exceptions is { Count: > 0 }
+                ? new InvalidOperationException(SR.GetResourceString(SR.ID0391), new AggregateException(exceptions.Take(3)))
+                : new InvalidOperationException(SR.GetResourceString(SR.ID0391));
         }
 
         static async Task ProcessRequestsAsync(HttpListener listener, OpenIddictClientSystemIntegrationService service,

@@ -63,8 +63,8 @@ public static partial class OpenIddictClientOwinHandlers
 
                 // This handler only applies to OWIN requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+                var response = context.Transaction.GetOwinRequest()?.Context.Response
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
 
                 var location = context.EndSessionEndpoint;
 

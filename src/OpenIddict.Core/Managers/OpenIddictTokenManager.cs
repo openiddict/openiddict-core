@@ -191,8 +191,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
-        var token = await Store.InstantiateAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
+        var token = await Store.InstantiateAsync(cancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
 
         await PopulateAsync(token, descriptor, cancellationToken);
         await CreateAsync(token, cancellationToken);
@@ -233,9 +233,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         string? subject, string? client,
         string? status, string? type, CancellationToken cancellationToken = default)
     {
-        var tokens = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindAsync(subject, client, status, type, cancellationToken) :
-            Cache.FindAsync(subject, client, status, type, cancellationToken);
+        var tokens = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindAsync(subject, client, status, type, cancellationToken)
+            : Cache.FindAsync(subject, client, status, type, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -272,9 +272,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var tokens = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByApplicationIdAsync(identifier, cancellationToken) :
-            Cache.FindByApplicationIdAsync(identifier, cancellationToken);
+        var tokens = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindByApplicationIdAsync(identifier, cancellationToken)
+            : Cache.FindByApplicationIdAsync(identifier, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -310,9 +310,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var tokens = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByAuthorizationIdAsync(identifier, cancellationToken) :
-            Cache.FindByAuthorizationIdAsync(identifier, cancellationToken);
+        var tokens = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindByAuthorizationIdAsync(identifier, cancellationToken)
+            : Cache.FindByAuthorizationIdAsync(identifier, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -350,9 +350,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var token = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByIdAsync(identifier, cancellationToken) :
-            await Cache.FindByIdAsync(identifier, cancellationToken);
+        var token = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByIdAsync(identifier, cancellationToken)
+            : await Cache.FindByIdAsync(identifier, cancellationToken);
 
         if (token is null)
         {
@@ -387,9 +387,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
 
         identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
 
-        var token = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByReferenceIdAsync(identifier, cancellationToken) :
-            await Cache.FindByReferenceIdAsync(identifier, cancellationToken);
+        var token = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByReferenceIdAsync(identifier, cancellationToken)
+            : await Cache.FindByReferenceIdAsync(identifier, cancellationToken);
 
         if (token is null)
         {
@@ -420,9 +420,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     {
         ArgumentException.ThrowIfNullOrEmpty(subject);
 
-        var tokens = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindBySubjectAsync(subject, cancellationToken) :
-            Cache.FindBySubjectAsync(subject, cancellationToken);
+        var tokens = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindBySubjectAsync(subject, cancellationToken)
+            : Cache.FindBySubjectAsync(subject, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {

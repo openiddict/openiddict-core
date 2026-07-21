@@ -42,16 +42,16 @@ public sealed class OpenIddictValidationRetriever : IConfigurationRetriever<Open
 
         cancel.ThrowIfCancellationRequested();
 
-        var configuration = await _service.GetConfigurationAsync(uri, cancel) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
+        var configuration = await _service.GetConfigurationAsync(uri, cancel)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
 
         if (configuration.JsonWebKeySetUri is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0146));
         }
 
-        configuration.JsonWebKeySet = await _service.GetSecurityKeysAsync(configuration.JsonWebKeySetUri, cancel) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
+        configuration.JsonWebKeySet = await _service.GetSecurityKeysAsync(configuration.JsonWebKeySetUri, cancel)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
 
         // Copy the signing keys found in the JSON Web Key Set to the SigningKeys collection.
         foreach (var key in configuration.JsonWebKeySet.GetSigningKeys())

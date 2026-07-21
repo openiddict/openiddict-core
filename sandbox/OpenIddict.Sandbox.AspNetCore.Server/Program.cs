@@ -351,8 +351,8 @@ builder.Services.Configure<KestrelServerOptions>(options => options.ListenAnyIP(
                 .Where(static certificate => certificate.NotBefore < TimeProvider.System.GetLocalNow())
                 .Where(static certificate => certificate.NotAfter > TimeProvider.System.GetLocalNow())
                 .OrderByDescending(static certificate => certificate.NotAfter)
-                .FirstOrDefault() ??
-                throw new InvalidOperationException("The ASP.NET Core HTTPS development certificate was not found.")
+                .FirstOrDefault()
+                ?? throw new InvalidOperationException("The ASP.NET Core HTTPS development certificate was not found.")
         });
     }
 }));

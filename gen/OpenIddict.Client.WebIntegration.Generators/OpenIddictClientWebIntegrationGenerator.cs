@@ -582,9 +582,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Assembly assembly, string resource, string? password)
             // Note: ephemeral key sets are currently not supported on macOS.
-            => Set{{ setting.property_name }}(assembly, resource, password, OperatingSystem.IsMacOS() ?
-                X509KeyStorageFlags.MachineKeySet :
-                X509KeyStorageFlags.EphemeralKeySet);
+            => Set{{ setting.property_name }}(assembly, resource, password, OperatingSystem.IsMacOS()
+                ? X509KeyStorageFlags.MachineKeySet
+                : X509KeyStorageFlags.EphemeralKeySet);
 
         /// <summary>
         /// Configures {{ setting.description }}.
@@ -604,8 +604,8 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             ArgumentNullException.ThrowIfNull(assembly);
             ArgumentException.ThrowIfNullOrEmpty(resource);
 
-            using var stream = assembly.GetManifestResourceStream(resource) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
+            using var stream = assembly.GetManifestResourceStream(resource)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
 
             return Set{{ setting.property_name }}(stream, password, flags);
         }
@@ -621,9 +621,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
         public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password)
             // Note: ephemeral key sets are currently not supported on macOS.
-            => Set{{ setting.property_name }}(stream, password, OperatingSystem.IsMacOS() ?
-                X509KeyStorageFlags.MachineKeySet :
-                X509KeyStorageFlags.EphemeralKeySet);
+            => Set{{ setting.property_name }}(stream, password, OperatingSystem.IsMacOS()
+                ? X509KeyStorageFlags.MachineKeySet
+                : X509KeyStorageFlags.EphemeralKeySet);
 
         /// <summary>
         /// Configures {{ setting.description }}.
@@ -666,9 +666,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             ArgumentException.ThrowIfNullOrEmpty(thumbprint);
 
             return Set{{ setting.property_name }}(
-                GetCertificate(StoreLocation.CurrentUser, thumbprint) ??
-                GetCertificate(StoreLocation.LocalMachine, thumbprint) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
+                GetCertificate(StoreLocation.CurrentUser, thumbprint)
+                ?? GetCertificate(StoreLocation.LocalMachine, thumbprint)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
 
             static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
             {
@@ -780,8 +780,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                             Collection = (bool?) setting.Attribute("Collection") ?? false,
                             Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
 
-                            Description = (string) setting.Attribute("Description") is string description ?
-                                char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
+                            Description = (string) setting.Attribute("Description") is string description
+                                ? char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..]
+                                : null,
                             ClrType = (string) setting.Attribute("Type") switch
                             {
                                 "Boolean" => "bool",
@@ -1559,8 +1560,9 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                             Collection = (bool?) setting.Attribute("Collection") ?? false,
                             Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
 
-                            Description = (string) setting.Attribute("Description") is string description ?
-                                char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
+                            Description = (string) setting.Attribute("Description") is string description
+                                ? char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..]
+                                : null,
                             ClrType = (string) setting.Attribute("Type") switch
                             {
                                 "Boolean" => "bool",

@@ -408,8 +408,8 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 var notification = context.Transaction.GetProperty<ValidateUserInfoRequestContext>(
-                    typeof(ValidateUserInfoRequestContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+                    typeof(ValidateUserInfoRequestContext).FullName!)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 Debug.Assert(notification.AccessTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 

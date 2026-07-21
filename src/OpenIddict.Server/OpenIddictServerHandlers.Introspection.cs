@@ -528,8 +528,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the introspection endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Introspection))
@@ -674,8 +674,8 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 var notification = context.Transaction.GetProperty<ValidateIntrospectionRequestContext>(
-                    typeof(ValidateIntrospectionRequestContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+                    typeof(ValidateIntrospectionRequestContext).FullName!)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 Debug.Assert(notification.GenericTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -735,8 +735,8 @@ public static partial class OpenIddictServerHandlers
                     // For access tokens that contain a confirmation claim, return it to the caller so
                     // that resource servers can verify the proof-of-possession when the token is used.
                     TokenTypeIdentifiers.AccessToken when context.GenericTokenPrincipal.GetClaim(
-                        Claims.Confirmation) is { Length: > 0 } value => JsonObject.Parse(value) as JsonObject ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID2199)),
+                        Claims.Confirmation) is { Length: > 0 } value => JsonObject.Parse(value) as JsonObject
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID2199)),
 
                     _ => null
                 };
@@ -746,8 +746,8 @@ public static partial class OpenIddictServerHandlers
 
                 // Infer the audiences/client_id from the claims stored in the security principal.
                 context.Audiences.UnionWith(context.GenericTokenPrincipal.GetAudiences());
-                context.ClientId = context.GenericTokenPrincipal.GetClaim(Claims.ClientId) ??
-                                   context.GenericTokenPrincipal.FindFirst(Claims.Private.Presenter)?.Value;
+                context.ClientId = context.GenericTokenPrincipal.GetClaim(Claims.ClientId)
+                                   ?? context.GenericTokenPrincipal.FindFirst(Claims.Private.Presenter)?.Value;
 
                 context.TokenType = context.GenericTokenPrincipal.GetTokenType() switch
                 {
@@ -816,8 +816,8 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Public clients are not allowed to access sensitive claims as authentication cannot be enforced.
                 if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))

@@ -803,8 +803,8 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter is a string starting with '{' or '[' (which would correspond
             // to a JSON object or array), try to deserialize it to get a JsonElement instance.
             string { Length: > 0 } value when value[0] is '{' or '[' =>
-                DeserializeElement(value) ??
-                DeserializeElement(JsonSerializer.Serialize(value, OpenIddictSerializer.Default.String)) ?? default,
+                DeserializeElement(value)
+                ?? DeserializeElement(JsonSerializer.Serialize(value, OpenIddictSerializer.Default.String)) ?? default,
 
             // Otherwise, serialize it to get a JsonElement instance.
             bool value     => JsonSerializer.SerializeToElement(value, OpenIddictSerializer.Default.Boolean),

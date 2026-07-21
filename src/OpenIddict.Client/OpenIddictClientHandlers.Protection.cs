@@ -851,8 +851,8 @@ public static partial class OpenIddictClientHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
                 Debug.Assert(!string.IsNullOrEmpty(context.TokenId), SR.GetResourceString(SR.ID4017));
 
-                var token = await _tokenManager.FindByIdAsync(context.TokenId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
+                var token = await _tokenManager.FindByIdAsync(context.TokenId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
 
                 if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
                 {
@@ -980,8 +980,8 @@ public static partial class OpenIddictClientHandlers
 
                 // Tokens produced by the client stack cannot have an application attached.
 
-                var token = await _tokenManager.CreateAsync(descriptor) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
+                var token = await _tokenManager.CreateAsync(descriptor)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
 
                 var identifier = await _tokenManager.GetIdAsync(token);
 
@@ -1058,9 +1058,9 @@ public static partial class OpenIddictClientHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                var claims = context.SecurityTokenDescriptor.Claims is not null ?
-                    new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal) :
-                    new Dictionary<string, object>(StringComparer.Ordinal);
+                var claims = context.SecurityTokenDescriptor.Claims is not null
+                    ? new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal)
+                    : new Dictionary<string, object>(StringComparer.Ordinal);
 
                 // For client assertions, set the public audience claims
                 // using the private audience claims from the security principal.
@@ -1172,8 +1172,8 @@ public static partial class OpenIddictClientHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
-                var token = await _tokenManager.FindByIdAsync(identifier) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
+                var token = await _tokenManager.FindByIdAsync(identifier)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
 
                 var descriptor = new OpenIddictTokenDescriptor();
                 await _tokenManager.PopulateAsync(descriptor, token);

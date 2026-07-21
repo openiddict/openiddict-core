@@ -183,8 +183,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
-        var authorization = await Store.InstantiateAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
+        var authorization = await Store.InstantiateAsync(cancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
 
         await PopulateAsync(authorization, descriptor, cancellationToken);
         await CreateAsync(authorization, cancellationToken);
@@ -281,9 +281,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         string? status, string? type,
         ImmutableArray<string>? scopes, CancellationToken cancellationToken = default)
     {
-        var authorizations = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindAsync(subject, client, status, type, scopes, cancellationToken) :
-            Cache.FindAsync(subject, client, status, type, scopes, cancellationToken);
+        var authorizations = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindAsync(subject, client, status, type, scopes, cancellationToken)
+            : Cache.FindAsync(subject, client, status, type, scopes, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -327,9 +327,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var authorizations = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByApplicationIdAsync(identifier, cancellationToken) :
-            Cache.FindByApplicationIdAsync(identifier, cancellationToken);
+        var authorizations = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindByApplicationIdAsync(identifier, cancellationToken)
+            : Cache.FindByApplicationIdAsync(identifier, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -367,9 +367,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var authorization = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByIdAsync(identifier, cancellationToken) :
-            await Cache.FindByIdAsync(identifier, cancellationToken);
+        var authorization = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByIdAsync(identifier, cancellationToken)
+            : await Cache.FindByIdAsync(identifier, cancellationToken);
 
         if (authorization is null)
         {
@@ -399,9 +399,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     {
         ArgumentException.ThrowIfNullOrEmpty(subject);
 
-        var authorizations = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindBySubjectAsync(subject, cancellationToken) :
-            Cache.FindBySubjectAsync(subject, cancellationToken);
+        var authorizations = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindBySubjectAsync(subject, cancellationToken)
+            : Cache.FindBySubjectAsync(subject, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {

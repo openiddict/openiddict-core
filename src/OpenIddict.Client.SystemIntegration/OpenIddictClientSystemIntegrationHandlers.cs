@@ -320,8 +320,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
-            var response = context.Transaction.GetHttpListenerContext()?.Response ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
+            var response = context.Transaction.GetHttpListenerContext()?.Response
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
 
             // Unlike the ASP.NET Core or OWIN hosts, the embedded server instantiated by the system
             // integration is not meant to handle requests pointing to user-defined HTTP endpoints.
@@ -362,8 +362,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
-            var request = context.Transaction.GetHttpListenerContext()?.Request ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
+            var request = context.Transaction.GetHttpListenerContext()?.Request
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
 
             // If the incoming request doesn't use GET, reject it.
             if (!string.Equals(request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
@@ -412,8 +412,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
-            var request = context.Transaction.GetHttpListenerContext()?.Request ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
+            var request = context.Transaction.GetHttpListenerContext()?.Request
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
 
             if (string.Equals(request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
             {
@@ -1152,8 +1152,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            var activation = context.Transaction.GetProtocolActivation() ??
-                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0375));
+            var activation = context.Transaction.GetProtocolActivation()
+                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0375));
 
             var identifier = context.StateTokenPrincipal.GetClaim(Claims.Private.InstanceId);
             if (string.IsNullOrEmpty(identifier))
@@ -1942,8 +1942,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
-            var response = context.Transaction.GetHttpListenerContext()?.Response ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
+            var response = context.Transaction.GetHttpListenerContext()?.Response
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
 
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
@@ -1982,8 +1982,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             // This handler only applies to HTTP listener requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
-            var response = context.Transaction.GetHttpListenerContext()?.Response ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
+            var response = context.Transaction.GetHttpListenerContext()?.Response
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0390));
 
             // Prevent the response from being cached.
             response.Headers[Headers.CacheControl] = "no-store";

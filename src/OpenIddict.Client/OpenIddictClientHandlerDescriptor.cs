@@ -158,8 +158,11 @@ public sealed class OpenIddictClientHandlerDescriptor
         /// <param name="handler">The handler instance.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> UseInlineHandler(Func<TContext, ValueTask> handler)
-            => UseSingletonHandler(new OpenIddictClientHandler<TContext>(handler ??
-                throw new ArgumentNullException(nameof(handler))));
+        {
+            ArgumentNullException.ThrowIfNull(handler);
+
+            return UseSingletonHandler(new OpenIddictClientHandler<TContext>(handler));
+        }
 
         /// <summary>
         /// Configures the descriptor to use the specified scoped handler.
@@ -179,8 +182,11 @@ public sealed class OpenIddictClientHandlerDescriptor
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> UseScopedHandler<THandler>(Func<IServiceProvider, THandler> factory)
             where THandler : class, IOpenIddictClientHandler<TContext>
-            => SetServiceDescriptor(ServiceDescriptor.Scoped(factory ??
-                throw new ArgumentNullException(nameof(factory))));
+        {
+            ArgumentNullException.ThrowIfNull(factory);
+
+            return SetServiceDescriptor(ServiceDescriptor.Scoped(factory));
+        }
 
         /// <summary>
         /// Configures the descriptor to use the specified singleton handler.
@@ -200,8 +206,11 @@ public sealed class OpenIddictClientHandlerDescriptor
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> UseSingletonHandler<THandler>(Func<IServiceProvider, THandler> factory)
             where THandler : class, IOpenIddictClientHandler<TContext>
-            => SetServiceDescriptor(ServiceDescriptor.Singleton(factory ??
-                throw new ArgumentNullException(nameof(factory))));
+        {
+            ArgumentNullException.ThrowIfNull(factory);
+
+            return SetServiceDescriptor(ServiceDescriptor.Singleton(factory));
+        }
 
         /// <summary>
         /// Configures the descriptor to use the specified singleton handler.
@@ -211,8 +220,11 @@ public sealed class OpenIddictClientHandlerDescriptor
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
         public Builder<TContext> UseSingletonHandler<THandler>(THandler handler)
             where THandler : class, IOpenIddictClientHandler<TContext>
-            => SetServiceDescriptor(ServiceDescriptor.Singleton(handler ??
-                throw new ArgumentNullException(nameof(handler))));
+        {
+            ArgumentNullException.ThrowIfNull(handler);
+
+            return SetServiceDescriptor(ServiceDescriptor.Singleton(handler));
+        }
 
         /// <summary>
         /// Build a new descriptor instance, based on the parameters that were previously set.
