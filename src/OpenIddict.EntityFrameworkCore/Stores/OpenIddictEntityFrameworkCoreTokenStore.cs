@@ -1199,12 +1199,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
 
         else
         {
-            var converter =
-#if NET
-                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
-#else
-                TypeDescriptor.GetConverter(typeof(TKey));
-#endif
+            var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
             return (TKey?) converter.ConvertFromInvariantString(identifier);
         }
@@ -1230,12 +1225,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
 
         else
         {
-            var converter =
-#if NET
-                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
-#else
-                TypeDescriptor.GetConverter(typeof(TKey));
-#endif
+            var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
             return converter.ConvertToInvariantString(identifier);
         }
