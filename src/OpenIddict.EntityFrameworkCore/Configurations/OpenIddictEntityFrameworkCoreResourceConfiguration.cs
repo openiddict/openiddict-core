@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -39,12 +40,14 @@ public sealed class OpenIddictEntityFrameworkCoreResourceConfiguration<
         builder.Property(static resource => resource.Descriptions)
                .HasConversion(
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
-                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   CreateDictionaryComparer<string>());
 
         builder.Property(static resource => resource.DisplayNames)
                .HasConversion(
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
-                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString));
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringString),
+                   CreateDictionaryComparer<string>());
 
         builder.HasKey(static resource => resource.Id);
 
@@ -66,8 +69,14 @@ public sealed class OpenIddictEntityFrameworkCoreResourceConfiguration<
         builder.Property(static resource => resource.Properties)
                .HasConversion(
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
-                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement));
+                   static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
+                   CreateDictionaryComparer<JsonElement>());
 
         builder.ToTable("OpenIddictResources");
+
+        static ValueComparer CreateDictionaryComparer<TValue>() => new ValueComparer<IDictionary<string, TValue>>(
+            static (left, right) => ReferenceEquals(left, right) || (left != null && right != null && left.SequenceEqual(right)),
+            static value => value.Aggregate(0, static (hash, value) => HashCode.Combine(hash, value)),
+            static value => value.ToDictionary());
     }
 }
