@@ -94,8 +94,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
                 var location = QueryHelpers.AddQueryString(context.RequestUri.GetLeftPart(UriPartial.Path),
                     from parameter in context.Response.GetParameters()
@@ -141,8 +141,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal))
@@ -224,8 +224,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
@@ -278,8 +278,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))

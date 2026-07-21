@@ -53,8 +53,8 @@ public class AuthorizationController : Controller
         // user agent (e.g as HTML hidden input fields). If only the query string or request form parameters
         // need to be resolved, the Request.QueryString and Request.Form collections must be used instead.
         var context = HttpContext.GetOwinContext();
-        var request = context.GetOpenIddictServerRequest() ??
-            throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+        var request = context.GetOpenIddictServerRequest()
+            ?? throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
         // Try to retrieve the user principal stored in the authentication cookie and redirect
         // the user agent to the login page (or to an external provider) in the following cases:
@@ -124,12 +124,12 @@ public class AuthorizationController : Controller
         }
 
         // Retrieve the profile of the logged in user.
-        var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetUserId()) ??
-            throw new InvalidOperationException("The user details cannot be retrieved.");
+        var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetUserId())
+            ?? throw new InvalidOperationException("The user details cannot be retrieved.");
 
         // Retrieve the application details from the database.
-        var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
-            throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
+        var application = await _applicationManager.FindByClientIdAsync(request.ClientId)
+            ?? throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
 
         // Retrieve the permanent authorizations associated with the user and the calling client application.
         var authorizations = await _authorizationManager.FindAsync(
@@ -230,8 +230,8 @@ public class AuthorizationController : Controller
         // user agent (e.g as HTML hidden input fields). If only the query string or request form parameters
         // need to be resolved, the Request.QueryString and Request.Form collections must be used instead.
         var context = HttpContext.GetOwinContext();
-        var request = context.GetOpenIddictServerRequest() ??
-            throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+        var request = context.GetOpenIddictServerRequest()
+            ?? throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
         // Retrieve the user principal stored in the authentication cookie.
         var result = await context.Authentication.AuthenticateAsync(DefaultAuthenticationTypes.ApplicationCookie);
@@ -243,12 +243,12 @@ public class AuthorizationController : Controller
         }
 
         // Retrieve the profile of the logged in user.
-        var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetUserId()) ??
-            throw new InvalidOperationException("The user details cannot be retrieved.");
+        var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetUserId())
+            ?? throw new InvalidOperationException("The user details cannot be retrieved.");
 
         // Retrieve the application details from the database.
-        var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
-            throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
+        var application = await _applicationManager.FindByClientIdAsync(request.ClientId)
+            ?? throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
 
         // Retrieve the permanent authorizations associated with the user and the calling client application.
         var authorizations = await _authorizationManager.FindAsync(
@@ -348,8 +348,8 @@ public class AuthorizationController : Controller
     public async Task<ActionResult> Exchange()
     {
         var context = HttpContext.GetOwinContext();
-        var request = context.GetOpenIddictServerRequest() ??
-            throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+        var request = context.GetOpenIddictServerRequest()
+            ?? throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
         if (request.IsAuthorizationCodeGrantType() || request.IsRefreshTokenGrantType())
         {

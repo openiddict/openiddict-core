@@ -723,8 +723,8 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
         if (!string.IsNullOrEmpty(identifier))
         {
             authorization.Application = await context.Set<TApplication>().FindAsync(
-                cancellationToken, ConvertIdentifierFromString(identifier)) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
+                cancellationToken, ConvertIdentifierFromString(identifier))
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
         }
 
         else

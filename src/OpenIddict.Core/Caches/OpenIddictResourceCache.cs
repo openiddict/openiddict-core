@@ -200,8 +200,8 @@ public sealed class OpenIddictResourceCache<TResource> : IOpenIddictResourceCach
 
         if (resource is not null)
         {
-            entry.AddExpirationToken(await CreateExpirationSignalAsync(resource, cancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(resource, cancellationToken)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.Size = 1L;
@@ -223,8 +223,8 @@ public sealed class OpenIddictResourceCache<TResource> : IOpenIddictResourceCach
 
         foreach (var resource in resources)
         {
-            entry.AddExpirationToken(await CreateExpirationSignalAsync(resource, cancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(resource, cancellationToken)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.Size = resources.Length;

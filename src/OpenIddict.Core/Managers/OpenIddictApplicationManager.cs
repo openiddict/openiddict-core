@@ -246,8 +246,8 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
-        var application = await Store.InstantiateAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
+        var application = await Store.InstantiateAsync(cancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
 
         await PopulateAsync(application, descriptor, cancellationToken);
 
@@ -299,9 +299,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var application = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByClientIdAsync(identifier, cancellationToken) :
-            await Cache.FindByClientIdAsync(identifier, cancellationToken);
+        var application = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByClientIdAsync(identifier, cancellationToken)
+            : await Cache.FindByClientIdAsync(identifier, cancellationToken);
 
         if (application is null)
         {
@@ -333,9 +333,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
 
-        var application = Options.CurrentValue.DisableEntityCaching ?
-            await Store.FindByIdAsync(identifier, cancellationToken) :
-            await Cache.FindByIdAsync(identifier, cancellationToken);
+        var application = Options.CurrentValue.DisableEntityCaching
+            ? await Store.FindByIdAsync(identifier, cancellationToken)
+            : await Cache.FindByIdAsync(identifier, cancellationToken);
 
         if (application is null)
         {
@@ -365,9 +365,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     {
         ArgumentException.ThrowIfNullOrEmpty(uri);
 
-        var applications = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByPostLogoutRedirectUriAsync(uri, cancellationToken) :
-            Cache.FindByPostLogoutRedirectUriAsync(uri, cancellationToken);
+        var applications = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindByPostLogoutRedirectUriAsync(uri, cancellationToken)
+            : Cache.FindByPostLogoutRedirectUriAsync(uri, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -404,9 +404,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     {
         ArgumentException.ThrowIfNullOrEmpty(uri);
 
-        var applications = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByRedirectUriAsync(uri, cancellationToken) :
-            Cache.FindByRedirectUriAsync(uri, cancellationToken);
+        var applications = Options.CurrentValue.DisableEntityCaching
+            ? Store.FindByRedirectUriAsync(uri, cancellationToken)
+            : Cache.FindByRedirectUriAsync(uri, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {

@@ -151,8 +151,8 @@ public class OpenIddictClientService
         var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
 
         return new(options.CurrentValue.Registrations.Find(registration => string.Equals(
-            registration.RegistrationId, identifier, StringComparison.Ordinal)) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0410)));
+            registration.RegistrationId, identifier, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0410)));
     }
 
     /// <summary>
@@ -181,8 +181,8 @@ public class OpenIddictClientService
 
         return await registration.ConfigurationManager
             .GetConfigurationAsync(cancellationToken)
-            .WaitAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            .WaitAsync(cancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
     }
 
     /// <summary>
@@ -211,8 +211,8 @@ public class OpenIddictClientService
 
         return await registration.ConfigurationManager
             .GetConfigurationAsync(cancellationToken)
-            .WaitAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            .WaitAsync(cancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
     }
 
     /// <summary>
@@ -238,8 +238,8 @@ public class OpenIddictClientService
 
         return await registration.ConfigurationManager
             .GetConfigurationAsync(cancellationToken)
-            .WaitAsync(cancellationToken) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+            .WaitAsync(cancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
     }
 
     /// <summary>
@@ -1190,8 +1190,8 @@ public class OpenIddictClientService
         request = await ApplyConfigurationRequestAsync();
         var response = await ExtractConfigurationResponseAsync();
 
-        return await HandleConfigurationResponseAsync() ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
+        return await HandleConfigurationResponseAsync()
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
 
         async ValueTask<OpenIddictRequest> PrepareConfigurationRequestAsync()
         {
@@ -1387,8 +1387,8 @@ public class OpenIddictClientService
 
         var response = await ExtractJsonWebKeySetResponseAsync();
 
-        return await HandleJsonWebKeySetResponseAsync() ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
+        return await HandleJsonWebKeySetResponseAsync()
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
 
         async ValueTask<OpenIddictRequest> PrepareJsonWebKeySetRequestAsync()
         {

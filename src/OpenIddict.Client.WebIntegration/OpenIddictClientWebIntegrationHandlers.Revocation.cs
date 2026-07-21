@@ -61,8 +61,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var request = context.Transaction.GetHttpRequestMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 request.Content = context.Registration.ProviderType switch
                 {
@@ -165,8 +165,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var request = context.Transaction.GetHttpRequestMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 request.Method = context.Registration.ProviderType switch
                 {
@@ -203,8 +203,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var request = context.Transaction.GetHttpRequestMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 // Zendesk requires using bearer authentication with the token that is going to be revoked.
                 if (context.Registration.ProviderType is ProviderTypes.Zendesk)
@@ -252,8 +252,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var response = context.Transaction.GetHttpResponseMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var response = context.Transaction.GetHttpResponseMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 if (response.Content is null)
                 {

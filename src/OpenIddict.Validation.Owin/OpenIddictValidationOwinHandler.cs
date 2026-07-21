@@ -69,11 +69,11 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         // in InitializeCoreAsync() to ensure the request context is available from AuthenticateCoreAsync() when
         // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
 
-        var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
+        var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
-        var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName!) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
+        var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName!)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
         if (context.IsRequestHandled)
         {
@@ -117,8 +117,8 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
     /// <inheritdoc/>
     protected override async Task<AuthenticationTicket?> AuthenticateCoreAsync()
     {
-        var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
+        var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
         // Note: in many cases, the authentication token was already validated by the time this action is called
         // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -215,8 +215,8 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode);
         if (challenge is not null && Response.StatusCode is 401 or 403)
         {
-            var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
+            var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
             transaction.Properties[typeof(AuthenticationProperties).FullName!] = challenge.Properties ?? new AuthenticationProperties();
 

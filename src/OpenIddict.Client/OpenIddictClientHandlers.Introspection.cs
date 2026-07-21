@@ -374,20 +374,20 @@ public static partial class OpenIddictClientHandlers
                 //
                 // Note: if WS-Federation claim mapping was not disabled, the resulting identity
                 // will use the default WS-Federation claims as the name/role claim types.
-                var identity = context.Options.DisableWebServicesFederationClaimMapping ?
-                    new ClaimsIdentity(
+                var identity = context.Options.DisableWebServicesFederationClaimMapping
+                    ? new ClaimsIdentity(
                         context.Registration.TokenValidationParameters.AuthenticationType,
                         context.Registration.TokenValidationParameters.NameClaimType,
-                        context.Registration.TokenValidationParameters.RoleClaimType) :
-                    new ClaimsIdentity(
+                        context.Registration.TokenValidationParameters.RoleClaimType)
+                    : new ClaimsIdentity(
                         context.Registration.TokenValidationParameters.AuthenticationType,
                         nameType: ClaimTypes.Name,
                         roleType: ClaimTypes.Role);
 
                 // Resolve the issuer that will be attached to the claims created by this handler.
-                var issuer = context.Registration.ClaimsIssuer ??
-                             context.Registration.ProviderName ??
-                             context.Registration.Issuer.AbsoluteUri;
+                var issuer = context.Registration.ClaimsIssuer
+                             ?? context.Registration.ProviderName
+                             ?? context.Registration.Issuer.AbsoluteUri;
 
                 foreach (var parameter in context.Response.GetParameters())
                 {

@@ -109,20 +109,20 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     0 => context.TokenTypeHint switch
                     {
                         TokenTypeHints.RefreshToken =>
-                            ValidateToken(TokenTypeIdentifiers.RefreshToken)              ??
-                            ValidateToken(TokenTypeIdentifiers.AccessToken)               ??
-                            ValidateToken(TokenTypeIdentifiers.Private.AuthorizationCode) ??
-                            ValidateToken(TokenTypeIdentifiers.Private.DeviceCode)        ??
-                            ValidateToken(TokenTypeIdentifiers.Private.UserCode)          ??
-                            ValidateToken(TokenTypeIdentifiers.Private.RequestToken),
+                            ValidateToken(TokenTypeIdentifiers.RefreshToken)
+                            ?? ValidateToken(TokenTypeIdentifiers.AccessToken)
+                            ?? ValidateToken(TokenTypeIdentifiers.Private.AuthorizationCode)
+                            ?? ValidateToken(TokenTypeIdentifiers.Private.DeviceCode)
+                            ?? ValidateToken(TokenTypeIdentifiers.Private.UserCode)
+                            ?? ValidateToken(TokenTypeIdentifiers.Private.RequestToken),
 
                         TokenTypeHints.AccessToken or _ =>
-                            ValidateToken(TokenTypeIdentifiers.AccessToken)               ??
-                            ValidateToken(TokenTypeIdentifiers.RefreshToken)              ??
-                            ValidateToken(TokenTypeIdentifiers.Private.AuthorizationCode) ??
-                            ValidateToken(TokenTypeIdentifiers.Private.DeviceCode)        ??
-                            ValidateToken(TokenTypeIdentifiers.Private.UserCode)          ??
-                            ValidateToken(TokenTypeIdentifiers.Private.RequestToken),
+                            ValidateToken(TokenTypeIdentifiers.AccessToken)
+                            ?? ValidateToken(TokenTypeIdentifiers.RefreshToken)
+                            ?? ValidateToken(TokenTypeIdentifiers.Private.AuthorizationCode)
+                            ?? ValidateToken(TokenTypeIdentifiers.Private.DeviceCode)
+                            ?? ValidateToken(TokenTypeIdentifiers.Private.UserCode)
+                            ?? ValidateToken(TokenTypeIdentifiers.Private.RequestToken),
                     },
 
                     // If a single valid token type was set, ignore the specified token type hint.

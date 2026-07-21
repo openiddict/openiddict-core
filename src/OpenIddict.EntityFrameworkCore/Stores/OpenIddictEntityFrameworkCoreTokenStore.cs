@@ -695,9 +695,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        IQueryable<TToken> query = Options.CurrentValue.DisableBulkOperations ?
-            context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization).AsTracking() :
-            context.Set<TToken>();
+        IQueryable<TToken> query = Options.CurrentValue.DisableBulkOperations
+            ? context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+            : context.Set<TToken>();
 
         if (!string.IsNullOrEmpty(subject))
         {

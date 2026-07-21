@@ -402,8 +402,9 @@ public class InteractiveService : BackgroundService
                                 CancellationToken = stoppingToken,
                                 ProviderName = provider,
                                 Token = response.IssuedToken,
-                                TokenTypeHint = response.IssuedTokenType is TokenTypeIdentifiers.AccessToken ?
-                                    TokenTypeHints.AccessToken : TokenTypeHints.RefreshToken
+                                TokenTypeHint = response.IssuedTokenType is TokenTypeIdentifiers.AccessToken
+                                    ? TokenTypeHints.AccessToken
+                                    : TokenTypeHints.RefreshToken
                             });
 
                             AnsiConsole.MarkupLine("[steelblue]Access token revoked.[/]");

@@ -599,8 +599,8 @@ public static partial class OpenIddictServerHandlers
 
                 if (!string.IsNullOrEmpty(context.ClientId))
                 {
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                     if (!await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, context.PostLogoutRedirectUri))
                     {
@@ -729,8 +729,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the end session endpoint.
                 //
@@ -772,10 +772,10 @@ public static partial class OpenIddictServerHandlers
                         // invalid core configuration exceptions are not thrown even if the managers were registered.
                         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
 
-                        return options.EnableDegradedMode ?
-                            new ValidateAuthorizedParty() :
-                            new ValidateAuthorizedParty(provider.GetService<IOpenIddictApplicationManager>() ??
-                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        return options.EnableDegradedMode
+                            ? new ValidateAuthorizedParty()
+                            : new ValidateAuthorizedParty(provider.GetService<IOpenIddictApplicationManager>()
+                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
                     .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -905,8 +905,8 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 var notification = context.Transaction.GetProperty<ValidateEndSessionRequestContext>(
-                    typeof(ValidateEndSessionRequestContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+                    typeof(ValidateEndSessionRequestContext).FullName!)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 context.IdentityTokenHintPrincipal ??= notification.IdentityTokenHintPrincipal;
 

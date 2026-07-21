@@ -1346,10 +1346,10 @@ public static partial class OpenIddictServerHandlers
                         // invalid core configuration exceptions are not thrown even if the managers were registered.
                         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
 
-                        return options.EnableDegradedMode ?
-                            new ValidateResponseType(applicationManager: null) :
-                            new ValidateResponseType(provider.GetService<IOpenIddictApplicationManager>() ??
-                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        return options.EnableDegradedMode
+                            ? new ValidateResponseType(applicationManager: null)
+                            : new ValidateResponseType(provider.GetService<IOpenIddictApplicationManager>()
+                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
                     .SetOrder(ValidateProofKeyForCodeExchangeParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1396,8 +1396,8 @@ public static partial class OpenIddictServerHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                     }
 
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                     // To prevent downgrade attacks, ensure that authorization requests returning
                     // an access token directly from the authorization endpoint are rejected if
@@ -1449,8 +1449,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // If no explicit redirect_uri was specified, retrieve the URI associated with the
                 // client and ensure exactly one redirect_uri was attached to the client definition.
@@ -1512,10 +1512,10 @@ public static partial class OpenIddictServerHandlers
                         // invalid core configuration exceptions are not thrown even if the managers were registered.
                         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
 
-                        return options.EnableDegradedMode ?
-                            new ValidateScopes() :
-                            new ValidateScopes(provider.GetService<IOpenIddictScopeManager>() ??
-                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        return options.EnableDegradedMode
+                            ? new ValidateScopes()
+                            : new ValidateScopes(provider.GetService<IOpenIddictScopeManager>()
+                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
                     .SetOrder(ValidateClientRedirectUri.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1587,10 +1587,10 @@ public static partial class OpenIddictServerHandlers
                         // invalid core configuration exceptions are not thrown even if the managers were registered.
                         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
 
-                        return options.EnableDegradedMode ?
-                            new ValidateResources() :
-                            new ValidateResources(provider.GetService<IOpenIddictResourceManager>() ??
-                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        return options.EnableDegradedMode
+                            ? new ValidateResources()
+                            : new ValidateResources(provider.GetService<IOpenIddictResourceManager>()
+                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
                     .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1672,8 +1672,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the authorization endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Authorization))
@@ -1722,8 +1722,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the authorization code grant.
                 if (context.Request.IsAuthorizationCodeFlow() &&
@@ -1817,8 +1817,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject requests that specify a response_type for which no permission was granted.
                 if (!await HasPermissionAsync(context.Request.GetResponseTypes()))
@@ -1892,8 +1892,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 foreach (var scope in context.Request.GetScopes())
                 {
@@ -1953,8 +1953,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 foreach (var resource in context.Request.GetResources())
                 {
@@ -2014,8 +2014,8 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.PushedAuthorizationRequests))
                 {
@@ -2080,8 +2080,8 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
                 {
@@ -2166,8 +2166,8 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 var notification = context.Transaction.GetProperty<ValidateAuthorizationRequestContext>(
-                    typeof(ValidateAuthorizationRequestContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+                    typeof(ValidateAuthorizationRequestContext).FullName!)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 context.IdentityTokenHintPrincipal ??= notification.IdentityTokenHintPrincipal;
 
@@ -3433,10 +3433,10 @@ public static partial class OpenIddictServerHandlers
                         // invalid core configuration exceptions are not thrown even if the managers were registered.
                         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
 
-                        return options.EnableDegradedMode ?
-                            new ValidatePushedResponseType(applicationManager: null) :
-                            new ValidatePushedResponseType(provider.GetService<IOpenIddictApplicationManager>() ??
-                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        return options.EnableDegradedMode
+                            ? new ValidatePushedResponseType(applicationManager: null)
+                            : new ValidatePushedResponseType(provider.GetService<IOpenIddictApplicationManager>()
+                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
                     .SetOrder(ValidatePushedAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3483,8 +3483,8 @@ public static partial class OpenIddictServerHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                     }
 
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                     // To prevent downgrade attacks, ensure that pushed authorization requests returning
                     // an access token directly from the authorization endpoint are rejected if
@@ -3536,8 +3536,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // If no explicit redirect_uri was specified, retrieve the URI associated with the
                 // client and ensure exactly one redirect_uri was attached to the client definition.
@@ -3599,10 +3599,10 @@ public static partial class OpenIddictServerHandlers
                         // invalid core configuration exceptions are not thrown even if the managers were registered.
                         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
 
-                        return options.EnableDegradedMode ?
-                            new ValidatePushedScopes() :
-                            new ValidatePushedScopes(provider.GetService<IOpenIddictScopeManager>() ??
-                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        return options.EnableDegradedMode
+                            ? new ValidatePushedScopes()
+                            : new ValidatePushedScopes(provider.GetService<IOpenIddictScopeManager>()
+                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
                     .SetOrder(ValidatePushedClientRedirectUri.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3674,10 +3674,10 @@ public static partial class OpenIddictServerHandlers
                         // invalid core configuration exceptions are not thrown even if the managers were registered.
                         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
 
-                        return options.EnableDegradedMode ?
-                            new ValidatePushedResources() :
-                            new ValidatePushedResources(provider.GetService<IOpenIddictResourceManager>() ??
-                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        return options.EnableDegradedMode
+                            ? new ValidatePushedResources()
+                            : new ValidatePushedResources(provider.GetService<IOpenIddictResourceManager>()
+                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
                     .SetOrder(ValidatePushedScopes.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3759,8 +3759,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the pushed authorization endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.PushedAuthorization))
@@ -3809,8 +3809,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the authorization code grant.
                 if (context.Request.IsAuthorizationCodeFlow() &&
@@ -3904,8 +3904,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject requests that specify a response_type for which no permission was granted.
                 if (!await HasPermissionAsync(context.Request.GetResponseTypes()))
@@ -3979,8 +3979,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 foreach (var scope in context.Request.GetScopes())
                 {
@@ -4040,8 +4040,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 foreach (var resource in context.Request.GetResources())
                 {
@@ -4100,8 +4100,8 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
                 {
@@ -4186,8 +4186,8 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 var notification = context.Transaction.GetProperty<ValidatePushedAuthorizationRequestContext>(
-                    typeof(ValidatePushedAuthorizationRequestContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+                    typeof(ValidatePushedAuthorizationRequestContext).FullName!)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 context.IdentityTokenHintPrincipal ??= notification.IdentityTokenHintPrincipal;
 

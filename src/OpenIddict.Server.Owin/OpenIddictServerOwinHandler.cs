@@ -69,11 +69,11 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
         // in InitializeCoreAsync() to ensure the request context is available from AuthenticateCoreAsync() when
         // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
 
-        var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+        var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
-        var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName!) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+        var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName!)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
         if (context.IsRequestHandled)
         {
@@ -117,8 +117,8 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
     /// <inheritdoc/>
     protected override async Task<AuthenticationTicket?> AuthenticateCoreAsync()
     {
-        var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+        var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
         // Note: in many cases, the authentication token was already validated by the time this action is called
         // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -283,8 +283,8 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
         var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode);
         if (challenge is not null && Response.StatusCode is 401 or 403)
         {
-            var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+            var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             transaction.Properties[typeof(AuthenticationProperties).FullName!] = challenge.Properties ?? new AuthenticationProperties();
 
@@ -326,8 +326,8 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
         var signin = Helper.LookupSignIn(Options.AuthenticationType);
         if (signin is not null)
         {
-            var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+            var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             transaction.Properties[typeof(AuthenticationProperties).FullName!] = signin.Properties ?? new AuthenticationProperties();
 
@@ -370,8 +370,8 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
         var signout = Helper.LookupSignOut(Options.AuthenticationType, Options.AuthenticationMode);
         if (signout is not null)
         {
-            var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+            var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             transaction.Properties[typeof(AuthenticationProperties).FullName!] = signout.Properties ?? new AuthenticationProperties();
 

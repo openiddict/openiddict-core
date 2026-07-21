@@ -168,8 +168,8 @@ public static partial class OpenIddictValidationHandlers
                 // Resolve and attach the server configuration to the context if none has been set already.
                 context.Configuration ??= await context.Options.ConfigurationManager
                     .GetConfigurationAsync(context.CancellationToken)
-                    .WaitAsync(context.CancellationToken) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+                    .WaitAsync(context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
             }
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&

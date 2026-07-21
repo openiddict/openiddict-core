@@ -324,8 +324,8 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
 
         if (token is not null)
         {
-            entry.AddExpirationToken(await CreateExpirationSignalAsync(token, cancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(token, cancellationToken)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.Size = 1L;
@@ -347,8 +347,8 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
 
         foreach (var token in tokens)
         {
-            entry.AddExpirationToken(await CreateExpirationSignalAsync(token, cancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(token, cancellationToken)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.Size = tokens.Length;

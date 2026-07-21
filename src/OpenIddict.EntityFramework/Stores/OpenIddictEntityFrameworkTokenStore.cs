@@ -821,8 +821,8 @@ public class OpenIddictEntityFrameworkTokenStore<
         if (!string.IsNullOrEmpty(identifier))
         {
             token.Application = await context.Set<TApplication>().FindAsync(
-                cancellationToken, ConvertIdentifierFromString(identifier)) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0250));
+                cancellationToken, ConvertIdentifierFromString(identifier))
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0250));
         }
 
         else
@@ -853,8 +853,8 @@ public class OpenIddictEntityFrameworkTokenStore<
         if (!string.IsNullOrEmpty(identifier))
         {
             token.Authorization = await context.Set<TAuthorization>().FindAsync(
-                cancellationToken, ConvertIdentifierFromString(identifier)) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
+                cancellationToken, ConvertIdentifierFromString(identifier))
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
         }
 
         else

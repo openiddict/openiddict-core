@@ -99,8 +99,8 @@ public class OpenIddictValidationService
         request = await ApplyConfigurationRequestAsync();
         var response = await ExtractConfigurationResponseAsync();
 
-        return await HandleConfigurationResponseAsync() ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
+        return await HandleConfigurationResponseAsync()
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
 
         async ValueTask<OpenIddictRequest> PrepareConfigurationRequestAsync()
         {
@@ -222,8 +222,8 @@ public class OpenIddictValidationService
 
         var response = await ExtractJsonWebKeySetResponseAsync();
 
-        return await HandleJsonWebKeySetResponseAsync() ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
+        return await HandleJsonWebKeySetResponseAsync()
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
 
         async ValueTask<OpenIddictRequest> PrepareJsonWebKeySetRequestAsync()
         {

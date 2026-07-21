@@ -247,8 +247,8 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
 
         if (scope is not null)
         {
-            entry.AddExpirationToken(await CreateExpirationSignalAsync(scope, cancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(scope, cancellationToken)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.Size = 1L;
@@ -270,8 +270,8 @@ public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>
 
         foreach (var scope in scopes)
         {
-            entry.AddExpirationToken(await CreateExpirationSignalAsync(scope, cancellationToken) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(scope, cancellationToken)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.Size = scopes.Length;

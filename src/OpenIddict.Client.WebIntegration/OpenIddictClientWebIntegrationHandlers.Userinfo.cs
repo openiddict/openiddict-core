@@ -63,8 +63,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var request = context.Transaction.GetHttpRequestMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 request.Method = context.Registration.ProviderType switch
                 {
@@ -107,8 +107,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var request = context.Transaction.GetHttpRequestMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 // Bungie.net requires sending a static API key.
                 if (context.Registration.ProviderType is ProviderTypes.BungieNet)
@@ -167,8 +167,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var request = context.Transaction.GetHttpRequestMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 // By default, OpenIddict sends the access token as part of the Authorization header
                 // using the Bearer authentication scheme. Some providers don't support this method
@@ -268,8 +268,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var request = context.Transaction.GetHttpRequestMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 request.Content = context.Registration.ProviderType switch
                 {
@@ -314,8 +314,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var response = context.Transaction.GetHttpResponseMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var response = context.Transaction.GetHttpResponseMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 if (response.Content is null)
                 {
@@ -384,85 +384,85 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Response = context.Registration.ProviderType switch
                 {
                     // Basecamp returns a nested "identity" object and a collection of "accounts".
-                    ProviderTypes.Basecamp => new(context.Response["identity"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("identity")))
+                    ProviderTypes.Basecamp => new(context.Response["identity"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("identity")))
                     {
                         ["accounts"] = context.Response["accounts"]
                     },
 
                     // Bungie.net returns a nested "bungieNetUser" object that is itself nested in a "Response" object.
-                    ProviderTypes.BungieNet => new(context.Response["Response"]?["bungieNetUser"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("Response/bungieNetUser"))),
+                    ProviderTypes.BungieNet => new(context.Response["Response"]?["bungieNetUser"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("Response/bungieNetUser"))),
 
                     // Calendly returns a nested "resource" object.
-                    ProviderTypes.Calendly => new(context.Response["resource"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("resource"))),
+                    ProviderTypes.Calendly => new(context.Response["resource"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("resource"))),
 
                     // Disqus returns a nested "response" object.
-                    ProviderTypes.Disqus => new(context.Response["response"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("response"))),
+                    ProviderTypes.Disqus => new(context.Response["response"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("response"))),
 
                     // Exact Online returns a "results" array nested in a "d" node and containing a single element.
-                    ProviderTypes.ExactOnline => new(context.Response["d"]?["results"]?[0]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),
+                    ProviderTypes.ExactOnline => new(context.Response["d"]?["results"]?[0]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),
 
                     // These providers return a nested "user" object.
                     ProviderTypes.Fitbit or ProviderTypes.Todoist or ProviderTypes.VkId or ProviderTypes.Zendesk
-                        => new(context.Response["user"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("user"))),
+                        => new(context.Response["user"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("user"))),
 
                     // Harvest returns a nested "user" object and a collection of "accounts".
-                    ProviderTypes.Harvest => new(context.Response["user"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("user")))
+                    ProviderTypes.Harvest => new(context.Response["user"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("user")))
                     {
                         ["accounts"] = context.Response["accounts"]
                     },
 
                     // HeyBoxChat returns a nested "result" object.
-                    ProviderTypes.HeyBoxChat => new(context.Response["result"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("result"))),
+                    ProviderTypes.HeyBoxChat => new(context.Response["result"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("result"))),
 
                     // These providers return a nested "data" object.
                     ProviderTypes.Kook    or ProviderTypes.Kroger    or
                     ProviderTypes.Patreon or ProviderTypes.Pipedrive or ProviderTypes.Twitter
-                        => new(context.Response["data"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("data"))),
+                        => new(context.Response["data"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("data"))),
 
                     // Linear returns a nested "viewer" object that is itself nested in a GraphQL "data" node.
-                    ProviderTypes.Linear => new(context.Response["data"]?["viewer"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("data/viewer"))),
+                    ProviderTypes.Linear => new(context.Response["data"]?["viewer"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("data/viewer"))),
 
                     // Meetup returns a nested "self" object that is itself nested in a GraphQL "data" node.
-                    ProviderTypes.Meetup => new(context.Response["data"]?["self"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("data/self"))),
+                    ProviderTypes.Meetup => new(context.Response["data"]?["self"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("data/self"))),
 
                     // Miro returns a nested "user" object, as well as a nested "team" and "organization".
-                    ProviderTypes.Miro => new(context.Response["user"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("user")))
+                    ProviderTypes.Miro => new(context.Response["user"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("user")))
                     {
                         ["organization"] = context.Response["organization"],
                         ["team"] = context.Response["team"]
                     },
 
                     // Nextcloud returns a nested "data" object that is itself nested in a "ocs" node.
-                    ProviderTypes.Nextcloud => new(context.Response["ocs"]?["data"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("ocs/data"))),
+                    ProviderTypes.Nextcloud => new(context.Response["ocs"]?["data"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("ocs/data"))),
 
                     // ServiceChannel returns a nested "UserProfile" object.
-                    ProviderTypes.ServiceChannel => new(context.Response["UserProfile"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("UserProfile"))),
+                    ProviderTypes.ServiceChannel => new(context.Response["UserProfile"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("UserProfile"))),
 
                     // StackExchange returns an "items" array containing a single element.
-                    ProviderTypes.StackExchange => new(context.Response["items"]?[0]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("items/0"))),
+                    ProviderTypes.StackExchange => new(context.Response["items"]?[0]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("items/0"))),
 
                     // SubscribeStar returns a nested "user" object that is itself nested in a GraphQL "data" node.
-                    ProviderTypes.SubscribeStar => new(context.Response["data"]?["user"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("data/user"))),
+                    ProviderTypes.SubscribeStar => new(context.Response["data"]?["user"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("data/user"))),
 
                     // Tumblr returns a nested "user" object that is itself nested in a "response" node.
-                    ProviderTypes.Tumblr => new(context.Response["response"]?["user"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("response/user"))),
+                    ProviderTypes.Tumblr => new(context.Response["response"]?["user"]?.GetNamedParameters()
+                        ?? throw new InvalidOperationException(SR.FormatID0334("response/user"))),
 
                     _ => context.Response
                 };

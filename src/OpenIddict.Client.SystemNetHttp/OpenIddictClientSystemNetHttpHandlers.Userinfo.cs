@@ -68,8 +68,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var request = context.Transaction.GetHttpRequestMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var request = context.Transaction.GetHttpRequestMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 // Attach the authorization header containing the access token to the HTTP request.
                 request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, context.Request.AccessToken);
@@ -110,8 +110,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
                 // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
-                var response = context.Transaction.GetHttpResponseMessage() ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                var response = context.Transaction.GetHttpResponseMessage()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 // The status code is deliberately not validated to ensure even errored responses
                 // (typically in the 4xx range) can be deserialized and handled by the event handlers.

@@ -130,11 +130,11 @@ public sealed class OpenIddictClientSystemIntegrationPipeListener : BackgroundSe
         static NamedPipeServerStream CreatePipeServerStream(OpenIddictClientSystemIntegrationOptions options)
             // Note: the ACL-based PipeSecurity class is only supported on Windows. On other operating systems,
             // PipeOptions.CurrentUserOnly can be used as an alternative, but only for TFMs that implement it.
-            => OperatingSystem.IsWindows() ?
+            => OperatingSystem.IsWindows()
 #if NET
-                NamedPipeServerStreamAcl.Create(
+                ? NamedPipeServerStreamAcl.Create(
 #else
-                new NamedPipeServerStream(
+                ? new NamedPipeServerStream(
 #endif
                     pipeName                  : $@"{options.PipeName}-{options.InstanceIdentifier}",
                     direction                 : PipeDirection.In,
@@ -145,8 +145,8 @@ public sealed class OpenIddictClientSystemIntegrationPipeListener : BackgroundSe
                     outBufferSize             : 0,
                     pipeSecurity              : options.PipeSecurity,
                     inheritability            : HandleInheritability.None,
-                    additionalAccessRights    : default) :
-                new NamedPipeServerStream(
+                    additionalAccessRights    : default)
+                : new NamedPipeServerStream(
                     pipeName                  : $@"{options.PipeName}-{options.InstanceIdentifier}",
                     direction                 : PipeDirection.In,
                     maxNumberOfServerInstances: NamedPipeServerStream.MaxAllowedServerInstances,

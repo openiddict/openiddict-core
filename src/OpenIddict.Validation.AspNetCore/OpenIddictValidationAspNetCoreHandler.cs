@@ -105,8 +105,8 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
     /// <inheritdoc/>
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var transaction = Context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
+        var transaction = Context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
         // Note: in many cases, the authentication token was already validated by the time this action is called
         // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -207,8 +207,8 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
     /// <inheritdoc/>
     protected override async Task HandleChallengeAsync(AuthenticationProperties? properties)
     {
-        var transaction = Context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
+        var transaction = Context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
         transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 

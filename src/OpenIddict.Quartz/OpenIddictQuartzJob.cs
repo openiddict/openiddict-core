@@ -58,8 +58,8 @@ public sealed class OpenIddictQuartzJob : IJob
 
         if (!_options.CurrentValue.DisableTokenPruning)
         {
-            var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>() ??
-                throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
+            var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                ?? throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
                 {
                     RefireImmediately = false,
                     UnscheduleAllTriggers = true,
@@ -103,8 +103,8 @@ public sealed class OpenIddictQuartzJob : IJob
 
         if (!_options.CurrentValue.DisableAuthorizationPruning)
         {
-            var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>() ??
-                throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
+            var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>()
+                ?? throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
                 {
                     RefireImmediately = false,
                     UnscheduleAllTriggers = true,

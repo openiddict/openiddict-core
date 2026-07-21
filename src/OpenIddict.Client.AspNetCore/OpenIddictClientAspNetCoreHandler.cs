@@ -107,8 +107,8 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
     /// <inheritdoc/>
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
+        var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
 
         // Note: in many cases, the authentication token was already validated by the time this action is called
         // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -370,8 +370,8 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
     /// <inheritdoc/>
     protected override async Task HandleChallengeAsync(AuthenticationProperties? properties)
     {
-        var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
+        var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
 
         transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 
@@ -418,8 +418,8 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
     /// <inheritdoc/>
     public async Task SignOutAsync(AuthenticationProperties? properties)
     {
-        var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+        var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
         var context = new ProcessSignOutContext(transaction)
         {

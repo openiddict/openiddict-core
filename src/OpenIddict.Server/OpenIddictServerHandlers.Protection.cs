@@ -78,10 +78,10 @@ public static partial class OpenIddictServerHandlers
                         // invalid core configuration exceptions are not thrown even if the managers were registered.
                         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
 
-                        return options.EnableDegradedMode ?
-                            new ResolveTokenValidationParameters() :
-                            new ResolveTokenValidationParameters(provider.GetService<IOpenIddictApplicationManager>() ??
-                                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        return options.EnableDegradedMode
+                            ? new ResolveTokenValidationParameters()
+                            : new ResolveTokenValidationParameters(provider.GetService<IOpenIddictApplicationManager>()
+                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -722,8 +722,8 @@ public static partial class OpenIddictServerHandlers
                 // the "azp" or "client_id" claim if no "oi_prst" claim was found in the principal.
                 if (!context.Principal.HasClaim(Claims.Private.Presenter))
                 {
-                    var presenter = context.Principal.GetClaim(Claims.AuthorizedParty) ??
-                                    context.Principal.GetClaim(Claims.ClientId);
+                    var presenter = context.Principal.GetClaim(Claims.AuthorizedParty)
+                                    ?? context.Principal.GetClaim(Claims.ClientId);
 
                     if (!string.IsNullOrEmpty(presenter))
                     {
@@ -1236,8 +1236,8 @@ public static partial class OpenIddictServerHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
                 Debug.Assert(!string.IsNullOrEmpty(context.TokenId), SR.GetResourceString(SR.ID4017));
 
-                var token = await _tokenManager.FindByIdAsync(context.TokenId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
+                var token = await _tokenManager.FindByIdAsync(context.TokenId)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
 
                 // If the token is already marked as redeemed, this may indicate that it was compromised.
                 // In this case, revoke the entire chain of tokens associated with the authorization, if one was attached to the token.
@@ -1562,14 +1562,14 @@ public static partial class OpenIddictServerHandlers
                 // If the client application is known, associate it with the token.
                 if (!string.IsNullOrEmpty(context.ClientId))
                 {
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
                 }
 
-                var token = await _tokenManager.CreateAsync(descriptor) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
+                var token = await _tokenManager.CreateAsync(descriptor)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
 
                 var identifier = await _tokenManager.GetIdAsync(token);
 
@@ -1649,9 +1649,9 @@ public static partial class OpenIddictServerHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                var claims = context.SecurityTokenDescriptor.Claims is not null ?
-                    new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal) :
-                    new Dictionary<string, object>(StringComparer.Ordinal);
+                var claims = context.SecurityTokenDescriptor.Claims is not null
+                    ? new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal)
+                    : new Dictionary<string, object>(StringComparer.Ordinal);
 
                 // For access and identity tokens, set the public audience claims
                 // using the private audience claims from the security principal.
@@ -1815,8 +1815,8 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
-                var token = await _tokenManager.FindByIdAsync(identifier) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
+                var token = await _tokenManager.FindByIdAsync(identifier)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
 
                 var descriptor = new OpenIddictTokenDescriptor();
                 await _tokenManager.PopulateAsync(descriptor, token);
