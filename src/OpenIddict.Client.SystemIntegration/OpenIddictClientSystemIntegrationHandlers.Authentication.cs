@@ -91,9 +91,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             [SupportedOSPlatform("ios12.0")]
             [SupportedOSPlatform("maccatalyst13.1")]
             [SupportedOSPlatform("macos10.15")]
-#pragma warning disable CS1998
             public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
-#pragma warning restore CS1998
             {
                 ArgumentNullException.ThrowIfNull(context);
 
@@ -127,16 +125,16 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                 using var session = CreateASWebAuthenticationSession();
 
-                // On iOS 13.0 and higher, a presentation context provider returning the UI window to
-                // which the Safari web view will be attached MUST be provided (otherwise, a code 2
-                // error is returned by ASWebAuthenticationSession). To avoid that, a default provider
-                // pointing to the current UI window is automatically attached on iOS 13.0 and higher.
-                if (OperatingSystem.IsIOSVersionAtLeast(13))
+                // Note: a presentation context provider returning the UI window to which the Safari
+                // web view will be attached MUST be provided (otherwise, a code 2 error is returned
+                // by ASWebAuthenticationSession). To avoid that, a default provider pointing to the
+                // current UI window is automatically attached to the ASWebAuthenticationSession object.
+                if (OperatingSystem.IsIOSVersionAtLeast(13) ||
+                    OperatingSystem.IsMacCatalystVersionAtLeast(13) ||
+                    OperatingSystem.IsMacOSVersionAtLeast(10, 15))
                 {
-#pragma warning disable CA1416
                     session.PresentationContextProvider = new ASWebAuthenticationPresentationContext(
                         GetCurrentUIWindow() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0447)));
-#pragma warning restore CA1416
                 }
 
                 using var registration = context.CancellationToken.Register(
@@ -226,11 +224,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
                     return new ASWebAuthenticationSession(CreateUrl(), uri.Scheme, HandleCallback);
 
-                    NSUrl CreateUrl() => new(OpenIddictHelpers.AddQueryStringParameters(
+                    NSUrl CreateUrl() => OpenIddictHelpers.AddQueryStringParameters(
                         uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
                         parameters: context.Request.GetParameters().ToDictionary(
                             static parameter => parameter.Key,
-                            static parameter => (StringValues) parameter.Value)).AbsoluteUri);
+                            static parameter => (StringValues) parameter.Value))!;
 
                     void HandleCallback(NSUrl? url, NSError? error)
                     {
@@ -311,9 +309,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             /// <inheritdoc/>
             [SupportedOSPlatform("android21.0")]
-#pragma warning disable CS1998
             public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
-#pragma warning restore CS1998
             {
                 ArgumentNullException.ThrowIfNull(context);
 
@@ -384,9 +380,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
 
             /// <inheritdoc/>
             [SupportedOSPlatform("windows10.0.17763")]
-#pragma warning disable CS1998
             public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
-#pragma warning restore CS1998
             {
                 ArgumentNullException.ThrowIfNull(context);
 

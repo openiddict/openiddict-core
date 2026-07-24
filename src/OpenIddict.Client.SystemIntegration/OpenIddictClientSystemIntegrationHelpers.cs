@@ -245,12 +245,10 @@ public static class OpenIddictClientSystemIntegrationHelpers
             {
                 try
                 {
-#pragma warning disable CA1416
                     using var scenes = UIApplication.SharedApplication.ConnectedScenes;
                     var scene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
 
                     return scene?.Windows.FirstOrDefault();
-#pragma warning restore CA1416
                 }
 
                 catch (InvalidCastException)
@@ -268,12 +266,10 @@ public static class OpenIddictClientSystemIntegrationHelpers
             {
                 try
                 {
-#pragma warning disable CA1416
                     using var scenes = UIApplication.SharedApplication.ConnectedScenes;
                     var scene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
 
                     return scene?.Windows;
-#pragma warning restore CA1416
                 }
 
                 catch (InvalidCastException)
