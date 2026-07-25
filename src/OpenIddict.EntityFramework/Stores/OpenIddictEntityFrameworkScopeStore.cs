@@ -134,17 +134,7 @@ public class OpenIddictEntityFrameworkScopeStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
-        return GetTrackedEntity() is TScope scope ? scope : await QueryAsync();
-
-        TScope? GetTrackedEntity() =>
-            (from entry in context.ChangeTracker.Entries<TScope>()
-             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
-             select entry.Entity).FirstOrDefault();
-
-        Task<TScope?> QueryAsync() =>
-            (from scope in context.Set<TScope>()
-             where scope.Id!.Equals(key)
-             select scope).FirstOrDefaultAsync(cancellationToken);
+        return await context.Set<TScope>().FindAsync(cancellationToken, [key]);
     }
 
     /// <inheritdoc/>
