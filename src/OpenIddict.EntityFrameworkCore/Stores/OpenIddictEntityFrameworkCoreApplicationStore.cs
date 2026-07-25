@@ -267,17 +267,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
-        return GetTrackedEntity() is TApplication application ? application : await QueryAsync();
-
-        TApplication? GetTrackedEntity() =>
-            (from entry in context.ChangeTracker.Entries<TApplication>()
-             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
-             select entry.Entity).FirstOrDefault();
-
-        Task<TApplication?> QueryAsync() =>
-            (from application in context.Set<TApplication>().AsTracking()
-             where application.Id!.Equals(key)
-             select application).FirstOrDefaultAsync(cancellationToken);
+        return await context.Set<TApplication>().FindAsync([key], cancellationToken);
     }
 
     /// <inheritdoc/>

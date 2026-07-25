@@ -225,17 +225,7 @@ public class OpenIddictEntityFrameworkTokenStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
-        return GetTrackedEntity() is TToken token ? token : await QueryAsync();
-
-        TToken? GetTrackedEntity() =>
-            (from entry in context.ChangeTracker.Entries<TToken>()
-             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
-             select entry.Entity).FirstOrDefault();
-
-        Task<TToken?> QueryAsync() =>
-            (from token in context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization)
-             where token.Id!.Equals(key)
-             select token).FirstOrDefaultAsync(cancellationToken);
+        return await context.Set<TToken>().FindAsync(cancellationToken, [key]);
     }
 
     /// <inheritdoc/>

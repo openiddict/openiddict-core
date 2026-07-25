@@ -230,17 +230,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
-        return GetTrackedEntity() is TAuthorization authorization ? authorization : await QueryAsync();
-
-        TAuthorization? GetTrackedEntity() =>
-            (from entry in context.ChangeTracker.Entries<TAuthorization>()
-             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
-             select entry.Entity).FirstOrDefault();
-
-        Task<TAuthorization?> QueryAsync() =>
-            (from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Application)
-             where authorization.Id!.Equals(key)
-             select authorization).FirstOrDefaultAsync(cancellationToken);
+        return await context.Set<TAuthorization>().FindAsync(cancellationToken, [key]);
     }
 
     /// <inheritdoc/>

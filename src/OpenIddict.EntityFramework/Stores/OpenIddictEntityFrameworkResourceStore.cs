@@ -134,17 +134,7 @@ public class OpenIddictEntityFrameworkResourceStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
         var key = ConvertIdentifierFromString(identifier);
 
-        return GetTrackedEntity() is TResource resource ? resource : await QueryAsync();
-
-        TResource? GetTrackedEntity() =>
-            (from entry in context.ChangeTracker.Entries<TResource>()
-             where entry.Entity.Id is TKey identifier && identifier.Equals(key)
-             select entry.Entity).FirstOrDefault();
-
-        Task<TResource?> QueryAsync() =>
-            (from resource in context.Set<TResource>()
-             where resource.Id!.Equals(key)
-             select resource).FirstOrDefaultAsync(cancellationToken);
+        return await context.Set<TResource>().FindAsync(cancellationToken, [key]);
     }
 
     /// <inheritdoc/>
