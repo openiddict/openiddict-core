@@ -142,9 +142,7 @@ public class OpenIddictMongoDbScopeStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
-            // ImmutableArray.Contains() (which is not fully supported by MongoDB) is not used instead.
-            await foreach (var scope in collection.Find(scope => Enumerable.Contains(names, scope.Name)).ToAsyncEnumerable(cancellationToken))
+            await foreach (var scope in collection.Find(scope => names.Contains(scope.Name!)).ToAsyncEnumerable(cancellationToken))
             {
                 yield return scope;
             }

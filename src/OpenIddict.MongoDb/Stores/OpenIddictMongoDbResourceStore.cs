@@ -142,9 +142,7 @@ public class OpenIddictMongoDbResourceStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TResource>(Options.CurrentValue.ResourcesCollectionName);
 
-            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
-            // ImmutableArray.Contains() (which is not fully supported by MongoDB) is not used instead.
-            await foreach (var resource in collection.Find(resource => Enumerable.Contains(names, resource.Name)).ToAsyncEnumerable(cancellationToken))
+            await foreach (var resource in collection.Find(resource => names.Contains(resource.Name!)).ToAsyncEnumerable(cancellationToken))
             {
                 yield return resource;
             }
