@@ -825,14 +825,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        if (scopes.IsDefaultOrEmpty)
-        {
-            authorization.Scopes = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        authorization.Scopes = scopes.ToArray();
+        authorization.Scopes = scopes is { IsDefaultOrEmpty: false } ? [.. scopes] : null;
 
         return ValueTask.CompletedTask;
     }

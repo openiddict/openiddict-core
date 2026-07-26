@@ -363,7 +363,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
                 from parameter in parameters
                 group parameter by parameter.Key into grouping
                 let values = grouping.Select(parameter => parameter.Value)
-                select KeyValuePair.Create(grouping.Key, new StringValues(values.ToArray())));
+                select KeyValuePair.Create(grouping.Key, new StringValues([.. values])));
         }
 
         else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
@@ -406,7 +406,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
                 from parameter in parameters
                 group parameter by parameter.Key into grouping
                 let values = grouping.Select(parameter => parameter.Value)
-                select KeyValuePair.Create(grouping.Key, new StringValues(values.ToArray())));
+                select KeyValuePair.Create(grouping.Key, new StringValues([.. values])));
         }
 
         else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
@@ -445,7 +445,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
                 from parameter in parameters
                 group parameter by parameter.Key into grouping
                 let values = grouping.Select(parameter => parameter.Value)
-                select KeyValuePair.Create(grouping.Key, new StringValues(values.ToArray())));
+                select KeyValuePair.Create(grouping.Key, new StringValues([.. values])));
         }
 
         return new OpenIddictResponse();

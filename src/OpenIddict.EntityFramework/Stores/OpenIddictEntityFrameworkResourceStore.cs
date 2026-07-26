@@ -410,7 +410,7 @@ public class OpenIddictEntityFrameworkResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (descriptions is not { Count: > 0 })
+        if (descriptions is not { IsEmpty: false })
         {
             resource.Descriptions = null;
 
@@ -456,7 +456,7 @@ public class OpenIddictEntityFrameworkResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (names is not { Count: > 0 })
+        if (names is not { IsEmpty: false })
         {
             resource.DisplayNames = null;
 
@@ -502,7 +502,7 @@ public class OpenIddictEntityFrameworkResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (properties is not { Count: > 0 })
+        if (properties is not { IsEmpty: false })
         {
             resource.Properties = null;
 

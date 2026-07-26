@@ -360,7 +360,7 @@ public class OpenIddictMongoDbResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (properties is not { Count: > 0 })
+        if (properties is not { IsEmpty: false })
         {
             resource.Properties = null;
 

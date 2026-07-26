@@ -574,7 +574,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        application.DisplayNames = names is { Count: > 0 }
+        application.DisplayNames = names is { IsEmpty: false }
             ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
             : null;
 
@@ -596,14 +596,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (permissions.IsDefaultOrEmpty)
-        {
-            application.Permissions = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        application.Permissions = permissions.ToArray();
+        application.Permissions = permissions is { IsDefaultOrEmpty: false } ? [.. permissions] : null;
 
         return ValueTask.CompletedTask;
     }
@@ -614,14 +607,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (uris.IsDefaultOrEmpty)
-        {
-            application.PostLogoutRedirectUris = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        application.PostLogoutRedirectUris = uris.ToArray();
+        application.PostLogoutRedirectUris = uris is { IsDefaultOrEmpty: false } ? [.. uris] : null;
 
         return ValueTask.CompletedTask;
     }
@@ -643,14 +629,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (uris.IsDefaultOrEmpty)
-        {
-            application.RedirectUris = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        application.RedirectUris = uris.ToArray();
+        application.RedirectUris = uris is { IsDefaultOrEmpty: false } ? [.. uris] : null;
 
         return ValueTask.CompletedTask;
     }
@@ -660,14 +639,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (requirements.IsDefaultOrEmpty)
-        {
-            application.Requirements = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        application.Requirements = requirements.ToArray();
+        application.Requirements = requirements is { IsDefaultOrEmpty: false } ? [.. requirements] : null;
 
         return ValueTask.CompletedTask;
     }
@@ -678,7 +650,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        application.Settings = settings;
+        application.Settings = settings is { IsEmpty: false } ? settings : null;
 
         return ValueTask.CompletedTask;
     }

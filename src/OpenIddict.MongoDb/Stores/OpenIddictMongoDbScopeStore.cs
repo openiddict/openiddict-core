@@ -387,7 +387,7 @@ public class OpenIddictMongoDbScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (properties is not { Count: > 0 })
+        if (properties is not { IsEmpty: false })
         {
             scope.Properties = null;
 
