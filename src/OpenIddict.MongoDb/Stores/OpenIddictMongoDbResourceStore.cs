@@ -142,7 +142,7 @@ public class OpenIddictMongoDbResourceStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TResource>(Options.CurrentValue.ResourcesCollectionName);
 
-            await foreach (var resource in collection.Find(resource => names.Contains(resource.Name!)).ToAsyncEnumerable(cancellationToken))
+            await foreach (var resource in collection.Find(resource => names.Contains(resource.Name!)).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return resource;
             }
@@ -269,7 +269,7 @@ public class OpenIddictMongoDbResourceStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var resource in ((IAsyncCursorSource<TResource>) query).ToAsyncEnumerable(cancellationToken))
+        await foreach (var resource in ((IAsyncCursorSource<TResource>) query).ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return resource;
         }
@@ -289,7 +289,7 @@ public class OpenIddictMongoDbResourceStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TResource>(Options.CurrentValue.ResourcesCollectionName);
 
-            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable(cancellationToken))
+            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return element;
             }

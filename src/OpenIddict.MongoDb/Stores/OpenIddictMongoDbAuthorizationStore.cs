@@ -146,7 +146,7 @@ public class OpenIddictMongoDbAuthorizationStore<
             query = query.Where(authorization => Enumerable.All(values, scope => authorization.Scopes!.Contains(scope)));
         }
 
-        await foreach (var authorization in query.ToAsyncEnumerable(cancellationToken))
+        await foreach (var authorization in query.ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return authorization;
         }
@@ -166,7 +166,7 @@ public class OpenIddictMongoDbAuthorizationStore<
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
             await foreach (var authorization in collection.Find(authorization =>
-                authorization.ApplicationId == ObjectId.Parse(identifier)).ToAsyncEnumerable(cancellationToken))
+                authorization.ApplicationId == ObjectId.Parse(identifier)).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return authorization;
             }
@@ -199,7 +199,7 @@ public class OpenIddictMongoDbAuthorizationStore<
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
             await foreach (var authorization in collection.Find(authorization =>
-                authorization.Subject == subject).ToAsyncEnumerable(cancellationToken))
+                authorization.Subject == subject).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return authorization;
             }
@@ -330,7 +330,7 @@ public class OpenIddictMongoDbAuthorizationStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var authorization in ((IAsyncCursorSource<TAuthorization>) query).ToAsyncEnumerable(cancellationToken))
+        await foreach (var authorization in ((IAsyncCursorSource<TAuthorization>) query).ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return authorization;
         }
@@ -350,7 +350,7 @@ public class OpenIddictMongoDbAuthorizationStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable(cancellationToken))
+            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return element;
             }
