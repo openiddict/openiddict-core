@@ -382,9 +382,7 @@ public class OpenIddictMongoDbAuthorizationStore<
         // maximum number of elements that can be removed by a single call to PruneAsync() is deliberately limited.
         foreach (var chunk in identifiers.Take(1_000_000).Chunk(1_000))
         {
-            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure the
-            // span-based MemoryExtensions.Contains() API (which is not supported by MongoDB) is not used instead.
-            result += (await collection.DeleteManyAsync(authorization => Enumerable.Contains(chunk, authorization.Id), cancellationToken)).DeletedCount;
+            result += (await collection.DeleteManyAsync(authorization => chunk.Contains(authorization.Id), cancellationToken)).DeletedCount;
         }
 
         return result;
