@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFrameworkCore;
@@ -213,38 +212,5 @@ public static class OpenIddictEntityFrameworkCoreHelpers
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreResourceConfiguration<TResource, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
-    }
-
-    /// <summary>
-    /// Tries to create a new <see cref="IDbContextTransaction"/> with the specified <paramref name="level"/>.
-    /// </summary>
-    /// <param name="context">The Entity Framework Core context.</param>
-    /// <param name="level">The desired level of isolation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The <see cref="IDbContextTransaction"/> if it could be created, <see langword="null"/> otherwise.</returns>
-    internal static async ValueTask<IDbContextTransaction?> CreateTransactionAsync(
-        this DbContext context, IsolationLevel level, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-
-        // Note: transactions that specify an explicit isolation level are only supported by
-        // relational providers and trying to use them with a different provider results in
-        // an invalid operation exception being thrown at runtime. To prevent that, a manual
-        // check is made to ensure the underlying transaction manager is relational.
-        var manager = context.Database.GetService<IDbContextTransactionManager>();
-        if (manager is IRelationalTransactionManager)
-        {
-            try
-            {
-                return await context.Database.BeginTransactionAsync(level, cancellationToken);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                return null;
-            }
-        }
-
-        return null;
     }
 }

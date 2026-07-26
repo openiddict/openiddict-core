@@ -15,8 +15,5 @@ public sealed class OpenIddictEntityFrameworkCoreOptions
     /// <summary>
     /// Gets or sets a boolean indicating whether bulk operations should be disabled.
     /// </summary>
-    /// <remarks>
-    /// Note: bulk operations are only supported when targeting .NET 7.0 and higher.
-    /// </remarks>
     public bool DisableBulkOperations { get; set; }
 }

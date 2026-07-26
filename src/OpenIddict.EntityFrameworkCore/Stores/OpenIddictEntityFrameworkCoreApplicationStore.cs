@@ -134,7 +134,8 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
                 // To prevent an SQL exception from being thrown if a new associated entity is
                 // created after the existing entries have been listed, the following logic is
                 // executed in a serializable transaction, that will lock the affected tables.
-                using var transaction = await context.CreateTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+                await using var transaction = await CreateTransactionAsync(context,
+                    IsolationLevel.Serializable, cancellationToken);
 
                 // Remove all the tokens associated with the application.
                 await (from token in context.Set<TToken>()
@@ -155,7 +156,11 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
                 try
                 {
                     await context.SaveChangesAsync(cancellationToken);
-                    transaction?.Commit();
+
+                    if (transaction is not null)
+                    {
+                        await transaction.CommitAsync(cancellationToken);
+                    }
                 }
 
                 catch (DbUpdateConcurrencyException exception)
@@ -176,13 +181,15 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
                 // To prevent an SQL exception from being thrown if a new associated entity is
                 // created after the existing entries have been listed, the following logic is
                 // executed in a serializable transaction, that will lock the affected tables.
-                using var transaction = await context.CreateTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+                await using var transaction = await CreateTransactionAsync(context,
+                    IsolationLevel.Serializable, cancellationToken);
 
                 // Remove all the authorizations associated with the application and
                 // the tokens attached to these implicit or explicit authorizations.
-                var authorizations = await (from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Tokens).AsTracking()
-                                            where authorization.Application!.Id!.Equals(application.Id)
-                                            select authorization).ToListAsync(cancellationToken);
+                var authorizations = await (
+                    from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Tokens).AsTracking()
+                    where authorization.Application!.Id!.Equals(application.Id)
+                    select authorization).ToListAsync(cancellationToken);
 
                 foreach (var authorization in authorizations)
                 {
@@ -195,10 +202,11 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
                 }
 
                 // Remove all the tokens associated with the application.
-                var tokens = await (from token in context.Set<TToken>().AsTracking()
-                                    where token.Authorization == null
-                                    where token.Application!.Id!.Equals(application.Id)
-                                    select token).ToListAsync(cancellationToken);
+                var tokens = await (
+                    from token in context.Set<TToken>().AsTracking()
+                    where token.Authorization == null
+                    where token.Application!.Id!.Equals(application.Id)
+                    select token).ToListAsync(cancellationToken);
 
                 foreach (var token in tokens)
                 {
@@ -210,7 +218,11 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
                 try
                 {
                     await context.SaveChangesAsync(cancellationToken);
-                    transaction?.Commit();
+
+                    if (transaction is not null)
+                    {
+                        await transaction.CommitAsync(cancellationToken);
+                    }
                 }
 
                 catch (DbUpdateConcurrencyException exception)
@@ -734,5 +746,38 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
             return converter.ConvertToInvariantString(identifier);
         }
+    }
+
+    /// <summary>
+    /// Tries to create a new <see cref="IDbContextTransaction"/> with the specified <paramref name="level"/>.
+    /// </summary>
+    /// <param name="context">The Entity Framework Core context.</param>
+    /// <param name="level">The desired level of isolation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The <see cref="IDbContextTransaction"/> if it could be created, <see langword="null"/> otherwise.</returns>
+    protected virtual async ValueTask<IDbContextTransaction?> CreateTransactionAsync(
+        DbContext context, IsolationLevel level, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        // Note: transactions that specify an explicit isolation level are only supported by
+        // relational providers and trying to use them with a different provider results in
+        // an invalid operation exception being thrown at runtime. To prevent that, a manual
+        // check is made to ensure the underlying transaction manager is relational.
+        var manager = context.GetService<IDbContextTransactionManager>();
+        if (manager is IRelationalTransactionManager)
+        {
+            try
+            {
+                return await context.Database.BeginTransactionAsync(level, cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                return null;
+            }
+        }
+
+        return null;
     }
 }
