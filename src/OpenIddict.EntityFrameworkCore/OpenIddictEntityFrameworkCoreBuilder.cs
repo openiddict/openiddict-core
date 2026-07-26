@@ -60,9 +60,6 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
     /// <summary>
     /// Prevents the Entity Framework Core stores from using bulk operations.
     /// </summary>
-    /// <remarks>
-    /// Note: bulk operations are only supported when targeting .NET 7.0 and higher.
-    /// </remarks>
     /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkCoreBuilder DisableBulkOperations()
         => Configure(options => options.DisableBulkOperations = true);
