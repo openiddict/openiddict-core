@@ -142,7 +142,7 @@ public class OpenIddictMongoDbScopeStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            await foreach (var scope in collection.Find(scope => names.Contains(scope.Name!)).ToAsyncEnumerable(cancellationToken))
+            await foreach (var scope in collection.Find(scope => names.Contains(scope.Name!)).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return scope;
             }
@@ -161,7 +161,7 @@ public class OpenIddictMongoDbScopeStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            await foreach (var scope in collection.Find(scope => scope.Resources!.Contains(resource)).ToAsyncEnumerable(cancellationToken))
+            await foreach (var scope in collection.Find(scope => scope.Resources!.Contains(resource)).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return scope;
             }
@@ -296,7 +296,7 @@ public class OpenIddictMongoDbScopeStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var scope in ((IAsyncCursorSource<TScope>) query).ToAsyncEnumerable(cancellationToken))
+        await foreach (var scope in ((IAsyncCursorSource<TScope>) query).ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return scope;
         }
@@ -316,7 +316,7 @@ public class OpenIddictMongoDbScopeStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable(cancellationToken))
+            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return element;
             }

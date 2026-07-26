@@ -151,7 +151,7 @@ public class OpenIddictMongoDbApplicationStore<
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
             await foreach (var application in collection.Find(application =>
-                application.PostLogoutRedirectUris!.Contains(uri)).ToAsyncEnumerable(cancellationToken))
+                application.PostLogoutRedirectUris!.Contains(uri)).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return application;
             }
@@ -172,7 +172,7 @@ public class OpenIddictMongoDbApplicationStore<
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
             await foreach (var application in collection.Find(application =>
-                application.RedirectUris!.Contains(uri)).ToAsyncEnumerable(cancellationToken))
+                application.RedirectUris!.Contains(uri)).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return application;
             }
@@ -364,7 +364,7 @@ public class OpenIddictMongoDbApplicationStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var application in ((IAsyncCursorSource<TApplication>) query).ToAsyncEnumerable(cancellationToken))
+        await foreach (var application in ((IAsyncCursorSource<TApplication>) query).ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return application;
         }
@@ -384,7 +384,7 @@ public class OpenIddictMongoDbApplicationStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
-            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable(cancellationToken))
+            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return element;
             }

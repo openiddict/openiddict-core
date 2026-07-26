@@ -134,7 +134,7 @@ public class OpenIddictMongoDbTokenStore<
             query = query.Where(token => token.Type == type);
         }
 
-        await foreach (var token in query.ToAsyncEnumerable(cancellationToken))
+        await foreach (var token in query.ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return token;
         }
@@ -153,7 +153,7 @@ public class OpenIddictMongoDbTokenStore<
             var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
             await foreach (var token in collection.Find(token =>
-                token.ApplicationId == ObjectId.Parse(identifier)).ToAsyncEnumerable(cancellationToken))
+                token.ApplicationId == ObjectId.Parse(identifier)).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return token;
             }
@@ -173,7 +173,7 @@ public class OpenIddictMongoDbTokenStore<
             var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
             await foreach (var token in collection.Find(token =>
-                token.AuthorizationId == ObjectId.Parse(identifier)).ToAsyncEnumerable(cancellationToken))
+                token.AuthorizationId == ObjectId.Parse(identifier)).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return token;
             }
@@ -214,7 +214,7 @@ public class OpenIddictMongoDbTokenStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
-            await foreach (var token in collection.Find(token => token.Subject == subject).ToAsyncEnumerable(cancellationToken))
+            await foreach (var token in collection.Find(token => token.Subject == subject).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return token;
             }
@@ -377,7 +377,7 @@ public class OpenIddictMongoDbTokenStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var token in ((IAsyncCursorSource<TToken>) query).ToAsyncEnumerable(cancellationToken))
+        await foreach (var token in ((IAsyncCursorSource<TToken>) query).ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return token;
         }
@@ -397,7 +397,7 @@ public class OpenIddictMongoDbTokenStore<
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
-            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable(cancellationToken))
+            await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return element;
             }
