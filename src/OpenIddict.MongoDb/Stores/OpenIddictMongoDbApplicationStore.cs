@@ -510,7 +510,7 @@ public class OpenIddictMongoDbApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (properties is not { Count: > 0 })
+        if (properties is not { IsEmpty: false })
         {
             application.Properties = null;
 
@@ -568,14 +568,7 @@ public class OpenIddictMongoDbApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (settings is not { Count: > 0 })
-        {
-            application.Settings = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        application.Settings = settings;
+        application.Settings = settings is { IsEmpty: false } ? settings : null;
 
         return ValueTask.CompletedTask;
     }

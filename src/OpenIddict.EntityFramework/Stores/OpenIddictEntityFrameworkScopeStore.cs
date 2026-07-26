@@ -480,7 +480,7 @@ public class OpenIddictEntityFrameworkScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (descriptions is not { Count: > 0 })
+        if (descriptions is not { IsEmpty: false })
         {
             scope.Descriptions = null;
 
@@ -526,7 +526,7 @@ public class OpenIddictEntityFrameworkScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (names is not { Count: > 0 })
+        if (names is not { IsEmpty: false })
         {
             scope.DisplayNames = null;
 
@@ -572,7 +572,7 @@ public class OpenIddictEntityFrameworkScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (properties is not { Count: > 0 })
+        if (properties is not { IsEmpty: false })
         {
             scope.Properties = null;
 

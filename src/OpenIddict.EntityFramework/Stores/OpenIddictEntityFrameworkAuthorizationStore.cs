@@ -747,7 +747,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        if (properties is not { Count: > 0 })
+        if (properties is not { IsEmpty: false })
         {
             authorization.Properties = null;
 

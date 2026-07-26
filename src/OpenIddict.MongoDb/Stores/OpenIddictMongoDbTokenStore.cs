@@ -590,7 +590,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (properties is not { Count: > 0 })
+        if (properties is not { IsEmpty: false })
         {
             token.Properties = null;
 

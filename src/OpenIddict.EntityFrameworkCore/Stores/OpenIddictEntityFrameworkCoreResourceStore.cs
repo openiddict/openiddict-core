@@ -332,7 +332,7 @@ public class OpenIddictEntityFrameworkCoreResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        resource.Descriptions = descriptions is { Count: > 0 }
+        resource.Descriptions = descriptions is { IsEmpty: false }
             ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
             : null;
 
@@ -355,7 +355,7 @@ public class OpenIddictEntityFrameworkCoreResourceStore<
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        resource.DisplayNames = names is { Count: > 0 }
+        resource.DisplayNames = names is { IsEmpty: false }
             ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
             : null;
 

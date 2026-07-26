@@ -360,7 +360,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        scope.Descriptions = descriptions is { Count: > 0 }
+        scope.Descriptions = descriptions is { IsEmpty: false }
             ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
             : null;
 
@@ -383,7 +383,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        scope.DisplayNames = names is { Count: > 0 }
+        scope.DisplayNames = names is { IsEmpty: false }
             ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
             : null;
 
@@ -416,14 +416,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        if (resources.IsDefaultOrEmpty)
-        {
-            scope.Resources = null;
-
-            return ValueTask.CompletedTask;
-        }
-
-        scope.Resources = resources.ToArray();
+        scope.Resources = resources is { IsDefaultOrEmpty: false } ? [.. resources] : null;
 
         return ValueTask.CompletedTask;
     }

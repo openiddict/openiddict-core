@@ -763,7 +763,7 @@ public class OpenIddictEntityFrameworkApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (names is not { Count: > 0 })
+        if (names is not { IsEmpty: false })
         {
             application.DisplayNames = null;
 
@@ -878,7 +878,7 @@ public class OpenIddictEntityFrameworkApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (properties is not { Count: > 0 })
+        if (properties is not { IsEmpty: false })
         {
             application.Properties = null;
 
@@ -983,7 +983,7 @@ public class OpenIddictEntityFrameworkApplicationStore<
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        if (settings is not { Count: > 0 })
+        if (settings is not { IsEmpty: false })
         {
             application.Settings = null;
 
