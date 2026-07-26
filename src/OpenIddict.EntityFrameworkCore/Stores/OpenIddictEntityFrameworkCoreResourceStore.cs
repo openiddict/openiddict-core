@@ -174,11 +174,10 @@ public class OpenIddictEntityFrameworkCoreResourceStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
-            // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
-            await foreach (var resource in (from resource in context.Set<TResource>().AsTracking()
-                                         where Enumerable.Contains(names, resource.Name)
-                                         select resource).AsAsyncEnumerable().WithCancellation(cancellationToken))
+            await foreach (var resource in (
+                from resource in context.Set<TResource>().AsTracking()
+                where names.Contains(resource.Name!)
+                select resource).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return resource;
             }
