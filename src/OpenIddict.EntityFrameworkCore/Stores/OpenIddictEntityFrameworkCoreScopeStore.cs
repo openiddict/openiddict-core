@@ -174,11 +174,10 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
-            // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
-            await foreach (var scope in (from scope in context.Set<TScope>().AsTracking()
-                                         where Enumerable.Contains(names, scope.Name)
-                                         select scope).AsAsyncEnumerable().WithCancellation(cancellationToken))
+            await foreach (var scope in (
+                from scope in context.Set<TScope>().AsTracking()
+                where names.Contains(scope.Name!)
+                select scope).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return scope;
             }
