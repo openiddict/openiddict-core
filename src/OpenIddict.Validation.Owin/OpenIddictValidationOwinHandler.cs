@@ -37,13 +37,23 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
     /// <inheritdoc/>
     protected override async Task InitializeCoreAsync()
     {
+        // Note: to ensure internal operations are not immediately cancelled when the request is aborted
+        // (which may represent a security risk if sensitive operations are in progress), an ad-hoc token
+        // source is always created and configured to be triggered 5 seconds after the request is aborted.
+        var source = new CancellationTokenSource();
+        var registration = Request.CallCancelled.Register(static state =>
+            ((CancellationTokenSource) state!).CancelAfter(TimeSpan.FromSeconds(5)), source);
+
+        Response.OnSendingHeaders(static state => ((CancellationTokenSource) state!).Dispose(), source);
+        Response.OnSendingHeaders(static state => ((CancellationTokenRegistration) state!).Dispose(), registration);
+
         // Note: the transaction may be already attached when replaying an OWIN request
         // (e.g when using a status code pages middleware re-invoking the OWIN pipeline).
         var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName);
         if (transaction is null)
         {
             // Create a new transaction and attach the OWIN request to make it available to the OWIN handlers.
-            transaction = await _factory.CreateTransactionAsync();
+            transaction = await _factory.CreateTransactionAsync(source.Token);
             transaction.Properties[typeof(IOwinRequest).FullName!] = new WeakReference<IOwinRequest>(Request);
 
             // Attach the OpenIddict validation transaction to the OWIN shared dictionary
@@ -51,11 +61,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
             Context.Set(typeof(OpenIddictValidationTransaction).FullName, transaction);
         }
 
-        var context = new ProcessRequestContext(transaction)
-        {
-            CancellationToken = Request.CallCancelled
-        };
-
+        var context = new ProcessRequestContext(transaction);
         await _dispatcher.DispatchAsync(context);
 
         // Store the context in the transaction so that it can be retrieved from InvokeAsync().
@@ -89,7 +95,6 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         {
             var notification = new ProcessErrorContext(transaction)
             {
-                CancellationToken = Request.CallCancelled,
                 Error = context.Error ?? Errors.InvalidRequest,
                 ErrorDescription = context.ErrorDescription,
                 ErrorUri = context.ErrorUri,
@@ -126,10 +131,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
         if (context is null)
         {
-            await _dispatcher.DispatchAsync(context = new ProcessAuthenticationContext(transaction)
-            {
-                CancellationToken = Request.CallCancelled
-            });
+            await _dispatcher.DispatchAsync(context = new ProcessAuthenticationContext(transaction));
 
             // Store the context object in the transaction so it can be later retrieved by handlers
             // that want to access the authentication result without triggering a new authentication flow.
@@ -222,7 +224,6 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
 
             var context = new ProcessChallengeContext(transaction)
             {
-                CancellationToken = Request.CallCancelled,
                 Response = new OpenIddictResponse()
             };
 
@@ -237,7 +238,6 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
             {
                 var notification = new ProcessErrorContext(transaction)
                 {
-                    CancellationToken = Request.CallCancelled,
                     Error = context.Error ?? Errors.InvalidRequest,
                     ErrorDescription = context.ErrorDescription,
                     ErrorUri = context.ErrorUri,

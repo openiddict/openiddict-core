@@ -611,7 +611,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
                 else if (string.Equals(encoding, ContentEncodings.Gzip, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream ??= await response.Content.ReadAsStreamAsync();
+                    stream ??= await response.Content.ReadAsStreamAsync().WaitAsync(context.CancellationToken);
                     stream = new GZipStream(stream, CompressionMode.Decompress);
                 }
 
@@ -625,13 +625,13 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 // For more information, read https://www.rfc-editor.org/rfc/rfc9110.html#name-deflate-coding.
                 else if (string.Equals(encoding, ContentEncodings.Deflate, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream ??= await response.Content.ReadAsStreamAsync();
+                    stream ??= await response.Content.ReadAsStreamAsync().WaitAsync(context.CancellationToken);
                     stream = new ZLibStream(stream, CompressionMode.Decompress);
                 }
 
                 else if (string.Equals(encoding, ContentEncodings.Brotli, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream ??= await response.Content.ReadAsStreamAsync();
+                    stream ??= await response.Content.ReadAsStreamAsync().WaitAsync(context.CancellationToken);
                     stream = new BrotliStream(stream, CompressionMode.Decompress);
                 }
 #endif
@@ -655,7 +655,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 // (e.g if the JSON deserialization process fails, the stream is read as a string
                 // during a second pass a second time for logging/debuggability purposes).
                 var content = new StreamContent(stream);
-                await content.LoadIntoBufferAsync();
+                await content.LoadIntoBufferAsync(context.CancellationToken);
 
                 // Copy the headers from the original content to the new instance.
                 foreach (var header in response.Content.Headers)
@@ -728,7 +728,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 context.Logger.LogError(6183, exception, SR.GetResourceString(SR.ID6183),
-                    await response.Content.ReadAsStringAsync());
+                    await response.Content.ReadAsStringAsync(context.CancellationToken));
 
                 context.Reject(
                     error: Errors.ServerError,
@@ -949,7 +949,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             if (!response.IsSuccessStatusCode && string.IsNullOrEmpty(context.Transaction.Response?.Error))
             {
                 context.Logger.LogError(6184, SR.GetResourceString(SR.ID6184), response.StatusCode,
-                    await response.Content.ReadAsStringAsync());
+                    await response.Content.ReadAsStringAsync(context.CancellationToken));
 
                 context.Reject(
                     error: (int) response.StatusCode switch
@@ -973,7 +973,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             if (context.Transaction.Response is null)
             {
                 context.Logger.LogError(6185, SR.GetResourceString(SR.ID6185), response.StatusCode,
-                    response.Content.Headers.ContentType, await response.Content.ReadAsStringAsync());
+                    response.Content.Headers.ContentType, await response.Content.ReadAsStringAsync(context.CancellationToken));
 
                 context.Reject(
                     error: Errors.ServerError,

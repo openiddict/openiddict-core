@@ -1047,9 +1047,9 @@ public static partial class OpenIddictServerHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                     }
 
-                    await foreach (var scope in _scopeManager.FindByNamesAsync([.. scopes]))
+                    await foreach (var scope in _scopeManager.FindByNamesAsync([.. scopes], context.CancellationToken))
                     {
-                        var name = await _scopeManager.GetNameAsync(scope);
+                        var name = await _scopeManager.GetNameAsync(scope, context.CancellationToken);
                         if (!string.IsNullOrEmpty(name))
                         {
                             scopes.Remove(name);
@@ -1163,9 +1163,9 @@ public static partial class OpenIddictServerHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                     }
 
-                    await foreach (var resource in _resourceManager.FindByNamesAsync([.. resources]))
+                    await foreach (var resource in _resourceManager.FindByNamesAsync([.. resources], context.CancellationToken))
                     {
-                        var name = await _resourceManager.GetNameAsync(resource);
+                        var name = await _resourceManager.GetNameAsync(resource, context.CancellationToken);
                         if (!string.IsNullOrEmpty(name))
                         {
                             resources.Remove(name);
@@ -1284,11 +1284,11 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the token endpoint.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Token))
+                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Token, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6086, SR.GetResourceString(SR.ID6086), context.ClientId);
 
@@ -1336,11 +1336,11 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the specified grant type.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.GrantType + context.Request.GrantType))
+                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.GrantType + context.Request.GrantType, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6087, SR.GetResourceString(SR.ID6087), context.ClientId, context.Request.GrantType);
 
@@ -1355,7 +1355,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject the request if the offline_access scope was request and if
                 // the application is not allowed to use the refresh token grant type.
                 if (context.Request.HasScope(Scopes.OfflineAccess) &&
-                    !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
+                    !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6088, SR.GetResourceString(SR.ID6088), context.ClientId, Scopes.OfflineAccess);
 
@@ -1403,7 +1403,7 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 foreach (var scope in context.Request.GetScopes())
@@ -1416,7 +1416,7 @@ public static partial class OpenIddictServerHandlers
                     }
 
                     // Reject the request if the application is not allowed to use the iterated scope.
-                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
+                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope, context.CancellationToken))
                     {
                         context.Logger.LogInformation(6089, SR.GetResourceString(SR.ID6089), context.ClientId, scope);
 
@@ -1465,13 +1465,13 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 foreach (var audience in context.Request.GetAudiences())
                 {
                     // Reject the request if the application is not allowed to use the iterated audience.
-                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Audience + audience))
+                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Audience + audience, context.CancellationToken))
                     {
                         context.Logger.LogInformation(6278, SR.GetResourceString(SR.ID6276), context.ClientId, audience);
 
@@ -1520,13 +1520,13 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 foreach (var resource in context.Request.GetResources())
                 {
                     // Reject the request if the application is not allowed to use the iterated resource.
-                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Resource + resource))
+                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Resource + resource, context.CancellationToken))
                     {
                         context.Logger.LogInformation(6279, SR.GetResourceString(SR.ID6277), context.ClientId, resource);
 
@@ -1586,10 +1586,10 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-                if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
+                if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6077, SR.GetResourceString(SR.ID6077), Parameters.CodeVerifier);
 

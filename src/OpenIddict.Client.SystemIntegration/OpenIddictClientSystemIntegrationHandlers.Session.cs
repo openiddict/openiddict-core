@@ -646,8 +646,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     _                     => "Logout failed. Please return to the application."
                 });
 
-                await response.OutputStream.WriteAsync(buffer);
-                await response.OutputStream.FlushAsync();
+                await response.OutputStream.WriteAsync(buffer.AsMemory(), context.CancellationToken);
+                await response.OutputStream.FlushAsync(context.CancellationToken);
 
                 context.HandleRequest();
             }

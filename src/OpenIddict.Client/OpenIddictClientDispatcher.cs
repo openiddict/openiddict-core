@@ -40,6 +40,8 @@ public sealed class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
 
         await foreach (var handler in GetHandlersAsync())
         {
+            context.CancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 await handler.HandleAsync(context);

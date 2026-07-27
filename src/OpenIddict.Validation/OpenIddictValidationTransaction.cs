@@ -17,14 +17,8 @@ namespace OpenIddict.Validation;
 public sealed class OpenIddictValidationTransaction
 {
     /// <summary>
-    /// Gets or sets the cancellation token that will be
-    /// used to determine if the operation was aborted.
+    /// Gets or sets the cancellation token used to determine if the operation was aborted.
     /// </summary>
-    /// <remarks>
-    /// Note: for security reasons, this property shouldn't be used by event
-    /// handlers to abort security-sensitive operations. As such, it is
-    /// recommended to use this property only for user-dependent operations.
-    /// </remarks>
     public CancellationToken CancellationToken { get; set; }
 
     /// <summary>

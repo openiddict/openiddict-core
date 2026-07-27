@@ -18,9 +18,13 @@ public interface IOpenIddictClientFactory
     /// Creates a new <see cref="OpenIddictClientTransaction"/> that is used as a
     /// way to store per-request data needed to process the requested operation.
     /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <remarks>
+    /// Note: the specified <see cref="CancellationToken"/> is automatically attached to the returned transaction.
+    /// </remarks>
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous
     /// operation, whose result returns the created transaction.
     /// </returns>
-    ValueTask<OpenIddictClientTransaction> CreateTransactionAsync();
+    ValueTask<OpenIddictClientTransaction> CreateTransactionAsync(CancellationToken cancellationToken);
 }

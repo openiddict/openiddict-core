@@ -766,18 +766,20 @@ public static partial class OpenIddictServerOwinHandlers
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
 
             // If a client certificate was used during the TLS handshake, attach it to the context.
-            if (request.IsSecure && await GetClientCertificateAsync(request.Context) is X509Certificate2 certificate)
+            if (request.IsSecure && await GetClientCertificateAsync(request.Context,
+                context.CancellationToken) is X509Certificate2 certificate)
             {
                 context.Transaction.RemoteCertificate = certificate;
             }
 
-            static async ValueTask<X509Certificate2?> GetClientCertificateAsync(IOwinContext context)
+            static async ValueTask<X509Certificate2?> GetClientCertificateAsync(
+                IOwinContext context, CancellationToken cancellationToken)
             {
                 // If a loading function was provided by the OWIN host, always invoke it before trying
                 // to resolve the certificate to ensure it is present in the environment dictionary.
                 if (context.Get<Func<Task>>("ssl.LoadClientCertAsync") is Func<Task> loader)
                 {
-                    await loader();
+                    await loader().WaitAsync(cancellationToken);
                 }
 
                 return context.Get<X509Certificate>("ssl.ClientCertificate") is X509Certificate certificate
