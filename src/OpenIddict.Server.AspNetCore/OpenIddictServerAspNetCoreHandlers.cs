@@ -705,7 +705,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             // If a client certificate was used during the TLS handshake, attach it to the context.
             if (request.IsHttps && await request.HttpContext.Connection.GetClientCertificateAsync(
-                request.HttpContext.RequestAborted) is X509Certificate2 certificate)
+                context.CancellationToken) is X509Certificate2 certificate)
             {
                 context.Transaction.RemoteCertificate = certificate;
             }

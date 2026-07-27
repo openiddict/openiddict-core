@@ -88,8 +88,8 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         // Implicitly add the redirect_uri attached to the client registrations
         // to the list of redirection endpoints URIs if they haven't been added.
         options.RedirectionEndpointUris.AddRange(options.Registrations
-            .Where(registration => registration.RedirectUri is not null)
-            .Select(registration => registration.RedirectUri!)
+            .Where(static registration => registration.RedirectUri is not null)
+            .Select(static registration => registration.RedirectUri!)
             .Where(uri => !options.RedirectionEndpointUris.Contains(uri))
             .Distinct()
             .ToList());
@@ -97,8 +97,8 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         // Implicitly add the post_logout_redirect_uri attached to the client registrations
         // to the list of post-logout redirection endpoints URIs if they haven't been added.
         options.PostLogoutRedirectionEndpointUris.AddRange(options.Registrations
-            .Where(registration => registration.PostLogoutRedirectUri is not null)
-            .Select(registration => registration.PostLogoutRedirectUri!)
+            .Where(static registration => registration.PostLogoutRedirectUri is not null)
+            .Select(static registration => registration.PostLogoutRedirectUri!)
             .Where(uri => !options.PostLogoutRedirectionEndpointUris.Contains(uri))
             .Distinct()
             .ToList());
@@ -113,9 +113,9 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
 
         // Generate a key identifier for the encryption/signing keys that don't already have one.
-        foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key)
-            .Concat(options.SigningCredentials.Select(credentials => credentials.Key))
-            .Where(key => string.IsNullOrEmpty(key.KeyId)))
+        foreach (var key in options.EncryptionCredentials.Select(static credentials => credentials.Key)
+            .Concat(options.SigningCredentials.Select(static credentials => credentials.Key))
+            .Where(static key => string.IsNullOrEmpty(key.KeyId)))
         {
             key.KeyId = GetKeyIdentifier(key);
         }
@@ -354,7 +354,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         //
         // Note: a string comparer ignoring casing is deliberately used to prevent two
         // registrations using the same identifier with a different casing from being added.
-        if (options.Registrations.Count != options.Registrations.Select(registration => registration.RegistrationId)
+        if (options.Registrations.Count != options.Registrations.Select(static registration => registration.RegistrationId)
                                                                 .Distinct(StringComparer.OrdinalIgnoreCase)
                                                                 .Count())
         {

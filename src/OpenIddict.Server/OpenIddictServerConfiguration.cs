@@ -77,9 +77,9 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key, now));
 
         // Generate a key identifier for the encryption/signing keys that don't already have one.
-        foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key)
-            .Concat(options.SigningCredentials.Select(credentials => credentials.Key))
-            .Where(key => string.IsNullOrEmpty(key.KeyId)))
+        foreach (var key in options.EncryptionCredentials.Select(static credentials => credentials.Key)
+            .Concat(options.SigningCredentials.Select(static credentials => credentials.Key))
+            .Where(static key => string.IsNullOrEmpty(key.KeyId)))
         {
             key.KeyId = GetKeyIdentifier(key);
         }

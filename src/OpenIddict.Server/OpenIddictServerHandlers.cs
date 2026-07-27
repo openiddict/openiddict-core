@@ -1046,7 +1046,7 @@ public static partial class OpenIddictServerHandlers
 
                 // Retrieve the application details corresponding to the requested client_id.
                 // If no entity can be found, this likely indicates that the client_id is invalid.
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken);
                 if (application is null)
                 {
                     context.Logger.LogInformation(6221, SR.GetResourceString(SR.ID6221), context.ClientId);
@@ -1113,10 +1113,10 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+            var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-            if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+            if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
             {
                 // Reject grant_type=client_credentials token requests if the application is a public client.
                 if (context.EndpointType is OpenIddictServerEndpointType.Token &&
@@ -1224,16 +1224,16 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+            var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
             // If the application is a public client, don't validate the client secret.
-            if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+            if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
             {
                 return;
             }
 
-            if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
+            if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret, context.CancellationToken))
             {
                 context.Logger.LogInformation(6225, SR.GetResourceString(SR.ID6225), context.ClientId);
 
@@ -1398,7 +1398,7 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
             }
 
-            var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+            var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
             // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
@@ -1421,7 +1421,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 if (await _applicationManager.GetSelfSignedTlsClientAuthenticationPolicyAsync(
-                    application, context.Options.SelfSignedTlsClientAuthenticationPolicy) is not X509ChainPolicy policy)
+                    application, context.Options.SelfSignedTlsClientAuthenticationPolicy, context.CancellationToken) is not X509ChainPolicy policy)
                 {
                     context.Logger.LogInformation(6283, SR.GetResourceString(SR.ID6283), context.ClientId);
 
@@ -1442,7 +1442,7 @@ public static partial class OpenIddictServerHandlers
                 // To allow validating such certificates, the chain policy is amended to consider the specified
                 // self-signed certificate as a trusted root and basically disable chain validation while still
                 // validating the other aspects of the certificate (e.g expiration date, key usage, etc).
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
                 {
                     // Always clone the X.509 chain policy to ensure the original instance is never mutated.
                     policy = policy.Clone();
@@ -1455,7 +1455,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 if (!await _applicationManager.ValidateSelfSignedTlsClientCertificateAsync(
-                    application, context.Transaction.RemoteCertificate, policy))
+                    application, context.Transaction.RemoteCertificate, policy, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6283, SR.GetResourceString(SR.ID6283), context.ClientId);
 
@@ -1481,9 +1481,9 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 if (await _applicationManager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(
-                    application, context.Options.PublicKeyInfrastructureTlsClientAuthenticationPolicy) is not X509ChainPolicy policy ||
+                    application, context.Options.PublicKeyInfrastructureTlsClientAuthenticationPolicy, context.CancellationToken) is not X509ChainPolicy policy ||
                    !await _applicationManager.ValidatePublicKeyInfrastructureTlsClientCertificateAsync(
-                    application, context.Transaction.RemoteCertificate, policy))
+                    application, context.Transaction.RemoteCertificate, policy, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6284, SR.GetResourceString(SR.ID6284), context.ClientId);
 
@@ -2663,10 +2663,10 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0008));
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier);
+            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
             if (token is not null)
             {
-                await _tokenManager.TryRejectAsync(token);
+                await _tokenManager.TryRejectAsync(token, context.CancellationToken);
             }
         }
     }
@@ -2719,10 +2719,10 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier);
+            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
             if (token is not null)
             {
-                await _tokenManager.TryRejectAsync(token);
+                await _tokenManager.TryRejectAsync(token, context.CancellationToken);
             }
         }
     }
@@ -2988,7 +2988,7 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier);
+            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
             if (token is null)
             {
                 return;
@@ -2998,10 +2998,10 @@ public static partial class OpenIddictServerHandlers
             // errors returned while trying to mark the entry as redeemed (that may be caused by concurrent requests).
             if (context.EndpointType is OpenIddictServerEndpointType.Token && context.Request.IsRefreshTokenGrantType())
             {
-                await _tokenManager.TryRedeemAsync(token);
+                await _tokenManager.TryRedeemAsync(token, context.CancellationToken);
             }
 
-            else if (!await _tokenManager.TryRedeemAsync(token))
+            else if (!await _tokenManager.TryRedeemAsync(token, context.CancellationToken))
             {
                 context.Reject(
                     error: Errors.InvalidToken,
@@ -3483,16 +3483,16 @@ public static partial class OpenIddictServerHandlers
             // If the client application is known, associate it to the authorization.
             if (!string.IsNullOrEmpty(context.Request.ClientId))
             {
-                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
+                descriptor.ApplicationId = await _applicationManager.GetIdAsync(application, context.CancellationToken);
             }
 
-            var authorization = await _authorizationManager.CreateAsync(descriptor)
+            var authorization = await _authorizationManager.CreateAsync(descriptor, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0018));
 
-            var identifier = await _authorizationManager.GetIdAsync(authorization);
+            var identifier = await _authorizationManager.GetIdAsync(authorization, context.CancellationToken);
 
             if (string.IsNullOrEmpty(context.Request.ClientId))
             {
@@ -3610,10 +3610,10 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application);
+                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.AccessToken, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -3744,10 +3744,10 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application);
+                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.AuthorizationCode, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -3868,10 +3868,10 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application);
+                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.DeviceCode, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -4084,7 +4084,7 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
                 var name = context.IssuedTokenType switch
@@ -4096,7 +4096,7 @@ public static partial class OpenIddictServerHandlers
                     _ => Settings.TokenLifetimes.IssuedToken
                 };
 
-                var settings = await _applicationManager.GetSettingsAsync(application);
+                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(name, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -4178,7 +4178,7 @@ public static partial class OpenIddictServerHandlers
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                         }
 
-                        var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                        var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                             ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
                         // Note: refresh tokens are only bound to the provided certificate when the client
@@ -4186,7 +4186,7 @@ public static partial class OpenIddictServerHandlers
                         // are already sender-constrained via standard client authentication, which is more
                         // flexible than certificate-based token binding, as rotating client credentials is
                         // easier in that case (specially when using PKI-based mTLS client authentication).
-                        if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+                        if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
                         {
                             principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
                         }
@@ -4274,10 +4274,10 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application);
+                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.RequestToken, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -4419,10 +4419,10 @@ public static partial class OpenIddictServerHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                     }
 
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                         ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                    var settings = await _applicationManager.GetSettingsAsync(application);
+                    var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
                     if (settings.TryGetValue(Settings.TokenLifetimes.RefreshToken, out string? setting) &&
                         TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                     {
@@ -4472,7 +4472,7 @@ public static partial class OpenIddictServerHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                     }
 
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                         ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
                     // Note: refresh tokens are only bound to the provided certificate when the client
@@ -4480,7 +4480,7 @@ public static partial class OpenIddictServerHandlers
                     // are already sender-constrained via standard client authentication, which is more
                     // flexible than certificate-based token binding, as rotating client credentials is
                     // easier in that case (specially when using PKI-based mTLS client authentication).
-                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
                     {
                         principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
                     }
@@ -4594,10 +4594,10 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application);
+                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.IdentityToken, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -4718,10 +4718,10 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application);
+                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.UserCode, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -5255,13 +5255,13 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0008));
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier)
+            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0265));
 
             // Replace the device code details by the payload derived from the new device code principal,
             // that includes all the user claims populated by the application after authenticating the user.
             var descriptor = new OpenIddictTokenDescriptor();
-            await _tokenManager.PopulateAsync(descriptor, token);
+            await _tokenManager.PopulateAsync(descriptor, token, context.CancellationToken);
 
             // Note: the lifetime is deliberately extended to give more time to the client to redeem the code.
             descriptor.ExpirationDate = context.DeviceCodePrincipal.GetExpirationDate();
@@ -5270,9 +5270,9 @@ public static partial class OpenIddictServerHandlers
             descriptor.Status = Statuses.Valid;
             descriptor.Subject = context.DeviceCodePrincipal.GetClaim(Claims.Subject);
 
-            await _tokenManager.UpdateAsync(token, descriptor);
+            await _tokenManager.UpdateAsync(token, descriptor, context.CancellationToken);
 
-            context.Logger.LogTrace(6021, SR.GetResourceString(SR.ID6021), await _tokenManager.GetIdAsync(token));
+            context.Logger.LogTrace(6021, SR.GetResourceString(SR.ID6021), await _tokenManager.GetIdAsync(token, context.CancellationToken));
         }
     }
 
@@ -5850,14 +5850,14 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier);
+            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
             if (token is null)
             {
                 return;
             }
 
             // Mark the token as redeemed to prevent future reuses.
-            await _tokenManager.TryRedeemAsync(token);
+            await _tokenManager.TryRedeemAsync(token, context.CancellationToken);
         }
     }
 

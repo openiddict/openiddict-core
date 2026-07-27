@@ -127,7 +127,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     MediaTypes.JsonWebToken, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response = new OpenIddictResponse();
-                    context.UserInfoToken = await response.Content.ReadAsStringAsync();
+                    context.UserInfoToken = await response.Content.ReadAsStringAsync(context.CancellationToken);
 
                     return;
                 }

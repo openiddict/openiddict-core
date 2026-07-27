@@ -220,7 +220,7 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 // If the reference token cannot be found, don't return an error to allow another handler to validate it.
-                var token = await _tokenManager.FindByReferenceIdAsync(context.Token);
+                var token = await _tokenManager.FindByReferenceIdAsync(context.Token, context.CancellationToken);
                 if (token is null)
                 {
                     return;
@@ -230,8 +230,8 @@ public static partial class OpenIddictValidationHandlers
                 if (!(context.ValidTokenTypes.Count switch
                 {
                     0 => true, // If no specific token type is expected, accept all token types at this stage.
-                    1 => await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ElementAt(0)),
-                    _ => await _tokenManager.HasTypeAsync(token, [.. context.ValidTokenTypes])
+                    1 => await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ElementAt(0), context.CancellationToken),
+                    _ => await _tokenManager.HasTypeAsync(token, [.. context.ValidTokenTypes], context.CancellationToken)
                 }))
                 {
                     context.Reject(
@@ -242,7 +242,7 @@ public static partial class OpenIddictValidationHandlers
                     return;
                 }
 
-                var payload = await _tokenManager.GetPayloadAsync(token);
+                var payload = await _tokenManager.GetPayloadAsync(token, context.CancellationToken);
                 if (string.IsNullOrEmpty(payload))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0026));
@@ -253,7 +253,7 @@ public static partial class OpenIddictValidationHandlers
                 // used to restore the properties associated with the token.
                 context.IsReferenceToken = true;
                 context.Token = payload;
-                context.TokenId = await _tokenManager.GetIdAsync(token);
+                context.TokenId = await _tokenManager.GetIdAsync(token, context.CancellationToken);
             }
         }
 
@@ -562,7 +562,7 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 // If the token entry cannot be found, return a generic error.
-                var token = await _tokenManager.FindByIdAsync(identifier);
+                var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
                 if (token is null)
                 {
                     context.Reject(
@@ -576,9 +576,9 @@ public static partial class OpenIddictValidationHandlers
                 // If the token was not validated as a reference token but has a reference identifier attached, this
                 // may indicate that the payload stored in the database has leaked and is being used as a regular,
                 // non-reference token. To prevent this, reject the token if the reference identifier is not null.
-                if (!context.IsReferenceToken && !string.IsNullOrEmpty(await _tokenManager.GetReferenceIdAsync(token)))
+                if (!context.IsReferenceToken && !string.IsNullOrEmpty(await _tokenManager.GetReferenceIdAsync(token, context.CancellationToken)))
                 {
-                    context.Logger.LogWarning(6292, SR.GetResourceString(SR.ID6292), await _tokenManager.GetIdAsync(token));
+                    context.Logger.LogWarning(6292, SR.GetResourceString(SR.ID6292), await _tokenManager.GetIdAsync(token, context.CancellationToken));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -590,11 +590,11 @@ public static partial class OpenIddictValidationHandlers
 
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
                 context.Principal
-                    .SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
-                    .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
-                    .SetAuthorizationId(context.AuthorizationId = await _tokenManager.GetAuthorizationIdAsync(token))
-                    .SetTokenId(context.TokenId = await _tokenManager.GetIdAsync(token))
-                    .SetTokenType(await _tokenManager.GetTypeAsync(token));
+                    .SetCreationDate(await _tokenManager.GetCreationDateAsync(token, context.CancellationToken))
+                    .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token, context.CancellationToken))
+                    .SetAuthorizationId(context.AuthorizationId = await _tokenManager.GetAuthorizationIdAsync(token, context.CancellationToken))
+                    .SetTokenId(context.TokenId = await _tokenManager.GetIdAsync(token, context.CancellationToken))
+                    .SetTokenType(await _tokenManager.GetTypeAsync(token, context.CancellationToken));
             }
         }
 
@@ -922,10 +922,10 @@ public static partial class OpenIddictValidationHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
                 Debug.Assert(!string.IsNullOrEmpty(context.TokenId), SR.GetResourceString(SR.ID4017));
 
-                var token = await _tokenManager.FindByIdAsync(context.TokenId)
+                var token = await _tokenManager.FindByIdAsync(context.TokenId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
 
-                if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
+                if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6005, SR.GetResourceString(SR.ID6005), context.TokenId);
 
@@ -972,8 +972,8 @@ public static partial class OpenIddictValidationHandlers
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
                 Debug.Assert(!string.IsNullOrEmpty(context.AuthorizationId), SR.GetResourceString(SR.ID4018));
 
-                var authorization = await _authorizationManager.FindByIdAsync(context.AuthorizationId);
-                if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
+                var authorization = await _authorizationManager.FindByIdAsync(context.AuthorizationId, context.CancellationToken);
+                if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6006, SR.GetResourceString(SR.ID6006), context.AuthorizationId);
 

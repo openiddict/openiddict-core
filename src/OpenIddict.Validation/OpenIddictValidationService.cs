@@ -47,7 +47,7 @@ public class OpenIddictValidationService
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
         var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-        var transaction = await factory.CreateTransactionAsync();
+        var transaction = await factory.CreateTransactionAsync(cancellationToken);
 
         var context = new ProcessAuthenticationContext(transaction)
         {
@@ -92,7 +92,7 @@ public class OpenIddictValidationService
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
         var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-        var transaction = await factory.CreateTransactionAsync();
+        var transaction = await factory.CreateTransactionAsync(cancellationToken);
 
         var request = new OpenIddictRequest();
         request = await PrepareConfigurationRequestAsync();
@@ -214,7 +214,7 @@ public class OpenIddictValidationService
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
         var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-        var transaction = await factory.CreateTransactionAsync();
+        var transaction = await factory.CreateTransactionAsync(cancellationToken);
 
         var request = new OpenIddictRequest();
         request = await PrepareJsonWebKeySetRequestAsync();
@@ -344,7 +344,7 @@ public class OpenIddictValidationService
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
         var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-        var transaction = await factory.CreateTransactionAsync();
+        var transaction = await factory.CreateTransactionAsync(cancellationToken);
 
         request = await PrepareIntrospectionRequestAsync();
         request = await ApplyIntrospectionRequestAsync();
@@ -357,7 +357,6 @@ public class OpenIddictValidationService
         {
             var context = new PrepareIntrospectionRequestContext(transaction)
             {
-                CancellationToken = cancellationToken,
                 ClientAuthenticationMethod = method,
                 Configuration = configuration,
                 RemoteUri = uri,
@@ -381,7 +380,6 @@ public class OpenIddictValidationService
         {
             var context = new ApplyIntrospectionRequestContext(transaction)
             {
-                CancellationToken = cancellationToken,
                 RemoteUri = uri,
                 Configuration = configuration,
                 Request = request
@@ -405,7 +403,6 @@ public class OpenIddictValidationService
         {
             var context = new ExtractIntrospectionResponseContext(transaction)
             {
-                CancellationToken = cancellationToken,
                 RemoteUri = uri,
                 Configuration = configuration,
                 Request = request
@@ -431,7 +428,6 @@ public class OpenIddictValidationService
         {
             var context = new HandleIntrospectionResponseContext(transaction)
             {
-                CancellationToken = cancellationToken,
                 RemoteUri = uri,
                 Configuration = configuration,
                 Request = request,

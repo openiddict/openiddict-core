@@ -457,7 +457,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 context.Transaction.Request = new OpenIddictRequest(await OpenIddictHelpers.ParseFormAsync(
                     stream           : request.InputStream,
                     encoding         : GetEncoding(type) is { CodePage: not 65000 } encoding ? encoding : Encoding.UTF8,
-                    cancellationToken: CancellationToken.None));
+                    cancellationToken: context.CancellationToken));
             }
 
             else

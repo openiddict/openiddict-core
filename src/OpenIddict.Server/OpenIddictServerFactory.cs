@@ -31,10 +31,18 @@ public sealed class OpenIddictServerFactory : IOpenIddictServerFactory
     }
 
     /// <inheritdoc/>
-    public ValueTask<OpenIddictServerTransaction> CreateTransactionAsync()
-        => new(new OpenIddictServerTransaction
+    public ValueTask<OpenIddictServerTransaction> CreateTransactionAsync(CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
         {
+            return new(Task.FromCanceled<OpenIddictServerTransaction>(cancellationToken));
+        }
+
+        return new(new OpenIddictServerTransaction
+        {
+            CancellationToken = cancellationToken,
             Logger = _logger,
             Options = _options.CurrentValue
         });
+    }
 }

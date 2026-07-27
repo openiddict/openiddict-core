@@ -528,11 +528,11 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the introspection endpoint.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Introspection))
+                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Introspection, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6103, SR.GetResourceString(SR.ID6103), context.ClientId);
 
@@ -816,11 +816,11 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Public clients are not allowed to access sensitive claims as authentication cannot be enforced.
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6107, SR.GetResourceString(SR.ID6107), context.Request.ClientId);
 

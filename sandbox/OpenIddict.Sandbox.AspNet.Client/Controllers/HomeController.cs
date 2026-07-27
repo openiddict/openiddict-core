@@ -43,7 +43,7 @@ public class HomeController([FromKeyedServices("ApiClient")] HttpClient client, 
 
         return View("Index", new IndexViewModel
         {
-            Message = await response.Content.ReadAsStringAsync(),
+            Message = await response.Content.ReadAsStringAsync(cancellationToken),
             Providers = from registration in await service.GetClientRegistrationsAsync(cancellationToken)
                         where !string.IsNullOrEmpty(registration.ProviderName)
                         where !string.IsNullOrEmpty(registration.ProviderDisplayName)

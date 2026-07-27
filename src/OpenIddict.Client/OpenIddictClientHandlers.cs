@@ -7,7 +7,9 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Buffers.Text;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -18,8 +20,6 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
-using System.Runtime.CompilerServices;
-using System.Buffers.Text;
 
 #if !NET
 using Org.BouncyCastle.Crypto.Digests;
@@ -857,8 +857,8 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Mark the token as redeemed to prevent future reuses.
-            var token = await _tokenManager.FindByIdAsync(identifier);
-            if (token is not null && !await _tokenManager.TryRedeemAsync(token))
+            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
+            if (token is not null && !await _tokenManager.TryRedeemAsync(token, context.CancellationToken))
             {
                 context.Reject(
                     error: Errors.InvalidToken,

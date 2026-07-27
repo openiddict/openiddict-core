@@ -599,10 +599,10 @@ public static partial class OpenIddictServerHandlers
 
                 if (!string.IsNullOrEmpty(context.ClientId))
                 {
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                         ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-                    if (!await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, context.PostLogoutRedirectUri))
+                    if (!await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, context.PostLogoutRedirectUri, context.CancellationToken))
                     {
                         context.Logger.LogInformation(6128, SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
 
@@ -634,17 +634,17 @@ public static partial class OpenIddictServerHandlers
                     // To be considered valid, a post_logout_redirect_uri must correspond to an existing client application
                     // that was granted the ept:logout permission, unless endpoint permissions checking was explicitly disabled.
 
-                    await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(uri))
+                    await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(uri, context.CancellationToken))
                     {
                         // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                         if (!context.Options.IgnoreEndpointPermissions &&
-                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
-                            !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
+                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
+                            !await _applicationManager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
                         {
                             continue;
                         }
 
-                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri))
+                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri, context.CancellationToken))
                         {
                             return true;
                         }
@@ -667,18 +667,18 @@ public static partial class OpenIddictServerHandlers
                         string.Equals(value.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)))
                     {
                         await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(
-                            uri: new UriBuilder(value) { Port = -1 }.Uri.AbsoluteUri))
+                            uri: new UriBuilder(value) { Port = -1 }.Uri.AbsoluteUri, context.CancellationToken))
                         {
                             // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                             if (!context.Options.IgnoreEndpointPermissions &&
-                                !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
-                                !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
+                                !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
+                                !await _applicationManager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
                             {
                                 continue;
                             }
 
-                            if (await _applicationManager.HasApplicationTypeAsync(application, ApplicationTypes.Native) &&
-                                await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri))
+                            if (await _applicationManager.HasApplicationTypeAsync(application, ApplicationTypes.Native, context.CancellationToken) &&
+                                await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri, context.CancellationToken))
                             {
                                 return true;
                             }
@@ -729,14 +729,14 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId)
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the end session endpoint.
                 //
                 // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
-                    !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
+                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
+                    !await _applicationManager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
                 {
                     context.Logger.LogInformation(6048, SR.GetResourceString(SR.ID6048), context.ClientId);
 
@@ -858,7 +858,7 @@ public static partial class OpenIddictServerHandlers
 
                     foreach (var identifier in identifiers)
                     {
-                        var application = await _applicationManager.FindByClientIdAsync(identifier);
+                        var application = await _applicationManager.FindByClientIdAsync(identifier, context.CancellationToken);
                         if (application is null)
                         {
                             continue;
@@ -866,13 +866,13 @@ public static partial class OpenIddictServerHandlers
 
                         // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                         if (!context.Options.IgnoreEndpointPermissions &&
-                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession) &&
-                            !await _applicationManager.HasPermissionAsync(application, "ept:logout"))
+                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
+                            !await _applicationManager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
                         {
                             continue;
                         }
 
-                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri))
+                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri, context.CancellationToken))
                         {
                             return true;
                         }
