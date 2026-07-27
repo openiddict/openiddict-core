@@ -17,34 +17,6 @@ namespace OpenIddict.Extensions;
 /// </summary>
 internal static class OpenIddictPolyfills
 {
-    extension(Convert)
-    {
-#if !NET
-        /// <summary>Converts the specified string, which encodes binary data as hex characters, to an equivalent 8-bit unsigned integer array.</summary>
-        /// <param name="s">The string to convert.</param>
-        /// <returns>An array of 8-bit unsigned integers that is equivalent to <paramref name="s"/>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="s"/> is <code>null</code>.</exception>
-        /// <exception cref="FormatException">The length of <paramref name="s"/>, is not zero or a multiple of 2.</exception>
-        /// <exception cref="FormatException">The format of <paramref name="s"/> is invalid. <paramref name="s"/> contains a non-hex character.</exception>
-        public static byte[] FromHexString(string s)
-        {
-            if ((uint) s.Length % 2 is not 0)
-            {
-                throw new FormatException(SR.GetResourceString(SR.ID0413));
-            }
-
-            var array = new byte[s.Length / 2];
-
-            for (var index = 0; index < s.Length; index += 2)
-            {
-                array[index / 2] = Convert.ToByte(s.Substring(index, 2), 16);
-            }
-
-            return array;
-        }
-#endif
-    }
-
     extension(CryptographicOperations)
     {
 #if !NET
@@ -250,27 +222,6 @@ internal static class OpenIddictPolyfills
 #endif
     }
 
-    extension(SHA384)
-    {
-#if !NET
-        /// <summary>
-        /// Computes the hash of data using the SHA384 algorithm.
-        /// </summary>
-        /// <param name="source">The data to hash.</param>
-        /// <returns>The hash of the data.</returns>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="source" /> is <see langword="null" />.
-        /// </exception>
-        public static byte[] HashData(byte[] source)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            
-            using var algorithm = SHA384.Create();
-            return algorithm.ComputeHash(source);
-        }
-#endif
-    }
-
     extension<TResult>(ValueTask<TResult>)
     {
 #if !NET
@@ -351,34 +302,6 @@ internal static class OpenIddictPolyfills
             clone.ExtraStore.AddRange(policy.ExtraStore);
 
             return clone;
-        }
-#endif
-    }
-}
-
-
-/// <summary>
-/// Exposes common polyfills used by the OpenIddict assemblies.
-/// </summary>
-internal static class OpenIddictPolyfills_SHA512
-{
-    extension(SHA512)
-    {
-#if !NET
-        /// <summary>
-        /// Computes the hash of data using the SHA512 algorithm.
-        /// </summary>
-        /// <param name="source">The data to hash.</param>
-        /// <returns>The hash of the data.</returns>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="source" /> is <see langword="null" />.
-        /// </exception>
-        public static byte[] HashData(byte[] source)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            
-            using var algorithm = SHA512.Create();
-            return algorithm.ComputeHash(source);
         }
 #endif
     }
