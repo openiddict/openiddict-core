@@ -11,6 +11,14 @@
   -->
 
   <!--
+    Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
+    on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
+  -->
+  <ItemGroup Label="Package versions for all targets">
+    <GlobalPackageReference Include="Meziantou.Polyfill"                            Version="1.0.158"         />
+  </ItemGroup>
+
+  <!--
               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
               █████ ▀██ ██ ▄▄▄█▄▄ ▄▄████ ▄▄▄██ ▄▄▀█ ▄▄▀██ ▄▀▄ ██ ▄▄▄██ ███ ██ ▄▄▄ ██ ▄▄▀██ █▀▄████ ▄ █████▀▄▄▀██
               █▀▀██ █ █ ██ ▄▄▄███ ██████ ▄▄███ ▀▀▄█ ▀▀ ██ █ █ ██ ▄▄▄██ █ █ ██ ███ ██ ▀▀▄██ ▄▀████ ▀▀ ▀█▀▀█▀▄▄▀██
@@ -170,14 +178,6 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp"                         Version="5.6.0"           />
     <PackageVersion Include="Scriban"                                               Version="7.2.5"           />
     <PackageVersion Include="System.Interactive"                                    Version="7.0.1"           />
-  </ItemGroup>
-
-  <!--
-    Note: OpenIddict uses Meziantou.Polyfill to dynamically generate polyfills for types that are not available
-    on some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
-  -->
-  <ItemGroup Label="Package versions for all targets">
-    <GlobalPackageReference Include="Meziantou.Polyfill"                            Version="1.0.140"         />
   </ItemGroup>
 
 </Project>
