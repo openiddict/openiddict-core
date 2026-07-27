@@ -45,6 +45,60 @@ internal static class OpenIddictPolyfills
 #endif
     }
 
+    extension(CryptographicOperations)
+    {
+#if !NET
+        /// <summary>
+        /// Determine the equality of two byte sequences in an amount of time which depends on
+        /// the length of the sequences, but not the values.
+        /// </summary>
+        /// <param name="left">The first buffer to compare.</param>
+        /// <param name="right">The second buffer to compare.</param>
+        /// <returns>
+        ///   <c>true</c> if <paramref name="left"/> and <paramref name="right"/> have the same
+        ///   values for <see cref="ReadOnlySpan{T}.Length"/> and the same contents, <c>false</c>
+        ///   otherwise.
+        /// </returns>
+        /// <remarks>
+        ///   This method compares two buffers' contents for equality in a manner which does not
+        ///   leak timing information, making it ideal for use within cryptographic routines.
+        ///   This method will short-circuit and return <c>false</c> only if <paramref name="left"/>
+        ///   and <paramref name="right"/> have different lengths.
+        ///
+        ///   Fixed-time behavior is guaranteed in all other cases, including if <paramref name="left"/>
+        ///   and <paramref name="right"/> reference the same address.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+        {
+            // Note: the logic used here is directly taken from the official implementation of
+            // the CryptographicOperations.FixedTimeEquals() method introduced in .NET Core 2.1.
+            //
+            // See https://github.com/dotnet/corefx/pull/27103 for more information.
+
+            // Note: these null checks can be theoretically considered as early checks
+            // (which would defeat the purpose of a time-constant comparison method),
+            // but the expected string length is the only information an attacker
+            // could get at this stage, which is not critical where this method is used.
+
+            if (left.Length != right.Length)
+            {
+                return false;
+            }
+
+            var length = left.Length;
+            var accumulator = 0;
+
+            for (var index = 0; index < length; index++)
+            {
+                accumulator |= left[index] - right[index];
+            }
+
+            return accumulator is 0;
+        }
+#endif
+    }
+
     extension(HMACSHA256)
     {
 #if !NET
@@ -329,57 +383,3 @@ internal static class OpenIddictPolyfills_SHA512
 #endif
     }
 }
-
-#if !NET
-internal static class CryptographicOperations
-{
-    /// <summary>
-    /// Determine the equality of two byte sequences in an amount of time which depends on
-    /// the length of the sequences, but not the values.
-    /// </summary>
-    /// <param name="left">The first buffer to compare.</param>
-    /// <param name="right">The second buffer to compare.</param>
-    /// <returns>
-    ///   <c>true</c> if <paramref name="left"/> and <paramref name="right"/> have the same
-    ///   values for <see cref="ReadOnlySpan{T}.Length"/> and the same contents, <c>false</c>
-    ///   otherwise.
-    /// </returns>
-    /// <remarks>
-    ///   This method compares two buffers' contents for equality in a manner which does not
-    ///   leak timing information, making it ideal for use within cryptographic routines.
-    ///   This method will short-circuit and return <c>false</c> only if <paramref name="left"/>
-    ///   and <paramref name="right"/> have different lengths.
-    ///
-    ///   Fixed-time behavior is guaranteed in all other cases, including if <paramref name="left"/>
-    ///   and <paramref name="right"/> reference the same address.
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    public static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
-    {
-        // Note: the logic used here is directly taken from the official implementation of
-        // the CryptographicOperations.FixedTimeEquals() method introduced in .NET Core 2.1.
-        //
-        // See https://github.com/dotnet/corefx/pull/27103 for more information.
-
-        // Note: these null checks can be theoretically considered as early checks
-        // (which would defeat the purpose of a time-constant comparison method),
-        // but the expected string length is the only information an attacker
-        // could get at this stage, which is not critical where this method is used.
-
-        if (left.Length != right.Length)
-        {
-            return false;
-        }
-
-        var length = left.Length;
-        var accumulator = 0;
-
-        for (var index = 0; index < length; index++)
-        {
-            accumulator |= left[index] - right[index];
-        }
-
-        return accumulator is 0;
-    }
-}
-#endif
