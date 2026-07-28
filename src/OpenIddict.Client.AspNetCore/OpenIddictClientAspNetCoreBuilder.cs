@@ -47,6 +47,7 @@ public sealed class OpenIddictClientAspNetCoreBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientAspNetCoreBuilder Configure(Action<OpenIddictClientAspNetCoreOptions> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

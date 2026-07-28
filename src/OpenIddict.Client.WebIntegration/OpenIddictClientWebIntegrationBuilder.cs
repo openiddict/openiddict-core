@@ -44,6 +44,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientWebIntegrationBuilder Configure(Action<OpenIddictClientWebIntegrationOptions> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

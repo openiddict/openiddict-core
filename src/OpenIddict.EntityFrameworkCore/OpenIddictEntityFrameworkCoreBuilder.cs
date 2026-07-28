@@ -48,6 +48,7 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictEntityFrameworkCoreBuilder Configure(Action<OpenIddictEntityFrameworkCoreOptions> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
