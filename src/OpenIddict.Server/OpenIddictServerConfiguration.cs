@@ -493,7 +493,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (options.AuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0089));
             }
@@ -502,7 +502,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 (descriptor.ContextType == typeof(ValidateDeviceAuthorizationRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0090));
             }
@@ -511,7 +511,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 (descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0091));
             }
@@ -519,7 +519,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (options.EndSessionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 descriptor.ContextType == typeof(ValidateEndSessionRequestContext) &&
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0092));
             }
@@ -528,7 +528,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 (descriptor.ContextType == typeof(ValidatePushedAuthorizationRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0466));
             }
@@ -537,7 +537,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 (descriptor.ContextType == typeof(ValidateRevocationRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0093));
             }
@@ -546,7 +546,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 (descriptor.ContextType == typeof(ValidateTokenRequestContext) ||
                  descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0094));
             }
@@ -554,7 +554,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (options.EndUserVerificationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
                 descriptor.ContextType == typeof(ValidateEndUserVerificationRequestContext) &&
                 descriptor.Type is OpenIddictServerHandlerType.Custom &&
-                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                descriptor.FilterTypes.All(static type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0095));
             }

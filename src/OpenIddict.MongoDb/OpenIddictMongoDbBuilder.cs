@@ -48,6 +48,7 @@ public sealed class OpenIddictMongoDbBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictMongoDbBuilder Configure(Action<OpenIddictMongoDbOptions> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

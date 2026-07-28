@@ -49,6 +49,7 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationSystemNetHttpBuilder Configure(Action<OpenIddictValidationSystemNetHttpOptions> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

@@ -117,6 +117,7 @@ public sealed class OpenIddictClientBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientBuilder Configure(Action<OpenIddictClientOptions> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

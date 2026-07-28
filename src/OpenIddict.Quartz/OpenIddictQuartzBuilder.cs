@@ -44,6 +44,7 @@ public sealed class OpenIddictQuartzBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictQuartzBuilder Configure(Action<OpenIddictQuartzOptions> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

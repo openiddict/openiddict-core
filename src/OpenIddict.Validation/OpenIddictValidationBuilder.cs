@@ -115,6 +115,7 @@ public sealed class OpenIddictValidationBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationBuilder Configure(Action<OpenIddictValidationOptions> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
