@@ -12,7 +12,8 @@ namespace OpenIddict.EntityFramework.Models;
 /// <summary>
 /// Represents an OpenIddict resource.
 /// </summary>
-public class OpenIddictEntityFrameworkResource : OpenIddictEntityFrameworkResource<string>
+public class OpenIddictEntityFrameworkResource :
+    OpenIddictEntityFrameworkResource<string>
 {
     public OpenIddictEntityFrameworkResource() => Id = Guid.NewGuid().ToString();
 }

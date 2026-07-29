@@ -378,6 +378,86 @@ public sealed class OpenIddictCoreBuilder
     }
 
     /// <summary>
+    /// Replaces the session manager by the specified type.
+    /// </summary>
+    /// <typeparam name="TSession">The type of the entity.</typeparam>
+    /// <typeparam name="TManager">The type of the manager.</typeparam>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceSessionManager<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TManager>()
+        where TSession : class
+        where TManager : OpenIddictSessionManager<TSession>
+    {
+        Services.Replace(ServiceDescriptor.Scoped<OpenIddictSessionManager<TSession>, TManager>());
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the session manager by the specified type.
+    /// </summary>
+    /// <remarks>
+    /// Note: the specified type MUST be an open generic type definition containing exactly one generic argument.
+    /// </remarks>
+    /// <param name="type">The type of the manager.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceSessionManager(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
+    {
+        if (!type.IsGenericTypeDefinition || type.GetGenericArguments() is not { Length: 1 })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+
+        Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictSessionManager<>), type));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the session store by the specified type.
+    /// </summary>
+    /// <typeparam name="TSession">The type of the entity.</typeparam>
+    /// <typeparam name="TStore">The type of the store.</typeparam>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceSessionStore<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>(
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        where TSession : class
+        where TStore : IOpenIddictSessionStore<TSession>
+    {
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictSessionStore<TSession>), typeof(TStore), lifetime));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the session store by the specified type.
+    /// </summary>
+    /// <remarks>
+    /// Note: the specified type MUST be an open generic type definition containing exactly one generic argument.
+    /// </remarks>
+    /// <param name="type">The type of the store.</param>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceSessionStore(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        if (!type.IsGenericTypeDefinition || type.GetGenericArguments() is not { Length: 1 })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
+        }
+
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictSessionStore<>), type, lifetime));
+
+        return this;
+    }
+
+    /// <summary>
     /// Replaces the token manager by the specified type.
     /// </summary>
     /// <typeparam name="TToken">The type of the entity.</typeparam>
@@ -596,6 +676,19 @@ public sealed class OpenIddictCoreBuilder
     {
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeManager>(static provider =>
             provider.GetRequiredService<OpenIddictScopeManager<TScope>>()));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures OpenIddict to use the specified entity as the default session entity.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder SetDefaultSessionEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession>() where TSession : class
+    {
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictSessionManager>(static provider =>
+            provider.GetRequiredService<OpenIddictSessionManager<TSession>>()));
 
         return this;
     }

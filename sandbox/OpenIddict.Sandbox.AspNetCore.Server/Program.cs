@@ -31,8 +31,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Register the Identity builder.Services.
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddClaimsPrincipalFactory<UserClaimsPrincipalFactory>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+// Note: ASP.NET Core Identity doesn't store a unique identifier representing user sessions.
+//
+// To work around that, a custom IUserClaimsPrincipalFactory<TUser> is used to attach a unique identifier and a
+// custom OnRefreshingPrincipal event handler is used to restore that identifier when the cookie is refreshed.
+builder.Services.Configure<SecurityStampValidatorOptions>(options => options.OnRefreshingPrincipal = static context =>
+{
+    var identifier = context.CurrentPrincipal?.GetClaim("login_id");
+    if (!string.IsNullOrEmpty(identifier))
+    {
+        context.NewPrincipal?.SetClaim("login_id", identifier);
+    }
+
+    return Task.CompletedTask;
+});
 
 // OpenIddict offers native integration with Quartz.NET to perform scheduled tasks
 // (like pruning orphaned authorizations/tokens from the database) at regular intervals.

@@ -70,7 +70,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of resources in the database.
     /// </returns>
     public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken = default)
@@ -83,7 +83,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of resources that match the specified query.
     /// </returns>
     public virtual ValueTask<long> CountAsync<TResult>(
@@ -103,7 +103,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of resources that match the specified query.
     /// </returns>
     public virtual ValueTask<long> CountAsync<TState, TResult>(
@@ -169,7 +169,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     /// <param name="descriptor">The resource descriptor.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the resource.
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose result returns the resource.
     /// </returns>
     public virtual async ValueTask<TResource> CreateAsync(
         OpenIddictResourceDescriptor descriptor, CancellationToken cancellationToken = default)
@@ -211,7 +211,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     /// <param name="identifier">The unique identifier associated with the resource.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the resource corresponding to the identifier.
     /// </returns>
     public virtual async ValueTask<TResource?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default)
@@ -245,7 +245,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     /// <param name="name">The name associated with the resource.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the resource corresponding to the specified name.
     /// </returns>
     public virtual async ValueTask<TResource?> FindByNameAsync(string name, CancellationToken cancellationToken = default)
@@ -323,7 +323,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TResult>(
@@ -343,7 +343,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TState, TResult>(

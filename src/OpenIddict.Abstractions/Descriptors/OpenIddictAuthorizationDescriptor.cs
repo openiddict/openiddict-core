@@ -9,38 +9,40 @@ namespace OpenIddict.Abstractions;
 public class OpenIddictAuthorizationDescriptor
 {
     /// <summary>
-    /// Gets or sets the application identifier associated with the authorization.
+    /// Gets or sets the identifier of the application associated with the authorization.
     /// </summary>
     public string? ApplicationId { get; set; }
 
     /// <summary>
-    /// Gets or sets the creation date associated with the authorization.
+    /// Gets or sets the creation date of the authorization.
     /// </summary>
     public DateTimeOffset? CreationDate { get; set; }
 
     /// <summary>
-    /// Gets or sets the optional principal associated with the authorization.
-    /// Note: this property is not stored by the default authorization stores.
+    /// Gets or sets the optional principal specified by the caller.
     /// </summary>
+    /// <remarks>
+    /// Note: this property is not stored by the default stores.
+    /// </remarks>
     public ClaimsPrincipal? Principal { get; set; }
 
     /// <summary>
-    /// Gets the additional properties associated with the authorization.
+    /// Gets or sets the additional properties of the authorization.
     /// </summary>
-    public Dictionary<string, JsonElement> Properties { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, JsonElement> Properties { get; set; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the scopes associated with the authorization.
+    /// Gets or sets the scopes of the authorization.
     /// </summary>
-    public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
+    public HashSet<string> Scopes { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the status associated with the authorization.
+    /// Gets or sets the status of the authorization.
     /// </summary>
     public string? Status { get; set; }
 
     /// <summary>
-    /// Gets or sets the subject associated with the authorization.
+    /// Gets or sets the subject of the authorization.
     /// </summary>
     public string? Subject { get; set; }
 

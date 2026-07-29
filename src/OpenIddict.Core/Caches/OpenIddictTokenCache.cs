@@ -102,12 +102,12 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<TToken> FindAsync(
-        string? subject, string? client,
-        string? status, string? type, [EnumeratorCancellation] CancellationToken cancellationToken)
+        (string? Subject, string? ApplicationId, string? Status, string? Type) query,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         // Note: this method is only partially cached.
 
-        await foreach (var token in _store.FindAsync(subject, client, status, type, cancellationToken))
+        await foreach (var token in _store.FindAsync(query, cancellationToken))
         {
             await AddAsync(token, cancellationToken);
 
@@ -362,7 +362,7 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
     /// <param name="token">The token associated with the expiration signal.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns an expiration signal for the specified token.
     /// </returns>
     private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TToken token, CancellationToken cancellationToken)

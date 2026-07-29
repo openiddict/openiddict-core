@@ -21,6 +21,7 @@ public static class OpenIddictServerDataProtectionConstants
         public const string Expires = ".expires";
         public const string IdentityTokenLifetime = ".identity_token_lifetime";
         public const string InternalAuthorizationId = ".internal_authorization_id";
+        public const string InternalSessionId = ".internal_session_id";
         public const string InternalTokenId = ".internal_token_id";
         public const string Issued = ".issued";
         public const string Nonce = ".nonce";

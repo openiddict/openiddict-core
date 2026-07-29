@@ -33,7 +33,7 @@ public class OpenIddictEntityFrameworkBuilderTests
         var builder = CreateBuilder(services);
 
         // Act
-        builder.ReplaceDefaultEntities<CustomApplication, CustomAuthorization, CustomResource, CustomScope, CustomToken, long>();
+        builder.ReplaceDefaultEntities<CustomApplication, CustomAuthorization, CustomResource, CustomScope, CustomSession, CustomToken, long>();
 
         // Assert
         Assert.Contains(services, service =>
@@ -52,6 +52,10 @@ public class OpenIddictEntityFrameworkBuilderTests
             service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeStore<CustomScope>) &&
             service.ImplementationType == typeof(OpenIddictEntityFrameworkScopeStore<CustomScope, long>));
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictSessionStore<CustomSession>) &&
+            service.ImplementationType == typeof(OpenIddictEntityFrameworkSessionStore<CustomSession, CustomApplication, CustomAuthorization, CustomToken, long>));
         Assert.Contains(services, service =>
             service.Lifetime == ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictTokenStore<CustomToken>) &&
@@ -90,6 +94,7 @@ public class OpenIddictEntityFrameworkBuilderTests
     public class CustomAuthorization : OpenIddictEntityFrameworkAuthorization<long, CustomApplication, CustomToken>;
     public class CustomResource : OpenIddictEntityFrameworkResource<long>;
     public class CustomScope : OpenIddictEntityFrameworkScope<long>;
+    public class CustomSession : OpenIddictEntityFrameworkSession<long, CustomApplication, CustomAuthorization>;
     public class CustomToken : OpenIddictEntityFrameworkToken<long, CustomApplication, CustomAuthorization>;
 
     public class CustomDbContext : DbContext

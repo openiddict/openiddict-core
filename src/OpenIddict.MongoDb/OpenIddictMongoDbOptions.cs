@@ -38,6 +38,11 @@ public sealed class OpenIddictMongoDbOptions
     public string ScopesCollectionName { get; set; } = "openiddict.scopes";
 
     /// <summary>
+    /// Gets or sets the name of the sessions collection (by default, openiddict.sessions).
+    /// </summary>
+    public string SessionsCollectionName { get; set; } = "openiddict.sessions";
+
+    /// <summary>
     /// Gets or sets the name of the tokens collection (by default, openiddict.tokens).
     /// </summary>
     public string TokensCollectionName { get; set; } = "openiddict.tokens";

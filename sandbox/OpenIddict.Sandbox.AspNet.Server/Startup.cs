@@ -7,7 +7,6 @@ using Autofac.Extensions.DependencyInjection;
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using Microsoft.Owin.Host.SystemWeb;
@@ -150,9 +149,7 @@ public class Startup
             LoginPath = new PathString("/Account/Login"),
             Provider = new CookieAuthenticationProvider
             {
-                OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<ApplicationUserManager, ApplicationUser>(
-                    validateInterval: TimeSpan.FromMinutes(30),
-                    regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
+                OnValidateIdentity = ApplicationSignInManager.OnValidateIdentity
             }
         });
 

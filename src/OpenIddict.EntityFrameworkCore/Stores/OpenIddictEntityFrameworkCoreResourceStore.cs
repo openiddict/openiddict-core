@@ -19,7 +19,8 @@ namespace OpenIddict.EntityFrameworkCore;
 /// <summary>
 /// Provides methods allowing to manage the resources stored in a database.
 /// </summary>
-public class OpenIddictEntityFrameworkCoreResourceStore : OpenIddictEntityFrameworkCoreResourceStore<OpenIddictEntityFrameworkCoreResource, string>
+public class OpenIddictEntityFrameworkCoreResourceStore :
+    OpenIddictEntityFrameworkCoreResourceStore<OpenIddictEntityFrameworkCoreResource, string>
 {
     public OpenIddictEntityFrameworkCoreResourceStore(
         IOpenIddictEntityFrameworkCoreContext context,
@@ -34,7 +35,8 @@ public class OpenIddictEntityFrameworkCoreResourceStore : OpenIddictEntityFramew
 /// </summary>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
 public class OpenIddictEntityFrameworkCoreResourceStore<
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : OpenIddictEntityFrameworkCoreResourceStore<OpenIddictEntityFrameworkCoreResource<TKey>, TKey>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> :
+    OpenIddictEntityFrameworkCoreResourceStore<OpenIddictEntityFrameworkCoreResource<TKey>, TKey>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreResourceStore(

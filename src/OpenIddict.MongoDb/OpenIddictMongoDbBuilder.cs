@@ -127,6 +127,23 @@ public sealed class OpenIddictMongoDbBuilder
     }
 
     /// <summary>
+    /// Configures OpenIddict to use the specified entity as the default session entity.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
+    public OpenIddictMongoDbBuilder ReplaceDefaultSessionEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession>()
+        where TSession : OpenIddictMongoDbSession
+    {
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictSessionManager>(static provider =>
+            provider.GetRequiredService<OpenIddictSessionManager<TSession>>()));
+
+        Services.Replace(ServiceDescriptor.Scoped<
+            IOpenIddictSessionStore<TSession>, OpenIddictMongoDbSessionStore<TSession>>());
+
+        return this;
+    }
+
+    /// <summary>
     /// Configures OpenIddict to use the specified entity as the default token entity.
     /// </summary>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
@@ -189,6 +206,18 @@ public sealed class OpenIddictMongoDbBuilder
         ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Configure(options => options.ScopesCollectionName = name);
+    }
+
+    /// <summary>
+    /// Replaces the default sessions collection name (by default, openiddict.sessions).
+    /// </summary>
+    /// <param name="name">The collection name</param>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
+    public OpenIddictMongoDbBuilder SetSessionsCollectionName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        return Configure(options => options.SessionsCollectionName = name);
     }
 
     /// <summary>

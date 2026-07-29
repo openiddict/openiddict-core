@@ -238,7 +238,7 @@ public sealed class OpenIddictResourceCache<TResource> : IOpenIddictResourceCach
     /// <param name="resource">The resource associated with the expiration signal.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns an expiration signal for the specified resource.
     /// </returns>
     private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TResource resource, CancellationToken cancellationToken)

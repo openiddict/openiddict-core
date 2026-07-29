@@ -52,6 +52,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
             .SetClaim(Claims.Private.ExpirationDate,      GetStringProperty(properties, Properties.Expires))
             .SetClaim(Claims.Private.Nonce,               GetStringProperty(properties, Properties.Nonce))
             .SetClaim(Claims.Private.RedirectUri,         GetStringProperty(properties, Properties.OriginalRedirectUri))
+            .SetClaim(Claims.Private.SessionId,           GetStringProperty(properties, Properties.InternalSessionId))
             .SetClaim(Claims.Private.TokenId,             GetStringProperty(properties, Properties.InternalTokenId));
 
         static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
@@ -213,6 +214,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
         SetProperty(properties, Properties.HostProperties,      principal.GetClaim(Claims.Private.HostProperties));
 
         SetProperty(properties, Properties.InternalAuthorizationId, principal.GetAuthorizationId());
+        SetProperty(properties, Properties.InternalSessionId,       principal.GetSessionId());
         SetProperty(properties, Properties.InternalTokenId,         principal.GetTokenId());
 
         SetProperty(properties, Properties.DeviceCodeId,        principal.GetClaim(Claims.Private.DeviceCodeId));
@@ -225,7 +227,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
         SetArrayProperty(properties, Properties.Scopes,     principal.GetScopes());
 
         // Copy the principal and exclude the claim that were mapped to authentication properties.
-        principal = principal.Clone(claim => claim.Type is not (
+        principal = principal.Clone(static claim => claim.Type is not (
             Claims.Private.AccessTokenLifetime       or
             Claims.Private.Audience                  or
             Claims.Private.AuthorizationCodeLifetime or
@@ -244,6 +246,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
             Claims.Private.RequestTokenLifetime      or
             Claims.Private.Resource                  or
             Claims.Private.Scope                     or
+            Claims.Private.SessionId                 or
             Claims.Private.TokenId                   or
             Claims.Private.UserCodeLifetime));
 

@@ -206,6 +206,51 @@ public class OpenIddictCoreBuilderTests
     }
 
     [Fact]
+    public void ReplaceSessionManager_ThrowsAnExceptionForClosedSourceManager()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceSessionManager(typeof(ClosedGenericSessionManager)));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+    }
+
+    [Fact]
+    public void ReplaceSessionManager_ThrowsAnExceptionForInvalidManager()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceSessionManager(typeof(object)));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+    }
+
+    [Fact]
+    public void ReplaceSessionManager_OverridesDefaultOpenGenericManager()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.ReplaceSessionManager(typeof(OpenGenericSessionManager<>));
+
+        // Assert
+        var descriptor = Assert.Single(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(OpenIddictSessionManager<>));
+        Assert.Equal(typeof(OpenGenericSessionManager<>), descriptor.ImplementationType);
+    }
+
+    [Fact]
     public void ReplaceTokenManager_ThrowsAnExceptionForClosedSourceManager()
     {
         // Arrange
@@ -552,6 +597,23 @@ public class OpenIddictCoreBuilderTests
     }
 
     [Fact]
+    public void SetDefaultSessionEntity_ReplacesUntypedManager()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetDefaultSessionEntity<CustomSession>();
+
+        // Assert
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictSessionManager) &&
+            service.ImplementationFactory is not null);
+    }
+
+    [Fact]
     public void SetDefaultTokenEntity_ReplacesUntypedManager()
     {
         // Arrange
@@ -582,6 +644,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
     private class CustomAuthorization;
     private class CustomResource;
     private class CustomScope;
+    private class CustomSession;
     private class CustomToken;
 
     private class ClosedGenericApplicationManager : OpenIddictApplicationManager<CustomApplication>
@@ -679,6 +742,31 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
             ILogger<OpenIddictScopeManager<TScope>> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictScopeStore<TScope> store)
+            : base(cache, logger, options, store)
+        {
+        }
+    }
+
+    private class ClosedGenericSessionManager : OpenIddictSessionManager<CustomSession>
+    {
+        public ClosedGenericSessionManager(
+            IOpenIddictSessionCache<CustomSession> cache,
+            ILogger<OpenIddictSessionManager<CustomSession>> logger,
+            IOptionsMonitor<OpenIddictCoreOptions> options,
+            IOpenIddictSessionStore<CustomSession> store)
+            : base(cache, logger, options, store)
+        {
+        }
+    }
+
+    private class OpenGenericSessionManager<TSession> : OpenIddictSessionManager<TSession>
+        where TSession : class
+    {
+        public OpenGenericSessionManager(
+            IOpenIddictSessionCache<TSession> cache,
+            ILogger<OpenIddictSessionManager<TSession>> logger,
+            IOptionsMonitor<OpenIddictCoreOptions> options,
+            IOpenIddictSessionStore<TSession> store)
             : base(cache, logger, options, store)
         {
         }

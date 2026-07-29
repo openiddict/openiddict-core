@@ -12,7 +12,10 @@ namespace OpenIddict.EntityFramework.Models;
 /// <summary>
 /// Represents an OpenIddict token.
 /// </summary>
-public class OpenIddictEntityFrameworkToken : OpenIddictEntityFrameworkToken<string, OpenIddictEntityFrameworkApplication, OpenIddictEntityFrameworkAuthorization>
+public class OpenIddictEntityFrameworkToken :
+    OpenIddictEntityFrameworkToken<string,
+                                   OpenIddictEntityFrameworkApplication,
+                                   OpenIddictEntityFrameworkAuthorization>
 {
     public OpenIddictEntityFrameworkToken() => Id = Guid.NewGuid().ToString();
 }
@@ -91,7 +94,7 @@ public class OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
     public virtual string? Status { get; set; }
 
     /// <summary>
-    /// Gets or sets the subject associated with the token.
+    /// Gets or sets the subject of the token.
     /// </summary>
     public virtual string? Subject { get; set; }
 

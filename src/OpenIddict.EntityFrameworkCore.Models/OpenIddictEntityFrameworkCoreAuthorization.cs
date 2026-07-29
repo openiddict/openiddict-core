@@ -12,7 +12,10 @@ namespace OpenIddict.EntityFrameworkCore.Models;
 /// <summary>
 /// Represents an OpenIddict authorization.
 /// </summary>
-public class OpenIddictEntityFrameworkCoreAuthorization : OpenIddictEntityFrameworkCoreAuthorization<string, OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreToken>
+public class OpenIddictEntityFrameworkCoreAuthorization :
+    OpenIddictEntityFrameworkCoreAuthorization<string,
+                                               OpenIddictEntityFrameworkCoreApplication,
+                                               OpenIddictEntityFrameworkCoreToken>
 {
     public OpenIddictEntityFrameworkCoreAuthorization() => Id = Guid.NewGuid().ToString();
 }
@@ -20,7 +23,10 @@ public class OpenIddictEntityFrameworkCoreAuthorization : OpenIddictEntityFramew
 /// <summary>
 /// Represents an OpenIddict authorization.
 /// </summary>
-public class OpenIddictEntityFrameworkCoreAuthorization<TKey> : OpenIddictEntityFrameworkCoreAuthorization<TKey, OpenIddictEntityFrameworkCoreApplication<TKey>, OpenIddictEntityFrameworkCoreToken<TKey>>
+public class OpenIddictEntityFrameworkCoreAuthorization<TKey> :
+    OpenIddictEntityFrameworkCoreAuthorization<TKey,
+                                               OpenIddictEntityFrameworkCoreApplication<TKey>,
+                                               OpenIddictEntityFrameworkCoreToken<TKey>>
     where TKey : notnull, IEquatable<TKey>;
 
 /// <summary>

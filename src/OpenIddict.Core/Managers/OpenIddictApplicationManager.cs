@@ -77,7 +77,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of applications in the database.
     /// </returns>
     public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken = default)
@@ -90,7 +90,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of applications that match the specified query.
     /// </returns>
     public virtual ValueTask<long> CountAsync<TResult>(
@@ -110,7 +110,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of applications that match the specified query.
     /// </returns>
     public virtual ValueTask<long> CountAsync<TState, TResult>(
@@ -238,7 +238,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="descriptor">The application descriptor.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the unique identifier associated with the application.
     /// </returns>
     public virtual async ValueTask<TApplication> CreateAsync(
@@ -291,7 +291,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="identifier">The client identifier associated with the application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the client application corresponding to the identifier.
     /// </returns>
     public virtual async ValueTask<TApplication?> FindByClientIdAsync(
@@ -326,7 +326,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="identifier">The unique identifier associated with the application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the client application corresponding to the identifier.
     /// </returns>
     public virtual async ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default)
@@ -462,7 +462,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TResult>(
@@ -482,7 +482,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TState, TResult>(
@@ -1373,7 +1373,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the client secret was valid.
     /// </returns>
     public virtual async ValueTask<bool> ValidateClientSecretAsync(
@@ -1437,7 +1437,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <remarks>Note: if no client_id parameter is specified in end session requests, this method may not be called.</remarks>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the post_logout_redirect_uri was valid.
     /// </returns>
     public virtual async ValueTask<bool> ValidatePostLogoutRedirectUriAsync(TApplication application,
@@ -1503,7 +1503,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the client certificate was valid.
     /// </returns>
     public virtual async ValueTask<bool> ValidatePublicKeyInfrastructureTlsClientCertificateAsync(
@@ -1602,7 +1602,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="uri">The URI that should be compared to one of the redirect_uri stored in the database.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the redirect_uri was valid.
     /// </returns>
     public virtual async ValueTask<bool> ValidateRedirectUriAsync(TApplication application,
@@ -1670,7 +1670,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose
     /// result returns a boolean indicating whether the self-signed client certificate was valid.
     /// </returns>
     public virtual async ValueTask<bool> ValidateSelfSignedTlsClientCertificateAsync(
@@ -1823,7 +1823,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="comparand">The value stored in the database, which is usually a hashed representation of the secret.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose result returns
     /// a tuple indicating whether the client secret was valid and whether the client secret should be re-hashed.
     /// </returns>
     protected virtual ValueTask<(bool IsValid, bool IsRehashRequired)> ValidateClientSecretAsync(

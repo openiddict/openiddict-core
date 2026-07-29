@@ -31,17 +31,20 @@ public class AuthorizationController : Controller
     private readonly IOpenIddictAuthorizationManager _authorizationManager;
     private readonly OpenIddictClientService _clientService;
     private readonly IOpenIddictScopeManager _scopeManager;
+    private readonly IOpenIddictSessionManager _sessionManager;
 
     public AuthorizationController(
         IOpenIddictApplicationManager applicationManager,
         IOpenIddictAuthorizationManager authorizationManager,
         OpenIddictClientService clientService,
-        IOpenIddictScopeManager scopeManager)
+        IOpenIddictScopeManager scopeManager,
+        IOpenIddictSessionManager sessionManager)
     {
         _applicationManager = applicationManager;
         _authorizationManager = authorizationManager;
         _clientService = clientService;
         _scopeManager = scopeManager;
+        _sessionManager = sessionManager;
     }
 
     [HttpGet, Route("~/connect/authorize")]
@@ -124,8 +127,12 @@ public class AuthorizationController : Controller
         }
 
         // Retrieve the profile of the logged in user.
-        var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetUserId())
-            ?? throw new InvalidOperationException("The user details cannot be retrieved.");
+        var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetUserId());
+        if (user is null)
+        {
+            context.Authentication.Challenge(DefaultAuthenticationTypes.ApplicationCookie);
+            return new EmptyResult();
+        }
 
         // Retrieve the application details from the database.
         var application = await _applicationManager.FindByClientIdAsync(request.ClientId)
@@ -133,11 +140,12 @@ public class AuthorizationController : Controller
 
         // Retrieve the permanent authorizations associated with the user and the calling client application.
         var authorizations = await _authorizationManager.FindAsync(
-            subject: user.Id,
-            client : await _applicationManager.GetIdAsync(application),
-            status : Statuses.Valid,
-            type   : AuthorizationTypes.Permanent,
-            scopes : request.GetScopes()).ToListAsync();
+            query: (
+                Subject       : user.Id,
+                ApplicationId : await _applicationManager.GetIdAsync(application),
+                Status        : Statuses.Valid,
+                Type          : AuthorizationTypes.Permanent,
+                RequiredScopes: request.GetScopes())).ToListAsync();
 
         switch (await _applicationManager.GetConsentTypeAsync(application))
         {
@@ -181,13 +189,34 @@ public class AuthorizationController : Controller
 
                 // Automatically create a permanent authorization to avoid requiring explicit consent
                 // for future authorization or token requests containing the same scopes.
-                var authorization = authorizations.LastOrDefault();
-                authorization ??= await _authorizationManager.CreateAsync(
-                    identity: identity,
-                    subject : user.Id,
-                    client  : await _applicationManager.GetIdAsync(application),
-                    type    : AuthorizationTypes.Permanent,
-                    scopes  : identity.GetScopes());
+                var authorization = authorizations.LastOrDefault() ?? await _authorizationManager.CreateAsync(new()
+                {
+                    ApplicationId = await _applicationManager.GetIdAsync(application),
+                    Principal = new ClaimsPrincipal(identity),
+                    Scopes = [.. request.GetScopes()],
+                    Subject = user.Id,
+                    Type = AuthorizationTypes.Permanent,
+                });
+
+                // If available, resolve the latest session corresponding to the login identifier stored
+                // in the authentication cookie or create a new one if no valid session can be found.
+                if (result.Identity.HasClaim("login_id"))
+                {
+                    var sessions = await _sessionManager.FindAsync(
+                        query: (
+                            Subject      : user.Id,
+                            LoginId      : result.Identity.GetClaim("login_id"),
+                            ApplicationId: await _applicationManager.GetIdAsync(application),
+                            Status       : Statuses.Valid)).ToListAsync();
+
+                    var session = sessions.LastOrDefault() ?? await _sessionManager.CreateAsync(new()
+                    {
+                        ApplicationId = await _applicationManager.GetIdAsync(application),
+                        Subject = user.Id
+                    });
+
+                    identity.SetSessionId(await _sessionManager.GetIdAsync(session));
+                }
 
                 identity.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
                 identity.SetDestinations(GetDestinations);
@@ -235,7 +264,7 @@ public class AuthorizationController : Controller
 
         // Retrieve the user principal stored in the authentication cookie.
         var result = await context.Authentication.AuthenticateAsync(DefaultAuthenticationTypes.ApplicationCookie);
-        if (result == null || result.Identity == null)
+        if (result is not { Identity.IsAuthenticated: true })
         {
             context.Authentication.Challenge(DefaultAuthenticationTypes.ApplicationCookie);
 
@@ -243,8 +272,20 @@ public class AuthorizationController : Controller
         }
 
         // Retrieve the profile of the logged in user.
-        var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetUserId())
-            ?? throw new InvalidOperationException("The user details cannot be retrieved.");
+        var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetUserId());
+        if (user is null)
+        {
+            context.Authentication.Challenge(
+                authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
+                properties: new AuthenticationProperties(new Dictionary<string, string?>
+                {
+                    [OpenIddictServerOwinConstants.Properties.Error] = Errors.LoginRequired,
+                    [OpenIddictServerOwinConstants.Properties.ErrorDescription] =
+                        "The account associated with the logged in user was removed."
+                }));
+
+            return new EmptyResult();
+        }
 
         // Retrieve the application details from the database.
         var application = await _applicationManager.FindByClientIdAsync(request.ClientId)
@@ -252,11 +293,12 @@ public class AuthorizationController : Controller
 
         // Retrieve the permanent authorizations associated with the user and the calling client application.
         var authorizations = await _authorizationManager.FindAsync(
-            subject: user.Id,
-            client : await _applicationManager.GetIdAsync(application),
-            status : Statuses.Valid,
-            type   : AuthorizationTypes.Permanent,
-            scopes : request.GetScopes()).ToListAsync();
+            query: (
+                Subject       : user.Id,
+                ApplicationId : await _applicationManager.GetIdAsync(application),
+                Status        : Statuses.Valid,
+                Type          : AuthorizationTypes.Permanent,
+                RequiredScopes: request.GetScopes())).ToListAsync();
 
         // Note: the same check is already made in the other action but is repeated
         // here to ensure a malicious user can't abuse this POST-only endpoint and
@@ -296,13 +338,34 @@ public class AuthorizationController : Controller
 
         // Automatically create a permanent authorization to avoid requiring explicit consent
         // for future authorization or token requests containing the same scopes.
-        var authorization = authorizations.LastOrDefault();
-        authorization ??= await _authorizationManager.CreateAsync(
-            identity: identity,
-            subject : user.Id,
-            client  : await _applicationManager.GetIdAsync(application),
-            type    : AuthorizationTypes.Permanent,
-            scopes  : identity.GetScopes());
+        var authorization = authorizations.LastOrDefault() ?? await _authorizationManager.CreateAsync(new()
+        {
+            ApplicationId = await _applicationManager.GetIdAsync(application),
+            Principal = new ClaimsPrincipal(identity),
+            Scopes = [.. request.GetScopes()],
+            Subject = user.Id,
+            Type = AuthorizationTypes.Permanent,
+        });
+
+        // If available, resolve the latest session corresponding to the login identifier stored
+        // in the authentication cookie or create a new one if no valid session can be found.
+        if (result.Identity.HasClaim("login_id"))
+        {
+            var sessions = await _sessionManager.FindAsync(
+                query: (
+                    Subject      : user.Id,
+                    LoginId      : result.Identity.GetClaim("login_id"),
+                    ApplicationId: await _applicationManager.GetIdAsync(application),
+                    Status       : Statuses.Valid)).ToListAsync();
+
+            var session = sessions.LastOrDefault() ?? await _sessionManager.CreateAsync(new()
+            {
+                ApplicationId = await _applicationManager.GetIdAsync(application),
+                Subject = user.Id
+            });
+
+            identity.SetSessionId(await _sessionManager.GetIdAsync(session));
+        }
 
         identity.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
         identity.SetDestinations(GetDestinations);

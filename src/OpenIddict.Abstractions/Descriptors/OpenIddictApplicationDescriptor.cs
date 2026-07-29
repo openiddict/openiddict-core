@@ -10,80 +10,84 @@ namespace OpenIddict.Abstractions;
 public class OpenIddictApplicationDescriptor
 {
     /// <summary>
-    /// Gets or sets the application type associated with the application.
+    /// Gets or sets the application type of the application.
     /// </summary>
     public string? ApplicationType { get; set; }
 
     /// <summary>
-    /// Gets or sets the client identifier associated with the application.
+    /// Gets or sets the client identifier of the application.
     /// </summary>
     public string? ClientId { get; set; }
 
     /// <summary>
-    /// Gets or sets the client secret associated with the application.
-    /// Note: depending on the application manager used when creating it,
-    /// this property may be hashed or encrypted for security reasons.
+    /// Gets or sets the client secret of the application.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Note: depending on the application manager used to create this instance,
+    /// this property may be hashed or encrypted for security reasons.
+    /// </para>
+    /// <para>
     /// Note: client authentication based on shared secrets is not recommended and should
     /// only be used for backward compatibility with legacy applications that only support
     /// client secrets. When possible, consider using public/private key pairs or TLS client
     /// certificates instead, as these client authentication methods are significantly safer.
+    /// </para>
     /// </remarks>
     public string? ClientSecret { get; set; }
 
     /// <summary>
-    /// Gets or sets the client type associated with the application.
+    /// Gets or sets the client type of the application.
     /// </summary>
     public string? ClientType { get; set; }
 
     /// <summary>
-    /// Gets or sets the consent type associated with the application.
+    /// Gets or sets the consent type of the application.
     /// </summary>
     public string? ConsentType { get; set; }
 
     /// <summary>
-    /// Gets or sets the display name associated with the application.
+    /// Gets or sets the display name of the application.
     /// </summary>
     public string? DisplayName { get; set; }
 
     /// <summary>
-    /// Gets the localized display names associated with the application.
+    /// Gets the localized display names of the application.
     /// </summary>
     public Dictionary<CultureInfo, string> DisplayNames { get; } = [];
 
     /// <summary>
-    /// Gets or sets the JSON Web Key Set associated with the application.
+    /// Gets or sets the JSON Web Key Set of the application.
     /// </summary>
     public JsonWebKeySet? JsonWebKeySet { get; set; }
 
     /// <summary>
-    /// Gets the permissions associated with the application.
+    /// Gets the permissions of the application.
     /// </summary>
     public HashSet<string> Permissions { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the post-logout redirect URIs associated with the application.
+    /// Gets the post-logout redirect URIs of the application.
     /// </summary>
     public HashSet<Uri> PostLogoutRedirectUris { get; } = [];
 
     /// <summary>
-    /// Gets the additional properties associated with the application.
+    /// Gets the additional properties of the application.
     /// </summary>
     public Dictionary<string, JsonElement> Properties { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the redirect URIs associated with the application.
+    /// Gets the redirect URIs of the application.
     /// </summary>
     public HashSet<Uri> RedirectUris { get; } = [];
 
     /// <summary>
-    /// Gets the requirements associated with the application.
+    /// Gets the requirements of the application.
     /// </summary>
     public HashSet<string> Requirements { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the settings associated with the application.
+    /// Gets the settings of the application.
     /// </summary>
     public Dictionary<string, string> Settings { get; } = new(StringComparer.Ordinal);
 

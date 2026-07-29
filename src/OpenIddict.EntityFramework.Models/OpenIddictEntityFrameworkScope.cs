@@ -12,7 +12,8 @@ namespace OpenIddict.EntityFramework.Models;
 /// <summary>
 /// Represents an OpenIddict scope.
 /// </summary>
-public class OpenIddictEntityFrameworkScope : OpenIddictEntityFrameworkScope<string>
+public class OpenIddictEntityFrameworkScope :
+    OpenIddictEntityFrameworkScope<string>
 {
     public OpenIddictEntityFrameworkScope() => Id = Guid.NewGuid().ToString();
 }

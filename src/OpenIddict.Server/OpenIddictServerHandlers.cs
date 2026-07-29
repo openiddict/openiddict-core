@@ -2855,7 +2855,7 @@ public static partial class OpenIddictServerHandlers
                 Claims.AuthenticationContextReference or Claims.Subject                or
                 Claims.Private.AuthorizationId        or Claims.Private.CreationDate   or
                 Claims.Private.DeviceCodeId           or Claims.Private.ExpirationDate or
-                Claims.Private.TokenId
+                Claims.Private.SessionId              or Claims.Private.TokenId
                     => values is [{ ValueType: ClaimValueTypes.String }],
 
                 // The following claims MUST be represented as unique strings or array of strings.
@@ -3557,7 +3557,8 @@ public static partial class OpenIddictServerHandlers
                 if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.SessionId, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -3963,7 +3964,8 @@ public static partial class OpenIddictServerHandlers
                     if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.SessionId, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -4020,7 +4022,8 @@ public static partial class OpenIddictServerHandlers
                     if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.SessionId, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -4541,7 +4544,8 @@ public static partial class OpenIddictServerHandlers
             {
                 // Always include the following claims:
                 if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.SessionId, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -4642,6 +4646,9 @@ public static partial class OpenIddictServerHandlers
 
                 _ => null
             });
+
+            // If available, use the internal session identifier for the standard "sid" claim.
+            principal.SetClaim(Claims.SessionId, context.Principal.GetClaim(Claims.Private.SessionId));
 
             context.IdentityTokenPrincipal = principal;
         }

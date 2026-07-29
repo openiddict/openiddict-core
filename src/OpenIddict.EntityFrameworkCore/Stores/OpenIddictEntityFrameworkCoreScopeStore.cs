@@ -19,7 +19,8 @@ namespace OpenIddict.EntityFrameworkCore;
 /// <summary>
 /// Provides methods allowing to manage the scopes stored in a database.
 /// </summary>
-public class OpenIddictEntityFrameworkCoreScopeStore : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope, string>
+public class OpenIddictEntityFrameworkCoreScopeStore :
+    OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope, string>
 {
     public OpenIddictEntityFrameworkCoreScopeStore(
         IOpenIddictEntityFrameworkCoreContext context,
@@ -34,7 +35,8 @@ public class OpenIddictEntityFrameworkCoreScopeStore : OpenIddictEntityFramework
 /// </summary>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
 public class OpenIddictEntityFrameworkCoreScopeStore<
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope<TKey>, TKey>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> :
+    OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope<TKey>, TKey>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreScopeStore(
