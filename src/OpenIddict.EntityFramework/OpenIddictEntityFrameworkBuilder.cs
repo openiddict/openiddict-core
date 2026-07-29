@@ -68,12 +68,14 @@ public sealed class OpenIddictEntityFrameworkBuilder
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>()
         where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
         where TResource : OpenIddictEntityFrameworkResource<TKey>
         where TScope : OpenIddictEntityFrameworkScope<TKey>
+        where TSession : OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization>
         where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
     {
@@ -82,7 +84,8 @@ public sealed class OpenIddictEntityFrameworkBuilder
         //
         // To ensure a better exception is thrown, a manual check is made here.
         if (typeof(TApplication).IsGenericType || typeof(TAuthorization).IsGenericType ||
-            typeof(TResource).IsGenericType || typeof(TScope).IsGenericType || typeof(TToken).IsGenericType)
+            typeof(TResource).IsGenericType || typeof(TScope).IsGenericType ||
+            typeof(TSession).IsGenericType || typeof(TToken).IsGenericType)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0277));
         }
@@ -104,6 +107,8 @@ public sealed class OpenIddictEntityFrameworkBuilder
             provider.GetRequiredService<OpenIddictResourceManager<TResource>>()));
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeManager>(static provider =>
             provider.GetRequiredService<OpenIddictScopeManager<TScope>>()));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictSessionManager>(static provider =>
+            provider.GetRequiredService<OpenIddictSessionManager<TSession>>()));
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictTokenManager>(static provider =>
             provider.GetRequiredService<OpenIddictTokenManager<TToken>>()));
 
@@ -115,6 +120,8 @@ public sealed class OpenIddictEntityFrameworkBuilder
             OpenIddictEntityFrameworkResourceStore<TResource, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeStore<TScope>,
             OpenIddictEntityFrameworkScopeStore<TScope, TKey>>());
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictSessionStore<TSession>,
+            OpenIddictEntityFrameworkSessionStore<TSession, TApplication, TAuthorization, TToken, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictTokenStore<TToken>,
             OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthorization, TKey>>());
 

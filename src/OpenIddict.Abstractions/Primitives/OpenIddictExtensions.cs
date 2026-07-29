@@ -2693,6 +2693,22 @@ public static class OpenIddictExtensions
         => principal.GetClaim(Claims.Private.AuthorizationId);
 
     /// <summary>
+    /// Gets the internal session identifier associated with the claims identity.
+    /// </summary>
+    /// <param name="identity">The claims identity.</param>
+    /// <returns>The unique identifier or <see langword="null"/> if the claim cannot be found.</returns>
+    public static string? GetSessionId(this ClaimsIdentity identity)
+        => identity.GetClaim(Claims.Private.SessionId);
+
+    /// <summary>
+    /// Gets the internal session identifier associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <returns>The unique identifier or <see langword="null"/> if the claim cannot be found.</returns>
+    public static string? GetSessionId(this ClaimsPrincipal principal)
+        => principal.GetClaim(Claims.Private.SessionId);
+
+    /// <summary>
     /// Gets the internal token identifier associated with the claims identity.
     /// </summary>
     /// <param name="identity">The claims identity.</param>
@@ -3343,6 +3359,24 @@ public static class OpenIddictExtensions
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetAuthorizationId(this ClaimsPrincipal principal, string? identifier)
         => principal.SetClaim(Claims.Private.AuthorizationId, identifier);
+
+    /// <summary>
+    /// Sets the internal session identifier associated with the claims identity.
+    /// </summary>
+    /// <param name="identity">The claims identity.</param>
+    /// <param name="identifier">The unique identifier to store.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetSessionId(this ClaimsIdentity identity, string? identifier)
+        => identity.SetClaim(Claims.Private.SessionId, identifier);
+
+    /// <summary>
+    /// Sets the internal session identifier associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <param name="identifier">The unique identifier to store.</param>
+    /// <returns>The claims principal.</returns>
+    public static ClaimsPrincipal SetSessionId(this ClaimsPrincipal principal, string? identifier)
+        => principal.SetClaim(Claims.Private.SessionId, identifier);
 
     /// <summary>
     /// Sets the internal token identifier associated with the claims identity.

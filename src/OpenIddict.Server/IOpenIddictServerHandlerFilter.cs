@@ -19,7 +19,7 @@ public interface IOpenIddictServerHandlerFilter<in TContext> where TContext : Ba
     /// </summary>
     /// <param name="context">The context associated with the event to process.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose boolean result determines whether the handler will be invoked or not.
     /// </returns>
     ValueTask<bool> IsActiveAsync(TContext context);

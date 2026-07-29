@@ -312,7 +312,7 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
     /// <param name="application">The application associated with the expiration signal.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns an expiration signal for the specified application.
     /// </returns>
     private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TApplication application, CancellationToken cancellationToken)

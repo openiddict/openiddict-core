@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using System.Text.Json;
 
 namespace OpenIddict.Abstractions;
@@ -28,7 +27,7 @@ public interface IOpenIddictAuthorizationManager
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of authorizations in the database.
     /// </returns>
     ValueTask<long> CountAsync(CancellationToken cancellationToken = default);
@@ -40,7 +39,7 @@ public interface IOpenIddictAuthorizationManager
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of authorizations that match the specified query.
     /// </returns>
     ValueTask<long> CountAsync<TResult>(
@@ -55,7 +54,7 @@ public interface IOpenIddictAuthorizationManager
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of authorizations that match the specified query.
     /// </returns>
     ValueTask<long> CountAsync<TState, TResult>(
@@ -63,44 +62,12 @@ public interface IOpenIddictAuthorizationManager
         TState state, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Creates a new permanent authorization based on the specified parameters.
-    /// </summary>
-    /// <param name="identity">The identity associated with the authorization.</param>
-    /// <param name="subject">The subject associated with the authorization.</param>
-    /// <param name="client">The client associated with the authorization.</param>
-    /// <param name="type">The authorization type.</param>
-    /// <param name="scopes">The minimal scopes associated with the authorization.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
-    /// </returns>
-    ValueTask<object> CreateAsync(
-        ClaimsIdentity identity, string subject, string client,
-        string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Creates a new permanent authorization based on the specified parameters.
-    /// </summary>
-    /// <param name="principal">The principal associated with the authorization.</param>
-    /// <param name="subject">The subject associated with the authorization.</param>
-    /// <param name="client">The client associated with the authorization.</param>
-    /// <param name="type">The authorization type.</param>
-    /// <param name="scopes">The minimal scopes associated with the authorization.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
-    /// </returns>
-    ValueTask<object> CreateAsync(
-        ClaimsPrincipal principal, string subject, string client,
-        string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Creates a new authorization based on the specified descriptor.
     /// </summary>
     /// <param name="descriptor">The authorization descriptor.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
     /// </returns>
     ValueTask<object> CreateAsync(OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
 
@@ -125,18 +92,14 @@ public interface IOpenIddictAuthorizationManager
     ValueTask DeleteAsync(object authorization, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves the authorizations matching the specified parameters.
+    /// Retrieves the authorizations matching the specified query.
     /// </summary>
-    /// <param name="subject">The subject associated with the authorization, or <see langword="null"/> not to filter out specific subjects.</param>
-    /// <param name="client">The client associated with the authorization, or <see langword="null"/> not to filter out specific clients.</param>
-    /// <param name="status">The authorization status, or <see langword="null"/> not to filter out specific authorization statuses.</param>
-    /// <param name="type">The authorization type, or <see langword="null"/> not to filter out specific authorization types.</param>
-    /// <param name="scopes">The minimal scopes associated with the authorization, or <see langword="null"/> not to filter out scopes.</param>
+    /// <param name="query">The query parameters: if a parameter is <see langword="null"/>, it will not be used to filter the results.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The authorizations corresponding to the criteria.</returns>
     IAsyncEnumerable<object> FindAsync(
-        string? subject, string? client, string? status,
-        string? type, ImmutableArray<string>? scopes, CancellationToken cancellationToken = default);
+        (string? Subject, string? ApplicationId, string? Status,
+         string? Type, ImmutableArray<string>? RequiredScopes) query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the list of authorizations corresponding to the specified application identifier.
@@ -152,7 +115,7 @@ public interface IOpenIddictAuthorizationManager
     /// <param name="identifier">The unique identifier associated with the authorization.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the authorization corresponding to the identifier.
     /// </returns>
     ValueTask<object?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default);
@@ -183,7 +146,7 @@ public interface IOpenIddictAuthorizationManager
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     ValueTask<TResult?> GetAsync<TResult>(
@@ -198,7 +161,7 @@ public interface IOpenIddictAuthorizationManager
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     ValueTask<TResult?> GetAsync<TState, TResult>(

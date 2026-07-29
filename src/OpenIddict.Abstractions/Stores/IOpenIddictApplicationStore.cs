@@ -23,7 +23,7 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of applications in the database.
     /// </returns>
     ValueTask<long> CountAsync(CancellationToken cancellationToken);
@@ -37,7 +37,7 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of applications that match the specified query.
     /// </returns>
     ValueTask<long> CountAsync<TState, TResult>(
@@ -66,7 +66,7 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// <param name="identifier">The unique identifier associated with the application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the client application corresponding to the identifier.
     /// </returns>
     ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken);
@@ -77,7 +77,7 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// <param name="identifier">The client identifier associated with the application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the client application corresponding to the identifier.
     /// </returns>
     ValueTask<TApplication?> FindByClientIdAsync(string identifier, CancellationToken cancellationToken);
@@ -120,7 +120,7 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     ValueTask<TResult?> GetAsync<TState, TResult>(

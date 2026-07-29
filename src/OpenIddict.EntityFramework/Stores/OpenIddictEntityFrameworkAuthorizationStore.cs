@@ -159,44 +159,47 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<TAuthorization> FindAsync(
-        string? subject, string? client,
-        string? status, string? type,
-        ImmutableArray<string>? scopes, [EnumeratorCancellation] CancellationToken cancellationToken)
+        (string? Subject, string? ApplicationId, string? Status,
+         string? Type, ImmutableArray<string>? RequiredScopes) query,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        IQueryable<TAuthorization> query = context.Set<TAuthorization>().Include(authorization => authorization.Application);
+        IQueryable<TAuthorization> authorizations = context.Set<TAuthorization>().Include(authorization => authorization.Application);
 
-        if (!string.IsNullOrEmpty(subject))
+        if (!string.IsNullOrEmpty(query.Subject))
         {
-            query = query.Where(authorization => authorization.Subject == subject);
+            authorizations = authorizations.Where(authorization => authorization.Subject == query.Subject);
         }
 
-        if (!string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(query.ApplicationId))
         {
-            var key = ConvertIdentifierFromString(client);
-
-            query = query.Where(authorization => authorization.Application!.Id!.Equals(key));
+            var key = ConvertIdentifierFromString(query.ApplicationId);
+            authorizations = authorizations.Where(authorization => authorization.Application!.Id!.Equals(key));
         }
 
-        if (!string.IsNullOrEmpty(status))
+        if (!string.IsNullOrEmpty(query.Status))
         {
-            query = query.Where(authorization => authorization.Status == status);
+            authorizations = authorizations.Where(authorization => authorization.Status == query.Status);
         }
 
-        if (!string.IsNullOrEmpty(type))
+        if (!string.IsNullOrEmpty(query.Type))
         {
-            query = query.Where(authorization => authorization.Type == type);
+            authorizations = authorizations.Where(authorization => authorization.Type == query.Type);
         }
 
-        await foreach (var authorization in query.AsAsyncEnumerable(cancellationToken))
+        // Note: Entity Framework Core cannot translate the logic used to filter authorizations by scopes in a
+        // SQL query so the filtering is done manually after the results have been retrieved from the database.
+        await foreach (var authorization in authorizations.AsAsyncEnumerable(cancellationToken))
         {
-            if (scopes is null || (await GetScopesAsync(authorization, cancellationToken))
+            if (query.RequiredScopes is { IsDefaultOrEmpty: false } scopes && !(await GetScopesAsync(authorization, cancellationToken))
                 .ToHashSet(StringComparer.Ordinal)
                 .IsSupersetOf(scopes))
             {
-                yield return authorization;
+                continue;
             }
+
+            yield return authorization;
         }
     }
 
@@ -259,12 +262,12 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
-
         // If the application is not attached to the authorization, try to load it manually.
         if (authorization.Application is null)
         {
-            var reference = context.Entry(authorization).Reference(entry => entry.Application);
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            var reference = context.Entry(authorization).Reference(static entry => entry.Application);
             if (reference.EntityEntry.State is EntityState.Detached)
             {
                 return null;
@@ -703,10 +706,10 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
-
         if (!string.IsNullOrEmpty(identifier))
         {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
             authorization.Application = await context.Set<TApplication>().FindAsync(
                 cancellationToken, ConvertIdentifierFromString(identifier))
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
@@ -717,7 +720,9 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
             // If the application is not attached to the authorization, try to load it manually.
             if (authorization.Application is null)
             {
-                var reference = context.Entry(authorization).Reference(entry => entry.Application);
+                var context = await Context.GetDbContextAsync(cancellationToken);
+
+                var reference = context.Entry(authorization).Reference(static entry => entry.Application);
                 if (reference.EntityEntry.State is EntityState.Detached)
                 {
                     return;

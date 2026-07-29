@@ -23,18 +23,14 @@ public interface IOpenIddictAuthorizationCache<TAuthorization> where TAuthorizat
     ValueTask AddAsync(TAuthorization authorization, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieves the authorizations matching the specified parameters.
+    /// Retrieves the authorizations matching the specified query.
     /// </summary>
-    /// <param name="subject">The subject associated with the authorization, or <see langword="null"/> not to filter out specific subjects.</param>
-    /// <param name="client">The client associated with the authorization, or <see langword="null"/> not to filter out specific clients.</param>
-    /// <param name="status">The authorization status, or <see langword="null"/> not to filter out specific authorization statuses.</param>
-    /// <param name="type">The authorization type, or <see langword="null"/> not to filter out specific authorization types.</param>
-    /// <param name="scopes">The minimal scopes associated with the authorization, or <see langword="null"/> not to filter out scopes.</param>
+    /// <param name="query">The query parameters: if a parameter is <see langword="null"/>, it will not be used to filter the results.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The authorizations corresponding to the criteria.</returns>
     IAsyncEnumerable<TAuthorization> FindAsync(
-        string? subject, string? client, string? status,
-        string? type, ImmutableArray<string>? scopes, CancellationToken cancellationToken);
+        (string? Subject, string? ApplicationId, string? Status,
+         string? Type, ImmutableArray<string>? RequiredScopes) query, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the list of authorizations corresponding to the specified application identifier.

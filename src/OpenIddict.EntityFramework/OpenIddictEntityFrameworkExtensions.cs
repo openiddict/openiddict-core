@@ -35,12 +35,14 @@ public static class OpenIddictEntityFrameworkExtensions
                .SetDefaultAuthorizationEntity<OpenIddictEntityFrameworkAuthorization>()
                .SetDefaultResourceEntity<OpenIddictEntityFrameworkResource>()
                .SetDefaultScopeEntity<OpenIddictEntityFrameworkScope>()
+               .SetDefaultSessionEntity<OpenIddictEntityFrameworkSession>()
                .SetDefaultTokenEntity<OpenIddictEntityFrameworkToken>();
 
         builder.ReplaceApplicationStore<OpenIddictEntityFrameworkApplication, OpenIddictEntityFrameworkApplicationStore>()
                .ReplaceAuthorizationStore<OpenIddictEntityFrameworkAuthorization, OpenIddictEntityFrameworkAuthorizationStore>()
                .ReplaceResourceStore<OpenIddictEntityFrameworkResource, OpenIddictEntityFrameworkResourceStore>()
                .ReplaceScopeStore<OpenIddictEntityFrameworkScope, OpenIddictEntityFrameworkScopeStore>()
+               .ReplaceSessionStore<OpenIddictEntityFrameworkSession, OpenIddictEntityFrameworkSessionStore>()
                .ReplaceTokenStore<OpenIddictEntityFrameworkToken, OpenIddictEntityFrameworkTokenStore>();
 
         // Note: a default context factory is always registered to make debugging easier when

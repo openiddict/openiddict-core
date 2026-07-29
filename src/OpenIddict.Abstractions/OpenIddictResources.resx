@@ -867,16 +867,13 @@ Make sure that the entity is not abstract and has a public parameterless constru
     <value>An error occurred while pruning authorizations.</value>
   </data>
   <data name="ID0244" xml:space="preserve">
-    <value>The application associated with the authorization cannot be found.</value>
+    <value>The application matching the specified identifier cannot be found in the change tracker or in the database.</value>
   </data>
   <data name="ID0249" xml:space="preserve">
     <value>An error occurred while pruning tokens.</value>
   </data>
-  <data name="ID0250" xml:space="preserve">
-    <value>The application associated with the token cannot be found.</value>
-  </data>
   <data name="ID0251" xml:space="preserve">
-    <value>The authorization associated with the token cannot be found.</value>
+    <value>The authorization matching the specified identifier cannot be found in the change tracker or in the database.</value>
   </data>
   <data name="ID0253" xml:space="preserve">
     <value>No Entity Framework Core context was configured to be used with OpenIddict.
@@ -2447,6 +2444,9 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   </data>
   <data name="ID2208" xml:space="preserve">
     <value>A resource with the same name already exists.</value>
+  </data>
+  <data name="ID2209" xml:space="preserve">
+    <value>The login identifier cannot be null or empty and must match the value used to represent the user session.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>

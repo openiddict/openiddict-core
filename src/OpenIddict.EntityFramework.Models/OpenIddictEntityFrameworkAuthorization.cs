@@ -12,7 +12,10 @@ namespace OpenIddict.EntityFramework.Models;
 /// <summary>
 /// Represents an OpenIddict authorization.
 /// </summary>
-public class OpenIddictEntityFrameworkAuthorization : OpenIddictEntityFrameworkAuthorization<string, OpenIddictEntityFrameworkApplication, OpenIddictEntityFrameworkToken>
+public class OpenIddictEntityFrameworkAuthorization :
+    OpenIddictEntityFrameworkAuthorization<string,
+                                           OpenIddictEntityFrameworkApplication,
+                                           OpenIddictEntityFrameworkToken>
 {
     public OpenIddictEntityFrameworkAuthorization() => Id = Guid.NewGuid().ToString();
 }

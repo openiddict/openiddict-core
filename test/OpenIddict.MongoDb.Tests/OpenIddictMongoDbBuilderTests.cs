@@ -96,6 +96,23 @@ public class OpenIddictMongoDbBuilderTests
     }
 
     [Fact]
+    public void ReplaceDefaultSessionEntity_StoreIsCorrectlyReplaced()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.ReplaceDefaultSessionEntity<CustomSession>();
+
+        // Assert
+        Assert.Contains(services, service =>
+            service.Lifetime == ServiceLifetime.Scoped &&
+            service.ServiceType == typeof(IOpenIddictSessionStore<CustomSession>) &&
+            service.ImplementationType == typeof(OpenIddictMongoDbSessionStore<CustomSession>));
+    }
+
+    [Fact]
     public void ReplaceDefaultTokenEntity_StoreIsCorrectlyReplaced()
     {
         // Arrange
@@ -243,6 +260,38 @@ public class OpenIddictMongoDbBuilderTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    public void SetSessionsCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string? name)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.ThrowsAny<ArgumentException>(() => builder.SetSessionsCollectionName(name!));
+
+        Assert.Equal("name", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetSessionsCollectionName_CollectionNameIsCorrectlySet()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetSessionsCollectionName("custom_collection");
+
+        // Assert
+        var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+
+        Assert.Equal("custom_collection", options.SessionsCollectionName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
     public void SetTokensCollectionName_ThrowsAnExceptionForNullOrEmptyCollectionName(string? name)
     {
         // Arrange
@@ -321,5 +370,6 @@ public class OpenIddictMongoDbBuilderTests
     public class CustomAuthorization : OpenIddictMongoDbAuthorization;
     public class CustomResource : OpenIddictMongoDbResource;
     public class CustomScope : OpenIddictMongoDbScope;
+    public class CustomSession : OpenIddictMongoDbSession;
     public class CustomToken : OpenIddictMongoDbToken;
 }

@@ -71,7 +71,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of tokens in the database.
     /// </returns>
     public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken = default)
@@ -84,7 +84,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of tokens that match the specified query.
     /// </returns>
     public virtual ValueTask<long> CountAsync<TResult>(
@@ -104,7 +104,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the number of tokens that match the specified query.
     /// </returns>
     public virtual ValueTask<long> CountAsync<TState, TResult>(
@@ -184,7 +184,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="descriptor">The token descriptor.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the token.
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose result returns the token.
     /// </returns>
     public virtual async ValueTask<TToken> CreateAsync(
         OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
@@ -221,21 +221,18 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     }
 
     /// <summary>
-    /// Retrieves the tokens matching the specified parameters.
+    /// Retrieves the tokens matching the specified query.
     /// </summary>
-    /// <param name="subject">The subject associated with the token, or <see langword="null"/> not to filter out specific subjects.</param>
-    /// <param name="client">The client associated with the token, or <see langword="null"/> not to filter out specific clients.</param>
-    /// <param name="status">The token status, or <see langword="null"/> not to filter out specific token statuses.</param>
-    /// <param name="type">The token type, or <see langword="null"/> not to filter out specific token types.</param>
+    /// <param name="query">The query parameters: if a parameter is <see langword="null"/>, it will not be used to filter the results.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>Tokens corresponding to the criteria.</returns>
+    /// <returns>The tokens corresponding to the criteria.</returns>
     public virtual IAsyncEnumerable<TToken> FindAsync(
-        string? subject, string? client,
-        string? status, string? type, CancellationToken cancellationToken = default)
+        (string? Subject, string? ApplicationId, string? Status, string? Type) query,
+        CancellationToken cancellationToken = default)
     {
         var tokens = Options.CurrentValue.DisableEntityCaching
-            ? Store.FindAsync(subject, client, status, type, cancellationToken)
-            : Cache.FindAsync(subject, client, status, type, cancellationToken);
+            ? Store.FindAsync(query, cancellationToken)
+            : Cache.FindAsync(query, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -252,8 +249,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         {
             await foreach (var token in tokens)
             {
-                if (string.IsNullOrEmpty(subject) ||
-                    string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
+                if (string.IsNullOrEmpty(query.Subject) ||
+                    string.Equals(await Store.GetSubjectAsync(token, cancellationToken), query.Subject, StringComparison.Ordinal))
                 {
                     yield return token;
                 }
@@ -343,7 +340,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="identifier">The unique identifier associated with the token.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the token corresponding to the unique identifier.
     /// </returns>
     public virtual async ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default)
@@ -372,13 +369,15 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     }
 
     /// <summary>
-    /// Retrieves the list of tokens corresponding to the specified reference identifier.
-    /// Note: the reference identifier may be hashed or encrypted for security reasons.
+    /// Retrieves a token using its unique reference identifier.
     /// </summary>
+    /// <remarks>
+    /// Note: the reference identifier may be hashed or encrypted for security reasons.
+    /// </remarks>
     /// <param name="identifier">The reference identifier associated with the tokens.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the tokens corresponding to the specified reference identifier.
     /// </returns>
     public virtual async ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken = default)
@@ -470,7 +469,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TResult>(
@@ -490,7 +489,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="state">The optional state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TState, TResult>(
@@ -1151,8 +1150,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
                 }
             }
 
-            var type = await Store.GetTypeAsync(token, cancellationToken);
-            if (string.IsNullOrEmpty(type))
+            if (string.IsNullOrEmpty(await Store.GetTypeAsync(token, cancellationToken)))
             {
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2086));
             }
@@ -1207,8 +1205,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         => DeleteAsync((TToken) token, cancellationToken);
 
     /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
-        => FindAsync(subject, client, status, type, cancellationToken);
+    IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync((string? Subject, string? ApplicationId, string? Status, string? Type) query, CancellationToken cancellationToken)
+        => FindAsync(query, cancellationToken);
 
     /// <inheritdoc/>
     IAsyncEnumerable<object> IOpenIddictTokenManager.FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)

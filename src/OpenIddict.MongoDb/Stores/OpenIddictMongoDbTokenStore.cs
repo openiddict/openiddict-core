@@ -106,35 +106,35 @@ public class OpenIddictMongoDbTokenStore<
 
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<TToken> FindAsync(
-        string? subject, string? client,
-        string? status, string? type, [EnumeratorCancellation] CancellationToken cancellationToken)
+        (string? Subject, string? ApplicationId, string? Status, string? Type) query,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
-        IQueryable<TToken> query = collection.AsQueryable();
+        IQueryable<TToken> tokens = collection.AsQueryable();
 
-        if (!string.IsNullOrEmpty(subject))
+        if (!string.IsNullOrEmpty(query.Subject))
         {
-            query = query.Where(token => token.Subject == subject);
+            tokens = tokens.Where(token => token.Subject == query.Subject);
         }
 
-        if (!string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(query.ApplicationId))
         {
-            query = query.Where(token => token.ApplicationId == ObjectId.Parse(client));
+            tokens = tokens.Where(token => token.ApplicationId == ObjectId.Parse(query.ApplicationId));
         }
 
-        if (!string.IsNullOrEmpty(status))
+        if (!string.IsNullOrEmpty(query.Status))
         {
-            query = query.Where(token => token.Status == status);
+            tokens = tokens.Where(token => token.Status == query.Status);
         }
 
-        if (!string.IsNullOrEmpty(type))
+        if (!string.IsNullOrEmpty(query.Type))
         {
-            query = query.Where(token => token.Type == type);
+            tokens = tokens.Where(token => token.Type == query.Type);
         }
 
-        await foreach (var token in query.ToAsyncEnumerable().WithCancellation(cancellationToken))
+        await foreach (var token in tokens.ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return token;
         }
@@ -521,15 +521,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (!string.IsNullOrEmpty(identifier))
-        {
-            token.ApplicationId = ObjectId.Parse(identifier);
-        }
-
-        else
-        {
-            token.ApplicationId = ObjectId.Empty;
-        }
+        token.ApplicationId = !string.IsNullOrEmpty(identifier) ? ObjectId.Parse(identifier) : ObjectId.Empty;
 
         return ValueTask.CompletedTask;
     }
@@ -539,15 +531,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (!string.IsNullOrEmpty(identifier))
-        {
-            token.AuthorizationId = ObjectId.Parse(identifier);
-        }
-
-        else
-        {
-            token.AuthorizationId = ObjectId.Empty;
-        }
+        token.AuthorizationId = !string.IsNullOrEmpty(identifier) ? ObjectId.Parse(identifier) : ObjectId.Empty;
 
         return ValueTask.CompletedTask;
     }

@@ -206,7 +206,7 @@ public sealed class OpenIddictClientDataProtectionFormatter : IOpenIddictClientD
         SetArrayProperty(properties, Properties.Scopes,     principal.GetScopes());
 
         // Copy the principal and exclude the claim that were mapped to authentication properties.
-        principal = principal.Clone(claim => claim.Type is not (
+        principal = principal.Clone(static claim => claim.Type is not (
             Claims.Private.Audience           or
             Claims.Private.CodeVerifier       or
             Claims.Private.CreationDate       or

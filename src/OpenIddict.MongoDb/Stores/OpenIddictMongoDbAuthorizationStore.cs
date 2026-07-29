@@ -110,43 +110,40 @@ public class OpenIddictMongoDbAuthorizationStore<
 
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<TAuthorization> FindAsync(
-        string? subject, string? client,
-        string? status, string? type,
-        ImmutableArray<string>? scopes, [EnumeratorCancellation] CancellationToken cancellationToken)
+        (string? Subject, string? ApplicationId, string? Status,
+         string? Type, ImmutableArray<string>? RequiredScopes) query, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-        IQueryable<TAuthorization> query = collection.AsQueryable();
+        IQueryable<TAuthorization> authorizations = collection.AsQueryable();
 
-        if (!string.IsNullOrEmpty(subject))
+        if (!string.IsNullOrEmpty(query.Subject))
         {
-            query = query.Where(authorization => authorization.Subject == subject);
+            authorizations = authorizations.Where(authorization => authorization.Subject == query.Subject);
         }
 
-        if (!string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(query.ApplicationId))
         {
-            query = query.Where(authorization => authorization.ApplicationId == ObjectId.Parse(client));
+            authorizations = authorizations.Where(authorization => authorization.ApplicationId == ObjectId.Parse(query.ApplicationId));
         }
 
-        if (!string.IsNullOrEmpty(status))
+        if (!string.IsNullOrEmpty(query.Status))
         {
-            query = query.Where(authorization => authorization.Status == status);
+            authorizations = authorizations.Where(authorization => authorization.Status == query.Status);
         }
 
-        if (!string.IsNullOrEmpty(type))
+        if (!string.IsNullOrEmpty(query.Type))
         {
-            query = query.Where(authorization => authorization.Type == type);
+            authorizations = authorizations.Where(authorization => authorization.Type == query.Type);
         }
 
-        if (scopes is ImmutableArray<string> values)
+        if (query.RequiredScopes is { IsDefaultOrEmpty: false } scopes)
         {
-            // Note: Enumerable.All() is deliberately used without the extension method syntax to ensure
-            // ImmutableArrayExtensions.All() (which is not supported by MongoDB) is not used instead.
-            query = query.Where(authorization => Enumerable.All(values, scope => authorization.Scopes!.Contains(scope)));
+            authorizations = authorizations.Where(authorization => scopes.All(scope => authorization.Scopes!.Contains(scope)));
         }
 
-        await foreach (var authorization in query.ToAsyncEnumerable().WithCancellation(cancellationToken))
+        await foreach (var authorization in authorizations.ToAsyncEnumerable().WithCancellation(cancellationToken))
         {
             yield return authorization;
         }
@@ -459,15 +456,7 @@ public class OpenIddictMongoDbAuthorizationStore<
     {
         ArgumentNullException.ThrowIfNull(authorization);
 
-        if (!string.IsNullOrEmpty(identifier))
-        {
-            authorization.ApplicationId = ObjectId.Parse(identifier);
-        }
-
-        else
-        {
-            authorization.ApplicationId = ObjectId.Empty;
-        }
+        authorization.ApplicationId = !string.IsNullOrEmpty(identifier) ? ObjectId.Parse(identifier) : ObjectId.Empty;
 
         return ValueTask.CompletedTask;
     }

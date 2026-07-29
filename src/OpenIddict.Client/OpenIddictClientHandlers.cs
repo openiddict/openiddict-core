@@ -1752,7 +1752,8 @@ public static partial class OpenIddictClientHandlers
             {
                 // The following claims MUST be represented as unique strings.
                 Claims.AuthenticationContextReference or Claims.AuthorizedParty or
-                Claims.Issuer                         or Claims.Nonce           or Claims.Subject
+                Claims.Issuer                         or Claims.Nonce           or
+                Claims.SessionId                      or Claims.Subject
                     => values is [{ ValueType: ClaimValueTypes.String }],
 
                 // The following claims MUST be represented as unique strings or array of strings.
@@ -3488,7 +3489,8 @@ public static partial class OpenIddictClientHandlers
             {
                 // The following claims MUST be represented as unique strings.
                 Claims.AuthenticationContextReference or Claims.AuthorizedParty or
-                Claims.Issuer                         or Claims.Nonce           or Claims.Subject
+                Claims.Issuer                         or Claims.Nonce           or
+                Claims.SessionId                      or Claims.Subject
                     => values is [{ ValueType: ClaimValueTypes.String }],
 
                 // The following claims MUST be represented as unique strings or array of strings.

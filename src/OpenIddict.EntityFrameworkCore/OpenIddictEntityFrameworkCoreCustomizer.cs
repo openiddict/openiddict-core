@@ -20,12 +20,14 @@ public sealed class OpenIddictEntityFrameworkCoreCustomizer<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TResource,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TScope,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : RelationalModelCustomizer
     where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
     where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
     where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
     where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
+    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
     where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
     where TKey : notnull, IEquatable<TKey>
 {
@@ -41,7 +43,7 @@ public sealed class OpenIddictEntityFrameworkCoreCustomizer<
         ArgumentNullException.ThrowIfNull(context);
 
         // Register the OpenIddict entity sets.
-        modelBuilder.UseOpenIddict<TApplication, TAuthorization, TResource, TScope, TToken, TKey>();
+        modelBuilder.UseOpenIddict<TApplication, TAuthorization, TResource, TScope, TSession, TToken, TKey>();
 
         base.Customize(modelBuilder, context);
     }

@@ -1,20 +1,29 @@
-﻿using System.Data.Entity;
+﻿using System.Buffers.Text;
+using System.Data.Entity;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace OpenIddict.Sandbox.AspNet.Server.Models;
 
-// Vous pouvez ajouter des données de profil pour l'utilisateur en ajoutant d'autres propriétés à votre classe ApplicationUser. Pour en savoir plus, consultez https://go.microsoft.com/fwlink/?LinkID=317594.
 public class ApplicationUser : IdentityUser
 {
     public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
     {
-        // Notez que l'authenticationType doit correspondre à celui défini dans CookieAuthenticationOptions.AuthenticationType
-        var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
-        // Ajouter des revendications utilisateur personnalisées ici
-        return userIdentity;
+        var identity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
+
+        // Generate and attach a unique login identifier to the claims identity: this value will
+        // be used by the authorization controller to infer a unique identifier representing the
+        // current user session and bind the tokens issued by OpenIddict to a specific session.
+        //
+        // Note: this method is also called when the application cookie is refreshed: to ensure
+        // the login identifier is preserved, a custom OnRefreshingPrincipal event handler is used
+        // to copy the login identifier from the existing principal to the refreshed instance.
+        identity.AddClaim(new Claim("login_id", Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(256 / 8))));
+
+        return identity;
     }
 }
 

@@ -58,7 +58,7 @@ public class OpenIddictMongoDbAuthorization
     public virtual string? Status { get; set; }
 
     /// <summary>
-    /// Gets or sets the subject associated with the authorization.
+    /// Gets or sets the subject of the authorization.
     /// </summary>
     [BsonElement("subject"), BsonIgnoreIfNull]
     public virtual string? Subject { get; set; }

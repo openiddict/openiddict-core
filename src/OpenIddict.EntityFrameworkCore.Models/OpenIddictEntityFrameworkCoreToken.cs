@@ -12,7 +12,10 @@ namespace OpenIddict.EntityFrameworkCore.Models;
 /// <summary>
 /// Represents an OpenIddict token.
 /// </summary>
-public class OpenIddictEntityFrameworkCoreToken : OpenIddictEntityFrameworkCoreToken<string, OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreAuthorization>
+public class OpenIddictEntityFrameworkCoreToken :
+    OpenIddictEntityFrameworkCoreToken<string,
+                                       OpenIddictEntityFrameworkCoreApplication,
+                                       OpenIddictEntityFrameworkCoreAuthorization>
 {
     public OpenIddictEntityFrameworkCoreToken() => Id = Guid.NewGuid().ToString();
 }
@@ -20,7 +23,10 @@ public class OpenIddictEntityFrameworkCoreToken : OpenIddictEntityFrameworkCoreT
 /// <summary>
 /// Represents an OpenIddict token.
 /// </summary>
-public class OpenIddictEntityFrameworkCoreToken<TKey> : OpenIddictEntityFrameworkCoreToken<TKey, OpenIddictEntityFrameworkCoreApplication<TKey>, OpenIddictEntityFrameworkCoreAuthorization<TKey>>
+public class OpenIddictEntityFrameworkCoreToken<TKey> :
+    OpenIddictEntityFrameworkCoreToken<TKey,
+                                       OpenIddictEntityFrameworkCoreApplication<TKey>,
+                                       OpenIddictEntityFrameworkCoreAuthorization<TKey>>
     where TKey : notnull, IEquatable<TKey>;
 
 /// <summary>
@@ -33,12 +39,12 @@ public class OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorizati
     where TAuthorization : class
 {
     /// <summary>
-    /// Gets or sets the application associated with the current token.
+    /// Gets or sets the application associated with the token.
     /// </summary>
     public virtual TApplication? Application { get; set; }
 
     /// <summary>
-    /// Gets or sets the authorization associated with the current token.
+    /// Gets or sets the authorization associated with the token.
     /// </summary>
     public virtual TAuthorization? Authorization { get; set; }
 

@@ -35,6 +35,7 @@ public sealed class OpenIddictValidationDataProtectionFormatter : IOpenIddictVal
             .SetClaim(Claims.Private.AuthorizationId, GetStringProperty(properties, Properties.InternalAuthorizationId))
             .SetClaim(Claims.Private.CreationDate,    GetStringProperty(properties, Properties.Issued))
             .SetClaim(Claims.Private.ExpirationDate,  GetStringProperty(properties, Properties.Expires))
+            .SetClaim(Claims.Private.SessionId,       GetStringProperty(properties, Properties.InternalSessionId))
             .SetClaim(Claims.Private.TokenId,         GetStringProperty(properties, Properties.InternalTokenId));
 
         static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)

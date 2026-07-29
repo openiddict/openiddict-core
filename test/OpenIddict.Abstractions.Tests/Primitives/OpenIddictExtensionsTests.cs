@@ -5781,6 +5781,72 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void ClaimsIdentity_GetSessionId_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(identity.GetSessionId);
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_GetSessionId_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(principal.GetSessionId);
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_GetSessionId_ReturnsNullForMissingClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        Assert.Null(identity.GetSessionId());
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_GetSessionId_ReturnsNullForMissingClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        Assert.Null(principal.GetSessionId());
+    }
+
+    [Fact]
+    public void ClaimsIdentity_GetSessionId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.SetClaim(Claims.Private.SessionId, "42");
+
+        // Act and assert
+        Assert.Equal("42", identity.GetSessionId());
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_GetSessionId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.SetClaim(Claims.Private.SessionId, "42");
+
+        // Act and assert
+        Assert.Equal("42", principal.GetSessionId());
+    }
+
+    [Fact]
     public void ClaimsIdentity_HasAudience_ThrowsAnExceptionForNullIdentity()
     {
         // Arrange
@@ -7276,6 +7342,88 @@ public class OpenIddictExtensionsTests
 
         // Assert
         Assert.Equal("42", principal.GetClaim(Claims.Private.AuthorizationId));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetSessionId_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetSessionId(null));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetSessionId_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetSessionId(null));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_SetSessionId_RemovesClaimForNullOrEmptyValue(string? value)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim(Claims.Private.SessionId, 2520);
+
+        // Act
+        identity.SetSessionId(value);
+
+        // Assert
+        Assert.Empty(identity.Claims);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_SetSessionId_RemovesClaimForNullOrEmptyValue(string? value)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim(Claims.Private.SessionId, 2520);
+
+        // Act
+        principal.SetSessionId(value);
+
+        // Assert
+        Assert.Empty(principal.Claims);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetSessionId_AddsClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetSessionId("42");
+
+        // Assert
+        Assert.Equal("42", identity.GetClaim(Claims.Private.SessionId));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetSessionId_AddsClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.SetSessionId("42");
+
+        // Assert
+        Assert.Equal("42", principal.GetClaim(Claims.Private.SessionId));
     }
 
     [Fact]

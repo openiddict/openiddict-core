@@ -136,38 +136,37 @@ public class OpenIddictEntityFrameworkTokenStore<
 
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<TToken> FindAsync(
-        string? subject, string? client,
-        string? status, string? type, [EnumeratorCancellation] CancellationToken cancellationToken)
+        (string? Subject, string? ApplicationId, string? Status, string? Type) query,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        IQueryable<TToken> query = context.Set<TToken>()
-                                          .Include(token => token.Application)
-                                          .Include(token => token.Authorization);
+        IQueryable<TToken> tokens = context.Set<TToken>()
+                                           .Include(token => token.Application)
+                                           .Include(token => token.Authorization);
 
-        if (!string.IsNullOrEmpty(subject))
+        if (!string.IsNullOrEmpty(query.Subject))
         {
-            query = query.Where(token => token.Subject == subject);
+            tokens = tokens.Where(token => token.Subject == query.Subject);
         }
 
-        if (!string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(query.ApplicationId))
         {
-            var key = ConvertIdentifierFromString(client);
-
-            query = query.Where(token => token.Application!.Id!.Equals(key));
+            var key = ConvertIdentifierFromString(query.ApplicationId);
+            tokens = tokens.Where(token => token.Application!.Id!.Equals(key));
         }
 
-        if (!string.IsNullOrEmpty(status))
+        if (!string.IsNullOrEmpty(query.Status))
         {
-            query = query.Where(token => token.Status == status);
+            tokens = tokens.Where(token => token.Status == query.Status);
         }
 
-        if (!string.IsNullOrEmpty(type))
+        if (!string.IsNullOrEmpty(query.Type))
         {
-            query = query.Where(token => token.Type == type);
+            tokens = tokens.Where(token => token.Type == query.Type);
         }
 
-        await foreach (var token in query.AsAsyncEnumerable(cancellationToken))
+        await foreach (var token in tokens.AsAsyncEnumerable(cancellationToken))
         {
             yield return token;
         }
@@ -274,12 +273,12 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
-
         // If the application is not attached to the token, try to load it manually.
         if (token.Application is null)
         {
-            var reference = context.Entry(token).Reference(entry => entry.Application);
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            var reference = context.Entry(token).Reference(static entry => entry.Application);
             if (reference.EntityEntry.State is EntityState.Detached)
             {
                 return null;
@@ -316,12 +315,12 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
-
         // If the authorization is not attached to the token, try to load it manually.
         if (token.Authorization is null)
         {
-            var reference = context.Entry(token).Reference(entry => entry.Authorization);
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            var reference = context.Entry(token).Reference(static entry => entry.Authorization);
             if (reference.EntityEntry.State is EntityState.Detached)
             {
                 return null;
@@ -791,13 +790,13 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
-
         if (!string.IsNullOrEmpty(identifier))
         {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
             token.Application = await context.Set<TApplication>().FindAsync(
                 cancellationToken, ConvertIdentifierFromString(identifier))
-                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0250));
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
         }
 
         else
@@ -805,7 +804,9 @@ public class OpenIddictEntityFrameworkTokenStore<
             // If the application is not attached to the token, try to load it manually.
             if (token.Application is null)
             {
-                var reference = context.Entry(token).Reference(entry => entry.Application);
+                var context = await Context.GetDbContextAsync(cancellationToken);
+
+                var reference = context.Entry(token).Reference(static entry => entry.Application);
                 if (reference.EntityEntry.State is EntityState.Detached)
                 {
                     return;
@@ -823,10 +824,10 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        var context = await Context.GetDbContextAsync(cancellationToken);
-
         if (!string.IsNullOrEmpty(identifier))
         {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
             token.Authorization = await context.Set<TAuthorization>().FindAsync(
                 cancellationToken, ConvertIdentifierFromString(identifier))
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
@@ -837,7 +838,9 @@ public class OpenIddictEntityFrameworkTokenStore<
             // If the authorization is not attached to the token, try to load it manually.
             if (token.Authorization is null)
             {
-                var reference = context.Entry(token).Reference(entry => entry.Authorization);
+                var context = await Context.GetDbContextAsync(cancellationToken);
+
+                var reference = context.Entry(token).Reference(static entry => entry.Authorization);
                 if (reference.EntityEntry.State is EntityState.Detached)
                 {
                     return;
