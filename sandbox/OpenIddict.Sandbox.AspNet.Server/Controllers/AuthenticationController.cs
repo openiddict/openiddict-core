@@ -86,7 +86,7 @@ public class AuthenticationController : Controller
                 // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
                 OpenIddictClientOwinConstants.Tokens.BackchannelAccessToken or
                 OpenIddictClientOwinConstants.Tokens.RefreshToken)
-            .ToDictionary(pair => pair.Key, pair => pair.Value))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal))
         {
             // Set the creation and expiration dates of the ticket to null to decorrelate the lifetime
             // of the resulting authentication cookie from the lifetime of the identity token returned by

@@ -587,7 +587,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
         ArgumentNullException.ThrowIfNull(application);
 
         application.DisplayNames = names is { IsEmpty: false }
-            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value, StringComparer.Ordinal)
             : null;
 
         return ValueTask.CompletedTask;
@@ -714,12 +714,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             return (TKey?) (object?) identifier;
         }
 
-        else
-        {
-            var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+        var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
-            return (TKey?) converter.ConvertFromInvariantString(identifier);
-        }
+        return (TKey?) converter.ConvertFromInvariantString(identifier);
     }
 
     /// <summary>
@@ -740,12 +737,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
             return value;
         }
 
-        else
-        {
-            var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+        var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
-            return converter.ConvertToInvariantString(identifier);
-        }
+        return converter.ConvertToInvariantString(identifier);
     }
 
     /// <summary>

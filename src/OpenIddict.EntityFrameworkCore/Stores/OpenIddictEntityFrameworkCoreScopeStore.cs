@@ -233,7 +233,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
 
         return new(scope.Descriptions is { Count: > 0 } descriptions
             ? descriptions.ToImmutableDictionary(static pair => CultureInfo.GetCultureInfo(pair.Key), static pair => pair.Value)
-            : ImmutableDictionary.Create<CultureInfo, string>());
+            : []);
     }
 
     /// <inheritdoc/>
@@ -362,7 +362,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         ArgumentNullException.ThrowIfNull(scope);
 
         scope.Descriptions = descriptions is { IsEmpty: false }
-            ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value, StringComparer.Ordinal)
             : null;
 
         return ValueTask.CompletedTask;
@@ -385,7 +385,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
         ArgumentNullException.ThrowIfNull(scope);
 
         scope.DisplayNames = names is { IsEmpty: false }
-            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value, StringComparer.Ordinal)
             : null;
 
         return ValueTask.CompletedTask;
@@ -469,12 +469,9 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             return (TKey?) (object?) identifier;
         }
 
-        else
-        {
-            var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+        var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
-            return (TKey?) converter.ConvertFromInvariantString(identifier);
-        }
+        return (TKey?) converter.ConvertFromInvariantString(identifier);
     }
 
     /// <summary>
@@ -495,11 +492,8 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
             return value;
         }
 
-        else
-        {
-            var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+        var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
-            return converter.ConvertToInvariantString(identifier);
-        }
+        return converter.ConvertToInvariantString(identifier);
     }
 }

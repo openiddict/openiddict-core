@@ -20,7 +20,7 @@ using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.
 namespace OpenIddict.Validation.Owin;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static partial class OpenIddictValidationOwinHandlers
+public static class OpenIddictValidationOwinHandlers
 {
     public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } =
     [
@@ -752,7 +752,7 @@ public static partial class OpenIddictValidationOwinHandlers
                 builder.Append(parameter.Key);
                 builder.Append('=');
                 builder.Append('"');
-                builder.Append(parameter.Value.Replace("\"", "\\\""));
+                builder.Append(parameter.Value.Replace("\"", "\\\"", StringComparison.Ordinal));
                 builder.Append('"');
                 builder.Append(',');
             }

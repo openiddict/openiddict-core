@@ -36,7 +36,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceApplicationManager(typeof(ClosedGenericApplicationManager)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceApplicationManager(typeof(object)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceAuthorizationManager(typeof(ClosedGenericAuthorizationManager)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceAuthorizationManager(typeof(object)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceResourceManager(typeof(ClosedGenericResourceManager)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceResourceManager(typeof(object)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceScopeManager(typeof(ClosedGenericScopeManager)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceScopeManager(typeof(object)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceSessionManager(typeof(ClosedGenericSessionManager)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceSessionManager(typeof(object)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceTokenManager(typeof(ClosedGenericTokenManager)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -275,7 +275,7 @@ public class OpenIddictCoreBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceTokenManager(typeof(object)));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

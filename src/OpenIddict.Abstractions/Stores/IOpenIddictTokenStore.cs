@@ -323,7 +323,7 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     /// <param name="identifier">The application identifier associated with the tokens.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The number of tokens associated with the specified application that were marked as revoked.</returns>
-    ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken = default);
+    ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken);
 
     /// <summary>
     /// Revokes all the tokens associated with the specified authorization identifier.
@@ -339,7 +339,7 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     /// <param name="subject">The subject associated with the tokens.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The number of tokens associated with the specified subject that were marked as revoked.</returns>
-    ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken = default);
+    ValueTask<long> RevokeBySubjectAsync(string subject, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the application identifier associated with a token.

@@ -308,9 +308,7 @@ public static class OpenIddictExtensions
                 continue;
             }
 
-            // Note: though the OIDC core specs does not include the OAuth 2.0-inherited response_type=token,
-            // it is considered as a valid response_type for the implicit flow for backward compatibility.
-            else if (segment.Equals(ResponseTypes.Token, StringComparison.Ordinal))
+            if (segment.Equals(ResponseTypes.Token, StringComparison.Ordinal))
             {
                 flags |= /* token */ 0x02;
 
@@ -359,14 +357,14 @@ public static class OpenIddictExtensions
                 continue;
             }
 
-            else if (segment.Equals(ResponseTypes.IdToken, StringComparison.Ordinal))
+            if (segment.Equals(ResponseTypes.IdToken, StringComparison.Ordinal))
             {
                 flags |= /* id_token: */ 0x02;
 
                 continue;
             }
 
-            else if (segment.Equals(ResponseTypes.Token, StringComparison.Ordinal))
+            if (segment.Equals(ResponseTypes.Token, StringComparison.Ordinal))
             {
                 flags |= /* token: */ 0x04;
 
@@ -678,7 +676,7 @@ public static class OpenIddictExtensions
 
         var builder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>(StringComparer.Ordinal);
 
-        foreach (var group in identity.Claims.GroupBy(claim => claim.Type))
+        foreach (var group in identity.Claims.GroupBy(claim => claim.Type, StringComparer.Ordinal))
         {
             var claims = group.ToList();
 
@@ -712,7 +710,7 @@ public static class OpenIddictExtensions
 
         var builder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>(StringComparer.Ordinal);
 
-        foreach (var group in principal.Claims.GroupBy(claim => claim.Type))
+        foreach (var group in principal.Claims.GroupBy(claim => claim.Type, StringComparer.Ordinal))
         {
             var claims = group.ToList();
 
@@ -749,7 +747,8 @@ public static class OpenIddictExtensions
 
         foreach (var destination in destinations)
         {
-            foreach (var claim in identity.Claims.Where(claim => claim.Type == destination.Key))
+            foreach (var claim in identity.Claims.Where(claim =>
+                string.Equals(claim.Type, destination.Key, StringComparison.Ordinal)))
             {
                 claim.SetDestinations(destination.Value);
             }
@@ -772,7 +771,8 @@ public static class OpenIddictExtensions
 
         foreach (var destination in destinations)
         {
-            foreach (var claim in principal.Claims.Where(claim => claim.Type == destination.Key))
+            foreach (var claim in principal.Claims.Where(claim =>
+                string.Equals(claim.Type, destination.Key, StringComparison.Ordinal)))
             {
                 claim.SetDestinations(destination.Value);
             }

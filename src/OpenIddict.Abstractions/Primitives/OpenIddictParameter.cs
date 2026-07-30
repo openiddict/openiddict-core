@@ -205,7 +205,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             (string left, string right) => string.Equals(left, right, StringComparison.Ordinal),
 
             // If the two parameters are string arrays, use SequenceEqual().
-            (string?[] left, string?[] right) => Enumerable.SequenceEqual(left, right),
+            (string?[] left, string?[] right) => Enumerable.SequenceEqual(left, right, StringComparer.Ordinal),
 
             // If one of the two parameters is an undefined JsonElement, treat it
             // as a null value and return true if the other parameter is null too.
@@ -323,7 +323,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             JsonValue value when value.TryGetValue(out int  result) => result.GetHashCode(),
             JsonValue value when value.TryGetValue(out long result) => result.GetHashCode(),
 
-            JsonValue value when value.TryGetValue(out string? result) => result.GetHashCode(),
+            JsonValue value when value.TryGetValue(out string? result) => result.GetHashCode(StringComparison.Ordinal),
 
             // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
             // serialize it to a JsonElement first to determine its actual JSON representation
@@ -342,7 +342,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             for (var index = 0; index < array.Length; index++)
             {
-                hash.Add(array[index]);
+                hash.Add(array[index], StringComparer.Ordinal);
             }
 
             return hash.ToHashCode();
@@ -368,10 +368,10 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                     return result.GetHashCode();
 
                 case JsonValueKind.Number:
-                    return element.GetRawText().GetHashCode();
+                    return element.GetRawText().GetHashCode(StringComparison.Ordinal);
 
                 case JsonValueKind.String:
-                    return element.GetString()!.GetHashCode();
+                    return element.GetString()!.GetHashCode(StringComparison.Ordinal);
 
                 case JsonValueKind.Array:
                 {
@@ -391,7 +391,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
                     foreach (var property in element.EnumerateObject())
                     {
-                        hash.Add(property.Name);
+                        hash.Add(property.Name, StringComparer.Ordinal);
                         hash.Add(GetHashCodeFromJsonElement(property.Value));
                     }
 
@@ -441,7 +441,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 is JsonElement { ValueKind: JsonValueKind.Object } element
                 => GetParametersFromJsonElement(element),
 
-            _ => ImmutableDictionary.Create<string, OpenIddictParameter>(StringComparer.Ordinal)
+            _ => ImmutableDictionary<string, OpenIddictParameter>.Empty
         };
 
         static IReadOnlyDictionary<string, OpenIddictParameter> GetParametersFromJsonElement(JsonElement element)

@@ -95,10 +95,22 @@ csharp_using_directive_placement = outside_namespace
 
 [*.{cs,vb}]
 dotnet_code_quality_unused_parameters = all
-dotnet_diagnostic.CA1510.severity = suggestion
+dotnet_diagnostic.CA1510.severity = none
+dotnet_diagnostic.CA1873.severity = none
 dotnet_diagnostic.CA2254.severity = none
 dotnet_diagnostic.IDE0002.severity = none
+dotnet_diagnostic.IDE0042.severity = none
 dotnet_diagnostic.IDE0305.severity = none
+dotnet_diagnostic.MA0003.severity = none
+dotnet_diagnostic.MA0004.severity = none
+dotnet_diagnostic.MA0007.severity = none
+dotnet_diagnostic.MA0016.severity = none
+dotnet_diagnostic.MA0029.severity = none
+dotnet_diagnostic.MA0048.severity = none
+dotnet_diagnostic.MA0051.severity = none
+dotnet_diagnostic.MA0056.severity = none
+dotnet_diagnostic.MA0084.severity = none
+dotnet_diagnostic.MA0100.severity = none
 dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
 dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
 dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface

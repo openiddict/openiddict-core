@@ -121,7 +121,7 @@ public class OpenIddictMessage
     {
         ArgumentNullException.ThrowIfNull(parameters);
 
-        foreach (var parameter in parameters.GroupBy(parameter => parameter.Key))
+        foreach (var parameter in parameters.GroupBy(parameter => parameter.Key, StringComparer.Ordinal))
         {
             // Ignore parameters whose name is null or empty.
             if (string.IsNullOrEmpty(parameter.Key))

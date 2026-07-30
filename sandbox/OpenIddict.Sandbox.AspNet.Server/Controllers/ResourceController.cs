@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -27,7 +28,7 @@ public class ResourceController : ApiController
         {
             context.Authentication.Challenge(
                 authenticationTypes: OpenIddictValidationOwinDefaults.AuthenticationType,
-                properties: new AuthenticationProperties(new Dictionary<string, string?>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                 {
                     [OpenIddictValidationOwinConstants.Properties.Scope] = "demo_api",
                     [OpenIddictValidationOwinConstants.Properties.Error] = Errors.InsufficientScope,
@@ -43,7 +44,7 @@ public class ResourceController : ApiController
         {
             context.Authentication.Challenge(
                 authenticationTypes: OpenIddictValidationOwinDefaults.AuthenticationType,
-                properties: new AuthenticationProperties(new Dictionary<string, string?>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                 {
                     [OpenIddictValidationOwinConstants.Properties.Error] = Errors.InvalidToken,
                     [OpenIddictValidationOwinConstants.Properties.ErrorDescription] =

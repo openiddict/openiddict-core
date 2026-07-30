@@ -587,7 +587,7 @@ public static partial class OpenIddictServerHandlers
                 // retrieved as a Dictionary<string, string[]> and converted to ImmutableDictionary<string, ImmutableArray<string>.
                 if (token.TryGetPayloadValue(Claims.Private.ClaimDestinationsMap, out Dictionary<string, string[]> destinations))
                 {
-                    var builder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>();
+                    var builder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>(StringComparer.Ordinal);
 
                     foreach (var destination in destinations)
                     {
@@ -640,7 +640,7 @@ public static partial class OpenIddictServerHandlers
                 var scopes = context.Principal.GetClaims(Claims.Scope);
                 if (scopes.Length is > 1)
                 {
-                    context.Principal.SetClaim(Claims.Scope, string.Join(" ", scopes));
+                    context.Principal.SetClaim(Claims.Scope, string.Join(Separators.Space[0], scopes));
                 }
 
                 return ValueTask.CompletedTask;
@@ -1700,7 +1700,7 @@ public static partial class OpenIddictServerHandlers
                     var scopes = context.Principal.GetScopes();
                     if (scopes.Any())
                     {
-                        claims.Add(Claims.Scope, string.Join(" ", scopes));
+                        claims.Add(Claims.Scope, string.Join(Separators.Space[0], scopes));
                     }
 
                     claims.Add(Claims.JwtId, Guid.NewGuid().ToString());

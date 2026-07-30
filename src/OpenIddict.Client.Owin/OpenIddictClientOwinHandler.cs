@@ -95,12 +95,12 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
             return true;
         }
 
-        else if (context.IsRequestSkipped)
+        if (context.IsRequestSkipped)
         {
             return false;
         }
 
-        else if (context.IsRejected)
+        if (context.IsRejected)
         {
             var notification = new ProcessErrorContext(transaction)
             {
@@ -117,7 +117,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                 return true;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 return false;
             }
@@ -152,7 +152,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
             return null;
         }
 
-        else if (context.IsRejected)
+        if (context.IsRejected)
         {
             // Note: the missing_token error is special-cased to indicate to Katana
             // that no authentication result could be produced due to the lack of token.
@@ -315,7 +315,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                 return;
             }
 
-            else if (context.IsRejected)
+            if (context.IsRejected)
             {
                 var notification = new ProcessErrorContext(transaction)
                 {
@@ -359,7 +359,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                 return;
             }
 
-            else if (context.IsRejected)
+            if (context.IsRejected)
             {
                 var notification = new ProcessErrorContext(transaction)
                 {
@@ -408,7 +408,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                             authenticationTypes: [OpenIddictClientOwinDefaults.AuthenticationType],
                             properties         : new AuthenticationProperties(dictionary: new Dictionary<string, string>(
                                 manager.AuthenticationResponseChallenge.Properties.Dictionary
-                                ?? ImmutableDictionary.Create<string, string>())
+                                ?? ImmutableDictionary<string, string>.Empty, StringComparer.Ordinal)
                                 {
                                     [Properties.ProviderName] = type
                                 }));
@@ -447,7 +447,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                             authenticationTypes: [OpenIddictClientOwinDefaults.AuthenticationType],
                             properties         : new AuthenticationProperties(dictionary: new Dictionary<string, string>(
                                 manager.AuthenticationResponseRevoke.Properties.Dictionary
-                                ?? ImmutableDictionary.Create<string, string>())
+                                ?? ImmutableDictionary<string, string>.Empty, StringComparer.Ordinal)
                                 {
                                     [Properties.ProviderName] = type
                                 }));

@@ -91,13 +91,13 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
                 }
 
-                else if (notification.IsRejected)
+                if (notification.IsRejected)
                 {
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidRequest,
@@ -154,13 +154,13 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
                 }
 
-                else if (notification.IsRejected)
+                if (notification.IsRejected)
                 {
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidRequest,
@@ -208,13 +208,13 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
                 }
 
-                else if (notification.IsRejected)
+                if (notification.IsRejected)
                 {
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidRequest,
@@ -229,7 +229,7 @@ public static partial class OpenIddictServerHandlers
                     [Claims.Issuer] = notification.Issuer?.AbsoluteUri,
                     [Claims.Username] = notification.Username,
                     [Claims.Subject] = notification.Subject,
-                    [Claims.Scope] = string.Join(" ", notification.Scopes),
+                    [Claims.Scope] = string.Join(Separators.Space[0], notification.Scopes),
                     [Claims.JwtId] = notification.TokenId,
                     [Claims.TokenType] = notification.TokenType,
                     [Claims.TokenUsage] = notification.TokenUsage,
@@ -313,7 +313,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
@@ -474,13 +474,13 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
                 }
 
-                else if (notification.IsRejected)
+                if (notification.IsRejected)
                 {
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidRequest,
@@ -830,7 +830,7 @@ public static partial class OpenIddictServerHandlers
                 context.Username = context.GenericTokenPrincipal.Identity.Name;
                 context.Scopes.UnionWith(context.GenericTokenPrincipal.GetScopes());
 
-                foreach (var group in context.GenericTokenPrincipal.Claims.GroupBy(claim => claim.Type))
+                foreach (var group in context.GenericTokenPrincipal.Claims.GroupBy(claim => claim.Type, StringComparer.Ordinal))
                 {
                     // Exclude standard claims, that are already handled via strongly-typed properties.
                     // Make sure to always update this list when adding new built-in claim properties.

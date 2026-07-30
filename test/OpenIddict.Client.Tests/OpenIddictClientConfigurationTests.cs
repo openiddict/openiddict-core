@@ -175,7 +175,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0075), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0075), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -196,7 +196,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0455), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0455), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0521), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0521), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0136), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0136), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -258,7 +258,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0137), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0137), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -280,7 +280,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0395), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0395), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -300,7 +300,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0522), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0522), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -321,7 +321,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0313), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0313), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -335,7 +335,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0076), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0076), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -353,7 +353,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0285), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0285), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -368,7 +368,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0356), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0356), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -384,8 +384,8 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0357), result.Failures!);
-        Assert.Contains(SR.GetResourceString(SR.ID0358), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0357), result.Failures!, StringComparer.Ordinal);
+        Assert.Contains(SR.GetResourceString(SR.ID0358), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -400,7 +400,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.FormatID0281(ResponseTypes.Code), result.Failures!);
+        Assert.Contains(SR.FormatID0281(ResponseTypes.Code), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -451,7 +451,7 @@ public class OpenIddictClientConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0347), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0347), result.Failures!, StringComparer.Ordinal);
     }
 
     private static OpenIddictClientOptions CreateBaseOptions()

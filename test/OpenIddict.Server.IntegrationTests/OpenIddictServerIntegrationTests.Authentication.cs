@@ -997,7 +997,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
             }));
 
             options.Services.AddSingleton(CreateScopeManager(mock =>
@@ -1181,7 +1181,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
             }));
 
             options.Services.AddSingleton(CreateResourceManager(mock =>
@@ -1501,7 +1501,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -1558,7 +1558,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -1853,7 +1853,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -2111,7 +2111,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(false);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -2174,7 +2174,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -2237,7 +2237,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -2418,7 +2418,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -3920,7 +3920,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
             }));
 
             options.Services.AddSingleton(CreateScopeManager(mock =>
@@ -4086,7 +4086,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
             }));
 
             options.Services.AddSingleton(CreateResourceManager(mock =>
@@ -4391,7 +4391,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options => options.Services.AddSingleton(manager));
@@ -4438,7 +4438,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -4740,7 +4740,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -5059,7 +5059,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(false);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -5116,7 +5116,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -5173,7 +5173,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>
@@ -5345,7 +5345,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                 .ReturnsAsync(true);
 
             mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableDictionary.Create<string, string>());
+                .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
         });
 
         await using var server = await CreateServerAsync(options =>

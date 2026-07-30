@@ -31,7 +31,7 @@ public class AuthenticationController : Controller
         // the user is directly redirected to GitHub (in this case, no login page is shown).
         if (string.Equals(provider, "Local+GitHub", StringComparison.Ordinal))
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
             {
                 // Note: when only one client is registered in the client options,
                 // specifying the issuer URI or the provider name is not required.
@@ -61,7 +61,7 @@ public class AuthenticationController : Controller
                 return new HttpStatusCodeResult(400);
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
             {
                 // Note: when only one client is registered in the client options,
                 // specifying the issuer URI or the provider name is not required.
@@ -100,7 +100,7 @@ public class AuthenticationController : Controller
         if (identity.FindFirst(Claims.Private.RegistrationId)?.Value is string identifier &&
             await _service.GetServerConfigurationByRegistrationIdAsync(identifier) is { EndSessionEndpoint: Uri })
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
             {
                 [OpenIddictClientOwinConstants.Properties.RegistrationId] = identifier,
 
@@ -195,7 +195,7 @@ public class AuthenticationController : Controller
                 OpenIddictClientOwinConstants.Tokens.BackchannelAccessToken   or
                 OpenIddictClientOwinConstants.Tokens.BackchannelIdentityToken or
                 OpenIddictClientOwinConstants.Tokens.RefreshToken)
-            .ToDictionary(pair => pair.Key, pair => pair.Value))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal))
         {
             // Set the creation and expiration dates of the ticket to null to decorrelate the lifetime
             // of the resulting authentication cookie from the lifetime of the identity token returned by

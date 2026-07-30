@@ -342,7 +342,7 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        return new(token.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
+        return new(token.CreationDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
     }
 
     /// <inheritdoc/>
@@ -350,7 +350,7 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        return new(token.ExpirationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
+        return new(token.ExpirationDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
     }
 
     /// <inheritdoc/>
@@ -376,7 +376,7 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         if (string.IsNullOrEmpty(token.Properties))
         {
-            return new(ImmutableDictionary.Create<string, JsonElement>());
+            return new([]);
         }
 
         // Note: parsing the stringified properties is an expensive operation.
@@ -388,7 +388,7 @@ public class OpenIddictEntityFrameworkTokenStore<
                  .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
             using var document = JsonDocument.Parse(token.Properties);
-            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>(StringComparer.Ordinal);
 
             foreach (var property in document.RootElement.EnumerateObject())
             {
@@ -406,7 +406,7 @@ public class OpenIddictEntityFrameworkTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        return new(token.RedemptionDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
+        return new(token.RedemptionDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
     }
 
     /// <inheritdoc/>
@@ -1016,17 +1016,14 @@ public class OpenIddictEntityFrameworkTokenStore<
             return (TKey?) (object?) identifier;
         }
 
-        else
-        {
-            var converter =
+        var converter =
 #if NET
-                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+            TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 #else
-                TypeDescriptor.GetConverter(typeof(TKey));
+            TypeDescriptor.GetConverter(typeof(TKey));
 #endif
 
-            return (TKey?) converter.ConvertFromInvariantString(identifier);
-        }
+        return (TKey?) converter.ConvertFromInvariantString(identifier);
     }
 
     /// <summary>
@@ -1047,16 +1044,13 @@ public class OpenIddictEntityFrameworkTokenStore<
             return value;
         }
 
-        else
-        {
-            var converter =
+        var converter =
 #if NET
-                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+            TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 #else
-                TypeDescriptor.GetConverter(typeof(TKey));
+            TypeDescriptor.GetConverter(typeof(TKey));
 #endif
 
-            return converter.ConvertToInvariantString(identifier);
-        }
+        return converter.ConvertToInvariantString(identifier);
     }
 }

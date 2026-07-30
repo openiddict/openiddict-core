@@ -424,13 +424,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
-        if (descriptions is not { Count: > 0 })
-        {
-            return ImmutableDictionary.Create<CultureInfo, string>();
-        }
-
-        return descriptions;
+        return await Store.GetDescriptionsAsync(scope, cancellationToken) is { IsEmpty: false } descriptions ? descriptions : [];
     }
 
     /// <summary>
@@ -463,13 +457,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     {
         ArgumentNullException.ThrowIfNull(scope);
 
-        var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
-        if (names is not { Count: > 0 })
-        {
-            return ImmutableDictionary.Create<CultureInfo, string>();
-        }
-
-        return names;
+        return await Store.GetDisplayNamesAsync(scope, cancellationToken) is { IsEmpty: false } names ? names : [];
     }
 
     /// <summary>
@@ -870,7 +858,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2044));
             }
 
-            else if (name.Contains(Separators.Space[0]))
+            else if (name.Contains(Separators.Space[0], StringComparison.Ordinal))
             {
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2045));
             }
@@ -962,7 +950,9 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictScopeManager.GetLocalizedDescriptionAsync(object scope, CancellationToken cancellationToken)
+#pragma warning disable MA0011
         => GetLocalizedDescriptionAsync((TScope) scope, cancellationToken);
+#pragma warning restore MA0011
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictScopeManager.GetLocalizedDescriptionAsync(object scope, CultureInfo culture, CancellationToken cancellationToken)
@@ -970,7 +960,9 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictScopeManager.GetLocalizedDisplayNameAsync(object scope, CancellationToken cancellationToken)
+#pragma warning disable MA0011
         => GetLocalizedDisplayNameAsync((TScope) scope, cancellationToken);
+#pragma warning restore MA0011
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictScopeManager.GetLocalizedDisplayNameAsync(object scope, CultureInfo culture, CancellationToken cancellationToken)

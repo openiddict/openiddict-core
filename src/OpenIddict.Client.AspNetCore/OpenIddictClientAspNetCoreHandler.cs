@@ -76,12 +76,12 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
             return true;
         }
 
-        else if (context.IsRequestSkipped)
+        if (context.IsRequestSkipped)
         {
             return false;
         }
 
-        else if (context.IsRejected)
+        if (context.IsRejected)
         {
             var notification = new ProcessErrorContext(transaction)
             {
@@ -98,7 +98,7 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
                 return true;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 return false;
             }
@@ -133,7 +133,7 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
             return AuthenticateResult.NoResult();
         }
 
-        else if (context.IsRejected)
+        if (context.IsRejected)
         {
             // Note: the missing_token error is special-cased to indicate to ASP.NET Core
             // that no authentication result could be produced due to the lack of token.
@@ -390,7 +390,7 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
             return;
         }
 
-        else if (context.IsRejected)
+        if (context.IsRejected)
         {
             var notification = new ProcessErrorContext(transaction)
             {
@@ -436,7 +436,7 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
             return;
         }
 
-        else if (context.IsRejected)
+        if (context.IsRejected)
         {
             var notification = new ProcessErrorContext(transaction)
             {

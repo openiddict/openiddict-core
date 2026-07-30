@@ -370,7 +370,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             return ValueTask.CompletedTask;
 
             static string? EscapeDataString(string? value)
-                => value is not null ? Uri.EscapeDataString(value).Replace("%20", "+") : null;
+                => value is not null ? Uri.EscapeDataString(value).Replace("%20", "+", StringComparison.Ordinal) : null;
         }
     }
 
@@ -413,7 +413,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 request.RequestUri = OpenIddictHelpers.AddQueryStringParameters(request.RequestUri,
                     context.Transaction.Request.GetParameters().ToDictionary(
                         static parameter => parameter.Key,
-                        static parameter => (StringValues) parameter.Value));
+                        static parameter => (StringValues) parameter.Value,
+                        StringComparer.Ordinal));
             }
 
             // For POST requests, attach the request parameters to the request form by default.
@@ -605,7 +606,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                     continue;
                 }
 
-                else if (string.Equals(encoding, ContentEncodings.Gzip, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(encoding, ContentEncodings.Gzip, StringComparison.OrdinalIgnoreCase))
                 {
                     stream ??= await response.Content.ReadAsStreamAsync().WaitAsync(context.CancellationToken);
                     stream = new GZipStream(stream, CompressionMode.Decompress);

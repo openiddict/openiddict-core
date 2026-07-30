@@ -153,7 +153,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
         // Assert
         var properties = new AuthenticationProperties(response.GetParameters()
-            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
+            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value, StringComparer.Ordinal));
 
         Assert.Equal(new DateTimeOffset(2020, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.IssuedUtc);
     }
@@ -203,7 +203,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
         // Assert
         var properties = new AuthenticationProperties(response.GetParameters()
-            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
+            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value, StringComparer.Ordinal));
 
         Assert.Equal(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.ExpiresUtc);
     }
@@ -251,7 +251,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
         // Assert
         var properties = new AuthenticationProperties(response.GetParameters()
-            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
+            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value, StringComparer.Ordinal));
 
         Assert.Equal("value", properties.Dictionary["custom_property"]);
     }
@@ -705,7 +705,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
                     var principal = new ClaimsPrincipal(identity);
 
-                    var properties = new AuthenticationProperties(new Dictionary<string, string?>
+                    var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         ["custom_property"] = "value",
 
@@ -719,81 +719,87 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     return;
                 }
 
-                else if (context.Request.Path == new PathString("/signout"))
+                else
+                {
+                    if (context.Request.Path == new PathString("/signout"))
                 {
                     context.Authentication.SignOut(OpenIddictServerOwinDefaults.AuthenticationType);
                     return;
                 }
 
-                else if (context.Request.Path == new PathString("/signout/custom"))
-                {
-
-                    var properties = new AuthenticationProperties(new Dictionary<string, string?>
+                    if (context.Request.Path == new PathString("/signout/custom"))
                     {
-                        ["custom_property"] = "value",
 
-                        ["boolean_parameter#boolean"] = "true",
-                        ["integer_parameter#integer"] = "42",
-                        ["string_parameter#string"] = "Bob l'Eponge"
-                    });
+                        var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
+                        {
+                            ["custom_property"] = "value",
 
-                    context.Authentication.SignOut(properties, OpenIddictServerOwinDefaults.AuthenticationType);
-                    return;
-                }
+                            ["boolean_parameter#boolean"] = "true",
+                            ["integer_parameter#integer"] = "42",
+                            ["string_parameter#string"] = "Bob l'Eponge"
+                        });
 
-                else if (context.Request.Path == new PathString("/challenge"))
-                {
-                    context.Authentication.Challenge(OpenIddictServerOwinDefaults.AuthenticationType);
-                    return;
-                }
-
-                else if (context.Request.Path == new PathString("/challenge/custom"))
-                {
-                    var properties = new AuthenticationProperties(new Dictionary<string, string?>
-                    {
-                        [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
-                        [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",
-                        [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri",
-
-                        ["custom_property"] = "value",
-
-                        ["boolean_parameter#boolean"] = "true",
-                        ["integer_parameter#integer"] = "42",
-                        ["string_parameter#string"] = "Bob l'Eponge",
-                        ["json_parameter#json"] = @"[""Contoso"",""Fabrikam""]"
-                    });
-
-                    context.Authentication.Challenge(properties, OpenIddictServerOwinDefaults.AuthenticationType);
-                    return;
-                }
-
-                else if (context.Request.Path == new PathString("/authenticate"))
-                {
-                    var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
-                    if (result?.Identity is not { IsAuthenticated: true })
-                    {
+                        context.Authentication.SignOut(properties, OpenIddictServerOwinDefaults.AuthenticationType);
                         return;
                     }
 
-                    var claims = result.Identity.Claims.GroupBy(claim => claim.Type)
-                        .Select(group => KeyValuePair.Create(group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
-
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(claims)));
-                    return;
-                }
-
-                else if (context.Request.Path == new PathString("/authenticate/properties"))
-                {
-                    var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
-                    if (result?.Properties is null)
+                    else
                     {
-                        return;
-                    }
+                        if (context.Request.Path == new PathString("/challenge"))
+                        {
+                            context.Authentication.Challenge(OpenIddictServerOwinDefaults.AuthenticationType);
+                            return;
+                        }
 
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(result.Properties.Dictionary)));
-                    return;
+                        if (context.Request.Path == new PathString("/challenge/custom"))
+                        {
+                            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
+                            {
+                                [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
+                                [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",
+                                [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri",
+
+                                ["custom_property"] = "value",
+
+                                ["boolean_parameter#boolean"] = "true",
+                                ["integer_parameter#integer"] = "42",
+                                ["string_parameter#string"] = "Bob l'Eponge",
+                                ["json_parameter#json"] = @"[""Contoso"",""Fabrikam""]"
+                            });
+
+                            context.Authentication.Challenge(properties, OpenIddictServerOwinDefaults.AuthenticationType);
+                            return;
+                        }
+
+                        if (context.Request.Path == new PathString("/authenticate"))
+                        {
+                            var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
+                            if (result?.Identity is not { IsAuthenticated: true })
+                            {
+                                return;
+                            }
+
+                            var claims = result.Identity.Claims.GroupBy(claim => claim.Type, StringComparer.Ordinal)
+                                .Select(group => KeyValuePair.Create(group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
+
+                            context.Response.ContentType = "application/json";
+                            await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(claims)));
+                            return;
+                        }
+
+                        else if (context.Request.Path == new PathString("/authenticate/properties"))
+                        {
+                            var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
+                            if (result?.Properties is null)
+                            {
+                                return;
+                            }
+
+                            context.Response.ContentType = "application/json";
+                            await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(result.Properties.Dictionary)));
+                            return;
+                        }
+                    }
                 }
 
                 await next();

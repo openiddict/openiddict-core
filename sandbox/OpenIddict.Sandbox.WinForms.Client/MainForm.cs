@@ -22,7 +22,7 @@ public partial class MainForm : Form, IWinFormsShell
         => await LogInAsync("Local");
 
     private async void LocalLoginWithGitHubButton_Click(object sender, EventArgs e)
-        => await LogInAsync("Local", new()
+        => await LogInAsync("Local", new(StringComparer.Ordinal)
         {
             [Parameters.IdentityProvider] = Providers.GitHub
         });

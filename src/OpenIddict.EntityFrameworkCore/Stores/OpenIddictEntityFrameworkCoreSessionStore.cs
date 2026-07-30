@@ -364,7 +364,7 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
     {
         ArgumentNullException.ThrowIfNull(session);
 
-        return new(session.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
+        return new(session.CreationDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
     }
 
     /// <inheritdoc/>
@@ -632,12 +632,9 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
             return (TKey?) (object?) identifier;
         }
 
-        else
-        {
-            var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+        var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
-            return (TKey?) converter.ConvertFromInvariantString(identifier);
-        }
+        return (TKey?) converter.ConvertFromInvariantString(identifier);
     }
 
     /// <summary>
@@ -658,11 +655,8 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
             return value;
         }
 
-        else
-        {
-            var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+        var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
-            return converter.ConvertToInvariantString(identifier);
-        }
+        return converter.ConvertToInvariantString(identifier);
     }
 }

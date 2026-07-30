@@ -370,8 +370,8 @@ builder.Services.Configure<KestrelServerOptions>(options => options.ListenAnyIP(
             ServerCertificate = store.Certificates
                 .Find(X509FindType.FindByExtension, "1.3.6.1.4.1.311.84.1.1", validOnly: false)
                 .Cast<X509Certificate2>()
-                .Where(static certificate => certificate.NotBefore < TimeProvider.System.GetLocalNow())
-                .Where(static certificate => certificate.NotAfter > TimeProvider.System.GetLocalNow())
+                .Where(static certificate => new DateTimeOffset(certificate.NotBefore) < TimeProvider.System.GetLocalNow())
+                .Where(static certificate => new DateTimeOffset(certificate.NotAfter) > TimeProvider.System.GetLocalNow())
                 .OrderByDescending(static certificate => certificate.NotAfter)
                 .FirstOrDefault()
                 ?? throw new InvalidOperationException("The ASP.NET Core HTTPS development certificate was not found.")

@@ -11,7 +11,7 @@ namespace OpenIddict.MongoDb.Models;
 /// <summary>
 /// Represents an OpenIddict session.
 /// </summary>
-[DebuggerDisplay("Id = {Id.ToString(),nq} ; Name = {Name,nq}")]
+[DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; LoginId = {LoginId,nq} ; Status = {Status,nq}")]
 public class OpenIddictMongoDbSession
 {
     /// <summary>

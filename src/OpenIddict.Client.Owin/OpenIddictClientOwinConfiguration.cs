@@ -61,7 +61,7 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
             foreach (var (provider, registrations) in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>()
                 .CurrentValue.Registrations
                 .Where(static registration => !string.IsNullOrEmpty(registration.ProviderName))
-                .GroupBy(static registration => registration.ProviderName)
+                .GroupBy(static registration => registration.ProviderName, StringComparer.Ordinal)
                 .Select(static group => (ProviderName: group.Key, Registrations: group.ToList())))
             {
                 // If an explicit mapping was already added, don't overwrite it.
@@ -109,7 +109,7 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
             foreach (var (provider, registrations) in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>()
                 .CurrentValue.Registrations
                 .Where(static registration => !string.IsNullOrEmpty(registration.ProviderName))
-                .GroupBy(static registration => registration.ProviderName)
+                .GroupBy(static registration => registration.ProviderName, StringComparer.Ordinal)
                 .Select(static group => (ProviderName: group.Key, Registrations: group.ToList()))
                 .Where(static group => group.Registrations.Count is > 1))
             {

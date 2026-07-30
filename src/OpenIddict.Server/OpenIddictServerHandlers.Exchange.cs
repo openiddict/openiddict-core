@@ -110,13 +110,13 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
                 }
 
-                else if (notification.IsRejected)
+                if (notification.IsRejected)
                 {
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidRequest,
@@ -173,13 +173,13 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
                 }
 
-                else if (notification.IsRejected)
+                if (notification.IsRejected)
                 {
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidRequest,
@@ -227,13 +227,13 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
                 }
 
-                else if (notification.IsRejected)
+                if (notification.IsRejected)
                 {
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidGrant,
@@ -266,13 +266,13 @@ public static partial class OpenIddictServerHandlers
                         return;
                     }
 
-                    else if (@event.IsRequestSkipped)
+                    if (@event.IsRequestSkipped)
                     {
                         context.SkipRequest();
                         return;
                     }
 
-                    else if (@event.IsRejected)
+                    if (@event.IsRejected)
                     {
                         context.Reject(
                             error: @event.Error ?? Errors.InvalidRequest,
@@ -321,7 +321,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
@@ -1226,13 +1226,13 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                else if (notification.IsRequestSkipped)
+                if (notification.IsRequestSkipped)
                 {
                     context.SkipRequest();
                     return;
                 }
 
-                else if (notification.IsRejected)
+                if (notification.IsRejected)
                 {
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidRequest,
@@ -2099,11 +2099,7 @@ public static partial class OpenIddictServerHandlers
                     return ValueTask.CompletedTask;
                 }
 
-                // When an explicit scope parameter has been included in the token request,
-                // the authorization server MUST ensure that it doesn't contain scopes
-                // that were not granted during the initial authorization/token request.
-                // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
-                else if (!scopes.IsSupersetOf(context.Request.GetScopes()))
+                if (!scopes.IsSupersetOf(context.Request.GetScopes()))
                 {
                     context.Logger.LogInformation(6095, SR.GetResourceString(SR.ID6095), Parameters.Scope);
 
@@ -2172,7 +2168,7 @@ public static partial class OpenIddictServerHandlers
                     // reused as-is and that a new ad-hoc authorization, separate from the one attached
                     // to the subject token will be created and attached to the issued token by OpenIddict.
                     GrantTypes.TokenExchange => notification.SubjectTokenPrincipal
-                        ?.Clone(claim => !claim.Type.StartsWith(Claims.Prefixes.Private)),
+                        ?.Clone(claim => !claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.Ordinal)),
 
                     _ => null
                 };

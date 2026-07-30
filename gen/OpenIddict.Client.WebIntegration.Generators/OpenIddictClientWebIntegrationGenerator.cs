@@ -897,7 +897,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
                                 Name = (string) constant.Attribute("Name"),
                                 Value = (string) constant.Attribute("Value")
                             })
-                            .GroupBy(static constant => constant.Class)
+                            .GroupBy(static constant => constant.Class, StringComparer.Ordinal)
                             .ToList(),
                     })
                     .ToList()
@@ -1600,7 +1600,7 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
 
         static TemplateContext CreateTemplateContext(object model)
         {
-            var context = new TemplateContext
+            var context = new TemplateContext(StringComparer.OrdinalIgnoreCase)
             {
                 LimitToString = 128 * 1024 * 1024,
                 LoopLimit = 100_000

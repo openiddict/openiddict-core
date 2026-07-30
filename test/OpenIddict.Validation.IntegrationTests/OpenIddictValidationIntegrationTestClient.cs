@@ -194,7 +194,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
             message.RequestUri = OpenIddictHelpers.AddQueryStringParameters(message.RequestUri!,
                 request.GetParameters().ToDictionary(
                     static parameter => parameter.Key,
-                    static parameter => (StringValues) parameter.Value));
+                    static parameter => (StringValues) parameter.Value, StringComparer.Ordinal));
         }
 
         if (message.Method != HttpMethod.Get)
@@ -320,7 +320,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
                     return null;
                 }
 
-                return Uri.UnescapeDataString(value.Replace("+", "%20"));
+                return Uri.UnescapeDataString(value.Replace("+", "%20", StringComparison.Ordinal));
             }
 
             // Note: a dictionary is deliberately not used here to allow multiple parameters with the
@@ -359,19 +359,17 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
                 parameters.Add(KeyValuePair.Create(name, value));
             }
 
-            return new OpenIddictResponse(
-                from parameter in parameters
-                group parameter by parameter.Key into grouping
-                let values = grouping.Select(parameter => parameter.Value)
-                select KeyValuePair.Create(grouping.Key, new StringValues([.. values])));
+            return new OpenIddictResponse(parameters
+                .GroupBy(static parameter => parameter.Key, static parameter => parameter.Value, StringComparer.Ordinal)
+                .Select(static grouping => KeyValuePair.Create(grouping.Key, new StringValues([.. grouping]))));
         }
 
-        else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
         {
             return (await message.Content!.ReadFromJsonAsync<OpenIddictResponse>())!;
         }
 
-        else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
         {
             // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
             // that always return their HTTP responses encoded using UTF-8. As such, the stream
@@ -402,14 +400,12 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
                 parameters.Add(KeyValuePair.Create(name, value));
             }
 
-            return new OpenIddictResponse(
-                from parameter in parameters
-                group parameter by parameter.Key into grouping
-                let values = grouping.Select(parameter => parameter.Value)
-                select KeyValuePair.Create(grouping.Key, new StringValues([.. values])));
+            return new OpenIddictResponse(parameters
+                .GroupBy(static parameter => parameter.Key, static parameter => parameter.Value, StringComparer.Ordinal)
+                .Select(static grouping => KeyValuePair.Create(grouping.Key, new StringValues([.. grouping]))));
         }
 
-        else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
         {
             // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
             // that always return their HTTP responses encoded using UTF-8. As such, the stream
@@ -424,7 +420,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
 
             for (var line = await reader.ReadLineAsync(); line is not null; line = await reader.ReadLineAsync())
             {
-                var index = line.IndexOf(':');
+                var index = line.IndexOf(':', StringComparison.Ordinal);
                 if (index is -1)
                 {
                     continue;
@@ -441,11 +437,9 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
                 parameters.Add(KeyValuePair.Create(name, value));
             }
 
-            return new OpenIddictResponse(
-                from parameter in parameters
-                group parameter by parameter.Key into grouping
-                let values = grouping.Select(parameter => parameter.Value)
-                select KeyValuePair.Create(grouping.Key, new StringValues([.. values])));
+            return new OpenIddictResponse(parameters
+                .GroupBy(static parameter => parameter.Key, static parameter => parameter.Value, StringComparer.Ordinal)
+                .Select(static grouping => KeyValuePair.Create(grouping.Key, new StringValues([.. grouping]))));
         }
 
         return new OpenIddictResponse();

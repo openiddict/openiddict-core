@@ -242,7 +242,7 @@ public class OpenIddictEntityFrameworkScopeStore<
 
         if (string.IsNullOrEmpty(scope.Descriptions))
         {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
+            return new([]);
         }
 
         // Note: parsing the stringified descriptions is an expensive operation.
@@ -288,7 +288,7 @@ public class OpenIddictEntityFrameworkScopeStore<
 
         if (string.IsNullOrEmpty(scope.DisplayNames))
         {
-            return new(ImmutableDictionary.Create<CultureInfo, string>());
+            return new([]);
         }
 
         // Note: parsing the stringified display names is an expensive operation.
@@ -342,7 +342,7 @@ public class OpenIddictEntityFrameworkScopeStore<
 
         if (string.IsNullOrEmpty(scope.Properties))
         {
-            return new(ImmutableDictionary.Create<string, JsonElement>());
+            return new([]);
         }
 
         // Note: parsing the stringified properties is an expensive operation.
@@ -354,7 +354,7 @@ public class OpenIddictEntityFrameworkScopeStore<
                  .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
             using var document = JsonDocument.Parse(scope.Properties);
-            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>(StringComparer.Ordinal);
 
             foreach (var property in document.RootElement.EnumerateObject())
             {
@@ -683,17 +683,14 @@ public class OpenIddictEntityFrameworkScopeStore<
             return (TKey?) (object?) identifier;
         }
 
-        else
-        {
-            var converter =
+        var converter =
 #if NET
-                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+            TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 #else
-                TypeDescriptor.GetConverter(typeof(TKey));
+            TypeDescriptor.GetConverter(typeof(TKey));
 #endif
 
-            return (TKey?) converter.ConvertFromInvariantString(identifier);
-        }
+        return (TKey?) converter.ConvertFromInvariantString(identifier);
     }
 
     /// <summary>
@@ -714,16 +711,13 @@ public class OpenIddictEntityFrameworkScopeStore<
             return value;
         }
 
-        else
-        {
-            var converter =
+        var converter =
 #if NET
-                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+            TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 #else
-                TypeDescriptor.GetConverter(typeof(TKey));
+            TypeDescriptor.GetConverter(typeof(TKey));
 #endif
 
-            return converter.ConvertToInvariantString(identifier);
-        }
+        return converter.ConvertToInvariantString(identifier);
     }
 }

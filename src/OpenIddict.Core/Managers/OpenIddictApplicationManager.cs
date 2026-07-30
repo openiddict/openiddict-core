@@ -582,13 +582,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
-        if (names is not { Count: > 0 })
-        {
-            return ImmutableDictionary.Create<CultureInfo, string>();
-        }
-
-        return names;
+        return await Store.GetDisplayNamesAsync(application, cancellationToken) is { IsEmpty: false } names ? names : [];
     }
 
     /// <summary>
@@ -2007,7 +2001,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictApplicationManager.GetLocalizedDisplayNameAsync(object application, CancellationToken cancellationToken)
+#pragma warning disable MA0011
         => GetLocalizedDisplayNameAsync((TApplication) application, cancellationToken);
+#pragma warning restore MA0011
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictApplicationManager.GetLocalizedDisplayNameAsync(object application, CultureInfo culture, CancellationToken cancellationToken)

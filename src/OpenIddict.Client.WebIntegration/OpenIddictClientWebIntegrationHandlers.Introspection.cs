@@ -66,7 +66,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         }
                     }
 
-                    context.Response.Scope = string.Join(" ", scopes);
+                    context.Response.Scope = string.Join(Separators.Space[0], scopes);
                 }
 
                 return ValueTask.CompletedTask;
