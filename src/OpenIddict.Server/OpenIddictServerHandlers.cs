@@ -662,13 +662,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectClientAssertion)
                 {
@@ -710,8 +710,8 @@ public static partial class OpenIddictServerHandlers
             Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.ClientAssertionPrincipal.Claims
-                .GroupBy(static claim => claim.Type)
-                .ToDictionary(static group => group.Key, group => group.ToList())
+                .GroupBy(static claim => claim.Type, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, group => group.ToList(), StringComparer.Ordinal)
                 .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
                 context.Reject(
@@ -1545,13 +1545,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectRequestToken)
                 {
@@ -1667,13 +1667,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectAccessToken)
                 {
@@ -1746,13 +1746,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectAuthorizationCode)
                 {
@@ -1825,13 +1825,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectDeviceCode)
                 {
@@ -1921,13 +1921,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectGenericToken)
                 {
@@ -2007,13 +2007,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectIdentityToken)
                 {
@@ -2086,13 +2086,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectRefreshToken)
                 {
@@ -2192,13 +2192,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectSubjectToken)
                 {
@@ -2298,13 +2298,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectActorToken)
                 {
@@ -2377,13 +2377,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectUserCode)
                 {
@@ -2840,8 +2840,8 @@ public static partial class OpenIddictServerHandlers
             }
 
             foreach (var group in context.Principal.Claims
-                .GroupBy(static claim => claim.Type)
-                .ToDictionary(static group => group.Key, static group => group.ToList())
+                .GroupBy(static claim => claim.Type, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, static group => group.ToList(), StringComparer.Ordinal)
                 .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
                 throw new InvalidOperationException(SR.FormatID0424(group.Key));
@@ -3089,11 +3089,11 @@ public static partial class OpenIddictServerHandlers
 
             // Restore the internal claims resolved from the token.
             foreach (var claims in principal.Claims
-                .Where(claim => claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.OrdinalIgnoreCase))
-                .GroupBy(claim => claim.Type))
+                .Where(claim => claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.Ordinal))
+                .GroupBy(claim => claim.Type, StringComparer.Ordinal))
             {
                 // If the specified principal already contains one claim of the iterated type, ignore them.
-                if (context.Principal.Claims.Any(claim => claim.Type == claims.Key))
+                if (context.Principal.Claims.Any(claim => string.Equals(claim.Type, claims.Key, StringComparison.Ordinal)))
                 {
                     continue;
                 }
@@ -3652,7 +3652,7 @@ public static partial class OpenIddictServerHandlers
                 context.Request.IsRefreshTokenGrantType() && !string.IsNullOrEmpty(context.Request.Scope))
             {
                 var scopes = context.Request.GetScopes();
-                principal.SetScopes(scopes.Intersect(context.Principal.GetScopes()));
+                principal.SetScopes(scopes.Intersect(context.Principal.GetScopes(), StringComparer.Ordinal));
 
                 context.Logger.LogDebug(6010, SR.GetResourceString(SR.ID6010), scopes);
             }
@@ -4807,13 +4807,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -4871,13 +4871,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -4949,13 +4949,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -5025,13 +5025,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -5089,13 +5089,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -5155,13 +5155,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -5436,13 +5436,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -5501,13 +5501,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -5622,7 +5622,7 @@ public static partial class OpenIddictServerHandlers
                          context.Request.IsAuthorizationCodeGrantType()) ||
                         !scopes.SetEquals(context.Request.GetScopes()))
                     {
-                        context.Response.Scope = string.Join(" ", scopes);
+                        context.Response.Scope = string.Join(Separators.Space[0], scopes);
                     }
                 }
             }

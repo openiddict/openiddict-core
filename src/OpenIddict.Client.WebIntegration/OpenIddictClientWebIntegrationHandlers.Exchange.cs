@@ -270,7 +270,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     request.RequestUri = OpenIddictHelpers.AddQueryStringParameters(
                         uri: request.RequestUri,
-                        parameters: new Dictionary<string, StringValues>
+                        parameters: new Dictionary<string, StringValues>(StringComparer.Ordinal)
                         {
                             ["chat_os_type"] = "bot",
                             ["chat_version"] = "1.30.0"

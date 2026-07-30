@@ -796,7 +796,7 @@ public class OpenIddictResourceManagerTests
         var results = await manager.ValidateAsync(resource).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2206));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2206), StringComparison.Ordinal));
     }
 
     [Theory]
@@ -822,7 +822,7 @@ public class OpenIddictResourceManagerTests
         var results = await manager.ValidateAsync(resource).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2207));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2207), StringComparison.Ordinal));
     }
 
     [Fact]
@@ -855,7 +855,7 @@ public class OpenIddictResourceManagerTests
         var results = await manager.ValidateAsync(resource).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2208));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2208), StringComparison.Ordinal));
     }
 
     [Fact]

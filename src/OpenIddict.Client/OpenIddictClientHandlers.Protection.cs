@@ -410,7 +410,7 @@ public static partial class OpenIddictClientHandlers
                     foreach (var claim in result.ClaimsIdentity.Claims)
                     {
                         // Exclude claims starting with "oi_" from tokens that are not fully trusted.
-                        if (claim.Type.StartsWith(Claims.Prefixes.Private))
+                        if (claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.Ordinal))
                         {
                             continue;
                         }
@@ -424,7 +424,7 @@ public static partial class OpenIddictClientHandlers
                     identity = result.ClaimsIdentity.Clone(claim => claim switch
                     {
                         // Exclude claims starting with "oi_", unless the token is a state token.
-                        { Type: string type } when type.StartsWith(Claims.Prefixes.Private) &&
+                        { Type: string type } when type.StartsWith(Claims.Prefixes.Private, StringComparison.Ordinal) &&
                             result.TokenType is not JsonWebTokenTypes.Private.StateToken => false,
 
                         _ => true // Allow any other claim.

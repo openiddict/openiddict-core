@@ -1132,7 +1132,7 @@ public class OpenIddictAuthorizationManagerTests
         var results = await manager.ValidateAsync(authorization).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2116));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2116), StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1161,7 +1161,7 @@ public class OpenIddictAuthorizationManagerTests
         var results = await manager.ValidateAsync(authorization).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2117));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2117), StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1190,7 +1190,7 @@ public class OpenIddictAuthorizationManagerTests
         var results = await manager.ValidateAsync(authorization).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2038));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2038), StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1219,7 +1219,7 @@ public class OpenIddictAuthorizationManagerTests
         var results = await manager.ValidateAsync(authorization).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2039));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2039), StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1248,7 +1248,7 @@ public class OpenIddictAuthorizationManagerTests
         var results = await manager.ValidateAsync(authorization).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2042));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2042), StringComparison.Ordinal));
     }
 
     [Fact]

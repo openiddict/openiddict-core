@@ -54,7 +54,7 @@ public sealed class OpenIddictClientAspNetCoreForwarder : IAuthenticationHandler
         await _context.ChallengeAsync(
             scheme: OpenIddictClientAspNetCoreDefaults.AuthenticationScheme,
             properties: new AuthenticationProperties(
-                items: new Dictionary<string, string?>(properties?.Items ?? ImmutableDictionary.Create<string, string?>())
+                items: new Dictionary<string, string?>(properties?.Items ?? ImmutableDictionary<string, string?>.Empty, StringComparer.Ordinal)
                 {
                     [Properties.ProviderName] = _scheme.Name
                 },
@@ -76,7 +76,7 @@ public sealed class OpenIddictClientAspNetCoreForwarder : IAuthenticationHandler
         await _context.ForbidAsync(
             scheme: OpenIddictClientAspNetCoreDefaults.AuthenticationScheme,
             properties: new AuthenticationProperties(
-                items: new Dictionary<string, string?>(properties?.Items ?? ImmutableDictionary.Create<string, string?>())
+                items: new Dictionary<string, string?>(properties?.Items ?? ImmutableDictionary<string, string?>.Empty, StringComparer.Ordinal)
                 {
                     [Properties.ProviderName] = _scheme.Name
                 },
@@ -98,7 +98,7 @@ public sealed class OpenIddictClientAspNetCoreForwarder : IAuthenticationHandler
         await _context.SignOutAsync(
             scheme: OpenIddictClientAspNetCoreDefaults.AuthenticationScheme,
             properties: new AuthenticationProperties(
-                items: new Dictionary<string, string?>(properties?.Items ?? ImmutableDictionary.Create<string, string?>())
+                items: new Dictionary<string, string?>(properties?.Items ?? ImmutableDictionary<string, string?>.Empty, StringComparer.Ordinal)
                 {
                     [Properties.ProviderName] = _scheme.Name
                 },

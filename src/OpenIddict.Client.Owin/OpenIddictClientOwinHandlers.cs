@@ -578,8 +578,7 @@ public static partial class OpenIddictClientOwinHandlers
                 context.Issuer = uri;
             }
 
-            if (properties.Dictionary.TryGetValue(Properties.Scope, out string? scope) &&
-                !string.IsNullOrEmpty(scope))
+            if (properties.Dictionary.TryGetValue(Properties.Scope, out string? scope) && !string.IsNullOrEmpty(scope))
             {
                 context.Scopes.UnionWith(scope.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
             }

@@ -768,7 +768,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 var value = header["Basic ".Length..].Trim();
                 var data = Encoding.ASCII.GetString(Convert.FromBase64String(value));
 
-                var index = data.IndexOf(':');
+                var index = data.IndexOf(':', StringComparison.Ordinal);
                 if (index is < 0)
                 {
                     context.Reject(
@@ -803,7 +803,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     return null;
                 }
 
-                return Uri.UnescapeDataString(data.Replace("+", "%20"));
+                return Uri.UnescapeDataString(data.Replace("+", "%20", StringComparison.Ordinal));
             }
         }
     }
@@ -1102,7 +1102,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 builder.Append(parameter.Key);
                 builder.Append('=');
                 builder.Append('"');
-                builder.Append(parameter.Value.Replace("\"", "\\\""));
+                builder.Append(parameter.Value.Replace("\"", "\\\"", StringComparison.Ordinal));
                 builder.Append('"');
                 builder.Append(',');
             }

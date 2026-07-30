@@ -1100,7 +1100,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.ThrowsAny<ArgumentException>(() => builder.AllowCustomFlow(type));
 
         Assert.Equal("type", exception.ParamName);
-        Assert.StartsWith(SR.FormatID0517(type), exception.Message);
+        Assert.StartsWith(SR.FormatID0517(type), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1618,7 +1618,7 @@ public class OpenIddictServerBuilderTests
         Assert.NotNull(options.PublicKeyInfrastructureTlsClientAuthenticationPolicy);
         Assert.Equal(X509ChainTrustMode.CustomRootTrust, options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.TrustMode);
         Assert.Contains(options.PublicKeyInfrastructureTlsClientAuthenticationPolicy.ApplicationPolicy.Cast<Oid>(),
-            oid => oid.Value == ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication);
+            oid => string.Equals(oid.Value, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1739,7 +1739,7 @@ public class OpenIddictServerBuilderTests
         Assert.Equal(X509ChainTrustMode.CustomRootTrust, options.SelfSignedTlsClientAuthenticationPolicy.TrustMode);
         Assert.Equal(X509RevocationMode.NoCheck, options.SelfSignedTlsClientAuthenticationPolicy.RevocationMode);
         Assert.Contains(options.SelfSignedTlsClientAuthenticationPolicy.ApplicationPolicy.Cast<Oid>(),
-            oid => oid.Value == ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication);
+            oid => string.Equals(oid.Value, ObjectIdentifiers.ExtendedKeyUsages.ClientAuthentication, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1889,7 +1889,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1903,7 +1903,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1973,7 +1973,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetConfigurationEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1987,7 +1987,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetConfigurationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2057,7 +2057,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetJsonWebKeySetEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2071,7 +2071,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetJsonWebKeySetEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2141,7 +2141,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceAuthorizationEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2155,7 +2155,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceAuthorizationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2225,7 +2225,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetEndSessionEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2239,7 +2239,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetEndSessionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2309,7 +2309,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsDeviceAuthorizationEndpointAliasUri(new Uri(uri)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2323,7 +2323,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsDeviceAuthorizationEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2377,7 +2377,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsIntrospectionEndpointAliasUri(new Uri(uri)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2391,7 +2391,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsIntrospectionEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2445,7 +2445,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsPushedAuthorizationEndpointAliasUri(new Uri(uri)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2459,7 +2459,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsPushedAuthorizationEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2513,7 +2513,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsRevocationEndpointAliasUri(new Uri(uri)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2527,7 +2527,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsRevocationEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2581,7 +2581,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsTokenEndpointAliasUri(new Uri(uri)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2595,7 +2595,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsTokenEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2625,7 +2625,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetMtlsUserInfoEndpointAliasUri(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uri", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2679,7 +2679,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetIntrospectionEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2693,7 +2693,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetIntrospectionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2763,7 +2763,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetRevocationEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2777,7 +2777,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetRevocationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2847,7 +2847,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetTokenEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2861,7 +2861,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetTokenEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2931,7 +2931,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetUserInfoEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2945,7 +2945,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetUserInfoEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -3015,7 +3015,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetEndUserVerificationEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -3029,7 +3029,7 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetEndUserVerificationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -3277,7 +3277,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.SetUserCodeCharset(
             ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "9"]));
 
-        Assert.StartsWith(SR.GetResourceString(SR.ID0436), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0436), exception.Message, StringComparison.Ordinal);
         Assert.Equal("charset", exception.ParamName);
     }
 
@@ -3295,7 +3295,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.SetUserCodeCharset(
             ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", character]));
 
-        Assert.StartsWith(SR.GetResourceString(SR.ID0437), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0437), exception.Message, StringComparison.Ordinal);
         Assert.Equal("charset", exception.ParamName);
     }
 #else
@@ -3310,7 +3310,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.SetUserCodeCharset(
             ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "\uD83D\uDE42"]));
 
-        Assert.StartsWith(SR.GetResourceString(SR.ID0438), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0438), exception.Message, StringComparison.Ordinal);
         Assert.Equal("charset", exception.ParamName);
     }
 #endif
@@ -3529,7 +3529,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.RegisterAudiences([audience!]));
 
         Assert.Equal("audiences", exception.ParamName);
-        Assert.Contains(SR.FormatID0457("audiences"), exception.Message);
+        Assert.Contains(SR.FormatID0457("audiences"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -3574,7 +3574,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.RegisterClaims([claim!]));
 
         Assert.Equal("claims", exception.ParamName);
-        Assert.Contains(SR.FormatID0457("claims"), exception.Message);
+        Assert.Contains(SR.FormatID0457("claims"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -3619,7 +3619,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.RegisterPromptValues([value!]));
 
         Assert.Equal("values", exception.ParamName);
-        Assert.Contains(SR.FormatID0457("values"), exception.Message);
+        Assert.Contains(SR.FormatID0457("values"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -3665,7 +3665,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.RegisterResources([resource!]));
 
         Assert.Equal("resources", exception.ParamName);
-        Assert.Contains(SR.FormatID0495("resources"), exception.Message);
+        Assert.Contains(SR.FormatID0495("resources"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -3710,7 +3710,7 @@ public class OpenIddictServerBuilderTests
         var exception = Assert.Throws<ArgumentException>(() => builder.RegisterScopes([scope!]));
 
         Assert.Equal("scopes", exception.ParamName);
-        Assert.Contains(SR.FormatID0457("scopes"), exception.Message);
+        Assert.Contains(SR.FormatID0457("scopes"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

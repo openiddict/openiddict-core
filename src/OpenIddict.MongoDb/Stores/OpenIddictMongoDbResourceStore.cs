@@ -221,11 +221,11 @@ public class OpenIddictMongoDbResourceStore<
 
         if (resource.Properties is null)
         {
-            return new(ImmutableDictionary.Create<string, JsonElement>());
+            return new([]);
         }
 
         using var document = JsonDocument.Parse(resource.Properties.ToJson());
-        var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+        var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>(StringComparer.Ordinal);
 
         foreach (var property in document.RootElement.EnumerateObject())
         {
@@ -313,7 +313,7 @@ public class OpenIddictMongoDbResourceStore<
         ArgumentNullException.ThrowIfNull(resource);
 
         resource.Descriptions = descriptions is { Count: > 0 }
-            ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            ? descriptions.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value, StringComparer.Ordinal)
             : null;
 
         return ValueTask.CompletedTask;
@@ -326,7 +326,7 @@ public class OpenIddictMongoDbResourceStore<
         ArgumentNullException.ThrowIfNull(resource);
 
         resource.DisplayNames = names is { Count: > 0 }
-            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value)
+            ? names.ToImmutableDictionary(static pair => pair.Key.Name, static pair => pair.Value, StringComparer.Ordinal)
             : null;
 
         return ValueTask.CompletedTask;

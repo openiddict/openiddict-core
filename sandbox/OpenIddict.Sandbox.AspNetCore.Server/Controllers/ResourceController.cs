@@ -28,7 +28,7 @@ public class ResourceController : Controller
         {
             return Forbid(
                 authenticationSchemes: OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties(new Dictionary<string, string?>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                 {
                     [OpenIddictValidationAspNetCoreConstants.Properties.Scope] = "demo_api",
                     [OpenIddictValidationAspNetCoreConstants.Properties.Error] = Errors.InsufficientScope,
@@ -42,7 +42,7 @@ public class ResourceController : Controller
         {
             return Challenge(
                 authenticationSchemes: OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties(new Dictionary<string, string?>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                 {
                     [OpenIddictValidationAspNetCoreConstants.Properties.Error] = Errors.InvalidToken,
                     [OpenIddictValidationAspNetCoreConstants.Properties.ErrorDescription] =

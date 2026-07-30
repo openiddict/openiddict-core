@@ -22,7 +22,7 @@ public partial class MainPage : ContentPage
         => await LogInAsync("Local");
 
     private async void OnLocalLoginWithGitHubButtonClicked(object sender, EventArgs e)
-        => await LogInAsync("Local", new()
+        => await LogInAsync("Local", new(StringComparer.Ordinal)
         {
             [Parameters.IdentityProvider] = Providers.GitHub
         });

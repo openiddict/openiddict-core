@@ -57,8 +57,10 @@ public static class MauiProgram
 #if IOS
                        // Warning: server certificate validation is disabled to simplify testing the MAUI
                        // application with the iOS simulator: in production, it SHOULD NEVER be disabled.
+#pragma warning disable MA0039
                        .ConfigureHttpClientHandler("Local", handler => handler.ServerCertificateCustomValidationCallback =
                            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator)
+#pragma warning restore MA0039
 #endif
                        ;
 

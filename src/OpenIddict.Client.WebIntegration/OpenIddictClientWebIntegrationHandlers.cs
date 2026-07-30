@@ -161,13 +161,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 //
                 // See https://shopify.dev/docs/apps/auth/oauth/getting-started#remove-the-hmac-parameter-from-the-query-string
                 // for more information.
-                foreach (var (name, value) in
-                    from parameter in OpenIddictHelpers.ParseQuery(context.RequestUri!.Query)
-                    where !string.IsNullOrEmpty(parameter.Key)
-                    where !string.Equals(parameter.Key, "hmac", StringComparison.Ordinal)
-                    orderby parameter.Key ascending
-                    from value in parameter.Value
-                    select (Name: parameter.Key, Value: value))
+                foreach (var (name, value) in OpenIddictHelpers.ParseQuery(context.RequestUri!.Query)
+                    .Where(static parameter => !string.IsNullOrEmpty(parameter.Key))
+                    .Where(static parameter => !string.Equals(parameter.Key, "hmac", StringComparison.Ordinal))
+                    .OrderBy(static parameter => parameter.Key, StringComparer.Ordinal)
+                    .SelectMany(static parameter => parameter.Value, static (parameter, value) => (Name: parameter.Key, Value: value)))
                 {
                     if (builder.Length is > 0)
                     {
@@ -1187,7 +1185,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetDailymotionSettings();
 
-                context.UserInfoRequest["fields"] = string.Join(",", settings.UserFields);
+                context.UserInfoRequest["fields"] = string.Join(Separators.Comma[0], settings.UserFields);
             }
 
             // Disqus requires sending the client identifier (called "public
@@ -1204,7 +1202,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetFacebookSettings();
 
-                context.UserInfoRequest["fields"] = string.Join(",", settings.Fields);
+                context.UserInfoRequest["fields"] = string.Join(Separators.Comma[0], settings.Fields);
             }
 
             // Linear's userinfo endpoint is a GraphQL implementation that requires
@@ -1213,7 +1211,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetLinearSettings();
 
-                context.UserInfoRequest["query"] = $"query {{ viewer {{ {string.Join(" ", settings.UserFields)} }} }}";
+                context.UserInfoRequest["query"] = $"query {{ viewer {{ {string.Join(Separators.Space[0], settings.UserFields)} }} }}";
             }
 
             // Meetup's userinfo endpoint is a GraphQL implementation that requires
@@ -1222,7 +1220,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetMeetupSettings();
 
-                context.UserInfoRequest["query"] = $"query {{ self {{ {string.Join(" ", settings.UserFields)} }} }}";
+                context.UserInfoRequest["query"] = $"query {{ self {{ {string.Join(Separators.Space[0], settings.UserFields)} }} }}";
             }
 
             // Patreon limits the number of fields returned by the userinfo endpoint
@@ -1232,7 +1230,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetPatreonSettings();
 
-                context.UserInfoRequest["fields[user]"] = string.Join(",", settings.UserFields);
+                context.UserInfoRequest["fields[user]"] = string.Join(Separators.Comma[0], settings.UserFields);
             }
 
             // StackOverflow requires sending an application key and a site parameter
@@ -1274,9 +1272,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 var settings = context.Registration.GetTwitterSettings();
 
-                context.UserInfoRequest["expansions"] = string.Join(",", settings.Expansions);
-                context.UserInfoRequest["tweet.fields"] = string.Join(",", settings.TweetFields);
-                context.UserInfoRequest["user.fields"] = string.Join(",", settings.UserFields);
+                context.UserInfoRequest["expansions"] = string.Join(Separators.Comma[0], settings.Expansions);
+                context.UserInfoRequest["tweet.fields"] = string.Join(Separators.Comma[0], settings.TweetFields);
+                context.UserInfoRequest["user.fields"] = string.Join(Separators.Comma[0], settings.UserFields);
             }
 
             // Weibo requires sending the user identifier as part of the userinfo request.
@@ -1880,11 +1878,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // the standard format (that requires using a space as the scope separator):
                 ProviderTypes.Deezer or ProviderTypes.Disqus  or ProviderTypes.Shopify or
                 ProviderTypes.Strava or ProviderTypes.Todoist or ProviderTypes.Weibo
-                    => string.Join(",", context.Scopes),
+                    => string.Join(Separators.Comma[0], context.Scopes),
 
                 // The following providers are known to use plus-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                ProviderTypes.Trovo => string.Join("+", context.Scopes),
+                ProviderTypes.Trovo => string.Join(Separators.Plus[0], context.Scopes),
 
                 _ => context.Request.Scope
             };

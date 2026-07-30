@@ -192,7 +192,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(principal);
 
-        var properties = new Dictionary<string, string>();
+        var properties = new Dictionary<string, string>(StringComparer.Ordinal);
 
         // Unlike ASP.NET Core Data Protection-based tokens, tokens serialized using the new format
         // can't include authentication properties. To ensure tokens can be used with previous versions

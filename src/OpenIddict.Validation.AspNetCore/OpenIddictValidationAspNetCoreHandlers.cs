@@ -23,7 +23,7 @@ using Properties = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCo
 namespace OpenIddict.Validation.AspNetCore;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static partial class OpenIddictValidationAspNetCoreHandlers
+public static class OpenIddictValidationAspNetCoreHandlers
 {
     public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } =
     [
@@ -601,7 +601,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                 builder.Append(parameter.Key);
                 builder.Append('=');
                 builder.Append('"');
-                builder.Append(parameter.Value.Replace("\"", "\\\""));
+                builder.Append(parameter.Value.Replace("\"", "\\\"", StringComparison.Ordinal));
                 builder.Append('"');
                 builder.Append(',');
             }

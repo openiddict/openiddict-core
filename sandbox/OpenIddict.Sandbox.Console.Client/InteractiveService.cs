@@ -502,13 +502,13 @@ public class InteractiveService : BackgroundService
                 List<((string? GrantType, string? ResponseType), string DisplayName)> choices = [];
 
                 var types = configuration.ResponseTypesSupported.Select(static type =>
-                    new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)));
+                    new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal));
 
                 if (configuration.GrantTypesSupported.Contains(GrantTypes.AuthorizationCode) &&
                     (registration.GrantTypes.Count is 0 || registration.GrantTypes.Contains(GrantTypes.AuthorizationCode)) &&
                     types.Any(static type => type.Count is 1 && type.Contains(ResponseTypes.Code)) &&
                     (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
-                        .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                        .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal))
                         .Any(static type => type.Count is 1 && type.Contains(ResponseTypes.Code))))
                 {
                     choices.Add(((
@@ -521,7 +521,7 @@ public class InteractiveService : BackgroundService
                 {
                     if (types.Any(static type => type.Count is 1 && type.Contains(ResponseTypes.IdToken)) &&
                         (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
-                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal))
                             .Any(static type => type.Count is 1 && type.Contains(ResponseTypes.IdToken))))
                     {
                         choices.Add(((
@@ -532,7 +532,7 @@ public class InteractiveService : BackgroundService
                     if (types.Any(static type => type.Count is 2 && type.Contains(ResponseTypes.IdToken) &&
                                                                     type.Contains(ResponseTypes.Token)) &&
                         (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
-                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal))
                             .Any(static type => type.Count is 2 && type.Contains(ResponseTypes.IdToken) &&
                                                                    type.Contains(ResponseTypes.Token))))
                     {
@@ -550,7 +550,7 @@ public class InteractiveService : BackgroundService
                     if (types.Any(static type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
                                                                     type.Contains(ResponseTypes.IdToken)) &&
                         (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
-                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal))
                             .Any(static type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
                                                                    type.Contains(ResponseTypes.IdToken))))
                     {
@@ -563,7 +563,7 @@ public class InteractiveService : BackgroundService
                                                              type.Contains(ResponseTypes.IdToken) &&
                                                              type.Contains(ResponseTypes.Token)) &&
                         (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
-                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal))
                             .Any(static type => type.Count is 3 && type.Contains(ResponseTypes.Code) &&
                                                                    type.Contains(ResponseTypes.IdToken) &&
                                                                    type.Contains(ResponseTypes.Token))))
@@ -577,7 +577,7 @@ public class InteractiveService : BackgroundService
                     if (types.Any(static type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
                                                                     type.Contains(ResponseTypes.Token)) &&
                         (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
-                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                            .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal))
                             .Any(static type => type.Count is 2 && type.Contains(ResponseTypes.Code) &&
                                                                    type.Contains(ResponseTypes.Token))))
                     {
@@ -589,7 +589,7 @@ public class InteractiveService : BackgroundService
 
                 if (types.Any(static type => type.Count is 1 && type.Contains(ResponseTypes.None)) &&
                     (registration.ResponseTypes.Count is 0 || registration.ResponseTypes
-                        .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)))
+                        .Select(static type => new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal))
                         .Any(static type => type.Count is 1 && type.Contains(ResponseTypes.None))))
                 {
                     choices.Add(((
@@ -873,7 +873,9 @@ public class InteractiveService : BackgroundService
             //
             // In a real world application, the certificate wouldn't be embedded in the source code
             // and would be installed in the certificate store, making this workaround unnecessary.
+#pragma warning disable MA0144
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+#pragma warning restore MA0144
             {
                 certificate = X509CertificateLoader.LoadPkcs12(
                     data: certificate.Export(X509ContentType.Pfx, string.Empty),

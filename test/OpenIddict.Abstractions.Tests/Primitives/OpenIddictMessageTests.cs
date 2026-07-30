@@ -25,7 +25,7 @@ public class OpenIddictMessageTests
         });
 
         Assert.Equal("parameters", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0189), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0189), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class OpenIddictMessageTests
         });
 
         Assert.Equal("parameters", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0191), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0191), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -253,7 +253,7 @@ public class OpenIddictMessageTests
     public void GetParameters_EnumeratesParameters()
     {
         // Arrange
-        var parameters = new Dictionary<string, OpenIddictParameter>
+        var parameters = new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal)
         {
             ["int"] = int.MaxValue,
             ["long"] = long.MaxValue,
@@ -483,7 +483,7 @@ public class OpenIddictMessageTests
 
         // Act and assert
         var element = JsonSerializer.Deserialize<JsonElement>(message.ToString());
-        Assert.DoesNotContain("secret value", message.ToString());
+        Assert.DoesNotContain("secret value", message.ToString(), StringComparison.Ordinal);
         Assert.Equal("[redacted]", element.GetProperty(parameter).GetString());
     }
 

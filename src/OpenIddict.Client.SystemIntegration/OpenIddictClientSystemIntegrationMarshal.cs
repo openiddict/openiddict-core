@@ -19,7 +19,7 @@ public sealed class OpenIddictClientSystemIntegrationMarshal
     private readonly ConcurrentDictionary<string, Lazy<(
         string RequestForgeryProtection,
         SemaphoreSlim Semaphore,
-        TaskCompletionSource<ProcessAuthenticationContext> TaskCompletionSource)>> _tracker = new();
+        TaskCompletionSource<ProcessAuthenticationContext> TaskCompletionSource)>> _tracker = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Determines whether the authentication demand corresponding to the specified nonce is tracked.

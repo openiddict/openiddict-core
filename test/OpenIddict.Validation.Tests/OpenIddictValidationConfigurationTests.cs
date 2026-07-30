@@ -145,7 +145,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0075), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0075), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0128), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0128), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0136), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0136), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0137), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0137), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0394), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0394), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -225,7 +225,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0523), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0523), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -242,7 +242,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0135), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0135), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0129), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0129), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -284,7 +284,7 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0130), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0130), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -303,8 +303,8 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0131), result.Failures!);
-        Assert.Contains(SR.GetResourceString(SR.ID0132), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0131), result.Failures!, StringComparer.Ordinal);
+        Assert.Contains(SR.GetResourceString(SR.ID0132), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -327,8 +327,8 @@ public class OpenIddictValidationConfigurationTests
         var result = configuration.Validate(name: null, options);
 
         // Assert
-        Assert.Contains(SR.GetResourceString(SR.ID0133), result.Failures!);
-        Assert.Contains(SR.GetResourceString(SR.ID0134), result.Failures!);
+        Assert.Contains(SR.GetResourceString(SR.ID0133), result.Failures!, StringComparer.Ordinal);
+        Assert.Contains(SR.GetResourceString(SR.ID0134), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]

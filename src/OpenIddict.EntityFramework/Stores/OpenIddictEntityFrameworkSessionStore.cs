@@ -343,7 +343,7 @@ public class OpenIddictEntityFrameworkSessionStore<
     {
         ArgumentNullException.ThrowIfNull(session);
 
-        return new(session.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
+        return new(session.CreationDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
     }
 
     /// <inheritdoc/>
@@ -369,7 +369,7 @@ public class OpenIddictEntityFrameworkSessionStore<
 
         if (string.IsNullOrEmpty(session.Properties))
         {
-            return new(ImmutableDictionary.Create<string, JsonElement>());
+            return new([]);
         }
 
         // Note: parsing the stringified properties is an expensive operation.
@@ -381,7 +381,7 @@ public class OpenIddictEntityFrameworkSessionStore<
                  .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
             using var document = JsonDocument.Parse(session.Properties);
-            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>(StringComparer.Ordinal);
 
             foreach (var property in document.RootElement.EnumerateObject())
             {
@@ -660,17 +660,14 @@ public class OpenIddictEntityFrameworkSessionStore<
             return (TKey?) (object?) identifier;
         }
 
-        else
-        {
-            var converter =
+        var converter =
 #if NET
-                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+            TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 #else
-                TypeDescriptor.GetConverter(typeof(TKey));
+            TypeDescriptor.GetConverter(typeof(TKey));
 #endif
 
-            return (TKey?) converter.ConvertFromInvariantString(identifier);
-        }
+        return (TKey?) converter.ConvertFromInvariantString(identifier);
     }
 
     /// <summary>
@@ -691,16 +688,13 @@ public class OpenIddictEntityFrameworkSessionStore<
             return value;
         }
 
-        else
-        {
-            var converter =
+        var converter =
 #if NET
-                TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
+            TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 #else
-                TypeDescriptor.GetConverter(typeof(TKey));
+            TypeDescriptor.GetConverter(typeof(TKey));
 #endif
 
-            return converter.ConvertToInvariantString(identifier);
-        }
+        return converter.ConvertToInvariantString(identifier);
     }
 }

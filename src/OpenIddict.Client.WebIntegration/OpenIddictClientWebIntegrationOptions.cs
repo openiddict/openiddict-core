@@ -9,6 +9,6 @@ namespace OpenIddict.Client.WebIntegration;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict client Web integration.
 /// </summary>
-public sealed partial class OpenIddictClientWebIntegrationOptions
+public sealed class OpenIddictClientWebIntegrationOptions
 {
 }

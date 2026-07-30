@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore;
@@ -91,7 +92,7 @@ public class AuthorizationController : Controller
             {
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.LoginRequired,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The user is not logged in."
@@ -117,7 +118,7 @@ public class AuthorizationController : Controller
                 {
                     return Forbid(
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                        properties: new AuthenticationProperties(new Dictionary<string, string?>
+                        properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                         {
                             [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidRequest,
                             [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
@@ -181,7 +182,7 @@ public class AuthorizationController : Controller
             case ConsentTypes.External when authorizations.Count is 0:
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.ConsentRequired,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
@@ -255,7 +256,7 @@ public class AuthorizationController : Controller
             case ConsentTypes.Systematic when request.HasPromptValue(PromptValues.None):
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.ConsentRequired,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
@@ -265,7 +266,7 @@ public class AuthorizationController : Controller
             // In every other case, render the consent form.
             default: return View(new AuthorizeViewModel
             {
-                ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
+                ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application, CultureInfo.CurrentCulture),
                 Scope = request.Scope
             });
         }
@@ -289,7 +290,7 @@ public class AuthorizationController : Controller
         {
             return Forbid(
                 authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties(new Dictionary<string, string?>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.LoginRequired,
                     [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
@@ -317,7 +318,7 @@ public class AuthorizationController : Controller
         {
             return Forbid(
                 authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties(new Dictionary<string, string?>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.ConsentRequired,
                     [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
@@ -406,15 +407,13 @@ public class AuthorizationController : Controller
             // Render a form asking the user to confirm the authorization demand.
             return View(new VerifyViewModel
             {
-                ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
-                Scope = string.Join(" ", result.Principal.GetScopes()),
+                ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application, CultureInfo.CurrentCulture),
+                Scope = string.Join(Separators.Space[0], result.Principal.GetScopes()),
                 UserCode = result.Properties.GetTokenValue(OpenIddictServerAspNetCoreConstants.Tokens.UserCode)
             });
         }
 
-        // If a user code was specified (e.g as part of the verification_uri_complete)
-        // but is not valid, render a form asking the user to enter the user code manually.
-        else if (!string.IsNullOrEmpty(result.Properties?.GetTokenValue(OpenIddictServerAspNetCoreConstants.Tokens.UserCode)))
+        if (!string.IsNullOrEmpty(result.Properties?.GetTokenValue(OpenIddictServerAspNetCoreConstants.Tokens.UserCode)))
         {
             return View(new VerifyViewModel
             {
@@ -437,7 +436,7 @@ public class AuthorizationController : Controller
         {
             return Forbid(
                 authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties(new Dictionary<string, string?>
+                properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.LoginRequired,
                     [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
@@ -544,7 +543,7 @@ public class AuthorizationController : Controller
             {
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The username/password couple is invalid."
@@ -557,7 +556,7 @@ public class AuthorizationController : Controller
             {
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The username/password couple is invalid."
@@ -599,7 +598,7 @@ public class AuthorizationController : Controller
             {
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The token is no longer valid."
@@ -611,7 +610,7 @@ public class AuthorizationController : Controller
             {
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The user is no longer allowed to sign in."
@@ -657,7 +656,7 @@ public class AuthorizationController : Controller
             {
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The token is no longer valid."
@@ -669,7 +668,7 @@ public class AuthorizationController : Controller
             {
                 return Forbid(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties(new Dictionary<string, string?>
+                    properties: new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
                         [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
                         [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The user is no longer allowed to sign in."

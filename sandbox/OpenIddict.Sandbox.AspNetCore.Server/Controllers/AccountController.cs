@@ -71,11 +71,9 @@ public class AccountController : Controller
             {
                 return View("Lockout");
             }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                return View(model);
-            }
+
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return View(model);
         }
 
         // If we got this far, something failed, redisplay form
@@ -173,14 +171,12 @@ public class AccountController : Controller
         {
             return View("Lockout");
         }
-        else
-        {
-            // If the user does not have an account, then ask the user to create an account.
-            ViewData["ReturnUrl"] = returnUrl;
-            ViewData["LoginProvider"] = info.LoginProvider;
-            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
-        }
+
+        // If the user does not have an account, then ask the user to create an account.
+        ViewData["ReturnUrl"] = returnUrl;
+        ViewData["LoginProvider"] = info.LoginProvider;
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+        return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
     }
 
     //
@@ -367,11 +363,11 @@ public class AccountController : Controller
         }
 
         var message = "Your security code is: " + code;
-        if (model.SelectedProvider == "Email")
+        if (string.Equals(model.SelectedProvider, "Email", StringComparison.Ordinal))
         {
             await _emailSender.SendEmailAsync(await _userManager.GetEmailAsync(user), "Security Code", message);
         }
-        else if (model.SelectedProvider == "Phone")
+        else if (string.Equals(model.SelectedProvider, "Phone", StringComparison.Ordinal))
         {
             await _smsSender.SendSmsAsync(await _userManager.GetPhoneNumberAsync(user), message);
         }
@@ -418,11 +414,9 @@ public class AccountController : Controller
         {
             return View("Lockout");
         }
-        else
-        {
-            ModelState.AddModelError("", "Invalid code.");
-            return View(model);
-        }
+
+        ModelState.AddModelError("", "Invalid code.");
+        return View(model);
     }
 
     #region Helpers
@@ -460,10 +454,8 @@ public class AccountController : Controller
         {
             return Redirect(returnUrl);
         }
-        else
-        {
-            return RedirectToAction(nameof(HomeController.Index), "Home");
-        }
+
+        return RedirectToAction(nameof(HomeController.Index), "Home");
     }
 
     #endregion

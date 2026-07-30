@@ -228,7 +228,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                         uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
                         parameters: context.Request.GetParameters().ToDictionary(
                             static parameter => parameter.Key,
-                            static parameter => (StringValues) parameter.Value))!;
+                            static parameter => (StringValues) parameter.Value,
+                            StringComparer.Ordinal))!;
 
                     void HandleCallback(NSUrl? url, NSError? error)
                     {
@@ -346,7 +347,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
                     parameters: context.Request.GetParameters().ToDictionary(
                         static parameter => parameter.Key,
-                        static parameter => (StringValues) parameter.Value)).AbsoluteUri)!);
+                        static parameter => (StringValues) parameter.Value,
+                        StringComparer.Ordinal)).AbsoluteUri)!);
 
                 context.HandleRequest();
 #else
@@ -424,7 +426,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                         uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
                         parameters: context.Request.GetParameters().ToDictionary(
                             static parameter => parameter.Key,
-                            static parameter => (StringValues) parameter.Value)),
+                            static parameter => (StringValues) parameter.Value,
+                            StringComparer.Ordinal)),
                     callbackUri: new Uri(context.RedirectUri, UriKind.Absolute)))
                 {
                     case { ResponseStatus: WebAuthenticationStatus.Success } result
@@ -530,7 +533,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     uri: new Uri(context.AuthorizationEndpoint, UriKind.Absolute),
                     parameters: context.Request.GetParameters().ToDictionary(
                         static parameter => parameter.Key,
-                        static parameter => (StringValues) parameter.Value));
+                        static parameter => (StringValues) parameter.Value,
+                        StringComparer.Ordinal));
 
                 if (OperatingSystem.IsWindows())
                 {

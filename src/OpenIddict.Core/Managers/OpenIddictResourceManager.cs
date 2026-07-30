@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static System.Net.Mime.MediaTypeNames;
 using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
 namespace OpenIddict.Core;
@@ -385,13 +386,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        var descriptions = await Store.GetDescriptionsAsync(resource, cancellationToken);
-        if (descriptions is not { Count: > 0 })
-        {
-            return ImmutableDictionary.Create<CultureInfo, string>();
-        }
-
-        return descriptions;
+        return await Store.GetDescriptionsAsync(resource, cancellationToken) is { IsEmpty: false } descriptions ? descriptions : [];
     }
 
     /// <summary>
@@ -424,13 +419,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        var names = await Store.GetDisplayNamesAsync(resource, cancellationToken);
-        if (names is not { Count: > 0 })
-        {
-            return ImmutableDictionary.Create<CultureInfo, string>();
-        }
-
-        return names;
+        return await Store.GetDisplayNamesAsync(resource, cancellationToken) is { IsEmpty: false } names ? names : [];
     }
 
     /// <summary>
@@ -880,7 +869,9 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictResourceManager.GetLocalizedDescriptionAsync(object resource, CancellationToken cancellationToken)
+#pragma warning disable MA0011
         => GetLocalizedDescriptionAsync((TResource) resource, cancellationToken);
+#pragma warning restore MA0011
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictResourceManager.GetLocalizedDescriptionAsync(object resource, CultureInfo culture, CancellationToken cancellationToken)
@@ -888,7 +879,9 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictResourceManager.GetLocalizedDisplayNameAsync(object resource, CancellationToken cancellationToken)
+#pragma warning disable MA0011
         => GetLocalizedDisplayNameAsync((TResource) resource, cancellationToken);
+#pragma warning restore MA0011
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictResourceManager.GetLocalizedDisplayNameAsync(object resource, CultureInfo culture, CancellationToken cancellationToken)

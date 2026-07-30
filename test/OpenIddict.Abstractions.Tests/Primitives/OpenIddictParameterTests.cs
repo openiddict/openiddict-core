@@ -316,12 +316,12 @@ public class OpenIddictParameterTests
             ["field"] = new JsonArray(0, 1, 2)
         })));
 
-        Assert.True(parameter.Equals(new OpenIddictParameter(JsonValue.Create(new Dictionary<string, object>
+        Assert.True(parameter.Equals(new OpenIddictParameter(JsonValue.Create(new Dictionary<string, object>(StringComparer.Ordinal)
         {
             ["field"] = new JsonArray(0, 1, 2, 3)
         }))));
 
-        Assert.True(parameter.Equals(new OpenIddictParameter(JsonValue.Create(new Dictionary<string, object>
+        Assert.True(parameter.Equals(new OpenIddictParameter(JsonValue.Create(new Dictionary<string, object>(StringComparer.Ordinal)
         {
             ["field"] = new[] { 0, 1, 2, 3 }
         }))));
@@ -445,12 +445,12 @@ public class OpenIddictParameterTests
         Assert.Equal(1, new OpenIddictParameter(true).GetHashCode());
         Assert.Equal(0, new OpenIddictParameter(false).GetHashCode());
         Assert.Equal(42.GetHashCode(), new OpenIddictParameter(42).GetHashCode());
-        Assert.Equal("Fabrikam".GetHashCode(), new OpenIddictParameter("Fabrikam").GetHashCode());
+        Assert.Equal("Fabrikam".GetHashCode(StringComparison.Ordinal), new OpenIddictParameter("Fabrikam").GetHashCode());
 
         Assert.NotEqual(1, new OpenIddictParameter("true").GetHashCode());
         Assert.NotEqual(0, new OpenIddictParameter("false").GetHashCode());
         Assert.NotEqual(42.GetHashCode(), new OpenIddictParameter("42").GetHashCode());
-        Assert.NotEqual("Fabrikam".GetHashCode(), new OpenIddictParameter(42).GetHashCode());
+        Assert.NotEqual("Fabrikam".GetHashCode(StringComparison.Ordinal), new OpenIddictParameter(42).GetHashCode());
     }
 
     [Fact]
@@ -851,7 +851,7 @@ public class OpenIddictParameterTests
     public void GetNamedParameters_ReturnsExpectedParametersForJsonObjectElements()
     {
         // Arrange
-        var parameters = new Dictionary<string, string?>
+        var parameters = new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         };
@@ -860,14 +860,14 @@ public class OpenIddictParameterTests
             JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}"));
 
         // Act and assert
-        Assert.Equal(parameters, parameter.GetNamedParameters().ToDictionary(pair => pair.Key, pair => (string?) pair.Value));
+        Assert.Equal(parameters, parameter.GetNamedParameters().ToDictionary(pair => pair.Key, pair => (string?) pair.Value, StringComparer.Ordinal));
     }
 
     [Fact]
     public void GetNamedParameters_ReturnsExpectedParametersForJsonObjectNodes()
     {
         // Arrange
-        var parameters = new Dictionary<string, string?>
+        var parameters = new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         };
@@ -878,7 +878,7 @@ public class OpenIddictParameterTests
         });
 
         // Act and assert
-        Assert.Equal(parameters, parameter.GetNamedParameters().ToDictionary(pair => pair.Key, pair => (string?) pair.Value));
+        Assert.Equal(parameters, parameter.GetNamedParameters().ToDictionary(pair => pair.Key, pair => (string?) pair.Value, StringComparer.Ordinal));
     }
 
     [Fact]
@@ -926,7 +926,7 @@ public class OpenIddictParameterTests
 
         // Act and assert
         Assert.Equal(parameters, from element in parameter.GetUnnamedParameters()
-                                 select (string?) element);
+                                 select (string?) element, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -965,7 +965,7 @@ public class OpenIddictParameterTests
 
         // Act and assert
         Assert.Equal(parameters, from element in parameter.GetUnnamedParameters()
-                                 select (string?) element);
+                                 select (string?) element, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -982,7 +982,7 @@ public class OpenIddictParameterTests
 
         // Act and assert
         Assert.Equal(parameters, from element in parameter.GetUnnamedParameters()
-                                 select (string?) element);
+                                 select (string?) element, StringComparer.Ordinal);
     }
 
     [Fact]

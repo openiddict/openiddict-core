@@ -21,7 +21,7 @@ using static OpenIddict.Validation.OpenIddictValidationHandlers.Protection;
 
 namespace OpenIddict.Validation.Owin.IntegrationTests;
 
-public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValidationIntegrationTests
+public class OpenIddictValidationOwinIntegrationTests : OpenIddictValidationIntegrationTests
 {
     public OpenIddictValidationOwinIntegrationTests(ITestOutputHelper outputHelper)
         : base(outputHelper)
@@ -63,7 +63,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
 
         // Assert
         var properties = new AuthenticationProperties(response.GetParameters()
-            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
+            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value, StringComparer.Ordinal));
 
         Assert.Equal(new DateTimeOffset(2020, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.IssuedUtc);
     }
@@ -102,7 +102,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
 
         // Assert
         var properties = new AuthenticationProperties(response.GetParameters()
-            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
+            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value, StringComparer.Ordinal));
 
         Assert.Equal(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.ExpiresUtc);
     }
@@ -169,7 +169,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
                         return;
                     }
 
-                    var claims = result.Identity.Claims.GroupBy(claim => claim.Type)
+                    var claims = result.Identity.Claims.GroupBy(claim => claim.Type, StringComparer.Ordinal)
                         .Select(group => KeyValuePair.Create(group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
 
                     context.Response.ContentType = "application/json";
@@ -177,7 +177,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
                     return;
                 }
 
-                else if (context.Request.Path == new PathString("/authenticate/properties"))
+                if (context.Request.Path == new PathString("/authenticate/properties"))
                 {
                     var result = await context.Authentication.AuthenticateAsync(OpenIddictValidationOwinDefaults.AuthenticationType);
                     if (result?.Properties is null)
@@ -190,7 +190,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
                     return;
                 }
 
-                else if (context.Request.Path == new PathString("/challenge"))
+                if (context.Request.Path == new PathString("/challenge"))
                 {
                     context.Authentication.Challenge(OpenIddictValidationOwinDefaults.AuthenticationType);
                     return;

@@ -1196,7 +1196,7 @@ public class OpenIddictClientBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetPostLogoutRedirectionEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1210,7 +1210,7 @@ public class OpenIddictClientBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetPostLogoutRedirectionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1280,7 +1280,7 @@ public class OpenIddictClientBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetRedirectionEndpointUris(new Uri(uri)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1294,7 +1294,7 @@ public class OpenIddictClientBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetRedirectionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
         Assert.Equal("uris", exception.ParamName);
-        Assert.Contains(SR.FormatID0081("~"), exception.Message);
+        Assert.Contains(SR.FormatID0081("~"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

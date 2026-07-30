@@ -66,7 +66,7 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
             foreach (var (provider, registrations) in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>()
                 .CurrentValue.Registrations
                 .Where(static registration => !string.IsNullOrEmpty(registration.ProviderName))
-                .GroupBy(static registration => registration.ProviderName)
+                .GroupBy(static registration => registration.ProviderName, StringComparer.Ordinal)
                 .Select(static group => (ProviderName: group.Key, Registrations: group.ToList())))
             {
                 // If an explicit mapping was already added, don't overwrite it.
@@ -148,7 +148,7 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
         // Ensure the forwarded authentication schemes are mapped to the OpenIddict client forwarder.
         foreach (var group in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientAspNetCoreOptions>>()
             .CurrentValue.ForwardedAuthenticationSchemes
-            .GroupBy(static scheme => scheme.Name)
+            .GroupBy(static scheme => scheme.Name, StringComparer.Ordinal)
             .Where(group => !ValidateHandlerType<OpenIddictClientAspNetCoreForwarder>(options.SchemeMap, group.Key)))
         {
             builder.AddError(SR.FormatID0414(group.Key));
@@ -195,7 +195,7 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
             foreach (var (provider, registrations) in _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>()
                 .CurrentValue.Registrations
                 .Where(static registration => !string.IsNullOrEmpty(registration.ProviderName))
-                .GroupBy(static registration => registration.ProviderName)
+                .GroupBy(static registration => registration.ProviderName, StringComparer.Ordinal)
                 .Select(static group => (ProviderName: group.Key, Registrations: group.ToList()))
                 .Where(static group => group.Registrations.Count is > 1))
             {

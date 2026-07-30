@@ -23,7 +23,7 @@ public partial class MainWindow : Window, IWpfShell
         => await LogInAsync("Local");
 
     private async void LocalLoginWithGitHubButton_Click(object sender, RoutedEventArgs e)
-        => await LogInAsync("Local", new()
+        => await LogInAsync("Local", new(StringComparer.Ordinal)
         {
             [Parameters.IdentityProvider] = Providers.GitHub
         });

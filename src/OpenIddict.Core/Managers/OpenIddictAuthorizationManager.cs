@@ -896,7 +896,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
                     break;
                 }
 
-                if (scope.Contains(Separators.Space[0]))
+                if (scope.Contains(Separators.Space[0], StringComparison.Ordinal))
                 {
                     yield return new ValidationResult(SR.GetResourceString(SR.ID2042));
 

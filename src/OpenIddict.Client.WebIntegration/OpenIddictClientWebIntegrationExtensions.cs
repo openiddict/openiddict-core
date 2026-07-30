@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes extensions allowing to register the OpenIddict client Web integration services.
 /// </summary>
-public static partial class OpenIddictClientWebIntegrationExtensions
+public static class OpenIddictClientWebIntegrationExtensions
 {
     /// <summary>
     /// Registers the OpenIddict client Web integration services in the DI container.

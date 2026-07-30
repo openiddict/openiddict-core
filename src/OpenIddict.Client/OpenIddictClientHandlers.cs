@@ -713,13 +713,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectStateToken)
                 {
@@ -1626,13 +1626,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectFrontchannelIdentityToken)
                 {
@@ -1674,8 +1674,8 @@ public static partial class OpenIddictClientHandlers
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.FrontchannelIdentityTokenPrincipal.Claims
-                .GroupBy(static claim => claim.Type)
-                .ToDictionary(static group => group.Key, group => group.ToList())
+                .GroupBy(static claim => claim.Type, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, group => group.ToList(), StringComparer.Ordinal)
                 .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
                 context.Reject(
@@ -1806,7 +1806,8 @@ public static partial class OpenIddictClientHandlers
             // In any case, the client identifier of the application MUST be included in the audiences.
             // See https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation for more information.
             var audiences = context.FrontchannelIdentityTokenPrincipal.GetClaims(Claims.Audience);
-            if (!string.IsNullOrEmpty(context.Registration.ClientId) && !audiences.Contains(context.Registration.ClientId))
+            if (!string.IsNullOrEmpty(context.Registration.ClientId) &&
+                !audiences.Contains(context.Registration.ClientId, StringComparer.Ordinal))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -2150,13 +2151,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectFrontchannelAccessToken)
                 {
@@ -2221,13 +2222,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectAuthorizationCode)
                 {
@@ -2697,7 +2698,7 @@ public static partial class OpenIddictClientHandlers
                     // Note: the final OAuth 2.0 specification requires using a space as the scope separator.
                     // Clients that need to deal with older or non-compliant implementations can register
                     // a custom handler to use a different separator (typically, a comma).
-                    context.TokenRequest.Scope = string.Join(" ", context.Scopes);
+                    context.TokenRequest.Scope = string.Join(Separators.Space[0], context.Scopes);
                 }
             }
 
@@ -2908,13 +2909,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -3363,13 +3364,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectBackchannelIdentityToken)
                 {
@@ -3411,8 +3412,8 @@ public static partial class OpenIddictClientHandlers
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.BackchannelIdentityTokenPrincipal.Claims
-                .GroupBy(static claim => claim.Type)
-                .ToDictionary(static group => group.Key, group => group.ToList())
+                .GroupBy(static claim => claim.Type, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, group => group.ToList(), StringComparer.Ordinal)
                 .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
                 context.Reject(
@@ -3543,7 +3544,8 @@ public static partial class OpenIddictClientHandlers
             // In any case, the client identifier of the application MUST be included in the audiences.
             // See https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation for more information.
             var audiences = context.BackchannelIdentityTokenPrincipal.GetClaims(Claims.Audience);
-            if (!string.IsNullOrEmpty(context.Registration.ClientId) && !audiences.Contains(context.Registration.ClientId))
+            if (!string.IsNullOrEmpty(context.Registration.ClientId) &&
+                !audiences.Contains(context.Registration.ClientId, StringComparer.Ordinal))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -3851,13 +3853,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectBackchannelAccessToken)
                 {
@@ -3920,13 +3922,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectIssuedToken)
                 {
@@ -3991,13 +3993,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectRefreshToken)
                 {
@@ -4493,13 +4495,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 if (context.RejectUserInfoToken)
                 {
@@ -4542,8 +4544,8 @@ public static partial class OpenIddictClientHandlers
             Debug.Assert(context.UserInfoTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.UserInfoTokenPrincipal.Claims
-                .GroupBy(static claim => claim.Type)
-                .ToDictionary(static group => group.Key, group => group.ToList())
+                .GroupBy(static claim => claim.Type, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, group => group.ToList(), StringComparer.Ordinal)
                 .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
                 context.Reject(
@@ -4907,8 +4909,8 @@ public static partial class OpenIddictClientHandlers
             }
 
             foreach (var group in context.Principal.Claims
-                .GroupBy(static claim => claim.Type)
-                .ToDictionary(static group => group.Key, static group => group.ToList())
+                .GroupBy(static claim => claim.Type, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, static group => group.ToList(), StringComparer.Ordinal)
                 .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
                 throw new InvalidOperationException(SR.FormatID0424(group.Key));
@@ -5848,13 +5850,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -5912,7 +5914,7 @@ public static partial class OpenIddictClientHandlers
                 // Note: the final OAuth 2.0 specification requires using a space as the scope separator.
                 // Clients that need to deal with older or non-compliant implementations can register
                 // a custom handler to use a different separator (typically, a comma).
-                context.Request.Scope = string.Join(" ", context.Scopes);
+                context.Request.Scope = string.Join(Separators.Space[0], context.Scopes);
             }
 
             // If a nonce was generated and the request is an OpenID Connect request where an authorization
@@ -6275,7 +6277,7 @@ public static partial class OpenIddictClientHandlers
                 // Note: the final OAuth 2.0 specification requires using a space as the scope separator.
                 // Clients that need to deal with older or non-compliant implementations can register
                 // a custom handler to use a different separator (typically, a comma).
-                context.DeviceAuthorizationRequest.Scope = string.Join(" ", context.Scopes);
+                context.DeviceAuthorizationRequest.Scope = string.Join(Separators.Space[0], context.Scopes);
             }
 
             return ValueTask.CompletedTask;
@@ -6737,13 +6739,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -7900,13 +7902,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -8705,13 +8707,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,
@@ -8908,8 +8910,8 @@ public static partial class OpenIddictClientHandlers
             }
 
             foreach (var group in context.Principal.Claims
-                .GroupBy(static claim => claim.Type)
-                .ToDictionary(static group => group.Key, static group => group.ToList())
+                .GroupBy(static claim => claim.Type, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, static group => group.ToList(), StringComparer.Ordinal)
                 .Where(static group => !ValidateClaimGroup(group.Key, group.Value)))
             {
                 throw new InvalidOperationException(SR.FormatID0424(group.Key));
@@ -9358,13 +9360,13 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            else if (notification.IsRequestSkipped)
+            if (notification.IsRequestSkipped)
             {
                 context.SkipRequest();
                 return;
             }
 
-            else if (notification.IsRejected)
+            if (notification.IsRejected)
             {
                 context.Reject(
                     error: notification.Error ?? Errors.InvalidRequest,

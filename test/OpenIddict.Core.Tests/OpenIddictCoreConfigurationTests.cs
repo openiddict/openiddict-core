@@ -163,7 +163,7 @@ public class OpenIddictCoreConfigurationTests
 
         // Assert
         Assert.True(result.Failed);
-        Assert.Contains(SR.FormatID0217("MD5"), result.Failures);
+        Assert.Contains(SR.FormatID0217("MD5"), result.Failures, StringComparer.Ordinal);
     }
 
     [Theory]
@@ -185,7 +185,7 @@ public class OpenIddictCoreConfigurationTests
 
         // Assert
         Assert.True(result.Failed);
-        Assert.Contains(SR.FormatID0518(10_000, 10_000_000), result.Failures);
+        Assert.Contains(SR.FormatID0518(10_000, 10_000_000), result.Failures, StringComparer.Ordinal);
     }
 
     [Theory]
@@ -229,7 +229,7 @@ public class OpenIddictCoreConfigurationTests
 
         // Assert
         Assert.True(result.Failed);
-        Assert.Contains(SR.FormatID0519(128, 1024), result.Failures);
+        Assert.Contains(SR.FormatID0519(128, 1024), result.Failures, StringComparer.Ordinal);
     }
 
     [Theory]
@@ -273,7 +273,7 @@ public class OpenIddictCoreConfigurationTests
 
         // Assert
         Assert.True(result.Failed);
-        Assert.Contains(SR.FormatID0520(256, 2048), result.Failures);
+        Assert.Contains(SR.FormatID0520(256, 2048), result.Failures, StringComparer.Ordinal);
     }
 
     [Theory]

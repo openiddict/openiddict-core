@@ -410,7 +410,7 @@ public static partial class OpenIddictValidationHandlers
                 var scopes = context.Principal.GetClaims(Claims.Scope);
                 if (scopes.Length is > 1)
                 {
-                    context.Principal.SetClaim(Claims.Scope, string.Join(" ", scopes));
+                    context.Principal.SetClaim(Claims.Scope, string.Join(Separators.Space[0], scopes));
                 }
 
                 return ValueTask.CompletedTask;

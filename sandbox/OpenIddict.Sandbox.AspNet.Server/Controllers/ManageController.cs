@@ -289,7 +289,7 @@ public class ManageController : Controller
             return View("Error");
         }
         var userLogins = await UserManager.GetLoginsAsync(User.Identity.GetUserId());
-        var otherLogins = AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
+        var otherLogins = AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => !string.Equals(auth.AuthenticationType, ul.LoginProvider, System.StringComparison.Ordinal))).ToList();
         ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
         return View(new ManageLoginsViewModel
         {

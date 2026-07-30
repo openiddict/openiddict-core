@@ -24,7 +24,7 @@ public class AuthenticationController : Controller
         // the user is directly redirected to GitHub (in this case, no login page is shown).
         if (string.Equals(provider, "Local+GitHub", StringComparison.Ordinal))
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
             {
                 // Note: when only one client is registered in the client options,
                 // specifying the issuer URI or the provider name is not required.
@@ -54,7 +54,7 @@ public class AuthenticationController : Controller
                 return BadRequest();
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
             {
                 // Note: when only one client is registered in the client options,
                 // specifying the issuer URI or the provider name is not required.
@@ -96,7 +96,7 @@ public class AuthenticationController : Controller
         if (identity.FindFirst(Claims.Private.RegistrationId)?.Value is string identifier &&
             await _service.GetServerConfigurationByRegistrationIdAsync(identifier) is { EndSessionEndpoint: Uri })
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
+            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
             {
                 [OpenIddictClientAspNetCoreConstants.Properties.RegistrationId] = identifier,
 

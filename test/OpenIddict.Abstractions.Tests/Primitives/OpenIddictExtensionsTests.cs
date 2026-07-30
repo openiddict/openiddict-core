@@ -46,7 +46,7 @@ public class OpenIddictExtensionsTests
         };
 
         // Act and assert
-        Assert.Equal(values, request.GetAcrValues());
+        Assert.Equal(values, request.GetAcrValues(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class OpenIddictExtensionsTests
         };
 
         // Act and assert
-        Assert.Equal(values, request.GetPromptValues());
+        Assert.Equal(values, request.GetPromptValues(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class OpenIddictExtensionsTests
         };
 
         // Act and assert
-        Assert.Equal(values, request.GetResponseTypes());
+        Assert.Equal(values, request.GetResponseTypes(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public class OpenIddictExtensionsTests
         };
 
         // Act and assert
-        Assert.Equal(scopes, request.GetScopes());
+        Assert.Equal(scopes, request.GetScopes(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -1091,7 +1091,7 @@ public class OpenIddictExtensionsTests
         claim.Properties[Properties.Destinations] = destination!;
 
         // Act and assert
-        Assert.Equal(destinations, claim.GetDestinations());
+        Assert.Equal(destinations, claim.GetDestinations(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -1185,7 +1185,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => claim.SetDestinations(destination!));
 
         Assert.Equal("destinations", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0182), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0182), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1606,7 +1606,7 @@ public class OpenIddictExtensionsTests
         identity.AddClaim(new Claim(Claims.ClientId, "B56BF6CE-8D8C-4290-A0E7-A4F8EE0A9FC4"));
 
         // Act
-        var clone = identity.Clone(claim => claim.Type == Claims.Name);
+        var clone = identity.Clone(claim => claim.Type is Claims.Name);
         clone.AddClaim(new Claim("clone_claim", "value"));
 
         // Assert
@@ -1626,7 +1626,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(identity);
 
         // Act
-        var clone = principal.Clone(claim => claim.Type == Claims.Name);
+        var clone = principal.Clone(claim => claim.Type is Claims.Name);
         ((ClaimsIdentity) clone.Identity!).AddClaim(new Claim("clone_claim", "value"));
 
         // Assert
@@ -1645,7 +1645,7 @@ public class OpenIddictExtensionsTests
         identity.AddClaim(new Claim(Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
 
         // Act
-        var clone = identity.Clone(claim => claim.Type == Claims.Name);
+        var clone = identity.Clone(claim => claim.Type is Claims.Name);
 
         // Assert
         Assert.Single(clone.Claims);
@@ -1663,7 +1663,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(identity);
 
         // Act
-        var clone = principal.Clone(claim => claim.Type == Claims.Name);
+        var clone = principal.Clone(claim => claim.Type is Claims.Name);
 
         // Assert
         Assert.Single(clone.Claims);
@@ -1683,7 +1683,7 @@ public class OpenIddictExtensionsTests
         identity.Actor.AddClaim(new Claim(Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
 
         // Act
-        var clone = identity.Clone(claim => claim.Type == Claims.Name);
+        var clone = identity.Clone(claim => claim.Type is Claims.Name);
 
         // Assert
         Assert.Single(clone.Actor!.Claims);
@@ -1704,7 +1704,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(identity);
 
         // Act
-        var clone = principal.Clone(claim => claim.Type == Claims.Name);
+        var clone = principal.Clone(claim => claim.Type is Claims.Name);
 
         // Assert
         Assert.Single(((ClaimsIdentity) clone.Identity!).Actor!.Claims);
@@ -1746,7 +1746,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, "Bob le Bricoleur"));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1837,7 +1837,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, true));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1928,7 +1928,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, 42L));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1992,7 +1992,7 @@ public class OpenIddictExtensionsTests
         var identity = (ClaimsIdentity) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaim(Claims.Name, new Dictionary<string, string?>()));
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaim(Claims.Name, new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("identity", exception.ParamName);
     }
@@ -2004,7 +2004,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaim(Claims.Name, new Dictionary<string, string?>()));
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaim(Claims.Name, new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("principal", exception.ParamName);
     }
@@ -2016,10 +2016,10 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, new Dictionary<string, string?>()));
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2031,7 +2031,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaim(type!, new Dictionary<string, string?>()));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.AddClaim(type!, new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("type", exception.ParamName);
     }
@@ -2045,7 +2045,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaim(type!, new Dictionary<string, string?>()));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.AddClaim(type!, new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("type", exception.ParamName);
     }
@@ -2057,7 +2057,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.AddClaim("type", new Dictionary<string, string?>
+        identity.AddClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         });
@@ -2073,7 +2073,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        principal.AddClaim("type", new Dictionary<string, string?>
+        principal.AddClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         });
@@ -2116,7 +2116,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, default(JsonElement)));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2158,7 +2158,7 @@ public class OpenIddictExtensionsTests
             JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]")));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2172,7 +2172,7 @@ public class OpenIddictExtensionsTests
             JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]")));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2235,7 +2235,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, (JsonNode) null!));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2301,7 +2301,7 @@ public class OpenIddictExtensionsTests
             new JsonArray(["Fabrikam", "Contoso"])));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2315,7 +2315,7 @@ public class OpenIddictExtensionsTests
             new JsonArray(["Fabrikam", "Contoso"])));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2378,7 +2378,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims("type", ["value1", "value2"]));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2459,7 +2459,7 @@ public class OpenIddictExtensionsTests
         identity.AddClaims("TYPE", ["value1", "value2"]);
 
         // Assert
-        Assert.Equal<string>(["value1", "value2"], identity.GetClaims("type"));
+        Assert.Equal<string>(["value1", "value2"], identity.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -2472,7 +2472,7 @@ public class OpenIddictExtensionsTests
         principal.AddClaims("TYPE", ["value1", "value2"]);
 
         // Assert
-        Assert.Equal<string>(["value1", "value2"], principal.GetClaims("type"));
+        Assert.Equal<string>(["value1", "value2"], principal.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -2509,7 +2509,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims("type", default(JsonElement)));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2551,7 +2551,7 @@ public class OpenIddictExtensionsTests
             JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}")));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2565,7 +2565,7 @@ public class OpenIddictExtensionsTests
             JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}")));
 
         Assert.Equal("value", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0185), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2629,7 +2629,7 @@ public class OpenIddictExtensionsTests
         identity.AddClaims("TYPE", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
 
         // Assert
-        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"));
+        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -2642,7 +2642,7 @@ public class OpenIddictExtensionsTests
         principal.AddClaims("TYPE", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
 
         // Assert
-        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"));
+        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -2679,7 +2679,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.AddClaims("type", (JsonArray) null!));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -2795,7 +2795,7 @@ public class OpenIddictExtensionsTests
         identity.AddClaims("TYPE", new JsonArray(["Fabrikam", "Contoso"]));
 
         // Assert
-        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"));
+        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -2808,7 +2808,7 @@ public class OpenIddictExtensionsTests
         principal.AddClaims("TYPE", new JsonArray(["Fabrikam", "Contoso"]));
 
         // Assert
-        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"));
+        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -3255,7 +3255,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type", "value"));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -3408,7 +3408,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type", true));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -3561,7 +3561,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type", 42L));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -3687,7 +3687,7 @@ public class OpenIddictExtensionsTests
         var identity = (ClaimsIdentity) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaim("type", new Dictionary<string, string?>()));
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("identity", exception.ParamName);
     }
@@ -3699,7 +3699,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", new Dictionary<string, string?>()));
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("principal", exception.ParamName);
     }
@@ -3711,13 +3711,13 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal();
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type", new Dictionary<string, string?>
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         }));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -3729,7 +3729,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act and assert
-        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaim(type!, new Dictionary<string, string?>()));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => identity.SetClaim(type!, new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("type", exception.ParamName);
     }
@@ -3743,7 +3743,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act and assert
-        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaim(type!, new Dictionary<string, string?>()));
+        var exception = Assert.ThrowsAny<ArgumentException>(() => principal.SetClaim(type!, new Dictionary<string, string?>(StringComparer.Ordinal)));
 
         Assert.Equal("type", exception.ParamName);
     }
@@ -3756,7 +3756,7 @@ public class OpenIddictExtensionsTests
         identity.AddClaim("type", "value1");
 
         // Act
-        identity.SetClaim("type", new Dictionary<string, string?>
+        identity.SetClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         }, "issuer");
@@ -3776,7 +3776,7 @@ public class OpenIddictExtensionsTests
         principal.AddClaim("type", "value1");
 
         // Act
-        principal.SetClaim("type", new Dictionary<string, string?>
+        principal.SetClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         }, "issuer");
@@ -3795,7 +3795,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.SetClaim("TYPE", new Dictionary<string, string?>
+        identity.SetClaim("TYPE", new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         });
@@ -3811,7 +3811,7 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        principal.SetClaim("TYPE", new Dictionary<string, string?>
+        principal.SetClaim("TYPE", new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["parameter"] = "value"
         });
@@ -3828,7 +3828,7 @@ public class OpenIddictExtensionsTests
         identity.AddClaim("type", "value");
 
         // Act
-        identity.SetClaim("type", new Dictionary<string, string?>());
+        identity.SetClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal));
 
         // Assert
         Assert.Null(identity.GetClaim("type"));
@@ -3842,7 +3842,7 @@ public class OpenIddictExtensionsTests
         principal.AddClaim("type", "value");
 
         // Act
-        principal.SetClaim("type", new Dictionary<string, string?>());
+        principal.SetClaim("type", new Dictionary<string, string?>(StringComparer.Ordinal));
 
         // Assert
         Assert.Null(principal.GetClaim("type"));
@@ -3883,7 +3883,7 @@ public class OpenIddictExtensionsTests
             JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}")));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -4091,7 +4091,7 @@ public class OpenIddictExtensionsTests
             new JsonObject { ["parameter"] = "value" }));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -4298,7 +4298,7 @@ public class OpenIddictExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() => principal.SetClaims("type", ["value1", "value2"]));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -4378,7 +4378,7 @@ public class OpenIddictExtensionsTests
         identity.SetClaims("TYPE", ["value1", "value2"]);
 
         // Assert
-        Assert.Equal<string>(["value1", "value2"], identity.GetClaims("type"));
+        Assert.Equal<string>(["value1", "value2"], identity.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -4391,7 +4391,7 @@ public class OpenIddictExtensionsTests
         principal.SetClaims("TYPE", ["value1", "value2"]);
 
         // Assert
-        Assert.Equal<string>(["value1", "value2"], principal.GetClaims("type"));
+        Assert.Equal<string>(["value1", "value2"], principal.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -4457,7 +4457,7 @@ public class OpenIddictExtensionsTests
             JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]")));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -4537,7 +4537,7 @@ public class OpenIddictExtensionsTests
         identity.SetClaims("TYPE", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
 
         // Assert
-        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"));
+        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -4550,7 +4550,7 @@ public class OpenIddictExtensionsTests
         principal.SetClaims("TYPE", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
 
         // Assert
-        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"));
+        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -4670,7 +4670,7 @@ public class OpenIddictExtensionsTests
             new JsonArray("Fabrikam", "Contoso")));
 
         Assert.Equal("principal", exception.ParamName);
-        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -4774,7 +4774,7 @@ public class OpenIddictExtensionsTests
         identity.SetClaims("TYPE", new JsonArray("Fabrikam", "Contoso"));
 
         // Assert
-        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"));
+        Assert.Equal<string>(["Fabrikam", "Contoso"], identity.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -4787,7 +4787,7 @@ public class OpenIddictExtensionsTests
         principal.SetClaims("TYPE", new JsonArray("Fabrikam", "Contoso"));
 
         // Assert
-        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"));
+        Assert.Equal<string>(["Fabrikam", "Contoso"], principal.GetClaims("type"), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -4999,7 +4999,7 @@ public class OpenIddictExtensionsTests
         identity.SetClaims(Claims.Private.Audience, audience.ToImmutableArray());
 
         // Act and assert
-        Assert.Equal(audiences, identity.GetAudiences());
+        Assert.Equal(audiences, identity.GetAudiences(), StringComparer.Ordinal);
     }
 
     [Theory]
@@ -5015,7 +5015,7 @@ public class OpenIddictExtensionsTests
         principal.SetClaims(Claims.Private.Audience, audience.ToImmutableArray());
 
         // Act and assert
-        Assert.Equal(audiences, principal.GetAudiences());
+        Assert.Equal(audiences, principal.GetAudiences(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -5055,7 +5055,7 @@ public class OpenIddictExtensionsTests
         identity.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
 
         // Act and assert
-        Assert.Equal(presenters, identity.GetPresenters());
+        Assert.Equal(presenters, identity.GetPresenters(), StringComparer.Ordinal);
     }
 
     [Theory]
@@ -5071,7 +5071,7 @@ public class OpenIddictExtensionsTests
         principal.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
 
         // Act and assert
-        Assert.Equal(presenters, principal.GetPresenters());
+        Assert.Equal(presenters, principal.GetPresenters(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -5111,7 +5111,7 @@ public class OpenIddictExtensionsTests
         identity.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
 
         // Act and assert
-        Assert.Equal(resources, identity.GetResources());
+        Assert.Equal(resources, identity.GetResources(), StringComparer.Ordinal);
     }
 
     [Theory]
@@ -5127,7 +5127,7 @@ public class OpenIddictExtensionsTests
         principal.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
 
         // Act and assert
-        Assert.Equal(resources, principal.GetResources());
+        Assert.Equal(resources, principal.GetResources(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -5167,7 +5167,7 @@ public class OpenIddictExtensionsTests
         identity.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
 
         // Act and assert
-        Assert.Equal(scopes, identity.GetScopes());
+        Assert.Equal(scopes, identity.GetScopes(), StringComparer.Ordinal);
     }
 
     [Theory]
@@ -5183,7 +5183,7 @@ public class OpenIddictExtensionsTests
         principal.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
 
         // Act and assert
-        Assert.Equal(scopes, principal.GetScopes());
+        Assert.Equal(scopes, principal.GetScopes(), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -6430,7 +6430,7 @@ public class OpenIddictExtensionsTests
         identity.SetAudiences(audiences);
 
         // Assert
-        Assert.Equal(audience, identity.GetClaims(Claims.Private.Audience));
+        Assert.Equal(audience, identity.GetClaims(Claims.Private.Audience), StringComparer.Ordinal);
     }
 
     [Theory]
@@ -6449,7 +6449,7 @@ public class OpenIddictExtensionsTests
         principal.SetAudiences(audiences);
 
         // Assert
-        Assert.Equal(audience, principal.GetClaims(Claims.Private.Audience));
+        Assert.Equal(audience, principal.GetClaims(Claims.Private.Audience), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -6492,7 +6492,7 @@ public class OpenIddictExtensionsTests
         identity.SetPresenters(presenters);
 
         // Assert
-        Assert.Equal(presenter, identity.GetClaims(Claims.Private.Presenter));
+        Assert.Equal(presenter, identity.GetClaims(Claims.Private.Presenter), StringComparer.Ordinal);
     }
 
     [Theory]
@@ -6511,7 +6511,7 @@ public class OpenIddictExtensionsTests
         principal.SetPresenters(presenters);
 
         // Assert
-        Assert.Equal(presenter, principal.GetClaims(Claims.Private.Presenter));
+        Assert.Equal(presenter, principal.GetClaims(Claims.Private.Presenter), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -6554,7 +6554,7 @@ public class OpenIddictExtensionsTests
         identity.SetResources(resources);
 
         // Assert
-        Assert.Equal(resource, identity.GetClaims(Claims.Private.Resource));
+        Assert.Equal(resource, identity.GetClaims(Claims.Private.Resource), StringComparer.Ordinal);
     }
 
     [Theory]
@@ -6573,7 +6573,7 @@ public class OpenIddictExtensionsTests
         principal.SetResources(resources);
 
         // Assert
-        Assert.Equal(resource, principal.GetClaims(Claims.Private.Resource));
+        Assert.Equal(resource, principal.GetClaims(Claims.Private.Resource), StringComparer.Ordinal);
     }
 
     [Fact]
@@ -6616,7 +6616,7 @@ public class OpenIddictExtensionsTests
         identity.SetScopes(scopes);
 
         // Assert
-        Assert.Equal(scope, identity.GetClaims(Claims.Private.Scope));
+        Assert.Equal(scope, identity.GetClaims(Claims.Private.Scope), StringComparer.Ordinal);
     }
 
     [Theory]
@@ -6635,7 +6635,7 @@ public class OpenIddictExtensionsTests
         principal.SetScopes(scopes);
 
         // Assert
-        Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope));
+        Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope), StringComparer.Ordinal);
     }
 
     [Fact]

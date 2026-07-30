@@ -255,7 +255,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        return new(token.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
+        return new(token.CreationDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
     }
 
     /// <inheritdoc/>
@@ -263,7 +263,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        return new(token.ExpirationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
+        return new(token.ExpirationDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
     }
 
     /// <inheritdoc/>
@@ -289,11 +289,11 @@ public class OpenIddictMongoDbTokenStore<
 
         if (token.Properties is null)
         {
-            return new(ImmutableDictionary.Create<string, JsonElement>());
+            return new([]);
         }
 
         using var document = JsonDocument.Parse(token.Properties.ToJson());
-        var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+        var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>(StringComparer.Ordinal);
 
         foreach (var property in document.RootElement.EnumerateObject())
         {
@@ -308,7 +308,7 @@ public class OpenIddictMongoDbTokenStore<
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        return new(token.RedemptionDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
+        return new(token.RedemptionDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
     }
 
     /// <inheritdoc/>

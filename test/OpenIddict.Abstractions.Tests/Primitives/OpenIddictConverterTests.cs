@@ -85,7 +85,7 @@ public class OpenIddictConverterTests
             return converter.Read(ref reader, type, options: null!);
         });
 
-        Assert.StartsWith(SR.GetResourceString(SR.ID0176), exception.Message);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0176), exception.Message, StringComparison.Ordinal);
         Assert.Equal("typeToConvert", exception.ParamName);
     }
 

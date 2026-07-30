@@ -276,8 +276,8 @@ internal static class OpenIddictHelpers
                 Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
                 Value: parts.Length is > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
             .Where(static pair => !string.IsNullOrEmpty(pair.Key))
-            .GroupBy(static pair => pair.Key)
-            .ToDictionary(static pair => pair.Key!, static pair => new StringValues([.. pair.Select(parts => parts.Value)]));
+            .GroupBy(static pair => pair.Key, StringComparer.Ordinal)
+            .ToDictionary(static pair => pair.Key!, static pair => new StringValues([.. pair.Select(parts => parts.Value)]), StringComparer.Ordinal);
     }
 
     /// <summary>
@@ -297,8 +297,8 @@ internal static class OpenIddictHelpers
                 Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
                 Value: parts.Length is > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
             .Where(static pair => !string.IsNullOrEmpty(pair.Key))
-            .GroupBy(static pair => pair.Key)
-            .ToDictionary(static pair => pair.Key!, static pair => new StringValues([.. pair.Select(parts => parts.Value)]));
+            .GroupBy(static pair => pair.Key, StringComparer.Ordinal)
+            .ToDictionary(static pair => pair.Key!, static pair => new StringValues([.. pair.Select(parts => parts.Value)]), StringComparer.Ordinal);
     }
 
     /// <summary>
@@ -345,7 +345,7 @@ internal static class OpenIddictHelpers
         while (enumerator.MoveNext())
         {
             var element = enumerator.GetTextElement();
-            if (charset.Contains(element))
+            if (charset.Contains(element, StringComparer.Ordinal))
             {
                 builder.Append(element);
             }

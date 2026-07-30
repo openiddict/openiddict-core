@@ -768,9 +768,9 @@ public class OpenIddictScopeManagerTests
 
         // Assert
         Assert.Equal(3, resources.Count);
-        Assert.Contains("resource1", resources);
-        Assert.Contains("resource2", resources);
-        Assert.Contains("resource3", resources);
+        Assert.Contains("resource1", resources, StringComparer.Ordinal);
+        Assert.Contains("resource2", resources, StringComparer.Ordinal);
+        Assert.Contains("resource3", resources, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -888,7 +888,7 @@ public class OpenIddictScopeManagerTests
         var results = await manager.ValidateAsync(scope).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2044));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2044), StringComparison.Ordinal));
     }
 
     [Fact]
@@ -911,7 +911,7 @@ public class OpenIddictScopeManagerTests
         var results = await manager.ValidateAsync(scope).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2045));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2045), StringComparison.Ordinal));
     }
 
     [Fact]
@@ -944,7 +944,7 @@ public class OpenIddictScopeManagerTests
         var results = await manager.ValidateAsync(scope).ToListAsync();
 
         // Assert
-        Assert.Contains(results, result => result.ErrorMessage == SR.GetResourceString(SR.ID2060));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2060), StringComparison.Ordinal));
     }
 
     [Fact]

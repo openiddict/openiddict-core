@@ -294,30 +294,27 @@ public class OpenIddictClientService
                 context.Error, context.ErrorDescription, context.ErrorUri);
         }
 
-        else
-        {
-            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+        Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
-            return new()
-            {
-                AuthorizationCode = context.AuthorizationCode,
-                AuthorizationResponse = context.Request is not null ? new(context.Request.GetParameters()) : new(),
-                BackchannelAccessToken = context.BackchannelAccessToken,
-                BackchannelAccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
-                BackchannelIdentityToken = context.BackchannelIdentityToken,
-                BackchannelIdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                FrontchannelAccessToken = context.FrontchannelAccessToken,
-                FrontchannelAccessTokenExpirationDate = context.FrontchannelAccessTokenExpirationDate,
-                FrontchannelIdentityToken = context.FrontchannelIdentityToken,
-                FrontchannelIdentityTokenPrincipal = context.FrontchannelIdentityTokenPrincipal,
-                Principal = context.MergedPrincipal,
-                Properties = context.Properties,
-                RefreshToken = context.RefreshToken,
-                StateTokenPrincipal = context.StateTokenPrincipal,
-                TokenResponse = context.TokenResponse ?? new(),
-                UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
-            };
-        }
+        return new()
+        {
+            AuthorizationCode = context.AuthorizationCode,
+            AuthorizationResponse = context.Request is not null ? new(context.Request.GetParameters()) : new(),
+            BackchannelAccessToken = context.BackchannelAccessToken,
+            BackchannelAccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+            BackchannelIdentityToken = context.BackchannelIdentityToken,
+            BackchannelIdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+            FrontchannelAccessToken = context.FrontchannelAccessToken,
+            FrontchannelAccessTokenExpirationDate = context.FrontchannelAccessTokenExpirationDate,
+            FrontchannelIdentityToken = context.FrontchannelIdentityToken,
+            FrontchannelIdentityTokenPrincipal = context.FrontchannelIdentityTokenPrincipal,
+            Principal = context.MergedPrincipal,
+            Properties = context.Properties,
+            RefreshToken = context.RefreshToken,
+            StateTokenPrincipal = context.StateTokenPrincipal,
+            TokenResponse = context.TokenResponse ?? new(),
+            UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+        };
     }
 
     /// <summary>
@@ -652,24 +649,21 @@ public class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                else
-                {
-                    Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+                Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
-                    return new()
-                    {
-                        AccessToken = context.BackchannelAccessToken!,
-                        AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
-                        IdentityToken = context.BackchannelIdentityToken,
-                        IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
-                        Principal = context.MergedPrincipal,
-                        Properties = context.Properties,
-                        RefreshToken = context.RefreshToken,
-                        TokenResponse = context.TokenResponse ?? new(),
-                        UserInfoToken = context.UserInfoToken,
-                        UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
-                    };
-                }
+                return new()
+                {
+                    AccessToken = context.BackchannelAccessToken!,
+                    AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+                    IdentityToken = context.BackchannelIdentityToken,
+                    IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+                    Principal = context.MergedPrincipal,
+                    Properties = context.Properties,
+                    RefreshToken = context.RefreshToken,
+                    TokenResponse = context.TokenResponse ?? new(),
+                    UserInfoToken = context.UserInfoToken,
+                    UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+                };
             }
 
             catch (ProtocolException exception) when (exception.Error is Errors.AuthorizationPending)

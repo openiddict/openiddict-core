@@ -436,9 +436,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(methods);
         Assert.Equal(3, methods.Value.Length);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
-        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
-        Assert.Contains("custom", methods);
+        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods, StringComparer.Ordinal);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods, StringComparer.Ordinal);
+        Assert.Contains("custom", methods, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -478,9 +478,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(methods);
         Assert.Equal(3, methods.Value.Length);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
-        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
-        Assert.Contains("custom", methods);
+        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods, StringComparer.Ordinal);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods, StringComparer.Ordinal);
+        Assert.Contains("custom", methods, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -520,9 +520,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(methods);
         Assert.Equal(3, methods.Value.Length);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
-        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
-        Assert.Contains("custom", methods);
+        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods, StringComparer.Ordinal);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods, StringComparer.Ordinal);
+        Assert.Contains("custom", methods, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -563,9 +563,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(methods);
         Assert.Equal(3, methods.Value.Length);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
-        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
-        Assert.Contains("custom", methods);
+        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods, StringComparer.Ordinal);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods, StringComparer.Ordinal);
+        Assert.Contains("custom", methods, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -605,9 +605,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(methods);
         Assert.Equal(3, methods.Value.Length);
-        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
-        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
-        Assert.Contains("custom", methods);
+        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods, StringComparer.Ordinal);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods, StringComparer.Ordinal);
+        Assert.Contains("custom", methods, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -635,8 +635,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(types);
         Assert.Equal(2, types.Value.Length);
-        Assert.Contains(GrantTypes.AuthorizationCode, types);
-        Assert.Contains(GrantTypes.Password, types);
+        Assert.Contains(GrantTypes.AuthorizationCode, types, StringComparer.Ordinal);
+        Assert.Contains(GrantTypes.Password, types, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -677,8 +677,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(methods);
         Assert.Equal(2, methods.Value.Length);
-        Assert.Contains(CodeChallengeMethods.Sha256, methods);
-        Assert.Contains(CodeChallengeMethods.Plain, methods);
+        Assert.Contains(CodeChallengeMethods.Sha256, methods, StringComparer.Ordinal);
+        Assert.Contains(CodeChallengeMethods.Plain, methods, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -719,8 +719,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(modes);
         Assert.Equal(2, modes.Value.Length);
-        Assert.Contains(ResponseModes.FormPost, modes);
-        Assert.Contains(ResponseModes.Fragment, modes);
+        Assert.Contains(ResponseModes.FormPost, modes, StringComparer.Ordinal);
+        Assert.Contains(ResponseModes.Fragment, modes, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -761,8 +761,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(types);
         Assert.Equal(2, types.Value.Length);
-        Assert.Contains(ResponseTypes.Code, types);
-        Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken, types);
+        Assert.Contains(ResponseTypes.Code, types, StringComparer.Ordinal);
+        Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken, types, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -803,8 +803,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(scopes);
         Assert.Equal(2, scopes.Value.Length);
-        Assert.Contains(Scopes.OpenId, scopes);
-        Assert.Contains("custom_scope", scopes);
+        Assert.Contains(Scopes.OpenId, scopes, StringComparer.Ordinal);
+        Assert.Contains("custom_scope", scopes, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -845,8 +845,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(claims);
         Assert.Equal(2, claims.Value.Length);
-        Assert.Contains(Claims.Profile, claims);
-        Assert.Contains("custom_claim", claims);
+        Assert.Contains(Claims.Profile, claims, StringComparer.Ordinal);
+        Assert.Contains("custom_claim", claims, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -923,7 +923,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.NotNull(algorithms);
-        Assert.Contains(algorithm, algorithms);
+        Assert.Contains(algorithm, algorithms, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -946,7 +946,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(algorithms);
         Assert.Single(algorithms);
-        Assert.Contains(Algorithms.RsaSha256, algorithms);
+        Assert.Contains(Algorithms.RsaSha256, algorithms, StringComparer.Ordinal);
     }
 
     [Fact]

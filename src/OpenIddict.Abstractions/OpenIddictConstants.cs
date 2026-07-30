@@ -560,6 +560,7 @@ public static class OpenIddictConstants
         public static readonly char[] DoubleQuote = ['"'];
         public static readonly char[] EqualsSign = ['='];
         public static readonly char[] Hash = ['#'];
+        public static readonly char[] Plus = ['+'];
         public static readonly char[] QuestionMark = ['?'];
         public static readonly char[] Semicolon = [';'];
         public static readonly char[] Space = [' '];
