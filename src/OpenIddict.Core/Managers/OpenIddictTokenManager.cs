@@ -143,7 +143,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         }
 
         var results = await GetValidationResultsAsync(token, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0207));
@@ -247,7 +247,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
 
         async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var token in tokens)
+            await foreach (var token in tokens.WithCancellation(cancellationToken))
             {
                 if (string.IsNullOrEmpty(query.Subject) ||
                     string.Equals(await Store.GetSubjectAsync(token, cancellationToken), query.Subject, StringComparison.Ordinal))
@@ -286,7 +286,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
 
         async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var token in tokens)
+            await foreach (var token in tokens.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetApplicationIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
                 {
@@ -324,7 +324,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
 
         async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var token in tokens)
+            await foreach (var token in tokens.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetAuthorizationIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
                 {
@@ -436,7 +436,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
 
         async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var token in tokens)
+            await foreach (var token in tokens.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
                 {
@@ -1048,7 +1048,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         ArgumentNullException.ThrowIfNull(token);
 
         var results = await GetValidationResultsAsync(token, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0215));

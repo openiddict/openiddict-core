@@ -460,12 +460,12 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
                            .OrderBy(token => token.Id!)
                            .AsTracking();
 
-        if (offset.HasValue)
+        if (offset is not null)
         {
             query = query.Skip(offset.Value);
         }
 
-        if (count.HasValue)
+        if (count is not null)
         {
             query = query.Take(count.Value);
         }

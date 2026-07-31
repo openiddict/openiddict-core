@@ -920,17 +920,17 @@ public static partial class OpenIddictClientHandlers
                         => context.Registration.EncryptionCredentials.FirstOrDefault(),
 
                     // For other types of tokens, use the global encryption credentials.
-                    _ => context.Options.EncryptionCredentials.First()
+                    _ => context.Options.EncryptionCredentials[0]
                 };
 
                 context.SigningCredentials = context.TokenType switch
                 {
                     // For client assertions, use the signing credentials configured for the client registration.
                     TokenTypeIdentifiers.Private.ClientAssertion
-                        => context.Registration.SigningCredentials.First(),
+                        => context.Registration.SigningCredentials[0],
 
                     // For other types of tokens, use the global signing credentials.
-                    _ => context.Options.SigningCredentials.First()
+                    _ => context.Options.SigningCredentials[0]
                 };
 
                 return ValueTask.CompletedTask;

@@ -65,7 +65,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         var descriptor = Assert.Single(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(OpenIddictApplicationManager<>));
         Assert.Equal(typeof(OpenGenericApplicationManager<>), descriptor.ImplementationType);
     }
@@ -110,7 +110,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         var descriptor = Assert.Single(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(OpenIddictAuthorizationManager<>));
         Assert.Equal(typeof(OpenGenericAuthorizationManager<>), descriptor.ImplementationType);
     }
@@ -155,7 +155,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         var descriptor = Assert.Single(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(OpenIddictResourceManager<>));
         Assert.Equal(typeof(OpenGenericResourceManager<>), descriptor.ImplementationType);
     }
@@ -200,7 +200,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         var descriptor = Assert.Single(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(OpenIddictScopeManager<>));
         Assert.Equal(typeof(OpenGenericScopeManager<>), descriptor.ImplementationType);
     }
@@ -245,7 +245,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         var descriptor = Assert.Single(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(OpenIddictSessionManager<>));
         Assert.Equal(typeof(OpenGenericSessionManager<>), descriptor.ImplementationType);
     }
@@ -290,7 +290,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         var descriptor = Assert.Single(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(OpenIddictTokenManager<>));
         Assert.Equal(typeof(OpenGenericTokenManager<>), descriptor.ImplementationType);
     }
@@ -540,7 +540,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictApplicationManager) &&
             service.ImplementationFactory is not null);
     }
@@ -557,7 +557,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictAuthorizationManager) &&
             service.ImplementationFactory is not null);
     }
@@ -574,7 +574,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictResourceManager) &&
             service.ImplementationFactory is not null);
     }
@@ -591,7 +591,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeManager) &&
             service.ImplementationFactory is not null);
     }
@@ -608,7 +608,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictSessionManager) &&
             service.ImplementationFactory is not null);
     }
@@ -625,7 +625,7 @@ public class OpenIddictCoreBuilderTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictTokenManager) &&
             service.ImplementationFactory is not null);
     }
@@ -640,14 +640,14 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         return services;
     }
 
-    private class CustomApplication;
-    private class CustomAuthorization;
-    private class CustomResource;
-    private class CustomScope;
-    private class CustomSession;
-    private class CustomToken;
+    private sealed class CustomApplication;
+    private sealed class CustomAuthorization;
+    private sealed class CustomResource;
+    private sealed class CustomScope;
+    private sealed class CustomSession;
+    private sealed class CustomToken;
 
-    private class ClosedGenericApplicationManager : OpenIddictApplicationManager<CustomApplication>
+    private sealed class ClosedGenericApplicationManager : OpenIddictApplicationManager<CustomApplication>
     {
         public ClosedGenericApplicationManager(
             IOpenIddictApplicationCache<CustomApplication> cache,
@@ -659,7 +659,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class OpenGenericApplicationManager<TApplication> : OpenIddictApplicationManager<TApplication>
+    private sealed class OpenGenericApplicationManager<TApplication> : OpenIddictApplicationManager<TApplication>
         where TApplication : class
     {
         public OpenGenericApplicationManager(
@@ -672,7 +672,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class ClosedGenericAuthorizationManager : OpenIddictAuthorizationManager<CustomAuthorization>
+    private sealed class ClosedGenericAuthorizationManager : OpenIddictAuthorizationManager<CustomAuthorization>
     {
         public ClosedGenericAuthorizationManager(
             IOpenIddictAuthorizationCache<CustomAuthorization> cache,
@@ -684,7 +684,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class OpenGenericAuthorizationManager<TAuthorization> : OpenIddictAuthorizationManager<TAuthorization>
+    private sealed class OpenGenericAuthorizationManager<TAuthorization> : OpenIddictAuthorizationManager<TAuthorization>
         where TAuthorization : class
     {
         public OpenGenericAuthorizationManager(
@@ -697,7 +697,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class ClosedGenericResourceManager : OpenIddictResourceManager<CustomResource>
+    private sealed class ClosedGenericResourceManager : OpenIddictResourceManager<CustomResource>
     {
         public ClosedGenericResourceManager(
             IOpenIddictResourceCache<CustomResource> cache,
@@ -709,7 +709,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class OpenGenericResourceManager<TResource> : OpenIddictResourceManager<TResource>
+    private sealed class OpenGenericResourceManager<TResource> : OpenIddictResourceManager<TResource>
         where TResource : class
     {
         public OpenGenericResourceManager(
@@ -722,7 +722,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class ClosedGenericScopeManager : OpenIddictScopeManager<CustomScope>
+    private sealed class ClosedGenericScopeManager : OpenIddictScopeManager<CustomScope>
     {
         public ClosedGenericScopeManager(
             IOpenIddictScopeCache<CustomScope> cache,
@@ -734,7 +734,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class OpenGenericScopeManager<TScope> : OpenIddictScopeManager<TScope>
+    private sealed class OpenGenericScopeManager<TScope> : OpenIddictScopeManager<TScope>
         where TScope : class
     {
         public OpenGenericScopeManager(
@@ -747,7 +747,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class ClosedGenericSessionManager : OpenIddictSessionManager<CustomSession>
+    private sealed class ClosedGenericSessionManager : OpenIddictSessionManager<CustomSession>
     {
         public ClosedGenericSessionManager(
             IOpenIddictSessionCache<CustomSession> cache,
@@ -759,7 +759,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class OpenGenericSessionManager<TSession> : OpenIddictSessionManager<TSession>
+    private sealed class OpenGenericSessionManager<TSession> : OpenIddictSessionManager<TSession>
         where TSession : class
     {
         public OpenGenericSessionManager(
@@ -772,7 +772,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class ClosedGenericTokenManager : OpenIddictTokenManager<CustomToken>
+    private sealed class ClosedGenericTokenManager : OpenIddictTokenManager<CustomToken>
     {
         public ClosedGenericTokenManager(
             IOpenIddictTokenCache<CustomToken> cache,
@@ -784,7 +784,7 @@ private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
         }
     }
 
-    private class OpenGenericTokenManager<TToken> : OpenIddictTokenManager<TToken>
+    private sealed class OpenGenericTokenManager<TToken> : OpenIddictTokenManager<TToken>
         where TToken : class
     {
         public OpenGenericTokenManager(

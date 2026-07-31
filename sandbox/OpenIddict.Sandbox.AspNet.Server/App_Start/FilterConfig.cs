@@ -2,7 +2,7 @@
 
 namespace OpenIddict.Sandbox.AspNet.Server;
 
-public class FilterConfig
+public static class FilterConfig
 {
     public static void RegisterGlobalFilters(GlobalFilterCollection filters)
     {

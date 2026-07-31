@@ -78,7 +78,9 @@ public static class OpenIddictEntityFrameworkHelpers
     /// <param name="source">The query source.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The streamed async enumeration containing the results.</returns>
+#pragma warning disable MA0156
     internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
+#pragma warning restore MA0156
     {
         ArgumentNullException.ThrowIfNull(source);
 

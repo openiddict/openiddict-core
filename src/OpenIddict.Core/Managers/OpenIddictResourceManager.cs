@@ -129,7 +129,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
         ArgumentNullException.ThrowIfNull(resource);
 
         var results = await GetValidationResultsAsync(resource, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0207));
@@ -306,7 +306,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
 
         async IAsyncEnumerable<TResource> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var resource in resources)
+            await foreach (var resource in resources.WithCancellation(cancellationToken))
             {
                 var name = await Store.GetNameAsync(resource, cancellationToken);
                 if (!string.IsNullOrEmpty(name) && names.Contains(name, StringComparer.Ordinal))
@@ -696,7 +696,7 @@ public class OpenIddictResourceManager<TResource> : IOpenIddictResourceManager w
         ArgumentNullException.ThrowIfNull(resource);
 
         var results = await GetValidationResultsAsync(resource, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0215));

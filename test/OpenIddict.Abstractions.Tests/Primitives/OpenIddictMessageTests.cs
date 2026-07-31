@@ -193,9 +193,9 @@ public class OpenIddictMessageTests
 
         // Assert
         Assert.Empty(((string?) message.GetParameter("string"))!);
-        Assert.True(((JsonElement?) message.GetParameter("array")).HasValue);
-        Assert.True(((JsonElement?) message.GetParameter("object")).HasValue);
-        Assert.True(((JsonElement?) message.GetParameter("value")).HasValue);
+        Assert.True((JsonElement?) message.GetParameter("array") is not null);
+        Assert.True((JsonElement?) message.GetParameter("object") is not null);
+        Assert.True((JsonElement?) message.GetParameter("value") is not null);
         Assert.NotNull((JsonNode?) message.GetParameter("node_array"));
         Assert.NotNull((JsonNode?) message.GetParameter("node_object"));
         Assert.NotNull((JsonNode?) message.GetParameter("node_value"));

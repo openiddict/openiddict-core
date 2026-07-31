@@ -421,7 +421,7 @@ public class AuthorizationController : Controller
 
             // Retrieve the user profile corresponding to the authorization code/refresh token.
             var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(result.Identity.GetClaim(Claims.Subject));
-            if (user == null)
+            if (user is null)
             {
                 context.Authentication.Challenge(
                     authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,

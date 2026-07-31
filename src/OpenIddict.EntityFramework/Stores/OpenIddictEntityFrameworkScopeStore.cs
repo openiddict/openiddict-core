@@ -204,7 +204,7 @@ public class OpenIddictEntityFrameworkScopeStore<
                           where scope.Resources!.Contains(resource)
                           select scope).AsAsyncEnumerable(cancellationToken);
 
-            await foreach (var scope in scopes)
+            await foreach (var scope in scopes.WithCancellation(cancellationToken))
             {
                 var resources = await GetResourcesAsync(scope, cancellationToken);
                 if (resources.Contains(resource, StringComparer.Ordinal))
@@ -428,12 +428,12 @@ public class OpenIddictEntityFrameworkScopeStore<
 
         IQueryable<TScope> query = context.Set<TScope>().OrderBy(scope => scope.Id!);
 
-        if (offset.HasValue)
+        if (offset is not null)
         {
             query = query.Skip(offset.Value);
         }
 
-        if (count.HasValue)
+        if (count is not null)
         {
             query = query.Take(count.Value);
         }

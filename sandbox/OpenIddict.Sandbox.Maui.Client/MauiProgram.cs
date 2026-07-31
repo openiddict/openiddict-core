@@ -19,7 +19,7 @@ public static class MauiProgram
 
         builder.Services.AddDbContext<DbContext>(options =>
         {
-            options.UseSqlite($"Filename={Path.Combine(Path.GetTempPath(), "openiddict-sandbox-maui-client.sqlite3")}");
+            options.UseSqlite($"Filename={Path.Join(Path.GetTempPath(), "openiddict-sandbox-maui-client.sqlite3")}");
             options.UseOpenIddict();
         });
 

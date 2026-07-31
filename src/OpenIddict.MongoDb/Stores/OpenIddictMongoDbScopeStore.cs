@@ -286,12 +286,12 @@ public class OpenIddictMongoDbScopeStore<
 
         var query = (IQueryable<TScope>) collection.AsQueryable().OrderBy(scope => scope.Id);
 
-        if (offset.HasValue)
+        if (offset is not null)
         {
             query = query.Skip(offset.Value);
         }
 
-        if (count.HasValue)
+        if (count is not null)
         {
             query = query.Take(count.Value);
         }

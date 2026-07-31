@@ -133,7 +133,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
         }
 
         var results = await GetValidationResultsAsync(session, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0207));
@@ -237,7 +237,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
 
         async IAsyncEnumerable<TSession> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var session in sessions)
+            await foreach (var session in sessions.WithCancellation(cancellationToken))
             {
                 if (string.IsNullOrEmpty(query.Subject) ||
                     string.Equals(await Store.GetSubjectAsync(session, cancellationToken), query.Subject, StringComparison.Ordinal))
@@ -276,7 +276,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
 
         async IAsyncEnumerable<TSession> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var session in sessions)
+            await foreach (var session in sessions.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetApplicationIdAsync(session, cancellationToken), identifier, StringComparison.Ordinal))
                 {
@@ -314,7 +314,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
 
         async IAsyncEnumerable<TSession> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var session in sessions)
+            await foreach (var session in sessions.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetAuthorizationIdAsync(session, cancellationToken), identifier, StringComparison.Ordinal))
                 {
@@ -385,7 +385,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
 
         async IAsyncEnumerable<TSession> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var session in sessions)
+            await foreach (var session in sessions.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetLoginIdAsync(session, cancellationToken), identifier, StringComparison.Ordinal))
                 {
@@ -423,7 +423,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
 
         async IAsyncEnumerable<TSession> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var session in sessions)
+            await foreach (var session in sessions.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetSubjectAsync(session, cancellationToken), subject, StringComparison.Ordinal))
                 {
@@ -712,7 +712,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
         ArgumentNullException.ThrowIfNull(session);
 
         var results = await GetValidationResultsAsync(session, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0215));

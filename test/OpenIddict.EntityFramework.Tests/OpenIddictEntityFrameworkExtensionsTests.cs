@@ -49,23 +49,23 @@ public class OpenIddictEntityFrameworkExtensionsTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictApplicationManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictAuthorizationManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictResourceManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictTokenManager) &&
             service.ImplementationFactory is not null);
     }
@@ -82,23 +82,23 @@ public class OpenIddictEntityFrameworkExtensionsTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictApplicationStore<OpenIddictEntityFrameworkApplication>) &&
             service.ImplementationType == typeof(OpenIddictEntityFrameworkApplicationStore));
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictAuthorizationStore<OpenIddictEntityFrameworkAuthorization>) &&
             service.ImplementationType == typeof(OpenIddictEntityFrameworkAuthorizationStore));
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictResourceStore<OpenIddictEntityFrameworkResource>) &&
             service.ImplementationType == typeof(OpenIddictEntityFrameworkResourceStore));
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeStore<OpenIddictEntityFrameworkScope>) &&
             service.ImplementationType == typeof(OpenIddictEntityFrameworkScopeStore));
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictTokenStore<OpenIddictEntityFrameworkToken>) &&
             service.ImplementationType == typeof(OpenIddictEntityFrameworkTokenStore));
     }

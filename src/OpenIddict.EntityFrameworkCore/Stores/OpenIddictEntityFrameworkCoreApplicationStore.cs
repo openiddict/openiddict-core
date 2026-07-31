@@ -483,12 +483,12 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
 
         var query = context.Set<TApplication>().OrderBy(application => application.Id!).AsTracking();
 
-        if (offset.HasValue)
+        if (offset is not null)
         {
             query = query.Skip(offset.Value);
         }
 
-        if (count.HasValue)
+        if (count is not null)
         {
             query = query.Take(count.Value);
         }

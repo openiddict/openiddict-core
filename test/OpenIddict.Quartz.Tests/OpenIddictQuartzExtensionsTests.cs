@@ -45,7 +45,7 @@ public class OpenIddictQuartzExtensionsTests
         // Assert
         Assert.Contains(services, service => service.ServiceType == typeof(OpenIddictQuartzJob) &&
             service.ImplementationType == typeof(OpenIddictQuartzJob) &&
-            service.Lifetime == ServiceLifetime.Transient);
+            service.Lifetime is ServiceLifetime.Transient);
     }
 
     [Fact]
@@ -63,10 +63,10 @@ public class OpenIddictQuartzExtensionsTests
         // Assert
         Assert.Single(services, service => service.ServiceType == typeof(OpenIddictQuartzJob) &&
             service.ImplementationType == typeof(OpenIddictQuartzJob) &&
-            service.Lifetime == ServiceLifetime.Transient);
+            service.Lifetime is ServiceLifetime.Transient);
 
         Assert.Single(services, service => service.ServiceType == typeof(IConfigureOptions<QuartzOptions>) &&
             service.ImplementationType == typeof(OpenIddictQuartzConfiguration) &&
-            service.Lifetime == ServiceLifetime.Singleton);
+            service.Lifetime is ServiceLifetime.Singleton);
     }
 }

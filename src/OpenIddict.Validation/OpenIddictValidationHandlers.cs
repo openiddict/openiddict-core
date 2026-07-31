@@ -531,7 +531,7 @@ public static partial class OpenIddictValidationHandlers
             principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }

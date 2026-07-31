@@ -831,7 +831,8 @@ public static partial class OpenIddictServerHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
                     }
 
-                    if (!await ValidateAuthorizedParty(context.IdentityTokenHintPrincipal, context.PostLogoutRedirectUri))
+                    if (!await ValidateAuthorizedPartyAsync(context.IdentityTokenHintPrincipal,
+                        context.PostLogoutRedirectUri, context.CancellationToken))
                     {
                         context.Logger.LogWarning(6198, SR.GetResourceString(SR.ID6198));
 
@@ -846,8 +847,8 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                async ValueTask<bool> ValidateAuthorizedParty(ClaimsPrincipal principal,
-                    [StringSyntax(StringSyntaxAttribute.Uri)] string uri)
+                async ValueTask<bool> ValidateAuthorizedPartyAsync(ClaimsPrincipal principal,
+                    [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
                 {
                     // To be considered valid, the specified post_logout_redirect_uri must
                     // be considered valid for one of the listed audiences/presenters.
@@ -858,7 +859,7 @@ public static partial class OpenIddictServerHandlers
 
                     foreach (var identifier in identifiers)
                     {
-                        var application = await _applicationManager.FindByClientIdAsync(identifier, context.CancellationToken);
+                        var application = await _applicationManager.FindByClientIdAsync(identifier, cancellationToken);
                         if (application is null)
                         {
                             continue;
@@ -866,13 +867,13 @@ public static partial class OpenIddictServerHandlers
 
                         // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                         if (!context.Options.IgnoreEndpointPermissions &&
-                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
-                            !await _applicationManager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
+                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, cancellationToken) &&
+                            !await _applicationManager.HasPermissionAsync(application, "ept:logout", cancellationToken))
                         {
                             continue;
                         }
 
-                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri, context.CancellationToken))
+                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri, cancellationToken))
                         {
                             return true;
                         }

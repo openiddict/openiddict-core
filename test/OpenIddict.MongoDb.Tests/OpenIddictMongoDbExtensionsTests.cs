@@ -49,23 +49,23 @@ public class OpenIddictMongoDbExtensionsTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictApplicationManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictAuthorizationManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictResourceManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictScopeManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Scoped &&
+            service.Lifetime is ServiceLifetime.Scoped &&
             service.ServiceType == typeof(IOpenIddictTokenManager) &&
             service.ImplementationFactory is not null);
     }
@@ -82,23 +82,23 @@ public class OpenIddictMongoDbExtensionsTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Singleton &&
+            service.Lifetime is ServiceLifetime.Singleton &&
             service.ServiceType == typeof(IOpenIddictApplicationStore<OpenIddictMongoDbApplication>) &&
             service.ImplementationType == typeof(OpenIddictMongoDbApplicationStore));
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Singleton &&
+            service.Lifetime is ServiceLifetime.Singleton &&
             service.ServiceType == typeof(IOpenIddictAuthorizationStore<OpenIddictMongoDbAuthorization>) &&
             service.ImplementationType == typeof(OpenIddictMongoDbAuthorizationStore));
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Singleton &&
+            service.Lifetime is ServiceLifetime.Singleton &&
             service.ServiceType == typeof(IOpenIddictResourceStore<OpenIddictMongoDbResource>) &&
             service.ImplementationType == typeof(OpenIddictMongoDbResourceStore));
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Singleton &&
+            service.Lifetime is ServiceLifetime.Singleton &&
             service.ServiceType == typeof(IOpenIddictScopeStore<OpenIddictMongoDbScope>) &&
             service.ImplementationType == typeof(OpenIddictMongoDbScopeStore));
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Singleton &&
+            service.Lifetime is ServiceLifetime.Singleton &&
             service.ServiceType == typeof(IOpenIddictTokenStore<OpenIddictMongoDbToken>) &&
             service.ImplementationType == typeof(OpenIddictMongoDbTokenStore));
     }
@@ -115,7 +115,7 @@ public class OpenIddictMongoDbExtensionsTests
 
         // Assert
         Assert.Contains(services, service =>
-            service.Lifetime == ServiceLifetime.Singleton &&
+            service.Lifetime is ServiceLifetime.Singleton &&
             service.ServiceType == typeof(IOpenIddictMongoDbContext) &&
             service.ImplementationType == typeof(OpenIddictMongoDbContext));
     }

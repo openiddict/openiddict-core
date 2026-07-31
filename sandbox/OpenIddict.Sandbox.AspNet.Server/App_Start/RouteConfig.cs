@@ -3,7 +3,7 @@ using System.Web.Routing;
 
 namespace OpenIddict.Sandbox.AspNet.Server;
 
-public class RouteConfig
+public static class RouteConfig
 {
     public static void RegisterRoutes(RouteCollection routes)
     {

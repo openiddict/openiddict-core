@@ -88,7 +88,7 @@ public class OpenIddictValidationBuilderTests
         Assert.Contains(services, service =>
             service.ServiceType == typeof(CustomHandler) &&
             service.ImplementationInstance?.GetType() == typeof(CustomHandler) &&
-            service.Lifetime == ServiceLifetime.Singleton);
+            service.Lifetime is ServiceLifetime.Singleton);
     }
 
     [Fact]
@@ -1113,12 +1113,12 @@ public class OpenIddictValidationBuilderTests
         return options.Value;
     }
 
-    private class CustomContext : BaseContext
+    private sealed class CustomContext : BaseContext
     {
         public CustomContext(OpenIddictValidationTransaction transaction) : base(transaction) { }
     }
 
-    private class CustomHandler : IOpenIddictValidationHandler<CustomContext>
+    private sealed class CustomHandler : IOpenIddictValidationHandler<CustomContext>
     {
         public ValueTask HandleAsync(CustomContext context) => ValueTask.CompletedTask;
     }
