@@ -1007,7 +1007,7 @@ public static partial class OpenIddictValidationHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                context.SecurityTokenDescriptor.SigningCredentials = context.Options.SigningCredentials.First();
+                context.SecurityTokenDescriptor.SigningCredentials = context.Options.SigningCredentials[0];
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
 
                 return ValueTask.CompletedTask;

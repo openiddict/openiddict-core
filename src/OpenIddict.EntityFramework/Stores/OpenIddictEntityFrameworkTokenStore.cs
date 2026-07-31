@@ -467,12 +467,12 @@ public class OpenIddictEntityFrameworkTokenStore<
                                           .Include(token => token.Authorization)
                                           .OrderBy(token => token.Id!);
 
-        if (offset.HasValue)
+        if (offset is not null)
         {
             query = query.Skip(offset.Value);
         }
 
-        if (count.HasValue)
+        if (count is not null)
         {
             query = query.Take(count.Value);
         }

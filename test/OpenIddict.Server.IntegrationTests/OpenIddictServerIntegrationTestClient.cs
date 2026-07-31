@@ -364,17 +364,17 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
                 .Select(static grouping => KeyValuePair.Create(grouping.Key, new StringValues([.. grouping]))));
         }
 
-        if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(message.Content.Headers.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
         {
-            return (await message.Content!.ReadFromJsonAsync<OpenIddictResponse>())!;
+            return (await message.Content.ReadFromJsonAsync<OpenIddictResponse>())!;
         }
 
-        if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(message.Content.Headers.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
         {
             // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
             // that always return their HTTP responses encoded using UTF-8. As such, the stream
             // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
-            using var stream = await message.Content!.ReadAsStreamAsync();
+            using var stream = await message.Content.ReadAsStreamAsync();
 
             using var document = await HtmlParser.ParseDocumentAsync(stream);
             if (document.Body is null)
@@ -405,12 +405,12 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
                 .Select(static grouping => KeyValuePair.Create(grouping.Key, new StringValues([.. grouping]))));
         }
 
-        if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(message.Content.Headers.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
         {
             // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
             // that always return their HTTP responses encoded using UTF-8. As such, the stream
             // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
-            using var stream = await message.Content!.ReadAsStreamAsync();
+            using var stream = await message.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);
 
             // Note: a dictionary is deliberately not used here to allow multiple parameters with the

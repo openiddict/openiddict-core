@@ -94,7 +94,7 @@ public class OpenIddictServerBuilderTests
         Assert.Contains(services, service =>
             service.ServiceType == typeof(CustomHandler) &&
             service.ImplementationInstance?.GetType() == typeof(CustomHandler) &&
-            service.Lifetime == ServiceLifetime.Singleton);
+            service.Lifetime is ServiceLifetime.Singleton);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class OpenIddictServerBuilderTests
         // Assert
         Assert.Contains(services, service =>
             service.ServiceType == typeof(CustomHandler) &&
-            service.Lifetime == ServiceLifetime.Singleton);
+            service.Lifetime is ServiceLifetime.Singleton);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public class OpenIddictServerBuilderTests
         // Assert
         Assert.Contains(services, service =>
             service.ServiceType == typeof(CustomHandler) &&
-            service.Lifetime == ServiceLifetime.Scoped);
+            service.Lifetime is ServiceLifetime.Scoped);
     }
 
     [Fact]
@@ -3823,7 +3823,7 @@ public class OpenIddictServerBuilderTests
         return options.Value;
     }
 
-    private class CustomContext : BaseContext
+    private sealed class CustomContext : BaseContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="BaseContext"/> class.
@@ -3831,7 +3831,7 @@ public class OpenIddictServerBuilderTests
         public CustomContext(OpenIddictServerTransaction transaction) : base(transaction) { }
     }
 
-    private class CustomHandler : IOpenIddictServerHandler<CustomContext>
+    private sealed class CustomHandler : IOpenIddictServerHandler<CustomContext>
     {
         public ValueTask HandleAsync(CustomContext context) => ValueTask.CompletedTask;
     }

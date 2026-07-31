@@ -79,7 +79,7 @@ public class OpenIddictServerExtensionsTests
         // Assert
         Assert.Contains(services, service => service.ServiceType == typeof(IOpenIddictServerDispatcher) &&
                                              service.ImplementationType == typeof(OpenIddictServerDispatcher) &&
-                                             service.Lifetime == ServiceLifetime.Scoped);
+                                             service.Lifetime is ServiceLifetime.Scoped);
     }
     
     [Fact]
@@ -95,7 +95,7 @@ public class OpenIddictServerExtensionsTests
         // Assert
         Assert.Contains(services, service => service.ServiceType == typeof(IOpenIddictServerFactory) &&
                                              service.ImplementationType == typeof(OpenIddictServerFactory) &&
-                                             service.Lifetime == ServiceLifetime.Scoped);
+                                             service.Lifetime is ServiceLifetime.Scoped);
     }
 
     public static IEnumerable<object[]> DefaultHandlers
@@ -153,7 +153,7 @@ public class OpenIddictServerExtensionsTests
         // Assert
         Assert.Contains(services, service => service.ServiceType == type &&
                                              service.ImplementationType == type &&
-                                             service.Lifetime == ServiceLifetime.Singleton);
+                                             service.Lifetime is ServiceLifetime.Singleton);
     }
 
     [Fact]

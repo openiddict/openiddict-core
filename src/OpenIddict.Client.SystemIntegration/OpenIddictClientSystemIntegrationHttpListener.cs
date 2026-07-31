@@ -157,19 +157,21 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                     {
                         if (Socket.OSSupportsIPv4)
                         {
-                            listener.Prefixes.Add($"http://{IPAddress.Loopback}:{port.ToString(CultureInfo.InvariantCulture)}/");
+                            listener.Prefixes.Add(string.Create(CultureInfo.InvariantCulture,
+                                $"http://{IPAddress.Loopback}:{port}/"));
                         }
 
                         if (Socket.OSSupportsIPv6)
                         {
-                            listener.Prefixes.Add($"http://[{IPAddress.IPv6Loopback}]:{port.ToString(CultureInfo.InvariantCulture)}/");
+                            listener.Prefixes.Add(string.Create(CultureInfo.InvariantCulture,
+                                $"http://[{IPAddress.IPv6Loopback}]:{port}/"));
                         }
                     }
 
                     // On older versions, listening on 127.0.0.1 and ::1 requires administrator rights.
                     else
                     {
-                        listener.Prefixes.Add($"http://localhost:{port.ToString(CultureInfo.InvariantCulture)}/");
+                        listener.Prefixes.Add(string.Create(CultureInfo.InvariantCulture, $"http://localhost:{port}/"));
                     }
                 }
 
@@ -182,7 +184,7 @@ public sealed class OpenIddictClientSystemIntegrationHttpListener : BackgroundSe
                     // on "localhost" on platforms that use the managed HttpListener implementation.
                     //
                     // See https://github.com/dotnet/runtime/issues/34399 for more information.
-                    listener.Prefixes.Add($"http://localhost:{port.ToString(CultureInfo.InvariantCulture)}/");
+                    listener.Prefixes.Add(string.Create(CultureInfo.InvariantCulture, $"http://localhost:{port}/"));
                 }
 
                 try

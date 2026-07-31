@@ -146,7 +146,7 @@ public class OpenIddictCoreOptionsTests
         Assert.Same(customTimeProvider, options.TimeProvider);
     }
 
-    private class CustomTimeProvider : TimeProvider
+    private sealed class CustomTimeProvider : TimeProvider
     {
     }
 }

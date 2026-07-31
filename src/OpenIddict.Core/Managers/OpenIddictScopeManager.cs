@@ -128,7 +128,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         ArgumentNullException.ThrowIfNull(scope);
 
         var results = await GetValidationResultsAsync(scope, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0207));
@@ -305,7 +305,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
 
         async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var scope in scopes)
+            await foreach (var scope in scopes.WithCancellation(cancellationToken))
             {
                 var name = await Store.GetNameAsync(scope, cancellationToken);
                 if (!string.IsNullOrEmpty(name) && names.Contains(name, StringComparer.Ordinal))
@@ -344,7 +344,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
 
         async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var scope in scopes)
+            await foreach (var scope in scopes.WithCancellation(cancellationToken))
             {
                 var resources = await Store.GetResourcesAsync(scope, cancellationToken);
                 if (resources.Contains(resource, StringComparer.Ordinal))
@@ -777,7 +777,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         ArgumentNullException.ThrowIfNull(scope);
 
         var results = await GetValidationResultsAsync(scope, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0215));

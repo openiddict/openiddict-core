@@ -54,12 +54,12 @@ public class ManageController : Controller
     public async Task<ActionResult> Index(ManageMessageId? message)
     {
         ViewBag.StatusMessage =
-            message == ManageMessageId.ChangePasswordSuccess ? "Votre mot de passe a été changé."
-            : message == ManageMessageId.SetPasswordSuccess ? "Votre mot de passe a été défini."
-            : message == ManageMessageId.SetTwoFactorSuccess ? "Votre fournisseur d'authentification à 2 facteurs a été défini."
-            : message == ManageMessageId.Error ? "Une erreur s'est produite."
-            : message == ManageMessageId.AddPhoneSuccess ? "Votre numéro de téléphone a été ajouté."
-            : message == ManageMessageId.RemovePhoneSuccess ? "Votre numéro de téléphone a été supprimé."
+            message is ManageMessageId.ChangePasswordSuccess ? "Votre mot de passe a été changé."
+            : message is ManageMessageId.SetPasswordSuccess ? "Votre mot de passe a été défini."
+            : message is ManageMessageId.SetTwoFactorSuccess ? "Votre fournisseur d'authentification à 2 facteurs a été défini."
+            : message is ManageMessageId.Error ? "Une erreur s'est produite."
+            : message is ManageMessageId.AddPhoneSuccess ? "Votre numéro de téléphone a été ajouté."
+            : message is ManageMessageId.RemovePhoneSuccess ? "Votre numéro de téléphone a été supprimé."
             : "";
 
         var userId = User.Identity.GetUserId();
@@ -85,7 +85,7 @@ public class ManageController : Controller
         if (result.Succeeded)
         {
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-            if (user != null)
+            if (user is not null)
             {
                 await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
             }
@@ -117,7 +117,7 @@ public class ManageController : Controller
         }
         // Générer le jeton et l'envoyer
         var code = await UserManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), model.Number);
-        if (UserManager.SmsService != null)
+        if (UserManager.SmsService is not null)
         {
             var message = new IdentityMessage
             {
@@ -137,7 +137,7 @@ public class ManageController : Controller
     {
         await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), true);
         var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-        if (user != null)
+        if (user is not null)
         {
             await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
         }
@@ -152,7 +152,7 @@ public class ManageController : Controller
     {
         await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), false);
         var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-        if (user != null)
+        if (user is not null)
         {
             await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
         }
@@ -165,7 +165,7 @@ public class ManageController : Controller
     {
         var code = await UserManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), phoneNumber);
         // Envoyer un SMS via le fournisseur SMS afin de vérifier le numéro de téléphone
-        return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
+        return phoneNumber is null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
     }
 
     //
@@ -182,7 +182,7 @@ public class ManageController : Controller
         if (result.Succeeded)
         {
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-            if (user != null)
+            if (user is not null)
             {
                 await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
             }
@@ -205,7 +205,7 @@ public class ManageController : Controller
             return RedirectToAction("Index", new { Message = ManageMessageId.Error });
         }
         var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-        if (user != null)
+        if (user is not null)
         {
             await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
         }
@@ -233,7 +233,7 @@ public class ManageController : Controller
         if (result.Succeeded)
         {
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-            if (user != null)
+            if (user is not null)
             {
                 await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
             }
@@ -262,7 +262,7 @@ public class ManageController : Controller
             if (result.Succeeded)
             {
                 var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-                if (user != null)
+                if (user is not null)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                 }
@@ -280,17 +280,17 @@ public class ManageController : Controller
     public async Task<ActionResult> ManageLogins(ManageMessageId? message)
     {
         ViewBag.StatusMessage =
-            message == ManageMessageId.RemoveLoginSuccess ? "La connexion externe a été supprimée."
-            : message == ManageMessageId.Error ? "Une erreur s'est produite."
+            message is ManageMessageId.RemoveLoginSuccess ? "La connexion externe a été supprimée."
+            : message is ManageMessageId.Error ? "Une erreur s'est produite."
             : "";
         var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-        if (user == null)
+        if (user is null)
         {
             return View("Error");
         }
         var userLogins = await UserManager.GetLoginsAsync(User.Identity.GetUserId());
         var otherLogins = AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => !string.Equals(auth.AuthenticationType, ul.LoginProvider, System.StringComparison.Ordinal))).ToList();
-        ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
+        ViewBag.ShowRemoveButton = user.PasswordHash is not null || userLogins.Count > 1;
         return View(new ManageLoginsViewModel
         {
             CurrentLogins = userLogins,
@@ -313,7 +313,7 @@ public class ManageController : Controller
     public async Task<ActionResult> LinkLoginCallback()
     {
         var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
-        if (loginInfo == null)
+        if (loginInfo is null)
         {
             return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
         }
@@ -323,7 +323,7 @@ public class ManageController : Controller
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing && _userManager != null)
+        if (disposing && _userManager is not null)
         {
             _userManager.Dispose();
             _userManager = null;
@@ -355,9 +355,9 @@ public class ManageController : Controller
     private bool HasPassword()
     {
         var user = UserManager.FindById(User.Identity.GetUserId());
-        if (user != null)
+        if (user is not null)
         {
-            return user.PasswordHash != null;
+            return user.PasswordHash is not null;
         }
         return false;
     }
@@ -365,9 +365,9 @@ public class ManageController : Controller
     private bool HasPhoneNumber()
     {
         var user = UserManager.FindById(User.Identity.GetUserId());
-        if (user != null)
+        if (user is not null)
         {
-            return user.PhoneNumber != null;
+            return user.PhoneNumber is not null;
         }
         return false;
     }

@@ -241,7 +241,7 @@ public class OpenIddictEntityFrameworkApplicationStore<
                                 where application.PostLogoutRedirectUris!.Contains(uri)
                                 select application).AsAsyncEnumerable(cancellationToken);
 
-            await foreach (var application in applications)
+            await foreach (var application in applications.WithCancellation(cancellationToken))
             {
                 var uris = await GetPostLogoutRedirectUrisAsync(application, cancellationToken);
                 if (uris.Contains(uri, StringComparer.Ordinal))
@@ -274,7 +274,7 @@ public class OpenIddictEntityFrameworkApplicationStore<
                                 where application.RedirectUris!.Contains(uri)
                                 select application).AsAsyncEnumerable(cancellationToken);
 
-            await foreach (var application in applications)
+            await foreach (var application in applications.WithCancellation(cancellationToken))
             {
                 var uris = await GetRedirectUrisAsync(application, cancellationToken);
                 if (uris.Contains(uri, StringComparer.Ordinal))
@@ -660,12 +660,12 @@ public class OpenIddictEntityFrameworkApplicationStore<
 
         IQueryable<TApplication> query = context.Set<TApplication>().OrderBy(application => application.Id!);
 
-        if (offset.HasValue)
+        if (offset is not null)
         {
             query = query.Skip(offset.Value);
         }
 
-        if (count.HasValue)
+        if (count is not null)
         {
             query = query.Take(count.Value);
         }

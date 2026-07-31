@@ -599,6 +599,7 @@ public class OpenIddictClientService
 
                 var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
                 var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+                var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
 
                 var transaction = await factory.CreateTransactionAsync(request.CancellationToken);
 
@@ -670,7 +671,11 @@ public class OpenIddictClientService
             {
                 // Default to a standard 5-second interval if no explicit value was configured.
                 // See https://www.rfc-editor.org/rfc/rfc8628#section-3.5 for more information.
+#if NET
+                await Task.Delay(interval, TimeProvider.System, source.Token);
+#else
                 await Task.Delay(interval, source.Token);
+#endif
             }
 
             catch (ProtocolException exception) when (exception.Error is Errors.SlowDown)
@@ -679,7 +684,11 @@ public class OpenIddictClientService
                 // slow down the token redeeming process by increasing the interval.
                 //
                 // See https://www.rfc-editor.org/rfc/rfc8628#section-3.5 for more information.
+#if NET
+                await Task.Delay(interval += TimeSpan.FromSeconds(5), TimeProvider.System, source.Token);
+#else
                 await Task.Delay(interval += TimeSpan.FromSeconds(5), source.Token);
+#endif
             }
         }
     }

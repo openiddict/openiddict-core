@@ -66,7 +66,7 @@ public class ApplicationUserManager : UserManager<ApplicationUser>
         manager.EmailService = new EmailService();
         manager.SmsService = new SmsService();
         var dataProtectionProvider = options.DataProtectionProvider;
-        if (dataProtectionProvider != null)
+        if (dataProtectionProvider is not null)
         {
             manager.UserTokenProvider = 
                 new DataProtectorTokenProvider<ApplicationUser>(dataProtectionProvider.Create("ASP.NET Identity"));

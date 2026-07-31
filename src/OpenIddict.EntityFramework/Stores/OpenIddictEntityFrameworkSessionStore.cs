@@ -433,12 +433,12 @@ public class OpenIddictEntityFrameworkSessionStore<
 
         IQueryable<TSession> query = context.Set<TSession>().OrderBy(session => session.Id!);
 
-        if (offset.HasValue)
+        if (offset is not null)
         {
             query = query.Skip(offset.Value);
         }
 
-        if (count.HasValue)
+        if (count is not null)
         {
             query = query.Take(count.Value);
         }

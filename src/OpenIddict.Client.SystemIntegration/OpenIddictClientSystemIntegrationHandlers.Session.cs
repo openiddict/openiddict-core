@@ -281,7 +281,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
             }
 
 #if IOS || MACCATALYST || MACOS
-            class ASWebAuthenticationPresentationContext(NativeWindow window) : NSObject,
+            sealed class ASWebAuthenticationPresentationContext(NativeWindow window) : NSObject,
                 IASWebAuthenticationPresentationContextProviding
             {
                 NativeWindow IASWebAuthenticationPresentationContextProviding.GetPresentationAnchor(
@@ -564,7 +564,7 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                         return;
                     }
 #endif
-                    if (await TryLaunchBrowserWithShellExecuteAsync(uri))
+                    if (await TryLaunchBrowserWithShellExecuteAsync(uri, context.CancellationToken))
                     {
                         context.HandleRequest();
                         return;
@@ -581,7 +581,8 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 }
 #endif
 #if IOS || MACCATALYST
-                if ((OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst()) && await TryLaunchBrowserWithUIApplicationAsync(uri))
+                if ((OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst()) &&
+                    await TryLaunchBrowserWithUIApplicationAsync(uri, context.CancellationToken))
                 {
                     context.HandleRequest();
                     return;
@@ -594,13 +595,13 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     return;
                 }
 #endif
-                if (OperatingSystem.IsMacOS() && await TryLaunchBrowserWithOpenAsync(uri))
+                if (OperatingSystem.IsMacOS() && await TryLaunchBrowserWithOpenAsync(uri, context.CancellationToken))
                 {
                     context.HandleRequest();
                     return;
                 }
 
-                if (OperatingSystem.IsLinux() && await TryLaunchBrowserWithXdgOpenAsync(uri))
+                if (OperatingSystem.IsLinux() && await TryLaunchBrowserWithXdgOpenAsync(uri, context.CancellationToken))
                 {
                     context.HandleRequest();
                     return;

@@ -134,7 +134,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         }
 
         var results = await GetValidationResultsAsync(authorization, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0207));
@@ -238,7 +238,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
 
         async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var authorization in authorizations)
+            await foreach (var authorization in authorizations.WithCancellation(cancellationToken))
             {
                 if (!string.IsNullOrEmpty(query.Subject) &&
                     !string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), query.Subject, StringComparison.Ordinal))
@@ -285,7 +285,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
 
         async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var authorization in authorizations)
+            await foreach (var authorization in authorizations.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetApplicationIdAsync(authorization, cancellationToken), identifier, StringComparison.Ordinal))
                 {
@@ -357,7 +357,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
 
         async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var authorization in authorizations)
+            await foreach (var authorization in authorizations.WithCancellation(cancellationToken))
             {
                 if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
                 {
@@ -796,7 +796,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         ArgumentNullException.ThrowIfNull(authorization);
 
         var results = await GetValidationResultsAsync(authorization, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0215));

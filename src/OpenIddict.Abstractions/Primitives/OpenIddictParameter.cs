@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -290,7 +291,8 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <see langword="true"/> if the two instances have both the same representation
     /// (e.g <see cref="string"/>) and value, <see langword="false"/> otherwise.
     /// </returns>
-    public override bool Equals(object? obj) => obj is OpenIddictParameter parameter && Equals(parameter);
+    public override bool Equals([NotNullWhen(true)] object? obj)
+        => obj is OpenIddictParameter parameter && Equals(parameter);
 
     /// <summary>
     /// Returns the hash code of the current <see cref="OpenIddictParameter"/> instance.
@@ -615,7 +617,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
         };
 
         value = result.GetValueOrDefault();
-        return result.HasValue;
+        return result is not null;
     }
 
     /// <summary>
@@ -651,7 +653,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
         };
 
         value = result.GetValueOrDefault();
-        return result.HasValue;
+        return result is not null;
     }
 
     /// <summary>

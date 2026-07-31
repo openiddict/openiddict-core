@@ -1833,7 +1833,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                async ValueTask<bool> HasPermissionAsync(IEnumerable<string> types)
+                async ValueTask<bool> HasPermissionAsync(ImmutableArray<string> types)
                 {
                     // Note: response type permissions are always prefixed with "rst:".
                     const string prefix = Permissions.Prefixes.ResponseType;
@@ -1849,7 +1849,7 @@ public static partial class OpenIddictServerHandlers
                         // Note: response types can be specified in any order. To ensure permissions are correctly
                         // checked even if the order differs from the one specified in the request, a HashSet is used.
                         var values = permission[prefix.Length..].Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries);
-                        if (values.Length is not 0 && values.ToHashSet(StringComparer.Ordinal).SetEquals(types))
+                        if (values is not [] && values.ToHashSet(StringComparer.Ordinal).SetEquals(types))
                         {
                             return true;
                         }

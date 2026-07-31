@@ -25,7 +25,7 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite($"Filename={Path.Combine(Path.GetTempPath(), "openiddict-sandbox-wpf-client.sqlite3")}");
+        optionsBuilder.UseSqlite($"Filename={Path.Join(Path.GetTempPath(), "openiddict-sandbox-wpf-client.sqlite3")}");
     }
 #else
     public ApplicationDbContext()

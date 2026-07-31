@@ -141,7 +141,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
         {
             // Read the version of the format used to serialize the properties.
             var version = reader.ReadInt32();
-            if (version != 1)
+            if (version is not 1)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
             }

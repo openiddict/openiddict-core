@@ -195,7 +195,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         }
 
         var results = await GetValidationResultsAsync(application, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0207));
@@ -382,7 +382,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
         async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var application in applications)
+            await foreach (var application in applications.WithCancellation(cancellationToken))
             {
                 var uris = await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken);
                 if (uris.Contains(uri, StringComparer.Ordinal))
@@ -421,7 +421,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
         async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var application in applications)
+            await foreach (var application in applications.WithCancellation(cancellationToken))
             {
                 var uris = await Store.GetRedirectUrisAsync(application, cancellationToken);
                 if (uris.Contains(uri, StringComparer.Ordinal))
@@ -1129,7 +1129,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         ArgumentNullException.ThrowIfNull(application);
 
         var results = await GetValidationResultsAsync(application, cancellationToken);
-        if (results.Any(result => result != ValidationResult.Success))
+        if (results.Any(static result => result != ValidationResult.Success))
         {
             var builder = new StringBuilder();
             builder.AppendLine(SR.GetResourceString(SR.ID0215));

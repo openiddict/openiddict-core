@@ -1475,7 +1475,7 @@ public static partial class OpenIddictServerHandlers
                     TokenTypeIdentifiers.AccessToken when context.Options.DisableAccessTokenEncryption => null,
                     TokenTypeIdentifiers.IdentityToken                                                 => null,
 
-                    _ => context.Options.EncryptionCredentials.First()
+                    _ => context.Options.EncryptionCredentials[0]
                 };
 
                 context.SigningCredentials = context.TokenType switch
@@ -1485,7 +1485,7 @@ public static partial class OpenIddictServerHandlers
                     TokenTypeIdentifiers.IdentityToken => context.Options.SigningCredentials.First(static credentials =>
                         credentials.Key is AsymmetricSecurityKey),
 
-                    _ => context.Options.SigningCredentials.First()
+                    _ => context.Options.SigningCredentials[0]
                 };
 
                 return ValueTask.CompletedTask;

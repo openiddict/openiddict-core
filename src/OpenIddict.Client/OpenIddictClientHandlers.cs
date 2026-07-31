@@ -2828,7 +2828,7 @@ public static partial class OpenIddictClientHandlers
             principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -5741,7 +5741,7 @@ public static partial class OpenIddictClientHandlers
             principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
 
             var lifetime = context.Principal.GetStateTokenLifetime() ?? context.Options.StateTokenLifetime;
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -6672,7 +6672,7 @@ public static partial class OpenIddictClientHandlers
             principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -7835,7 +7835,7 @@ public static partial class OpenIddictClientHandlers
             principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -8640,7 +8640,7 @@ public static partial class OpenIddictClientHandlers
             principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
 
             var lifetime = context.Options.ClientAssertionLifetime;
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -9272,7 +9272,7 @@ public static partial class OpenIddictClientHandlers
             principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
 
             var lifetime = context.Principal.GetStateTokenLifetime() ?? context.Options.StateTokenLifetime;
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }

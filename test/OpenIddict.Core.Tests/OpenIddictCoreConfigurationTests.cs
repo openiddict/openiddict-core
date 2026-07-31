@@ -297,7 +297,7 @@ public class OpenIddictCoreConfigurationTests
         // Assert
         Assert.True(result.Succeeded);
     }
-    private class CustomTimeProvider : TimeProvider
+    private sealed class CustomTimeProvider : TimeProvider
     {
     }
 }

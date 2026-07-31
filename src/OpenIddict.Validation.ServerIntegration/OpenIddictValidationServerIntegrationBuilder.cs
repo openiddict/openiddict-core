@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using OpenIddict.Validation.ServerIntegration;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -56,7 +57,7 @@ public sealed class OpenIddictValidationServerIntegrationBuilder
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object? obj) => base.Equals(obj);
+    public override bool Equals([NotNullWhen(true)] object? obj) => base.Equals(obj);
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]

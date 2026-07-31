@@ -174,7 +174,7 @@ public class AccountController : Controller
     [AllowAnonymous]
     public async Task<ActionResult> ConfirmEmail(string userId, string code)
     {
-        if (userId == null || code == null)
+        if (userId is null || code is null)
         {
             return View("Error");
         }
@@ -200,7 +200,7 @@ public class AccountController : Controller
         if (ModelState.IsValid)
         {
             var user = await UserManager.FindByNameAsync(model.Email);
-            if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
+            if (user is null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
             {
                 // Ne révélez pas que l'utilisateur n'existe pas ou qu'il n'est pas confirmé
                 return View("ForgotPasswordConfirmation");
@@ -231,7 +231,7 @@ public class AccountController : Controller
     [AllowAnonymous]
     public ActionResult ResetPassword(string code)
     {
-        return code == null ? View("Error") : View();
+        return code is null ? View("Error") : View();
     }
 
     //
@@ -246,7 +246,7 @@ public class AccountController : Controller
             return View(model);
         }
         var user = await UserManager.FindByNameAsync(model.Email);
-        if (user == null)
+        if (user is null)
         {
             // Ne révélez pas que l'utilisateur n'existe pas
             return RedirectToAction("ResetPasswordConfirmation", "Account");
@@ -285,7 +285,7 @@ public class AccountController : Controller
     public async Task<ActionResult> SendCode(string returnUrl, bool rememberMe)
     {
         var userId = await SignInManager.GetVerifiedUserIdAsync();
-        if (userId == null)
+        if (userId is null)
         {
             return View("Error");
         }
@@ -320,7 +320,7 @@ public class AccountController : Controller
     public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
     {
         var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
-        if (loginInfo == null)
+        if (loginInfo is null)
         {
             return RedirectToAction("Login");
         }
@@ -360,7 +360,7 @@ public class AccountController : Controller
         {
             // Obtenir des informations sur l'utilisateur à partir du fournisseur de connexion externe
             var info = await AuthenticationManager.GetExternalLoginInfoAsync();
-            if (info == null)
+            if (info is null)
             {
                 return View("ExternalLoginFailure");
             }
@@ -404,13 +404,13 @@ public class AccountController : Controller
     {
         if (disposing)
         {
-            if (_userManager != null)
+            if (_userManager is not null)
             {
                 _userManager.Dispose();
                 _userManager = null;
             }
 
-            if (_signInManager != null)
+            if (_signInManager is not null)
             {
                 _signInManager.Dispose();
                 _signInManager = null;
@@ -449,7 +449,7 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    internal class ChallengeResult : HttpUnauthorizedResult
+    internal sealed class ChallengeResult : HttpUnauthorizedResult
     {
         public ChallengeResult(string provider, string redirectUri)
             : this(provider, redirectUri, null)
@@ -470,7 +470,7 @@ public class AccountController : Controller
         public override void ExecuteResult(ControllerContext context)
         {
             var properties = new AuthenticationProperties { RedirectUri = RedirectUri };
-            if (UserId != null)
+            if (UserId is not null)
             {
                 properties.Dictionary[XsrfKey] = UserId;
             }

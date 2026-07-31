@@ -3625,7 +3625,7 @@ public static partial class OpenIddictServerHandlers
             // Otherwise, fall back to the global value.
             lifetime ??= context.Options.AccessTokenLifetime;
 
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -3759,7 +3759,7 @@ public static partial class OpenIddictServerHandlers
             // Otherwise, fall back to the global value.
             lifetime ??= context.Options.AuthorizationCodeLifetime;
 
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -3883,7 +3883,7 @@ public static partial class OpenIddictServerHandlers
             // Otherwise, fall back to the global value.
             lifetime ??= context.Options.DeviceCodeLifetime;
 
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -4117,7 +4117,7 @@ public static partial class OpenIddictServerHandlers
                 _ => context.Options.IssuedTokenLifetime
             };
 
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -4291,7 +4291,7 @@ public static partial class OpenIddictServerHandlers
             // Otherwise, fall back to the global value.
             lifetime ??= context.Options.RequestTokenLifetime;
 
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -4436,7 +4436,7 @@ public static partial class OpenIddictServerHandlers
                 // Otherwise, fall back to the global value.
                 lifetime ??= context.Options.RefreshTokenLifetime;
 
-                if (lifetime.HasValue)
+                if (lifetime is not null)
                 {
                     principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
                 }
@@ -4612,7 +4612,7 @@ public static partial class OpenIddictServerHandlers
             // Otherwise, fall back to the global value.
             lifetime ??= context.Options.IdentityTokenLifetime;
 
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -4739,7 +4739,7 @@ public static partial class OpenIddictServerHandlers
             // Otherwise, fall back to the global value.
             lifetime ??= context.Options.UserCodeLifetime;
 
-            if (lifetime.HasValue)
+            if (lifetime is not null)
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
@@ -5696,7 +5696,7 @@ public static partial class OpenIddictServerHandlers
             {
                 var uri = OpenIddictHelpers.CreateAbsoluteUri(
                     left : context.BaseUri ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0127)),
-                    right: context.Options.EndUserVerificationEndpointUris.First());
+                    right: context.Options.EndUserVerificationEndpointUris[0]);
 
                 context.Response.VerificationUri = uri.AbsoluteUri;
 

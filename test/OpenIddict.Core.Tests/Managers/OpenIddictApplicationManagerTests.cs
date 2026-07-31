@@ -3539,7 +3539,7 @@ public class OpenIddictApplicationManagerTests
 
     public class CustomApplication;
 
-    private class CustomApplicationManagerWithProtectedAccess : OpenIddictApplicationManager<CustomApplication>
+    private sealed class CustomApplicationManagerWithProtectedAccess : OpenIddictApplicationManager<CustomApplication>
     {
         public CustomApplicationManagerWithProtectedAccess(
             IOpenIddictApplicationCache<CustomApplication> cache,
