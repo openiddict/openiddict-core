@@ -60,8 +60,7 @@ public sealed class OpenIddictEntityFrameworkCoreSessionConfiguration<
         builder.Property(static session => session.LoginId)
                .HasMaxLength(100);
 
-        builder.HasIndex(static session => session.LoginId)
-               .IsUnique();
+        builder.HasIndex(static session => session.LoginId);
 
         builder.Property(static session => session.Status)
                .HasMaxLength(50);

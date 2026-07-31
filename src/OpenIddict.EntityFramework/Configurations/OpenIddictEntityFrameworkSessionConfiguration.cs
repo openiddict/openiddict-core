@@ -58,9 +58,6 @@ public sealed class OpenIddictEntityFrameworkSessionConfiguration<
         Property(static session => session.LoginId)
             .HasMaxLength(100);
 
-        // Warning: the index on the LoginId property MUST NOT be declared as
-        // a unique index, as Entity Framework 6.x doesn't support creating indexes
-        // with null-friendly WHERE conditions, unlike Entity Framework Core.
         HasIndex(static session => session.LoginId);
 
         Property(static session => session.Status)
