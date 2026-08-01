@@ -272,11 +272,6 @@ internal static class OpenIddictPolyfills
                 UrlRetrievalTimeout = policy.UrlRetrievalTimeout,
                 VerificationFlags = policy.VerificationFlags,
                 VerificationTime = policy.VerificationTime,
-#if NET
-                DisableCertificateDownloads = policy.DisableCertificateDownloads,
-                TrustMode = policy.TrustMode,
-                VerificationTimeIgnored = policy.VerificationTimeIgnored
-#endif
             };
 
             if (policy.ApplicationPolicy.Count is > 0)
@@ -294,10 +289,6 @@ internal static class OpenIddictPolyfills
                     clone.CertificatePolicy.Add(policy.CertificatePolicy[index]);
                 }
             }
-
-#if NET
-            clone.CustomTrustStore.AddRange(policy.CustomTrustStore);
-#endif
 
             clone.ExtraStore.AddRange(policy.ExtraStore);
 
