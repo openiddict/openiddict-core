@@ -1866,8 +1866,8 @@ public static partial class OpenIddictServerHandlers
 
                     for (var index = 0; index < count; index++)
                     {
-                        // Pick a character in the specified charset by generating a random index.
-                        builder.Append(RandomNumberGenerator.GetInt32(0, charset.Length));
+                        // Pick a character from the specified charset by generating a random index.
+                        builder.Append(charset[RandomNumberGenerator.GetInt32(0, charset.Length)]);
                     }
 
                     return builder.ToString();

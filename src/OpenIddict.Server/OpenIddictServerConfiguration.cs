@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -38,6 +39,12 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         ArgumentNullException.ThrowIfNull(options);
 
         options.TimeProvider ??= _provider.GetService<TimeProvider>() ?? TimeProvider.System;
+
+        // If no user code display format was explicitly set, generate a default format based on the configured length.
+        if (options.UserCodeLength is >= 1 && string.IsNullOrEmpty(options.UserCodeDisplayFormat))
+        {
+            options.UserCodeDisplayFormat = ComputeDefaultUserCodeDisplayFormat(options.UserCodeLength);
+        }
 
         // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
         if (options.EnableDegradedMode)
@@ -118,6 +125,30 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             // If the two keys are not backed by a X.509 certificate, none should be preferred to the other.
             (SecurityKey, SecurityKey) => 0
         };
+
+        static string ComputeDefaultUserCodeDisplayFormat(int length)
+        {
+            var builder = new StringBuilder();
+
+            var count = length % 5 is 0 ? 5 :
+                        length % 4 is 0 ? 4 :
+                        length % 3 is 0 ? 3 :
+                        length % 2 is 0 ? 2 : 1;
+
+            for (var index = 0; index < length; index++)
+            {
+                if (index is > 0 && index % count is 0)
+                {
+                    builder.Append(Separators.Dash[0]);
+                }
+
+                builder.Append('{');
+                builder.Append(index);
+                builder.Append('}');
+            }
+
+            return builder.ToString();
+        }
 
         static string? GetKeyIdentifier(SecurityKey key)
         {

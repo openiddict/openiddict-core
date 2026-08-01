@@ -131,6 +131,36 @@ public class OpenIddictServerConfigurationTests
         Assert.Null(options.UserCodeDisplayFormat);
     }
 
+    [Theory]
+    [InlineData(1, "{0}")]
+    [InlineData(2, "{0}{1}")]
+    [InlineData(3, "{0}{1}{2}")]
+    [InlineData(4, "{0}{1}{2}{3}")]
+    [InlineData(5, "{0}{1}{2}{3}{4}")]
+    [InlineData(6, "{0}{1}{2}-{3}{4}{5}")]
+    [InlineData(7, "{0}-{1}-{2}-{3}-{4}-{5}-{6}")]
+    [InlineData(8, "{0}{1}{2}{3}-{4}{5}{6}{7}")]
+    [InlineData(9, "{0}{1}{2}-{3}{4}{5}-{6}{7}{8}")]
+    [InlineData(10, "{0}{1}{2}{3}{4}-{5}{6}{7}{8}{9}")]
+    [InlineData(11, "{0}-{1}-{2}-{3}-{4}-{5}-{6}-{7}-{8}-{9}-{10}")]
+    [InlineData(12, "{0}{1}{2}{3}-{4}{5}{6}{7}-{8}{9}{10}{11}")]
+    public void PostConfigure_GeneratesUserCodeDisplayFormatWhenNotSet(int length, string expected)
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = new OpenIddictServerOptions
+        {
+            UserCodeLength = length,
+            UserCodeDisplayFormat = null
+        };
+
+        // Act
+        configuration.PostConfigure(name: null, options);
+
+        // Assert
+        Assert.Equal(expected, options.UserCodeDisplayFormat);
+    }
+
     [Fact]
     public void Validate_ThrowsAnExceptionForNullOptions()
     {
