@@ -88,7 +88,7 @@ public sealed class OpenIddictQuartzJob : IJob
             // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
             catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                exceptions ??= [];
+                exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
                 exceptions.AddRange(exception.InnerExceptions);
             }
 
@@ -96,7 +96,7 @@ public sealed class OpenIddictQuartzJob : IJob
             // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                exceptions ??= [];
+                exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);
             }
         }
@@ -133,7 +133,7 @@ public sealed class OpenIddictQuartzJob : IJob
             // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
             catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                exceptions ??= [];
+                exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
                 exceptions.AddRange(exception.InnerExceptions);
             }
 
@@ -141,12 +141,12 @@ public sealed class OpenIddictQuartzJob : IJob
             // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                exceptions ??= [];
+                exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);
             }
         }
 
-        if (exceptions is not null)
+        if (exceptions is { Count: > 0 })
         {
             throw new JobExecutionException(new AggregateException(exceptions))
             {

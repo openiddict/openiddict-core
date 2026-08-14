@@ -307,7 +307,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        var query = context.Set<TScope>().OrderBy(scope => scope.Id!).AsTracking();
+        var query = context.Set<TScope>().OrderBy(static scope => scope.Id!).AsTracking();
 
         if (offset is not null)
         {

@@ -121,7 +121,7 @@ public class OpenIddictEntityFrameworkApplicationStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
 
         Task<List<TAuthorization>> ListAuthorizationsAsync()
-            => (from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Tokens)
+            => (from authorization in context.Set<TAuthorization>().Include(static authorization => authorization.Tokens)
                 where authorization.Application!.Id!.Equals(application.Id)
                 select authorization).ToListAsync(cancellationToken);
 
@@ -134,7 +134,7 @@ public class OpenIddictEntityFrameworkApplicationStore<
         // To prevent an SQL exception from being thrown if a new associated entity is
         // created after the existing entries have been listed, the following logic is
         // executed in a serializable transaction, that will lock the affected tables.
-        using var transaction = context.CreateTransaction(IsolationLevel.Serializable);
+        using var transaction = CreateTransaction(context, IsolationLevel.Serializable);
 
         // Remove all the authorizations associated with the application and
         // the tokens attached to these implicit or explicit authorizations.
@@ -237,16 +237,18 @@ public class OpenIddictEntityFrameworkApplicationStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            var applications = (from application in context.Set<TApplication>()
-                                where application.PostLogoutRedirectUris!.Contains(uri)
-                                select application).AsAsyncEnumerable(cancellationToken);
+            var applications = from application in context.Set<TApplication>()
+                               where application.PostLogoutRedirectUris!.Contains(uri)
+                               select application;
 
-            await foreach (var application in applications.WithCancellation(cancellationToken))
+            using var enumerator = ((IDbAsyncEnumerable<TApplication>) applications).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                var uris = await GetPostLogoutRedirectUrisAsync(application, cancellationToken);
+                var uris = await GetPostLogoutRedirectUrisAsync(enumerator.Current, cancellationToken);
                 if (uris.Contains(uri, StringComparer.Ordinal))
                 {
-                    yield return application;
+                    yield return enumerator.Current;
                 }
             }
         }
@@ -270,16 +272,18 @@ public class OpenIddictEntityFrameworkApplicationStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            var applications = (from application in context.Set<TApplication>()
-                                where application.RedirectUris!.Contains(uri)
-                                select application).AsAsyncEnumerable(cancellationToken);
+            var applications = from application in context.Set<TApplication>()
+                               where application.RedirectUris!.Contains(uri)
+                               select application;
 
-            await foreach (var application in applications.WithCancellation(cancellationToken))
+            using var enumerator = ((IDbAsyncEnumerable<TApplication>) applications).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                var uris = await GetRedirectUrisAsync(application, cancellationToken);
+                var uris = await GetRedirectUrisAsync(enumerator.Current, cancellationToken);
                 if (uris.Contains(uri, StringComparer.Ordinal))
                 {
-                    yield return application;
+                    yield return enumerator.Current;
                 }
             }
         }
@@ -658,7 +662,7 @@ public class OpenIddictEntityFrameworkApplicationStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        IQueryable<TApplication> query = context.Set<TApplication>().OrderBy(application => application.Id!);
+        IQueryable<TApplication> query = context.Set<TApplication>().OrderBy(static application => application.Id!);
 
         if (offset is not null)
         {
@@ -670,9 +674,11 @@ public class OpenIddictEntityFrameworkApplicationStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var application in query.AsAsyncEnumerable(cancellationToken))
+        using var enumerator = ((IDbAsyncEnumerable<TApplication>) query).GetAsyncEnumerator();
+
+        while (await enumerator.MoveNextAsync(cancellationToken))
         {
-            yield return application;
+            yield return enumerator.Current;
         }
     }
 
@@ -689,9 +695,11 @@ public class OpenIddictEntityFrameworkApplicationStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var application in query(context.Set<TApplication>(), state).AsAsyncEnumerable(cancellationToken))
+            using var enumerator = ((IDbAsyncEnumerable<TResult>) query(context.Set<TApplication>(), state)).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return application;
+                yield return enumerator.Current;
             }
         }
     }
@@ -1096,5 +1104,26 @@ public class OpenIddictEntityFrameworkApplicationStore<
 #endif
 
         return converter.ConvertToInvariantString(identifier);
+    }
+
+    /// <summary>
+    /// Tries to create a new <see cref="DbContextTransaction"/> with the specified <paramref name="level"/>.
+    /// </summary>
+    /// <param name="context">The Entity Framework context.</param>
+    /// <param name="level">The desired level of isolation.</param>
+    /// <returns>The <see cref="DbContextTransaction"/> if it could be created, <see langword="null"/> otherwise.</returns>
+    protected virtual DbContextTransaction? CreateTransaction(DbContext context, IsolationLevel level)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        try
+        {
+            return context.Database.BeginTransaction(level);
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            return null;
+        }
     }
 }

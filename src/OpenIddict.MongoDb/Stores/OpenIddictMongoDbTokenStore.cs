@@ -365,7 +365,7 @@ public class OpenIddictMongoDbTokenStore<
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
-        var query = (IQueryable<TToken>) collection.AsQueryable().OrderBy(token => token.Id);
+        var query = (IQueryable<TToken>) collection.AsQueryable().OrderBy(static token => token.Id);
 
         if (offset is not null)
         {

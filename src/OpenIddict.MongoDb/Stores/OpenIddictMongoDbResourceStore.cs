@@ -257,7 +257,7 @@ public class OpenIddictMongoDbResourceStore<
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TResource>(Options.CurrentValue.ResourcesCollectionName);
 
-        var query = (IQueryable<TResource>) collection.AsQueryable().OrderBy(resource => resource.Id);
+        var query = (IQueryable<TResource>) collection.AsQueryable().OrderBy(static resource => resource.Id);
 
         if (offset is not null)
         {

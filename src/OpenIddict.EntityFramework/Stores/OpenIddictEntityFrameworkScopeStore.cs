@@ -173,12 +173,15 @@ public class OpenIddictEntityFrameworkScopeStore<
 
             // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
             // ImmutableArray.Contains() (which is not fully supported by Entity Framework 6.x) is not used instead.
-            await foreach (var scope in
-                (from scope in context.Set<TScope>()
-                 where Enumerable.Contains(names, scope.Name)
-                 select scope).AsAsyncEnumerable(cancellationToken))
+            var scopes = from scope in context.Set<TScope>()
+                         where Enumerable.Contains(names, scope.Name)
+                         select scope;
+
+            using var enumerator = ((IDbAsyncEnumerable<TScope>) scopes).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return scope;
+                yield return enumerator.Current;
             }
         }
     }
@@ -200,16 +203,18 @@ public class OpenIddictEntityFrameworkScopeStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            var scopes = (from scope in context.Set<TScope>()
-                          where scope.Resources!.Contains(resource)
-                          select scope).AsAsyncEnumerable(cancellationToken);
+            var scopes = from scope in context.Set<TScope>()
+                         where scope.Resources!.Contains(resource)
+                         select scope;
 
-            await foreach (var scope in scopes.WithCancellation(cancellationToken))
+            using var enumerator = ((IDbAsyncEnumerable<TScope>) scopes).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                var resources = await GetResourcesAsync(scope, cancellationToken);
+                var resources = await GetResourcesAsync(enumerator.Current, cancellationToken);
                 if (resources.Contains(resource, StringComparer.Ordinal))
                 {
-                    yield return scope;
+                    yield return enumerator.Current;
                 }
             }
         }
@@ -426,7 +431,7 @@ public class OpenIddictEntityFrameworkScopeStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        IQueryable<TScope> query = context.Set<TScope>().OrderBy(scope => scope.Id!);
+        IQueryable<TScope> query = context.Set<TScope>().OrderBy(static scope => scope.Id!);
 
         if (offset is not null)
         {
@@ -438,9 +443,11 @@ public class OpenIddictEntityFrameworkScopeStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var scope in query.AsAsyncEnumerable(cancellationToken))
+        using var enumerator = ((IDbAsyncEnumerable<TScope>) query).GetAsyncEnumerator();
+
+        while (await enumerator.MoveNextAsync(cancellationToken))
         {
-            yield return scope;
+            yield return enumerator.Current;
         }
     }
 
@@ -457,9 +464,11 @@ public class OpenIddictEntityFrameworkScopeStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var scope in query(context.Set<TScope>(), state).AsAsyncEnumerable(cancellationToken))
+            using var enumerator = ((IDbAsyncEnumerable<TResult>) query(context.Set<TScope>(), state)).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return scope;
+                yield return enumerator.Current;
             }
         }
     }

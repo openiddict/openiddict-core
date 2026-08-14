@@ -187,7 +187,9 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
                 // Remove all the authorizations associated with the application and
                 // the tokens attached to these implicit or explicit authorizations.
                 var authorizations = await (
-                    from authorization in context.Set<TAuthorization>().Include(authorization => authorization.Tokens).AsTracking()
+                    from authorization in context.Set<TAuthorization>()
+                        .Include(static authorization => authorization.Tokens)
+                        .AsTracking()
                     where authorization.Application!.Id!.Equals(application.Id)
                     select authorization).ToListAsync(cancellationToken);
 
@@ -481,7 +483,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        var query = context.Set<TApplication>().OrderBy(application => application.Id!).AsTracking();
+        var query = context.Set<TApplication>().OrderBy(static application => application.Id!).AsTracking();
 
         if (offset is not null)
         {

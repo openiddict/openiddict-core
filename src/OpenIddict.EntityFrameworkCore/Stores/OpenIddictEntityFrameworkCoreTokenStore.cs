@@ -149,9 +149,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
 
         IQueryable<TToken> tokens = context.Set<TToken>()
-                                           .Include(token => token.Application)
-                                           .Include(token => token.Authorization)
-                                           .AsTracking();
+            .Include(static token => token.Application)
+            .Include(static token => token.Authorization)
+            .AsTracking();
 
         if (!string.IsNullOrEmpty(query.Subject))
         {
@@ -194,9 +194,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
 
             await foreach (var token in
                 (from token in context.Set<TToken>()
-                                      .Include(token => token.Application)
-                                      .Include(token => token.Authorization)
-                                      .AsTracking()
+                    .Include(static token => token.Application)
+                    .Include(static token => token.Authorization)
+                    .AsTracking()
                  where token.Application!.Id!.Equals(key)
                  select token).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
@@ -219,9 +219,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
 
             await foreach (var token in
                 (from token in context.Set<TToken>()
-                                      .Include(token => token.Application)
-                                      .Include(token => token.Authorization)
-                                      .AsTracking()
+                    .Include(static token => token.Application)
+                    .Include(static token => token.Authorization)
+                    .AsTracking()
                  where token.Authorization!.Id!.Equals(key)
                  select token).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
@@ -256,7 +256,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
              select entry.Entity).FirstOrDefault();
 
         Task<TToken?> QueryAsync() =>
-            (from token in context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+            (from token in context.Set<TToken>()
+                .Include(static token => token.Application)
+                .Include(static token => token.Authorization)
+                .AsTracking()
              where token.ReferenceId == identifier
              select token).FirstOrDefaultAsync(cancellationToken);
     }
@@ -274,9 +277,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
 
             await foreach (var token in
                 (from token in context.Set<TToken>()
-                                      .Include(token => token.Application)
-                                      .Include(token => token.Authorization)
-                                      .AsTracking()
+                    .Include(static token => token.Application)
+                    .Include(static token => token.Authorization)
+                    .AsTracking()
                  where token.Subject == subject
                  select token).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
@@ -321,8 +324,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        return await query(context.Set<TToken>().Include(token => token.Application)
-            .Include(token => token.Authorization)
+        return await query(context.Set<TToken>()
+            .Include(static token => token.Application)
+            .Include(static token => token.Authorization)
             .AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -455,10 +459,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
 
         var query = context.Set<TToken>()
-                           .Include(token => token.Application)
-                           .Include(token => token.Authorization)
-                           .OrderBy(token => token.Id!)
-                           .AsTracking();
+            .Include(static token => token.Application)
+            .Include(static token => token.Authorization)
+            .OrderBy(static token => token.Id!)
+            .AsTracking();
 
         if (offset is not null)
         {
@@ -489,11 +493,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var token in query(
-                context.Set<TToken>()
-                       .Include(token => token.Application)
-                       .Include(token => token.Authorization)
-                       .AsTracking(), state).AsAsyncEnumerable().WithCancellation(cancellationToken))
+            await foreach (var token in query(context.Set<TToken>()
+                .Include(static token => token.Application)
+                .Include(static token => token.Authorization)
+                .AsTracking(), state).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return token;
             }
@@ -589,7 +592,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
 
                         catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                         {
-                            exceptions ??= [];
+                            exceptions ??= new List<Exception>(capacity: 1);
                             exceptions.Add(exception);
                         }
                     }
@@ -606,7 +609,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
             }
         }
 
-        if (exceptions is not null)
+        if (exceptions is { Count: > 0 })
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
@@ -620,7 +623,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
 
         IQueryable<TToken> query = Options.CurrentValue.DisableBulkOperations
-            ? context.Set<TToken>().Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+            ? context.Set<TToken>().Include(static token => token.Application).Include(static token => token.Authorization).AsTracking()
             : context.Set<TToken>();
 
         if (!string.IsNullOrEmpty(subject))
@@ -672,7 +675,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 context.Entry(token).State = EntityState.Unchanged;
 
-                exceptions ??= [];
+                exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);
 
                 continue;
@@ -681,7 +684,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
             result++;
         }
 
-        if (exceptions is not null)
+        if (exceptions is { Count: > 0 })
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
@@ -715,9 +718,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         var result = 0L;
 
         foreach (var token in await (from token in context.Set<TToken>()
-                                                          .Include(token => token.Application)
-                                                          .Include(token => token.Authorization)
-                                                          .AsTracking()
+                                        .Include(static token => token.Application)
+                                        .Include(static token => token.Authorization)
+                                        .AsTracking()
                                      where token.Application!.Id!.Equals(key)
                                      where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
@@ -734,7 +737,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 context.Entry(token).State = EntityState.Unchanged;
 
-                exceptions ??= [];
+                exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);
 
                 continue;
@@ -743,7 +746,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
             result++;
         }
 
-        if (exceptions is not null)
+        if (exceptions is { Count: > 0 })
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
@@ -777,9 +780,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         var result = 0L;
 
         foreach (var token in await (from token in context.Set<TToken>()
-                                                          .Include(token => token.Application)
-                                                          .Include(token => token.Authorization)
-                                                          .AsTracking()
+                                        .Include(static token => token.Application)
+                                        .Include(static token => token.Authorization)
+                                        .AsTracking()
                                      where token.Authorization!.Id!.Equals(key)
                                      where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
@@ -796,7 +799,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 context.Entry(token).State = EntityState.Unchanged;
 
-                exceptions ??= [];
+                exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);
 
                 continue;
@@ -805,7 +808,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
             result++;
         }
 
-        if (exceptions is not null)
+        if (exceptions is { Count: > 0 })
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }
@@ -838,9 +841,9 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
         var result = 0L;
 
         foreach (var token in await (from token in context.Set<TToken>()
-                                                          .Include(token => token.Application)
-                                                          .Include(token => token.Authorization)
-                                                          .AsTracking()
+                                        .Include(static token => token.Application)
+                                        .Include(static token => token.Authorization)
+                                        .AsTracking()
                                      where token.Subject == subject
                                      where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
@@ -857,7 +860,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 context.Entry(token).State = EntityState.Unchanged;
 
-                exceptions ??= [];
+                exceptions ??= new List<Exception>(capacity: 1);
                 exceptions.Add(exception);
 
                 continue;
@@ -866,7 +869,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
             result++;
         }
 
-        if (exceptions is not null)
+        if (exceptions is { Count: > 0 })
         {
             throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
         }

@@ -173,12 +173,15 @@ public class OpenIddictEntityFrameworkResourceStore<
 
             // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
             // ImmutableArray.Contains() (which is not fully supported by Entity Framework 6.x) is not used instead.
-            await foreach (var resource in
-                (from resource in context.Set<TResource>()
-                 where Enumerable.Contains(names, resource.Name)
-                 select resource).AsAsyncEnumerable(cancellationToken))
+            var resources = from resource in context.Set<TResource>()
+                            where Enumerable.Contains(names, resource.Name)
+                            select resource;
+
+            using var enumerator = ((IDbAsyncEnumerable<TResource>) resources).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return resource;
+                yield return enumerator.Current;
             }
         }
     }
@@ -356,7 +359,7 @@ public class OpenIddictEntityFrameworkResourceStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        IQueryable<TResource> query = context.Set<TResource>().OrderBy(resource => resource.Id!);
+        IQueryable<TResource> query = context.Set<TResource>().OrderBy(static resource => resource.Id!);
 
         if (offset is not null)
         {
@@ -368,9 +371,11 @@ public class OpenIddictEntityFrameworkResourceStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var resource in query.AsAsyncEnumerable(cancellationToken))
+        using var enumerator = ((IDbAsyncEnumerable<TResource>) query).GetAsyncEnumerator();
+
+        while (await enumerator.MoveNextAsync(cancellationToken))
         {
-            yield return resource;
+            yield return enumerator.Current;
         }
     }
 
@@ -387,9 +392,11 @@ public class OpenIddictEntityFrameworkResourceStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var resource in query(context.Set<TResource>(), state).AsAsyncEnumerable(cancellationToken))
+            using var enumerator = ((IDbAsyncEnumerable<TResult>) query(context.Set<TResource>(), state)).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return resource;
+                yield return enumerator.Current;
             }
         }
     }

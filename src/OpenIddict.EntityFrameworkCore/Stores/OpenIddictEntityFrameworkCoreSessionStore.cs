@@ -153,9 +153,9 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
 
         IQueryable<TSession> sessions = context.Set<TSession>()
-                                               .Include(session => session.Application)
-                                               .Include(session => session.Authorization)
-                                               .AsTracking();
+            .Include(static session => session.Application)
+            .Include(static session => session.Authorization)
+            .AsTracking();
 
         if (!string.IsNullOrEmpty(query.Subject))
         {
@@ -198,9 +198,9 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
 
             await foreach (var session in
                 (from session in context.Set<TSession>()
-                                        .Include(session => session.Application)
-                                        .Include(session => session.Authorization)
-                                        .AsTracking()
+                    .Include(static session => session.Application)
+                    .Include(static session => session.Authorization)
+                    .AsTracking()
                  where session.Application!.Id!.Equals(key)
                  select session).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
@@ -223,9 +223,9 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
 
             await foreach (var session in
                 (from session in context.Set<TSession>()
-                                        .Include(session => session.Application)
-                                        .Include(session => session.Authorization)
-                                        .AsTracking()
+                    .Include(static session => session.Application)
+                    .Include(static session => session.Authorization)
+                    .AsTracking()
                  where session.Authorization!.Id!.Equals(key)
                  select session).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
@@ -258,9 +258,9 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
 
             await foreach (var session in
                 (from session in context.Set<TSession>()
-                                        .Include(session => session.Application)
-                                        .Include(session => session.Authorization)
-                                        .AsTracking()
+                    .Include(static session => session.Application)
+                    .Include(static session => session.Authorization)
+                    .AsTracking()
                  where session.LoginId == identifier
                  select session).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
@@ -282,9 +282,9 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
 
             await foreach (var session in
                 (from session in context.Set<TSession>()
-                                        .Include(session => session.Application)
-                                        .Include(session => session.Authorization)
-                                        .AsTracking()
+                    .Include(static session => session.Application)
+                    .Include(static session => session.Authorization)
+                    .AsTracking()
                  where session.Subject == subject
                  select session).AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
@@ -428,7 +428,7 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        var query = context.Set<TSession>().OrderBy(session => session.Id!).AsTracking();
+        var query = context.Set<TSession>().OrderBy(static session => session.Id!).AsTracking();
 
         if (offset is not null)
         {

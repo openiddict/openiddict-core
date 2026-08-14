@@ -12,7 +12,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using static System.Net.Mime.MediaTypeNames;
 using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
 namespace OpenIddict.Core;
