@@ -781,7 +781,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                             Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
 
                             Description = (string) setting.Attribute("Description") is string description
-                                ? char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..]
+                                ? $"{char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US"))}{description[1..]}"
                                 : null,
                             ClrType = (string) setting.Attribute("Type") switch
                             {
@@ -1561,7 +1561,7 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
                             Obsolete = (bool?) setting.Attribute("Obsolete") ?? false,
 
                             Description = (string) setting.Attribute("Description") is string description
-                                ? char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..]
+                                ? $"{char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US"))}{description[1..]}"
                                 : null,
                             ClrType = (string) setting.Attribute("Type") switch
                             {
