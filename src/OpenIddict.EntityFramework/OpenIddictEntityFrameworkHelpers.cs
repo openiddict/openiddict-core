@@ -4,9 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Data.Entity.Infrastructure;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
@@ -69,52 +67,5 @@ public static class OpenIddictEntityFrameworkHelpers
             .Add(new OpenIddictEntityFrameworkTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
 
         return builder;
-    }
-
-    /// <summary>
-    /// Executes the query and returns the results as a streamed async enumeration.
-    /// </summary>
-    /// <typeparam name="T">The type of the returned entities.</typeparam>
-    /// <param name="source">The query source.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The streamed async enumeration containing the results.</returns>
-#pragma warning disable MA0156
-    internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
-#pragma warning restore MA0156
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        return ExecuteAsync(source, cancellationToken);
-
-        static async IAsyncEnumerable<T> ExecuteAsync(IQueryable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            using var enumerator = ((IDbAsyncEnumerable<T>) source).GetAsyncEnumerator();
-
-            while (await enumerator.MoveNextAsync(cancellationToken))
-            {
-                yield return enumerator.Current;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Tries to create a new <see cref="DbContextTransaction"/> with the specified <paramref name="level"/>.
-    /// </summary>
-    /// <param name="context">The Entity Framework context.</param>
-    /// <param name="level">The desired level of isolation.</param>
-    /// <returns>The <see cref="DbContextTransaction"/> if it could be created, <see langword="null"/> otherwise.</returns>
-    internal static DbContextTransaction? CreateTransaction(this DbContext context, IsolationLevel level)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-
-        try
-        {
-            return context.Database.BeginTransaction(level);
-        }
-
-        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-        {
-            return null;
-        }
     }
 }

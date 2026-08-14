@@ -145,8 +145,8 @@ public class OpenIddictEntityFrameworkSessionStore<
         var context = await Context.GetDbContextAsync(cancellationToken);
 
         IQueryable<TSession> sessions = context.Set<TSession>()
-                                               .Include(session => session.Application)
-                                               .Include(session => session.Authorization);
+            .Include(static session => session.Application)
+            .Include(static session => session.Authorization);
 
         if (!string.IsNullOrEmpty(query.Subject))
         {
@@ -169,9 +169,11 @@ public class OpenIddictEntityFrameworkSessionStore<
             sessions = sessions.Where(session => session.Status == query.Status);
         }
 
-        await foreach (var session in sessions.AsAsyncEnumerable(cancellationToken))
+        using var enumerator = ((IDbAsyncEnumerable<TSession>) sessions).GetAsyncEnumerator();
+
+        while (await enumerator.MoveNextAsync(cancellationToken))
         {
-            yield return session;
+            yield return enumerator.Current;
         }
     }
 
@@ -187,12 +189,17 @@ public class OpenIddictEntityFrameworkSessionStore<
             var context = await Context.GetDbContextAsync(cancellationToken);
             var key = ConvertIdentifierFromString(identifier);
 
-            await foreach (var session in
-                (from session in context.Set<TSession>().Include(session => session.Application).Include(session => session.Authorization)
-                 where session.Application!.Id!.Equals(key)
-                 select session).AsAsyncEnumerable(cancellationToken))
+            var sessions = from session in context.Set<TSession>()
+                               .Include(static session => session.Application)
+                               .Include(static session => session.Authorization)
+                           where session.Application!.Id!.Equals(key)
+                           select session;
+
+            using var enumerator = ((IDbAsyncEnumerable<TSession>) sessions).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return session;
+                yield return enumerator.Current;
             }
         }
     }
@@ -209,12 +216,17 @@ public class OpenIddictEntityFrameworkSessionStore<
             var context = await Context.GetDbContextAsync(cancellationToken);
             var key = ConvertIdentifierFromString(identifier);
 
-            await foreach (var session in
-                (from session in context.Set<TSession>().Include(session => session.Application).Include(session => session.Authorization)
-                 where session.Authorization!.Id!.Equals(key)
-                 select session).AsAsyncEnumerable(cancellationToken))
+            var sessions = from session in context.Set<TSession>()
+                               .Include(static session => session.Application)
+                               .Include(static session => session.Authorization)
+                           where session.Authorization!.Id!.Equals(key)
+                           select session;
+
+            using var enumerator = ((IDbAsyncEnumerable<TSession>) sessions).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return session;
+                yield return enumerator.Current;
             }
         }
     }
@@ -241,12 +253,17 @@ public class OpenIddictEntityFrameworkSessionStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var session in
-                (from session in context.Set<TSession>().Include(session => session.Application).Include(session => session.Authorization)
-                 where session.LoginId == identifier
-                 select session).AsAsyncEnumerable(cancellationToken))
+            var sessions = from session in context.Set<TSession>()
+                               .Include(static session => session.Application)
+                               .Include(static session => session.Authorization)
+                           where session.LoginId == identifier
+                           select session;
+
+            using var enumerator = ((IDbAsyncEnumerable<TSession>) sessions).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return session;
+                yield return enumerator.Current;
             }
         }
     }
@@ -262,12 +279,17 @@ public class OpenIddictEntityFrameworkSessionStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var session in
-                (from session in context.Set<TSession>().Include(session => session.Application).Include(session => session.Authorization)
-                 where session.Subject == subject
-                 select session).AsAsyncEnumerable(cancellationToken))
+            var sessions = from session in context.Set<TSession>()
+                               .Include(static session => session.Application)
+                               .Include(static session => session.Authorization)
+                           where session.Subject == subject
+                           select session;
+
+            using var enumerator = ((IDbAsyncEnumerable<TSession>) sessions).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return session;
+                yield return enumerator.Current;
             }
         }
     }
@@ -431,7 +453,7 @@ public class OpenIddictEntityFrameworkSessionStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        IQueryable<TSession> query = context.Set<TSession>().OrderBy(session => session.Id!);
+        IQueryable<TSession> query = context.Set<TSession>().OrderBy(static session => session.Id!);
 
         if (offset is not null)
         {
@@ -443,9 +465,11 @@ public class OpenIddictEntityFrameworkSessionStore<
             query = query.Take(count.Value);
         }
 
-        await foreach (var session in query.AsAsyncEnumerable(cancellationToken))
+        using var enumerator = ((IDbAsyncEnumerable<TSession>) query).GetAsyncEnumerator();
+
+        while (await enumerator.MoveNextAsync(cancellationToken))
         {
-            yield return session;
+            yield return enumerator.Current;
         }
     }
 
@@ -462,9 +486,11 @@ public class OpenIddictEntityFrameworkSessionStore<
         {
             var context = await Context.GetDbContextAsync(cancellationToken);
 
-            await foreach (var session in query(context.Set<TSession>(), state).AsAsyncEnumerable(cancellationToken))
+            using var enumerator = ((IDbAsyncEnumerable<TResult>) query(context.Set<TSession>(), state)).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return session;
+                yield return enumerator.Current;
             }
         }
     }

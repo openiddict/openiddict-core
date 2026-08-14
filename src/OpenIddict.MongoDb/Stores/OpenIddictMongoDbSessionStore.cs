@@ -341,7 +341,7 @@ public class OpenIddictMongoDbSessionStore<
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TSession>(Options.CurrentValue.SessionsCollectionName);
 
-        var query = (IQueryable<TSession>) collection.AsQueryable().OrderBy(session => session.Id);
+        var query = (IQueryable<TSession>) collection.AsQueryable().OrderBy(static session => session.Id);
 
         if (offset is not null)
         {

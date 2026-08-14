@@ -284,7 +284,7 @@ public class OpenIddictMongoDbScopeStore<
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-        var query = (IQueryable<TScope>) collection.AsQueryable().OrderBy(scope => scope.Id);
+        var query = (IQueryable<TScope>) collection.AsQueryable().OrderBy(static scope => scope.Id);
 
         if (offset is not null)
         {

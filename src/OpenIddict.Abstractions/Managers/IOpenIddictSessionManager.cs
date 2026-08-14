@@ -11,14 +11,12 @@ using System.Text.Json;
 namespace OpenIddict.Abstractions;
 
 /// <summary>
-/// Provides methods allowing to manage the Sessions stored in the store.
+/// Provides methods allowing to manage the sessions stored in the store.
 /// </summary>
 /// <remarks>
 /// Note: this interface is not meant to be implemented by custom managers,
-/// that should inherit from the generic OpenIddictSessionManager class.
-/// It is primarily intended to be used by services that cannot easily
-/// depend on the generic session manager. The actual session entity type is
-/// automatically determined at runtime based on the OpenIddict core options.
+/// that should inherit from the generic class. It is primarily intended to
+/// be used by services that cannot easily depend on the generic manager.
 /// </remarks>
 public interface IOpenIddictSessionManager
 {

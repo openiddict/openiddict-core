@@ -315,7 +315,7 @@ public class OpenIddictMongoDbAuthorizationStore<
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-        var query = (IQueryable<TAuthorization>) collection.AsQueryable().OrderBy(authorization => authorization.Id);
+        var query = (IQueryable<TAuthorization>) collection.AsQueryable().OrderBy(static authorization => authorization.Id);
 
         if (offset is not null)
         {

@@ -15,10 +15,8 @@ namespace OpenIddict.Abstractions;
 /// </summary>
 /// <remarks>
 /// Note: this interface is not meant to be implemented by custom managers,
-/// that should inherit from the generic OpenIddictTokenManager class.
-/// It is primarily intended to be used by services that cannot easily
-/// depend on the generic token manager. The actual token entity type is
-/// automatically determined at runtime based on the OpenIddict core options.
+/// that should inherit from the generic class. It is primarily intended to
+/// be used by services that cannot easily depend on the generic manager.
 /// </remarks>
 public interface IOpenIddictTokenManager
 {

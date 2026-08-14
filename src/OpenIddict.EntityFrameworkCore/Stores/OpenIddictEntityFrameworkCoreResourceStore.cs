@@ -279,7 +279,7 @@ public class OpenIddictEntityFrameworkCoreResourceStore<
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        var query = context.Set<TResource>().OrderBy(resource => resource.Id!).AsTracking();
+        var query = context.Set<TResource>().OrderBy(static resource => resource.Id!).AsTracking();
 
         if (offset is not null)
         {

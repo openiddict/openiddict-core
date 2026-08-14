@@ -352,7 +352,7 @@ public class OpenIddictMongoDbApplicationStore<
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
-        var query = (IQueryable<TApplication>) collection.AsQueryable().OrderBy(application => application.Id);
+        var query = (IQueryable<TApplication>) collection.AsQueryable().OrderBy(static application => application.Id);
 
         if (offset is not null)
         {
