@@ -1086,11 +1086,12 @@
 
   <Provider Name="GitHub" Id="87edae0b-e71e-4163-960f-cf7e2a780d77"
             Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
-    <Environment Issuer="https://github.com/">
+    <Environment Issuer="https://github.com/login/oauth">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
                      DeviceAuthorizationEndpoint="https://github.com/login/device/code"
                      TokenEndpoint="https://github.com/login/oauth/access_token"
-                     UserInfoEndpoint="https://api.github.com/user">
+                     UserInfoEndpoint="https://api.github.com/user"
+                     AuthorizationResponseIssParameterSupported="true">
         <CodeChallengeMethod Value="S256" />
 
         <GrantType Value="authorization_code" />

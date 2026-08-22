@@ -1083,6 +1083,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     UserInfoEndpoint = new Uri($""{{ environment.configuration.user_info_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
                     {{~ end ~}}
 
+                    AuthorizationResponseIssParameterSupported = {{ environment.configuration.authorization_response_iss_parameter_supported ?? ""null"" }},
+
                     CodeChallengeMethodsSupported =
                     {
                         {{~ for method in environment.configuration.code_challenge_methods_supported ~}}
@@ -1298,6 +1300,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                                     RevocationEndpoint = (string?) configuration.Attribute("RevocationEndpoint"),
                                     TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
                                     UserInfoEndpoint = (string?) configuration.Attribute("UserInfoEndpoint"),
+
+                                    AuthorizationResponseIssParameterSupported = (bool?) configuration.Attribute("AuthorizationResponseIssParameterSupported"),
 
                                     CodeChallengeMethodsSupported = configuration.Elements("CodeChallengeMethod").ToList() switch
                                     {
