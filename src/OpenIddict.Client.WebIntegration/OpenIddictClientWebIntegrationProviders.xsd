@@ -276,6 +276,12 @@
                             <xs:documentation>The userinfo endpoint offered by the environment.</xs:documentation>
                           </xs:annotation>
                         </xs:attribute>
+
+                        <xs:attribute name="AuthorizationResponseIssParameterSupported" type="xs:boolean" use="optional">
+                          <xs:annotation>
+                            <xs:documentation>A boolean indicating whether the authorization response 'iss' parameter is supported by the environment.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
                       </xs:complexType>
                     </xs:element>
 
