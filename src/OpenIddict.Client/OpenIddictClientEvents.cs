@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Client;
@@ -66,7 +67,8 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets the logger responsible for logging processed operations.
         /// </summary>
-        public ILogger Logger => Transaction.Logger;
+        public ILogger Logger
+            => field ??= Transaction.ServiceProvider.GetRequiredService<ILogger<OpenIddictClientDispatcher>>();
 
         /// <summary>
         /// Gets the OpenIddict client options.
@@ -90,6 +92,12 @@ public static partial class OpenIddictClientEvents
             get => Transaction.Registration;
             set => Transaction.Registration = value;
         }
+
+        /// <summary>
+        /// Gets the service provider associated with the current transaction.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public IServiceProvider ServiceProvider => Transaction.ServiceProvider;
     }
 
     /// <summary>

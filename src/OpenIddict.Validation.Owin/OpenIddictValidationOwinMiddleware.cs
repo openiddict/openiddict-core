@@ -13,10 +13,12 @@ namespace OpenIddict.Validation.Owin;
 
 /// <summary>
 /// Provides the entry point necessary to register the OpenIddict validation handler in an OWIN pipeline.
+/// </summary>
+/// <remarks>
 /// Note: this middleware is intended to be used with dependency injection containers
 /// that support middleware resolution, like Autofac. Since it depends on scoped services,
 /// it is NOT recommended to instantiate it as a singleton like a regular OWIN middleware.
-/// </summary>
+/// </remarks>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationOwinMiddleware : AuthenticationMiddleware<AuthenticationOptions>
 {
@@ -32,9 +34,8 @@ public sealed class OpenIddictValidationOwinMiddleware : AuthenticationMiddlewar
         IServiceProvider provider)
         : base(next, new InternalOptions()
         {
-            AuthenticationMode = provider.GetService<IOptionsMonitor<OpenIddictValidationOwinOptions>>()
-                ?.CurrentValue.AuthenticationMode
-                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0169))
+            AuthenticationMode = provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOwinOptions>>()
+                .CurrentValue.AuthenticationMode
         })
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
@@ -43,8 +44,7 @@ public sealed class OpenIddictValidationOwinMiddleware : AuthenticationMiddlewar
     /// </summary>
     /// <returns>A new instance of the <see cref="OpenIddictValidationOwinHandler"/> class.</returns>
     protected override AuthenticationHandler<AuthenticationOptions> CreateHandler()
-        => _provider.GetService<OpenIddictValidationOwinHandler>()
-            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0169));
+        => new OpenIddictValidationOwinHandler(_provider);
 
     /// <summary>
     /// Provides the options used by the <see cref="OpenIddictValidationOwinMiddleware"/> class.

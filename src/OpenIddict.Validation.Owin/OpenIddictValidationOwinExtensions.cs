@@ -29,7 +29,6 @@ public static class OpenIddictValidationOwinExtensions
         // Note: unlike regular OWIN middleware, the OpenIddict validation middleware is registered
         // as a scoped service in the DI container. This allows containers that support middleware
         // resolution (like Autofac) to use it without requiring additional configuration.
-        builder.Services.TryAddScoped<OpenIddictValidationOwinHandler>();
         builder.Services.TryAddScoped<OpenIddictValidationOwinMiddleware>();
 
         // Register the built-in event handlers used by the OpenIddict OWIN validation components.

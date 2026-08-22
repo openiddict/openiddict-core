@@ -79,23 +79,7 @@ public class OpenIddictServerExtensionsTests
         // Assert
         Assert.Contains(services, service => service.ServiceType == typeof(IOpenIddictServerDispatcher) &&
                                              service.ImplementationType == typeof(OpenIddictServerDispatcher) &&
-                                             service.Lifetime is ServiceLifetime.Scoped);
-    }
-    
-    [Fact]
-    public void AddServer_RegistersServerFactory()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var builder = new OpenIddictBuilder(services);
-
-        // Act
-        builder.AddServer();
-
-        // Assert
-        Assert.Contains(services, service => service.ServiceType == typeof(IOpenIddictServerFactory) &&
-                                             service.ImplementationType == typeof(OpenIddictServerFactory) &&
-                                             service.Lifetime is ServiceLifetime.Scoped);
+                                             service.Lifetime is ServiceLifetime.Singleton);
     }
 
     public static IEnumerable<object[]> DefaultHandlers

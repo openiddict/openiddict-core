@@ -23,17 +23,8 @@ public static class OpenIddictValidationAspNetCoreHelpers
     {
         ArgumentNullException.ThrowIfNull(transaction);
 
-        if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
-        {
-            return null;
-        }
-
-        if (property is WeakReference<HttpRequest> reference && reference.TryGetTarget(out HttpRequest? request))
-        {
-            return request;
-        }
-
-        return null;
+        return transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property)
+            && property is HttpRequest request ? request : null;
     }
 
     /// <summary>
@@ -52,7 +43,7 @@ public static class OpenIddictValidationAspNetCoreHelpers
     /// Retrieves the <see cref="OpenIddictRequest"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="OpenIddictRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictRequest? GetOpenIddictValidationRequest(this HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -64,7 +55,7 @@ public static class OpenIddictValidationAspNetCoreHelpers
     /// Retrieves the <see cref="OpenIddictResponse"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="OpenIddictResponse"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictResponse? GetOpenIddictValidationResponse(this HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);

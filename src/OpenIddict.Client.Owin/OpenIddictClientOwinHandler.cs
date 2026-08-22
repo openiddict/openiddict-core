@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security.Infrastructure;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
@@ -23,29 +24,20 @@ namespace OpenIddict.Client.Owin;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<AuthenticationOptions>
 {
-    private readonly IOpenIddictClientDispatcher _dispatcher;
-    private readonly IOpenIddictClientFactory _factory;
-    private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientOwinHandler"/> class.
     /// </summary>
-    /// <param name="dispatcher">The OpenIddict client dispatcher used by this instance.</param>
-    /// <param name="factory">The OpenIddict client factory used by this instance.</param>
-    /// <param name="options">The OpenIddict client OWIN options.</param>
-    public OpenIddictClientOwinHandler(
-        IOpenIddictClientDispatcher dispatcher,
-        IOpenIddictClientFactory factory,
-        IOptionsMonitor<OpenIddictClientOwinOptions> options)
-    {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-    }
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictClientOwinHandler(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     protected override async Task InitializeCoreAsync()
     {
+        var dispatcher = _provider.GetRequiredService<IOpenIddictClientDispatcher>();
+
         // Note: to ensure internal operations are not immediately cancelled when the request is aborted
         // (which may represent a security risk if sensitive operations are in progress), an ad-hoc token
         // source is always created and configured to be triggered 5 seconds after the request is aborted.
@@ -61,9 +53,16 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
         var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName);
         if (transaction is null)
         {
+            var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
             // Create a new transaction and attach the OWIN request to make it available to the OWIN handlers.
-            transaction = await _factory.CreateTransactionAsync(source.Token);
-            transaction.Properties[typeof(IOwinRequest).FullName!] = new WeakReference<IOwinRequest>(Request);
+            transaction = new OpenIddictClientTransaction
+            {
+                CancellationToken = source.Token,
+                Options = options.CurrentValue,
+                Properties = { [typeof(IOwinRequest).FullName!] = Request },
+                ServiceProvider = _provider
+            };
 
             // Attach the OpenIddict client transaction to the OWIN shared dictionary
             // so that it can retrieved while performing sign-in/sign-out operations.
@@ -71,7 +70,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
         }
 
         var context = new ProcessRequestContext(transaction);
-        await _dispatcher.DispatchAsync(context);
+        await dispatcher.DispatchAsync(context);
 
         // Store the context in the transaction so that it can be retrieved from InvokeAsync().
         transaction.SetProperty(typeof(ProcessRequestContext).FullName!, context);
@@ -83,6 +82,8 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
         // Note: due to internal differences between ASP.NET Core and Katana, the request MUST start being processed
         // in InitializeCoreAsync() to ensure the request context is available from AuthenticateCoreAsync() when
         // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
+
+        var dispatcher = _provider.GetRequiredService<IOpenIddictClientDispatcher>();
 
         var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName)
             ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
@@ -110,7 +111,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                 Response = new OpenIddictResponse()
             };
 
-            await _dispatcher.DispatchAsync(notification);
+            await dispatcher.DispatchAsync(notification);
 
             if (notification.IsRequestHandled)
             {
@@ -131,6 +132,8 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
     /// <inheritdoc/>
     protected override async Task<AuthenticationTicket?> AuthenticateCoreAsync()
     {
+        var dispatcher = _provider.GetRequiredService<IOpenIddictClientDispatcher>();
+
         var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName)
             ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
 
@@ -140,7 +143,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
         var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
         if (context is null)
         {
-            await _dispatcher.DispatchAsync(context = new ProcessAuthenticationContext(transaction));
+            await dispatcher.DispatchAsync(context = new ProcessAuthenticationContext(transaction));
 
             // Store the context object in the transaction so it can be later retrieved by handlers
             // that want to access the authentication result without triggering a new authentication flow.
@@ -287,7 +290,9 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
         // OpenIddictClientOwinMiddleware is assumed to be the only middleware allowed to write
         // to the response stream when a response grant (sign-in/out or challenge) was applied.
 
-        var descriptions = _options.CurrentValue.ForwardedAuthenticationTypes;
+        var dispatcher = _provider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOwinOptions>>();
+        var descriptions = options.CurrentValue.ForwardedAuthenticationTypes;
 
         // Note: unlike the ASP.NET Core host, the OWIN host MUST check whether the status code
         // corresponds to a challenge response, as LookupChallenge() will always return a non-null
@@ -308,7 +313,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                 Request = new OpenIddictRequest()
             };
 
-            await _dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
             if (context.IsRequestHandled || context.IsRequestSkipped)
             {
@@ -325,7 +330,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                     Response = new OpenIddictResponse()
                 };
 
-                await _dispatcher.DispatchAsync(notification);
+                await dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled || context.IsRequestSkipped)
                 {
@@ -352,7 +357,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                 Request = new OpenIddictRequest()
             };
 
-            await _dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
             if (context.IsRequestHandled || context.IsRequestSkipped)
             {
@@ -369,7 +374,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                     Response = new OpenIddictResponse()
                 };
 
-                await _dispatcher.DispatchAsync(notification);
+                await dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled || context.IsRequestSkipped)
                 {

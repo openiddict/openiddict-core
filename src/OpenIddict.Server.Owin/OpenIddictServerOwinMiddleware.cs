@@ -5,17 +5,18 @@
  */
 
 using System.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Security.Infrastructure;
 
 namespace OpenIddict.Server.Owin;
 
 /// <summary>
 /// Provides the entry point necessary to register the OpenIddict server handler in an OWIN pipeline.
+/// </summary>
+/// <remarks>
 /// Note: this middleware is intended to be used with dependency injection containers
 /// that support middleware resolution, like Autofac. Since it depends on scoped services,
 /// it is NOT recommended to instantiate it as a singleton like a regular OWIN middleware.
-/// </summary>
+/// </remarks>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerOwinMiddleware : AuthenticationMiddleware<AuthenticationOptions>
 {
@@ -37,8 +38,7 @@ public sealed class OpenIddictServerOwinMiddleware : AuthenticationMiddleware<Au
     /// </summary>
     /// <returns>A new instance of the <see cref="OpenIddictServerOwinHandler"/> class.</returns>
     protected override AuthenticationHandler<AuthenticationOptions> CreateHandler()
-        => _provider.GetService<OpenIddictServerOwinHandler>()
-            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0122));
+        => new OpenIddictServerOwinHandler(_provider);
 
     /// <summary>
     /// Provides the options used by the <see cref="OpenIddictServerOwinMiddleware"/> class.

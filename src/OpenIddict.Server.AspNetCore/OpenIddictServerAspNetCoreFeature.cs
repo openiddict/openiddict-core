@@ -9,14 +9,17 @@ using System.ComponentModel;
 namespace OpenIddict.Server.AspNetCore;
 
 /// <summary>
-/// Exposes the current server transaction to the ASP.NET Core host.
+/// Exposes the current server transaction to the ASP.NET Core application.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerAspNetCoreFeature
 {
     /// <summary>
-    /// Gets or sets the server transaction that encapsulates all specific
-    /// information about an individual OpenID Connect server request.
+    /// Gets the transaction that encapsulates all specific information about an individual operation.
     /// </summary>
-    public OpenIddictServerTransaction? Transaction { get; set; }
+    public required OpenIddictServerTransaction Transaction
+    {
+        get;
+        init { ArgumentNullException.ThrowIfNull(value); field = value; }
+    }
 }

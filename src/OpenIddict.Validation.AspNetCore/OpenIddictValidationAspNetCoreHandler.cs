@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants;
@@ -22,22 +23,17 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
     IAuthenticationRequestHandler
 {
     private readonly IOpenIddictValidationDispatcher _dispatcher;
-    private readonly IOpenIddictValidationFactory _factory;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationAspNetCoreHandler"/> class.
     /// </summary>
     public OpenIddictValidationAspNetCoreHandler(
         IOpenIddictValidationDispatcher dispatcher,
-        IOpenIddictValidationFactory factory,
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder)
         : base(options, logger, encoder)
-    {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-    }
+        => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
     /// <inheritdoc/>
     public async Task<bool> HandleRequestAsync()
@@ -57,9 +53,16 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
         var transaction = Context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction;
         if (transaction is null)
         {
+            var options = Context.RequestServices.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
+
             // Create a new transaction and attach the HTTP request to make it available to the ASP.NET Core handlers.
-            transaction = await _factory.CreateTransactionAsync(source.Token);
-            transaction.Properties[typeof(HttpRequest).FullName!] = new WeakReference<HttpRequest>(Request);
+            transaction = new OpenIddictValidationTransaction
+            {
+                CancellationToken = source.Token,
+                Options = options.CurrentValue,
+                Properties = { [typeof(HttpRequest).FullName!] = Request },
+                ServiceProvider = Context.RequestServices
+            };
 
             // Attach the OpenIddict validation transaction to the ASP.NET Core features
             // so that it can retrieved while performing challenge/forbid operations.

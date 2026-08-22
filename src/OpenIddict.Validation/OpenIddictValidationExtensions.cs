@@ -30,8 +30,7 @@ public static class OpenIddictValidationExtensions
         builder.Services.AddOptions();
 
         builder.Services.TryAddSingleton<OpenIddictValidationService>();
-        builder.Services.TryAddScoped<IOpenIddictValidationDispatcher, OpenIddictValidationDispatcher>();
-        builder.Services.TryAddScoped<IOpenIddictValidationFactory, OpenIddictValidationFactory>();
+        builder.Services.TryAddSingleton<IOpenIddictValidationDispatcher, OpenIddictValidationDispatcher>();
 
         // Register the built-in validation event handlers used by the OpenIddict validation components.
         // Note: the order used here is not important, as the actual order is set in the options.

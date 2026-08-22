@@ -212,6 +212,7 @@ public class AuthorizationController : Controller
                     var session = sessions.LastOrDefault() ?? await _sessionManager.CreateAsync(new()
                     {
                         ApplicationId = await _applicationManager.GetIdAsync(application),
+                        LoginId = result.Identity.GetClaim("login_id"),
                         Subject = user.Id
                     });
 
@@ -361,6 +362,7 @@ public class AuthorizationController : Controller
             var session = sessions.LastOrDefault() ?? await _sessionManager.CreateAsync(new()
             {
                 ApplicationId = await _applicationManager.GetIdAsync(application),
+                LoginId = result.Identity.GetClaim("login_id"),
                 Subject = user.Id
             });
 
