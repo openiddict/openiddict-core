@@ -28,8 +28,7 @@ public static class OpenIddictClientExtensions
         builder.Services.AddLogging();
         builder.Services.AddOptions();
 
-        builder.Services.TryAddScoped<IOpenIddictClientDispatcher, OpenIddictClientDispatcher>();
-        builder.Services.TryAddScoped<IOpenIddictClientFactory, OpenIddictClientFactory>();
+        builder.Services.TryAddSingleton<IOpenIddictClientDispatcher, OpenIddictClientDispatcher>();
         builder.Services.TryAddSingleton<OpenIddictClientService>();
 
         // Register the built-in filters used by the default OpenIddict client event handlers.

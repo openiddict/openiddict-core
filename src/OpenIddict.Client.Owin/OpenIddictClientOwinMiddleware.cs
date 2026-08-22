@@ -28,10 +28,12 @@ using AuthenticateDelegate = Func<
 
 /// <summary>
 /// Provides the entry point necessary to register the OpenIddict client handler in an OWIN pipeline.
+/// </summary>
+/// <remarks>
 /// Note: this middleware is intended to be used with dependency injection containers
 /// that support middleware resolution, like Autofac. Since it depends on scoped services,
 /// it is NOT recommended to instantiate it as a singleton like a regular OWIN middleware.
-/// </summary>
+/// </remarks>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<AuthenticationOptions>
 {
@@ -54,8 +56,7 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Au
         ArgumentNullException.ThrowIfNull(context);
 
         // Resolve the list of forwarded authentication types from the options.
-        var options = _provider.GetService<IOptionsMonitor<OpenIddictClientOwinOptions>>()
-            ?.CurrentValue ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0316));
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOwinOptions>>().CurrentValue;
 
         // Retrieve the existing authentication delegate.
         var function = context.Get<AuthenticateDelegate?>("security.Authenticate");
@@ -154,8 +155,7 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Au
     /// </summary>
     /// <returns>A new instance of the <see cref="OpenIddictClientOwinHandler"/> class.</returns>
     protected override AuthenticationHandler<AuthenticationOptions> CreateHandler()
-        => _provider.GetService<OpenIddictClientOwinHandler>()
-            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0317));
+        => new OpenIddictClientOwinHandler(_provider);
 
     /// <summary>
     /// Provides the options used by the <see cref="OpenIddictClientOwinMiddleware"/> class.

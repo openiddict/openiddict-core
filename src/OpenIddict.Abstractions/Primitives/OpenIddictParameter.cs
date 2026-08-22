@@ -175,15 +175,10 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
         null         => null
     };
 
-    /// <summary>
-    /// Determines whether the current <see cref="OpenIddictParameter"/>
-    /// instance is equal to the specified <see cref="OpenIddictParameter"/>.
-    /// </summary>
-    /// <param name="other">The other object to which to compare this instance.</param>
-    /// <returns>
-    /// <see langword="true"/> if the two instances have both the same representation
-    /// (e.g <see cref="string"/>) and value, <see langword="false"/> otherwise.
-    /// </returns>
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Two instances are considered equal if they have the same representation.
+    /// </remarks>
     public bool Equals(OpenIddictParameter other)
     {
         return (_value, other._value) switch
@@ -282,22 +277,14 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
         };
     }
 
-    /// <summary>
-    /// Determines whether the current <see cref="OpenIddictParameter"/>
-    /// instance is equal to the specified <see cref="object"/>.
-    /// </summary>
-    /// <param name="obj">The other object to which to compare this instance.</param>
-    /// <returns>
-    /// <see langword="true"/> if the two instances have both the same representation
-    /// (e.g <see cref="string"/>) and value, <see langword="false"/> otherwise.
-    /// </returns>
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Two instances are considered equal if they have the same representation.
+    /// </remarks>
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is OpenIddictParameter parameter && Equals(parameter);
 
-    /// <summary>
-    /// Returns the hash code of the current <see cref="OpenIddictParameter"/> instance.
-    /// </summary>
-    /// <returns>The hash code for the current instance.</returns>
+    /// <inheritdoc/>
     public override int GetHashCode()
     {
         return _value switch
@@ -1010,7 +997,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             long value => value.ToString(CultureInfo.InvariantCulture),
 
             // When the parameter is a JSON boolean value, use its string representation.
-            JsonElement { ValueKind: JsonValueKind.True }  => "true",
+            JsonElement { ValueKind: JsonValueKind.True  } => "true",
             JsonElement { ValueKind: JsonValueKind.False } => "false",
 
             // When the parameter is a JsonElement, try to convert it if it's of a supported type.

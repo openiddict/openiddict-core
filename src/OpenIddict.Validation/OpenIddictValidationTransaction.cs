@@ -6,20 +6,19 @@
 
 using System.ComponentModel;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Validation;
 
 /// <summary>
-/// Represents the context associated with an OpenID Connect validation request.
+/// Represents the context associated with an OpenID Connect validation operation.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationTransaction
 {
     /// <summary>
-    /// Gets or sets the cancellation token used to determine if the operation was aborted.
+    /// Gets the cancellation token used to determine if the operation was aborted.
     /// </summary>
-    public CancellationToken CancellationToken { get; set; }
+    public required CancellationToken CancellationToken { get; init; }
 
     /// <summary>
     /// Gets or sets the X.509 client certificate used by the remote peer, if available.
@@ -27,7 +26,7 @@ public sealed class OpenIddictValidationTransaction
     public X509Certificate2? RemoteCertificate { get; set; }
 
     /// <summary>
-    /// Gets or sets the type of the endpoint processing the current request.
+    /// Gets or sets the type of the endpoint processing the current transaction.
     /// </summary>
     public OpenIddictValidationEndpointType EndpointType { get; set; }
 
@@ -42,24 +41,27 @@ public sealed class OpenIddictValidationTransaction
     public Uri? BaseUri { get; set; }
 
     /// <summary>
-    /// Gets or sets the logger associated with the current request.
+    /// Gets the options associated with the current transaction.
     /// </summary>
-    public ILogger Logger { get; set; } = default!;
+    public required OpenIddictValidationOptions Options
+    {
+        get;
+        init { ArgumentNullException.ThrowIfNull(value); field = value; }
+    }
 
     /// <summary>
-    /// Gets or sets the options associated with the current request.
-    /// </summary>
-    public OpenIddictValidationOptions Options { get; set; } = default!;
-
-    /// <summary>
-    /// Gets the additional properties associated with the current request.
+    /// Gets the additional properties associated with the current transaction.
     /// </summary>
     public Dictionary<string, object?> Properties { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Gets or sets the server configuration used for the current request.
+    /// Gets or sets the server configuration used for the current transaction.
     /// </summary>
-    public OpenIddictConfiguration Configuration { get; set; } = default!;
+    public OpenIddictConfiguration Configuration
+    {
+        get;
+        set { ArgumentNullException.ThrowIfNull(value); field = value; }
+    } = default!;
 
     /// <summary>
     /// Gets or sets the current OpenID Connect request.
@@ -70,4 +72,13 @@ public sealed class OpenIddictValidationTransaction
     /// Gets or sets the current OpenID Connect response being returned.
     /// </summary>
     public OpenIddictResponse? Response { get; set; }
+
+    /// <summary>
+    /// Gets the service provider used to resolve services.
+    /// </summary>
+    public required IServiceProvider ServiceProvider
+    {
+        get;
+        init { ArgumentNullException.ThrowIfNull(value); field = value; }
+    }
 }

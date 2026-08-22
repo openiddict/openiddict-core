@@ -9,14 +9,17 @@ using System.ComponentModel;
 namespace OpenIddict.Validation.AspNetCore;
 
 /// <summary>
-/// Exposes the current validation transaction to the ASP.NET Core host.
+/// Exposes the current validation transaction to the ASP.NET Core application.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationAspNetCoreFeature
 {
     /// <summary>
-    /// Gets or sets the validation transaction that encapsulates all specific
-    /// information about an individual OpenID Connect validation request.
+    /// Gets the transaction that encapsulates all specific information about an individual operation.
     /// </summary>
-    public OpenIddictValidationTransaction? Transaction { get; set; }
+    public required OpenIddictValidationTransaction Transaction
+    {
+        get;
+        init { ArgumentNullException.ThrowIfNull(value); field = value; }
+    }
 }

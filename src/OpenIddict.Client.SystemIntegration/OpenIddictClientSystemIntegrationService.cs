@@ -13,7 +13,6 @@ using Microsoft.Extensions.Options;
 
 #if ANDROID
 using Android.Content;
-using OpenIddict.Extensions;
 #endif
 
 namespace OpenIddict.Client.SystemIntegration;
@@ -143,12 +142,17 @@ public sealed class OpenIddictClientSystemIntegrationService
         await using var scope = _provider.CreateAsyncScope();
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
 
         // Create a client transaction and store the specified instance so
         // it can be retrieved by the event handlers that need to access it.
-        var transaction = await factory.CreateTransactionAsync(cancellationToken);
-        transaction.SetProperty(typeof(TProperty).FullName!, property);
+        var transaction = new OpenIddictClientTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options.CurrentValue,
+            Properties = { [typeof(TProperty).FullName!] = property },
+            ServiceProvider = scope.ServiceProvider
+        };
 
         var context = new ProcessRequestContext(transaction);
         await dispatcher.DispatchAsync(context);

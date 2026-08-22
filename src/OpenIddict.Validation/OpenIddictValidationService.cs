@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
@@ -40,14 +41,17 @@ public class OpenIddictValidationService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the event dispatcher. To work around
-        // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-        var transaction = await factory.CreateTransactionAsync(cancellationToken);
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
+
+        var transaction = new OpenIddictValidationTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = _provider
+        };
 
         var context = new ProcessAuthenticationContext(transaction)
         {
@@ -85,14 +89,17 @@ public class OpenIddictValidationService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the event dispatcher. To work around
-        // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-        var transaction = await factory.CreateTransactionAsync(cancellationToken);
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
+
+        var transaction = new OpenIddictValidationTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = _provider
+        };
 
         var request = new OpenIddictRequest();
         request = await PrepareConfigurationRequestAsync();
@@ -207,14 +214,17 @@ public class OpenIddictValidationService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the event dispatcher. To work around
-        // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-        var transaction = await factory.CreateTransactionAsync(cancellationToken);
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
+
+        var transaction = new OpenIddictValidationTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = _provider
+        };
 
         var request = new OpenIddictRequest();
         request = await PrepareJsonWebKeySetRequestAsync();
@@ -337,14 +347,17 @@ public class OpenIddictValidationService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the event dispatcher. To work around
-        // this limitation, a scope is manually created for each method to this service.
         await using var scope = _provider.CreateAsyncScope();
 
         var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-        var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-        var transaction = await factory.CreateTransactionAsync(cancellationToken);
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
+
+        var transaction = new OpenIddictValidationTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = _provider
+        };
 
         request = await PrepareIntrospectionRequestAsync();
         request = await ApplyIntrospectionRequestAsync();

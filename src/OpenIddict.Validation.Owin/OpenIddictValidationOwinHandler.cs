@@ -6,6 +6,8 @@
 
 using System.ComponentModel;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security.Infrastructure;
 using static OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants;
 using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.Properties;
@@ -18,25 +20,20 @@ namespace OpenIddict.Validation.Owin;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<AuthenticationOptions>
 {
-    private readonly IOpenIddictValidationDispatcher _dispatcher;
-    private readonly IOpenIddictValidationFactory _factory;
+    private readonly IServiceProvider _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationOwinHandler"/> class.
     /// </summary>
-    /// <param name="dispatcher">The OpenIddict validation provider used by this instance.</param>
-    /// <param name="factory">The OpenIddict validation factory used by this instance.</param>
-    public OpenIddictValidationOwinHandler(
-        IOpenIddictValidationDispatcher dispatcher,
-        IOpenIddictValidationFactory factory)
-    {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-    }
+    /// <param name="provider">The service provider.</param>
+    public OpenIddictValidationOwinHandler(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
     protected override async Task InitializeCoreAsync()
     {
+        var dispatcher = _provider.GetRequiredService<IOpenIddictValidationDispatcher>();
+
         // Note: to ensure internal operations are not immediately cancelled when the request is aborted
         // (which may represent a security risk if sensitive operations are in progress), an ad-hoc token
         // source is always created and configured to be triggered 5 seconds after the request is aborted.
@@ -52,9 +49,16 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName);
         if (transaction is null)
         {
+            var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
+
             // Create a new transaction and attach the OWIN request to make it available to the OWIN handlers.
-            transaction = await _factory.CreateTransactionAsync(source.Token);
-            transaction.Properties[typeof(IOwinRequest).FullName!] = new WeakReference<IOwinRequest>(Request);
+            transaction = new OpenIddictValidationTransaction
+            {
+                CancellationToken = source.Token,
+                Options = options.CurrentValue,
+                Properties = { [typeof(IOwinRequest).FullName!] = Request },
+                ServiceProvider = _provider
+            };
 
             // Attach the OpenIddict validation transaction to the OWIN shared dictionary
             // so that it can retrieved while performing sign-in/sign-out operations.
@@ -62,7 +66,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         }
 
         var context = new ProcessRequestContext(transaction);
-        await _dispatcher.DispatchAsync(context);
+        await dispatcher.DispatchAsync(context);
 
         // Store the context in the transaction so that it can be retrieved from InvokeAsync().
         transaction.SetProperty(typeof(ProcessRequestContext).FullName!, context);
@@ -74,6 +78,8 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         // Note: due to internal differences between ASP.NET Core and Katana, the request MUST start being processed
         // in InitializeCoreAsync() to ensure the request context is available from AuthenticateCoreAsync() when
         // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
+
+        var dispatcher = _provider.GetRequiredService<IOpenIddictValidationDispatcher>();
 
         var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName)
             ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
@@ -101,7 +107,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
                 Response = new OpenIddictResponse()
             };
 
-            await _dispatcher.DispatchAsync(notification);
+            await dispatcher.DispatchAsync(notification);
 
             if (notification.IsRequestHandled)
             {
@@ -122,6 +128,8 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
     /// <inheritdoc/>
     protected override async Task<AuthenticationTicket?> AuthenticateCoreAsync()
     {
+        var dispatcher = _provider.GetRequiredService<IOpenIddictValidationDispatcher>();
+
         var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName)
             ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
@@ -131,7 +139,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
         if (context is null)
         {
-            await _dispatcher.DispatchAsync(context = new ProcessAuthenticationContext(transaction));
+            await dispatcher.DispatchAsync(context = new ProcessAuthenticationContext(transaction));
 
             // Store the context object in the transaction so it can be later retrieved by handlers
             // that want to access the authentication result without triggering a new authentication flow.
@@ -211,6 +219,8 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
         // OpenIddictValidationOwinMiddleware is assumed to be the only middleware allowed to write
         // to the response stream when a response grant (sign-in/out or challenge) was applied.
 
+        var dispatcher = _provider.GetRequiredService<IOpenIddictValidationDispatcher>();
+
         // Note: unlike the ASP.NET Core host, the OWIN host MUST check whether the status code
         // corresponds to a challenge response, as LookupChallenge() will always return a non-null
         // value when active authentication is used, even if no challenge was actually triggered.
@@ -227,7 +237,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
                 Response = new OpenIddictResponse()
             };
 
-            await _dispatcher.DispatchAsync(context);
+            await dispatcher.DispatchAsync(context);
 
             if (context.IsRequestHandled || context.IsRequestSkipped)
             {
@@ -244,7 +254,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
                     Response = new OpenIddictResponse()
                 };
 
-                await _dispatcher.DispatchAsync(notification);
+                await dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled || context.IsRequestSkipped)
                 {

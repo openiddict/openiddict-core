@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants;
@@ -24,22 +25,17 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
     IAuthenticationSignOutHandler
 {
     private readonly IOpenIddictClientDispatcher _dispatcher;
-    private readonly IOpenIddictClientFactory _factory;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientAspNetCoreHandler"/> class.
     /// </summary>
     public OpenIddictClientAspNetCoreHandler(
         IOpenIddictClientDispatcher dispatcher,
-        IOpenIddictClientFactory factory,
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder)
         : base(options, logger, encoder)
-    {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-    }
+        => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
     /// <inheritdoc/>
     public async Task<bool> HandleRequestAsync()
@@ -59,9 +55,16 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
         var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction;
         if (transaction is null)
         {
+            var options = Context.RequestServices.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
             // Create a new transaction and attach the HTTP request to make it available to the ASP.NET Core handlers.
-            transaction = await _factory.CreateTransactionAsync(source.Token);
-            transaction.Properties[typeof(HttpRequest).FullName!] = new WeakReference<HttpRequest>(Request);
+            transaction = new OpenIddictClientTransaction
+            {
+                CancellationToken = source.Token,
+                Options = options.CurrentValue,
+                Properties = { [typeof(HttpRequest).FullName!] = Request },
+                ServiceProvider = Context.RequestServices
+            };
 
             // Attach the OpenIddict client transaction to the ASP.NET Core features
             // so that it can retrieved while performing sign-in/sign-out operations.

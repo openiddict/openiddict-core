@@ -37,17 +37,8 @@ public static class OpenIddictClientOwinHelpers
     {
         ArgumentNullException.ThrowIfNull(transaction);
 
-        if (!transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property))
-        {
-            return null;
-        }
-
-        if (property is WeakReference<IOwinRequest> reference && reference.TryGetTarget(out IOwinRequest? request))
-        {
-            return request;
-        }
-
-        return null;
+        return transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property)
+            && property is IOwinRequest request ? request : null;
     }
 
     /// <summary>

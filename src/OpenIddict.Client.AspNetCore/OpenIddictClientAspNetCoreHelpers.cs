@@ -23,17 +23,8 @@ public static class OpenIddictClientAspNetCoreHelpers
     {
         ArgumentNullException.ThrowIfNull(transaction);
 
-        if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
-        {
-            return null;
-        }
-
-        if (property is WeakReference<HttpRequest> reference && reference.TryGetTarget(out HttpRequest? request))
-        {
-            return request;
-        }
-
-        return null;
+        return transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property)
+            && property is HttpRequest request ? request : null;
     }
 
     /// <summary>

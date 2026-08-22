@@ -502,10 +502,6 @@ This may indicate that the event handler responsible for processing OpenID Conne
 For the OpenIddict server services to work correctly, a per-request 'IServiceProvider' must be attached to the OWIN environment with the dictionary key 'System.IServiceProvider'.
 Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictServer()' extension MUST NOT be called.</value>
   </data>
-  <data name="ID0122" xml:space="preserve">
-    <value>The authentication handler used by the OpenIddict server components cannot be resolved from the DI container.
-To register the OWIN integration, use 'services.AddOpenIddict().AddServer().UseOwin()'.</value>
-  </data>
   <data name="ID0123" xml:space="preserve">
     <value>Audiences cannot be null or empty.</value>
   </data>
@@ -693,10 +689,6 @@ Make sure that neither DefaultSignInScheme nor DefaultSignOutScheme point to an 
     <value>No service provider was found in the OWIN context.
 For the OpenIddict validation services to work correctly, a per-request 'IServiceProvider' must be attached to the OWIN environment with the dictionary key 'System.IServiceProvider'.
 Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictValidation()' extension MUST NOT be called.</value>
-  </data>
-  <data name="ID0169" xml:space="preserve">
-    <value>The authentication handler used by the OpenIddict validation components cannot be resolved from the DI container.
-To register the OWIN integration, use 'services.AddOpenIddict().AddValidation().UseOwin()'.</value>
   </data>
   <data name="ID0170" xml:space="preserve">
     <value>The local server integration can only be used with direct validation.</value>
@@ -1044,10 +1036,6 @@ Reference the 'OpenIddict.Client.SystemNetHttp' package and call 'services.AddOp
     <value>No service provider was found in the OWIN context.
 For the OpenIddict client services to work correctly, a per-request 'IServiceProvider' must be attached to the OWIN environment with the dictionary key 'System.IServiceProvider'.
 Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictClient()' extension MUST NOT be called.</value>
-  </data>
-  <data name="ID0317" xml:space="preserve">
-    <value>The authentication handler used by the OpenIddict client components cannot be resolved from the DI container.
-To register the OWIN integration, use 'services.AddOpenIddict().AddClient().UseOwin()'.</value>
   </data>
   <data name="ID0318" xml:space="preserve">
     <value>The core services must be registered when enabling the OpenIddict client feature.

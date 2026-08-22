@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Validation;
@@ -74,12 +75,19 @@ public static partial class OpenIddictValidationEvents
         /// <summary>
         /// Gets the logger responsible for logging processed operations.
         /// </summary>
-        public ILogger Logger => Transaction.Logger;
+        public ILogger Logger
+            => field ??= Transaction.ServiceProvider.GetRequiredService<ILogger<OpenIddictValidationDispatcher>>();
 
         /// <summary>
         /// Gets the OpenIddict validation options.
         /// </summary>
         public OpenIddictValidationOptions Options => Transaction.Options;
+
+        /// <summary>
+        /// Gets the service provider associated with the current transaction.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public IServiceProvider ServiceProvider => Transaction.ServiceProvider;
     }
 
     /// <summary>

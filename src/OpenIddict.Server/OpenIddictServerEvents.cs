@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Server;
@@ -64,12 +65,19 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets the logger responsible for logging processed operations.
         /// </summary>
-        public ILogger Logger => Transaction.Logger;
+        public ILogger Logger
+            => field ??= Transaction.ServiceProvider.GetRequiredService<ILogger<OpenIddictServerDispatcher>>();
 
         /// <summary>
         /// Gets the OpenIddict server options.
         /// </summary>
         public OpenIddictServerOptions Options => Transaction.Options;
+
+        /// <summary>
+        /// Gets the service provider associated with the current transaction.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public IServiceProvider ServiceProvider => Transaction.ServiceProvider;
     }
 
     /// <summary>
