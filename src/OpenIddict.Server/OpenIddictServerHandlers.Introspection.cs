@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -501,13 +502,6 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -516,7 +510,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireClientIdParameter>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireEndpointPermissionsEnabled>()
-                    .UseScopedHandler<ValidateEndpointPermissions>()
+                    .UseSingletonHandler<ValidateEndpointPermissions>()
                     .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -528,11 +522,14 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the introspection endpoint.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Introspection, context.CancellationToken))
+                if (!await manager.HasPermissionAsync(application, Permissions.Endpoints.Introspection, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6103, SR.GetResourceString(SR.ID6103), context.ClientId);
 
@@ -774,13 +771,6 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class AttachApplicationClaims : IOpenIddictServerHandler<HandleIntrospectionRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public AttachApplicationClaims() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public AttachApplicationClaims(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -788,7 +778,7 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleIntrospectionRequestContext>()
                     .AddFilter<RequireClientIdParameter>()
                     .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<AttachApplicationClaims>()
+                    .UseSingletonHandler<AttachApplicationClaims>()
                     .SetOrder(AttachMetadataClaims.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -816,11 +806,14 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId, context.CancellationToken)
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.Request.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Public clients are not allowed to access sensitive claims as authentication cannot be enforced.
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
+                if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6107, SR.GetResourceString(SR.ID6107), context.Request.ClientId);
 
